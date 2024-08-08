@@ -28,9 +28,9 @@ async function seed() {
 
   console.log(`Seeding all Users...`);
 
-  usersData.map(async (userData) => {
-    return users.push(
-      await prisma.user.upsert({
+  const allUsers = await Promise.all(
+    usersData.map(async (userData) => {
+      return await prisma.user.upsert({
         where: {
           signInEmailAddress: userData.signInEmailAddress,
         },
@@ -43,10 +43,50 @@ async function seed() {
           firstName: userData.firstName,
           lastName: userData.lastName,
         },
-      }),
-    );
-  }),
-    console.log(`...All Users seeded.`);
+      });
+    }),
+  );
+
+  users = users.concat(allUsers);
+
+  // usersData.map(async (userData) => {
+  //   const user = await prisma.user.upsert({
+  //     where: {
+  //       signInEmailAddress: userData.signInEmailAddress,
+  //     },
+  //     update: {},
+  //     create: {
+  //       signInEmailAddress: userData.signInEmailAddress,
+  //       hashedPassword: userData.hashedPassword,
+  //       username: userData.username,
+  //       pseudoname: userData.pseudoname,
+  //       firstName: userData.firstName,
+  //       lastName: userData.lastName,
+  //     },
+  //   });
+  //   users.push(user);
+  // });
+
+  // usersData.map(async (userData) => {
+  //   return users.push(
+  //     await prisma.user.upsert({
+  //       where: {
+  //         signInEmailAddress: userData.signInEmailAddress,
+  //       },
+  //       update: {},
+  //       create: {
+  //         signInEmailAddress: userData.signInEmailAddress,
+  //         hashedPassword: userData.hashedPassword,
+  //         username: userData.username,
+  //         pseudoname: userData.pseudoname,
+  //         firstName: userData.firstName,
+  //         lastName: userData.lastName,
+  //       },
+  //     }),
+  //   );
+  // });
+
+  console.log(`...All Users seeded.`);
 
   console.log({ users });
 
@@ -69,9 +109,9 @@ async function seed() {
   console.log(`Seeding all Destinations...`);
 
   for (const user of users) {
-    destinationsData.map(async (destinationData) => {
-      return destinations.push(
-        await prisma.destination.upsert({
+    const userDestinations = await Promise.all(
+      destinationsData.map(async (destinationData) => {
+        return await prisma.destination.upsert({
           where: {
             name_userId: {
               name: destinationData.name,
@@ -83,9 +123,11 @@ async function seed() {
             name: destinationData.name,
             userId: user.id,
           },
-        }),
-      );
-    });
+        });
+      }),
+    );
+
+    destinations = destinations.concat(userDestinations);
   }
 
   console.log(`...All Destinations seeded.`);
