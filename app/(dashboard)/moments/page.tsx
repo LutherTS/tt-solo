@@ -1,6 +1,28 @@
 import prisma from "@/prisma/db";
 import { CRUD } from "./crud";
 import { revalidatePath } from "next/cache";
+import { Dispatch, SetStateAction } from "react";
+import { Moment } from "@prisma/client";
+
+type StepFromCRUD = {
+  id: number;
+  intitule: string;
+  details: string;
+  duree: string;
+};
+
+type MomentFromCRUD = {
+  id: string;
+  destination: string;
+  activite: string;
+  objectif: string;
+  indispensable: boolean;
+  contexte: string;
+  dateetheure: string;
+  etapes: StepFromCRUD[];
+};
+
+type ViewFromCRUD = "update-moment" | "create-moment" | "read-moments";
 
 export default async function MomentsPage() {
   const user = await prisma.user.findUnique({
@@ -25,24 +47,6 @@ export default async function MomentsPage() {
   });
   // console.log(userMoments);
 
-  type StepFromCRUD = {
-    id: number;
-    intitule: string;
-    details: string;
-    duree: string;
-  };
-
-  type MomentFromCRUD = {
-    id: string;
-    destination: string;
-    activite: string;
-    objectif: string;
-    indispensable: boolean;
-    contexte: string;
-    dateetheure: string;
-    etapes: StepFromCRUD[];
-  };
-
   const momentsToCRUD: MomentFromCRUD[] = userMoments.map((e) => {
     return {
       id: e.id,
@@ -64,13 +68,21 @@ export default async function MomentsPage() {
   });
   console.log(momentsToCRUD);
 
+  // Ça a marché. Il manque seulement les étapes... Et surtout le typage.
   async function createOrUpdateMoment(
-    formData: FormData,
     variant: "creating" | "updating",
     indispensable: boolean,
     momentDate: string,
+    steps: StepFromCRUD[],
+    formData: FormData,
   ) {
     "use server";
+
+    console.log(variant);
+    console.log(indispensable);
+    console.log(momentDate);
+    console.log(steps);
+    console.log(formData);
 
     // ...
     let destination = formData.get("destination");
@@ -100,8 +112,10 @@ export default async function MomentsPage() {
         },
       });
 
-      if (destinationEntry)
-        await prisma.moment.create({
+      let moment: Moment;
+
+      if (destinationEntry) {
+        moment = await prisma.moment.create({
           data: {
             activity: activite,
             objective: objectif,
@@ -111,8 +125,8 @@ export default async function MomentsPage() {
             destinationId: destinationEntry.id,
           },
         });
-      else
-        await prisma.moment.create({
+      } else {
+        moment = await prisma.moment.create({
           data: {
             activity: activite,
             objective: objectif,
@@ -127,9 +141,27 @@ export default async function MomentsPage() {
             },
           },
         });
+      }
+
+      let i = 1;
+      for (const step of steps) {
+        await prisma.step.create({
+          data: {
+            orderId: i,
+            title: step.intitule,
+            details: step.details,
+            duration: step.duree,
+            momentId: moment.id,
+          },
+        });
+        i++;
+      }
     }
 
     revalidatePath("/moments");
+    // setView("read-moments");
+    // I'm probably going to need all of my setters because revalidate doesn't seem to reset them at all, only the server data.
+    // But since this is about the client I'm really not sure. Especially since usually we just shift to another route with redirect.
   }
 
   return (
@@ -139,3 +171,8 @@ export default async function MomentsPage() {
     />
   );
 }
+
+/* Notes
+Connection closed is unrelated to setView("read-moments");
+That's actually the issue, it's passing hooks as arguments that trigger the error Connection closed.
+*/
