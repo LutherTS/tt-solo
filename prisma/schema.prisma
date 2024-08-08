@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                             String                    @id @default(uuid())
+
+  signInEmailAddress             String                    @unique
+  hashedPassword                 String
+  // the User's effective name
+  username                       String                    @unique
+  pseudoname                     String
+  firstName                      String
+  lastName                       String
+
+  createdAt                      DateTime                  @default(now())
+  updatedAt                      DateTime                  @updatedAt @default(now())
+
+  destinations                   Destination[]
+}
+
+model Destination {
+  id                             String                    @id @default(uuid())
+
+  name                           String
+  description                    String?
+
+  createdAt                      DateTime                  @default(now())
+  updatedAt                      DateTime                  @updatedAt @default(now())
+
+  userId                         String
+  user                           User                      @relation(fields: [userId], references: [id])
+
+  moments                        Moment[]
+
+  @@unique([name, userId])
+}
+
+model Moment {
+  id                             String                    @id @default(uuid())
+
+  // can potentially become its own model
+  activity                       String
+  // the Moment's effective name
+  objective                      String
+  isIndispensable                Boolean                   @default(false)
+  context                        String
+  // saved as a string just like in the FormData
+  dateAndTime                    String
+
+  createdAt                      DateTime                  @default(now())
+  updatedAt                      DateTime                  @updatedAt @default(now())
+
+  destinationId                  String
+  destination                    Destination               @relation(fields: [destinationId], references: [id])
+
+  steps                          Step[]
+
+  @@unique([objective, destinationId])
+}
+
+model Step {
+  id                             String                    @id @default(uuid())
+  orderId                        Int
+
+  // the Moment's effective name
+  title                          String
+  details                        String
+  // in minutes, saved as a string just like in the FormData
+  duration                       String
+
+  createdAt                      DateTime                  @default(now())
+  updatedAt                      DateTime                  @updatedAt @default(now())
+
+  momentId                       String
+  moment                         Moment                    @relation(fields: [momentId], references: [id])
+
+  @@unique([title, momentId])
+}
