@@ -49,43 +49,6 @@ async function seed() {
 
   users = users.concat(allUsers);
 
-  // usersData.map(async (userData) => {
-  //   const user = await prisma.user.upsert({
-  //     where: {
-  //       signInEmailAddress: userData.signInEmailAddress,
-  //     },
-  //     update: {},
-  //     create: {
-  //       signInEmailAddress: userData.signInEmailAddress,
-  //       hashedPassword: userData.hashedPassword,
-  //       username: userData.username,
-  //       pseudoname: userData.pseudoname,
-  //       firstName: userData.firstName,
-  //       lastName: userData.lastName,
-  //     },
-  //   });
-  //   users.push(user);
-  // });
-
-  // usersData.map(async (userData) => {
-  //   return users.push(
-  //     await prisma.user.upsert({
-  //       where: {
-  //         signInEmailAddress: userData.signInEmailAddress,
-  //       },
-  //       update: {},
-  //       create: {
-  //         signInEmailAddress: userData.signInEmailAddress,
-  //         hashedPassword: userData.hashedPassword,
-  //         username: userData.username,
-  //         pseudoname: userData.pseudoname,
-  //         firstName: userData.firstName,
-  //         lastName: userData.lastName,
-  //       },
-  //     }),
-  //   );
-  // });
-
   console.log(`...All Users seeded.`);
 
   console.log({ users });
@@ -142,7 +105,7 @@ async function seed() {
   const momentsData = [
     {
       activity: "Développement de fonctionnalité",
-      objective: "Devenir tech lead sur TekTIME.",
+      objective: "Faire un formulaire indéniable pour TekTIME.",
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
@@ -158,9 +121,9 @@ async function seed() {
   console.log(`Seeding all Moments...`);
 
   for (const destination of destinations) {
-    momentsData.map(async (momentData) => {
-      return moments.push(
-        await prisma.moment.upsert({
+    const destinationMoments = await Promise.all(
+      momentsData.map(async (momentData) => {
+        return await prisma.moment.upsert({
           where: {
             objective_destinationId: {
               objective: momentData.objective,
@@ -176,9 +139,11 @@ async function seed() {
             dateAndTime: momentData.dateAndTime,
             destinationId: destination.id,
           },
-        }),
-      );
-    });
+        });
+      }),
+    );
+
+    moments = moments.concat(destinationMoments);
   }
 
   console.log(`...All Moments seeded.`);
@@ -222,9 +187,9 @@ async function seed() {
   console.log(`Seeding all Steps...`);
 
   for (const moment of moments) {
-    stepsData.map(async (stepData) => {
-      return steps.push(
-        await prisma.step.upsert({
+    const momentSteps = await Promise.all(
+      stepsData.map(async (stepData) => {
+        return await prisma.step.upsert({
           where: {
             title_momentId: {
               title: stepData.title,
@@ -239,12 +204,18 @@ async function seed() {
             duration: stepData.duration,
             momentId: moment.id,
           },
-        }),
-      );
-    });
+        });
+      }),
+    );
+
+    steps = steps.concat(momentSteps);
   }
 
   console.log(`...All Steps seeded.`);
+
+  console.log({ steps });
+
+  console.log(`...Steps seeded.`);
 }
 
 seed();
