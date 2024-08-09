@@ -115,6 +115,7 @@ type Moment = {
   contexte: string;
   dateetheure: string;
   etapes: Step[];
+  duree: string;
 };
 
 type Option = {
@@ -334,10 +335,6 @@ function ReadMomentsView({
                         </p>
                       </div>
                       {e2.moments.map((e3) => {
-                        let sum = e3.etapes.reduce(
-                          (acc, curr) => acc + +curr.duree,
-                          0,
-                        );
                         let etapesString = e3.etapes
                           .map((e4) => `${e4.intitule}`)
                           .join(" ➤ ");
@@ -369,7 +366,7 @@ function ReadMomentsView({
                               >
                                 {e3.dateetheure.split("T")[1]}
                               </span>{" "}
-                              • {numStringToTimeString(sum.toString())}
+                              • {numStringToTimeString(e3.duree)}
                             </p>
                             <p className="text-sm text-neutral-500">
                               {etapesString}
