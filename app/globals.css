@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.custom-scrollbar-hiding {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar-hiding::-webkit-scrollbar {
+  display: none;
+}
+/* https://blog.logrocket.com/hide-scrollbar-without-impacting-scrolling-css/ */
