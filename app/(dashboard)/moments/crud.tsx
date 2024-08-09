@@ -169,83 +169,80 @@ export function CRUD({
   let [moment, setMoment] = useState<Moment>();
 
   return (
-    // w-full replacing w-screen with w-full on parent in layout
-    <main className="flex w-full flex-col items-center">
-      <div className="min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pb-12 pt-8 md:pb-24">
-        <div className="space-y-8">
-          <div className="flex justify-between align-baseline">
-            <PageTitle title={viewTitles[view]} />
-            {view === "update-moment" && (
-              <Button
-                type="button"
-                variant="destroy-step"
-                onClick={() => setView("read-moments")}
-              >
-                Vos moments
-              </Button>
-            )}
-            {view === "read-moments" && (
-              <Button
-                type="button"
-                variant="destroy-step"
-                onClick={() => setView("create-moment")}
-              >
-                Créez un moment
-              </Button>
-            )}
-            {view === "create-moment" && (
-              <Button
-                type="button"
-                variant="destroy-step"
-                onClick={() => setView("read-moments")}
-              >
-                Vos moments
-              </Button>
-            )}
-          </div>
-          <Divider />
-        </div>
-        {/* For now create and update views need to be removed from the DOM opposingly, but eventually I have to give them respective form names. Same needs to be considered for destination and activite, but the solution used here for now is satisfactory. */}
-        <div className={clsx(view !== "update-moment" && "hidden")}>
-          {/* Here, UpdateMomentView needs to be unmounted on ReadMomentsView to be reinstantiated with the correct defaults */}
+    <>
+      <div className="space-y-8">
+        <div className="flex justify-between align-baseline">
+          <PageTitle title={viewTitles[view]} />
           {view === "update-moment" && (
-            // UpdateMomentView
-            <MomentForms
-              setView={setView}
-              // moments={moments}
-              moments={momentsToCRUD}
-              // setMoments={setMoments}
-              variant="updating"
-              moment={moment}
-              createOrUpdateMoment={createOrUpdateMoment}
-              deleteMoment={deleteMoment}
-            />
+            <Button
+              type="button"
+              variant="destroy-step"
+              onClick={() => setView("read-moments")}
+            >
+              Vos moments
+            </Button>
+          )}
+          {view === "read-moments" && (
+            <Button
+              type="button"
+              variant="destroy-step"
+              onClick={() => setView("create-moment")}
+            >
+              Créez un moment
+            </Button>
+          )}
+          {view === "create-moment" && (
+            <Button
+              type="button"
+              variant="destroy-step"
+              onClick={() => setView("read-moments")}
+            >
+              Vos moments
+            </Button>
           )}
         </div>
-        <div className={clsx(view !== "read-moments" && "hidden")}>
-          <ReadMomentsView
+        <Divider />
+      </div>
+      {/* For now create and update views need to be removed from the DOM opposingly, but eventually I have to give them respective form names. Same needs to be considered for destination and activite, but the solution used here for now is satisfactory. */}
+      <div className={clsx(view !== "update-moment" && "hidden")}>
+        {/* Here, UpdateMomentView needs to be unmounted on ReadMomentsView to be reinstantiated with the correct defaults */}
+        {view === "update-moment" && (
+          // UpdateMomentView
+          <MomentForms
+            setView={setView}
             // moments={moments}
             moments={momentsToCRUD}
-            setMoment={setMoment}
-            setView={setView}
+            // setMoments={setMoments}
+            variant="updating"
+            moment={moment}
+            createOrUpdateMoment={createOrUpdateMoment}
+            deleteMoment={deleteMoment}
           />
-        </div>
-        <div className={clsx(view !== "create-moment" && "hidden")}>
-          {/* Here, CreateMomentView needs to stay in the DOM in order for the form contents to remain when looking at other moments on ReadMomentsView. But an improvement could be to give variants of MomentForms their own form input names. However, in a real project with a database, revalidate could negate this effort depending on how it is implemented. This will be it for this demo. */}
-          {view !== "update-moment" && (
-            // CreateMomentView
-            <MomentForms
-              setView={setView}
-              // moments={moments}
-              moments={momentsToCRUD}
-              // setMoments={setMoments}
-              variant="creating"
-              createOrUpdateMoment={createOrUpdateMoment}
-            />
-          )}
-        </div>
+        )}
       </div>
-    </main>
+      <div className={clsx(view !== "read-moments" && "hidden")}>
+        <ReadMomentsView
+          // moments={moments}
+          moments={momentsToCRUD}
+          setMoment={setMoment}
+          setView={setView}
+        />
+      </div>
+      <div className={clsx(view !== "create-moment" && "hidden")}>
+        {/* Here, CreateMomentView needs to stay in the DOM in order for the form contents to remain when looking at other moments on ReadMomentsView. But an improvement could be to give variants of MomentForms their own form input names. However, in a real project with a database, revalidate could negate this effort depending on how it is implemented. This will be it for this demo. */}
+        {view !== "update-moment" && (
+          // CreateMomentView
+          <MomentForms
+            setView={setView}
+            // moments={moments}
+            moments={momentsToCRUD}
+            // setMoments={setMoments}
+            variant="creating"
+            createOrUpdateMoment={createOrUpdateMoment}
+          />
+        )}
+      </div>
+    </>
   );
 }
 

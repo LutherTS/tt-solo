@@ -12,7 +12,18 @@ export default function Layout({
       className={clsx("flex min-h-screen", "flex-col-reverse", "md:flex-row")}
     >
       <SideNav isFixed />
-      <div className="size-full min-h-screen">{children}</div>
+      {/* min-h-screen unnecessary */}
+      <div className="size-full">
+        {/* Page Wrapper */}
+        {/* w-full replacing w-screen with w-full from CRUD main */}
+        <main className="flex w-full flex-col items-center">
+          {/* Page Container */}
+          <div className="min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pb-12 pt-8 md:pb-24">
+            {/* Page Contents */}
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

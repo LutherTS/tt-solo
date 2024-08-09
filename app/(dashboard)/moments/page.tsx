@@ -50,6 +50,12 @@ export default async function MomentsPage() {
   });
   // console.log(userMoments);
 
+  // IMPORTANT
+  // Séparer les moments entre les moments qui ont fini avant maintenant, les moments qui dont le début et la fin inclus maintenant, et les moment qui commencent après maintenant. Il faut aussi en créer un de chaque dans les seeds. (Deux restants.)
+  // Et le mieux ce sera de créer les dates avec date-fns. Le passé commence à maintenant moins un mois. Le courant commence maintenant. Le futur commence maintenant plus un mois. Et au lieu de 10, 20, 30 minutes, ce sera 1 heure, (60), 2 heures (120) et 3 heures (180).
+  // Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba
+  // Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/)
+
   const momentsToCRUD: MomentFromCRUD[] = userMoments.map((e) => {
     return {
       id: e.id,
