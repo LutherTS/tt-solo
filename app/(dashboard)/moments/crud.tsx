@@ -146,9 +146,11 @@ const exchangeOptions: Option[] = [
 export function CRUD({
   momentsToCRUD,
   createOrUpdateMoment,
+  deleteMoment,
 }: {
   momentsToCRUD: Moment[];
   createOrUpdateMoment: any;
+  deleteMoment: any;
 }) {
   // let [view, setView] = useState<View>("create-moment");
   let [view, setView] = useState<View>("read-moments");
@@ -209,11 +211,13 @@ export function CRUD({
             // UpdateMomentView
             <MomentForms
               setView={setView}
-              moments={moments}
+              // moments={moments}
+              moments={momentsToCRUD}
               setMoments={setMoments}
               variant="updating"
               moment={moment}
               createOrUpdateMoment={createOrUpdateMoment}
+              deleteMoment={deleteMoment}
             />
           )}
         </div>
@@ -231,7 +235,8 @@ export function CRUD({
             // CreateMomentView
             <MomentForms
               setView={setView}
-              moments={moments}
+              // moments={moments}
+              moments={momentsToCRUD}
               setMoments={setMoments}
               variant="creating"
               createOrUpdateMoment={createOrUpdateMoment}
@@ -399,6 +404,7 @@ function MomentForms({
   variant,
   moment,
   createOrUpdateMoment,
+  deleteMoment,
 }: {
   setView: Dispatch<SetStateAction<View>>;
   moments: Moment[];
@@ -406,6 +412,7 @@ function MomentForms({
   variant: "creating" | "updating";
   moment?: Moment;
   createOrUpdateMoment: any;
+  deleteMoment?: any;
 }) {
   // InputSwitch unfortunately has to be controlled for resetting
   let [indispensable, setIndispensable] = useState(
@@ -451,6 +458,9 @@ function MomentForms({
     moment,
   );
 
+  let deleteMomentBound: any;
+  if (deleteMoment) deleteMomentBound = deleteMoment.bind(moment);
+
   return (
     <>
       <StepForm
@@ -481,54 +491,6 @@ function MomentForms({
           setView("read-moments");
           // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
         }}
-        // action={(formData: FormData) => {
-        //   let destination = formData.get("destination");
-        //   let activite = formData.get("activite");
-        //   let objectif = formData.get("objectif");
-        //   let contexte = formData.get("contexte");
-
-        //   if (
-        //     typeof destination !== "string" ||
-        //     typeof activite !== "string" ||
-        //     typeof objectif !== "string" ||
-        //     typeof contexte !== "string"
-        //   )
-        //     return console.error(
-        //       "Le formulaire de l'étape n'a pas été correctement renseigné.",
-        //     );
-
-        //   let id: string = "";
-        //   if (variant === "creating") id = crypto.randomUUID();
-        //   if (variant === "updating") id = moment?.id || "";
-
-        //   const newMoment = {
-        //     id,
-        //     destination,
-        //     activite,
-        //     objectif,
-        //     indispensable,
-        //     contexte,
-        //     dateetheure: momentDate,
-        //     etapes: steps,
-        //   };
-
-        //   let newMoments: Moment[] = [];
-        //   if (variant === "creating") newMoments = [...moments, newMoment];
-        //   if (variant === "updating")
-        //     newMoments = moments.map((e) => {
-        //       if (e.id === moment?.id) return newMoment;
-        //       else return e;
-        //     });
-
-        //   setMoments(newMoments);
-
-        //   setIndispensable(false);
-        //   setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-        //   setSteps([]);
-        //   setStepVisible("creating");
-
-        //   setView("read-moments");
-        // }}
         onReset={(event) => {
           if (
             confirm(
@@ -847,16 +809,25 @@ function MomentForms({
               {variant === "updating" && (
                 <Button
                   type="submit"
-                  formAction={() => {
+                  formAction={async () => {
+                    if (!moment)
+                      return console.error("Somehow a moment was not found.");
+
                     if (
                       confirm(
                         "Êtes-vous sûr que vous voulez effacer ce moment ?",
                       )
                     ) {
-                      let newMoments = moments.filter(
-                        (e) => e.id !== moment?.id,
-                      );
-                      setMoments(newMoments);
+                      if (deleteMomentBound) await deleteMomentBound();
+                      else
+                        return console.error(
+                          "Somehow deleteMomentBound was not a thing.",
+                        );
+
+                      // let newMoments = moments.filter(
+                      //   (e) => e.id !== moment?.id,
+                      // );
+                      // setMoments(newMoments);
 
                       setView("read-moments");
                     }
@@ -876,16 +847,25 @@ function MomentForms({
               )}
               {variant === "updating" && (
                 <Button
-                  formAction={() => {
+                  formAction={async () => {
+                    if (!moment)
+                      return console.error("Somehow a moment was not found.");
+
                     if (
                       confirm(
                         "Êtes-vous sûr que vous voulez effacer ce moment ?",
                       )
                     ) {
-                      let newMoments = moments.filter(
-                        (e) => e.id !== moment?.id,
-                      );
-                      setMoments(newMoments);
+                      if (deleteMomentBound) await deleteMomentBound();
+                      else
+                        return console.error(
+                          "Somehow deleteMomentBound was not a thing.",
+                        );
+
+                      // let newMoments = moments.filter(
+                      //   (e) => e.id !== moment?.id,
+                      // );
+                      // setMoments(newMoments);
 
                       setView("read-moments");
                     }

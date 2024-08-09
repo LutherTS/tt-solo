@@ -229,10 +229,21 @@ export default async function MomentsPage() {
     revalidatePath("/moments");
   }
 
+  async function deleteMoment(momentFromCRUD: MomentFromCRUD) {
+    "use server";
+
+    await prisma.moment.delete({
+      where: {
+        id: momentFromCRUD.id,
+      },
+    });
+  }
+
   return (
     <CRUD
       momentsToCRUD={momentsToCRUD}
       createOrUpdateMoment={createOrUpdateMoment}
+      deleteMoment={deleteMoment}
     />
   );
 }

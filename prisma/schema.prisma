@@ -81,7 +81,7 @@ model Step {
   updatedAt                      DateTime                  @updatedAt @default(now())
 
   momentId                       String
-  moment                         Moment                    @relation(fields: [momentId], references: [id])
+  moment                         Moment                    @relation(fields: [momentId], references: [id], onDelete: Cascade)
 
   @@unique([title, momentId])
 }
