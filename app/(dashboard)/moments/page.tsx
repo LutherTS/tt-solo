@@ -5,6 +5,9 @@ import { Moment } from "@prisma/client";
 import prisma from "@/prisma/db";
 import { CRUD } from "./crud";
 
+// the time at rendering as a stable foundation for all time operations
+const now = new Date();
+
 type StepFromCRUD = {
   id: number;
   intitule: string;
@@ -55,8 +58,10 @@ export default async function MomentsPage() {
   // Séparer les moments entre les moments qui ont fini avant maintenant, les moments qui dont le début et la fin inclus maintenant, et les moment qui commencent après maintenant. Il faut aussi en créer un de chaque dans les seeds. (Deux restants.)
   // Et le mieux ce sera de créer les dates avec date-fns. Le passé commence à maintenant moins un mois. Le courant commence maintenant. Le futur commence maintenant plus un mois. Et au lieu de 10, 20, 30 minutes, ce sera 1 heure, (60), 2 heures (120) et 3 heures (180).
 
-  // Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba
-  // Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/)
+  // Du coup le temps va devoir être pris depuis le serveur (donc sur cette page) et passer en propriété au composant client.
+
+  // Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
+  // Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
 
   const momentsToCRUD: MomentFromCRUD[] = userMoments.map((e) => {
     return {
@@ -255,6 +260,7 @@ export default async function MomentsPage() {
       momentsToCRUD={momentsToCRUD}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
+      now={now}
     />
   );
 }

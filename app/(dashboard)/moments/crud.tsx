@@ -77,29 +77,6 @@ const numStringToTimeString = (string: string) => {
 
 // Main Data
 
-// the time at rendering as a stable foundation for all time operations
-const now = new Date();
-
-// roundToNearestMinutes are nested to create a clamp method, meaning:
-// - the time shown will always be a minimum of 10 minutes later
-// (e.g. if it's 10:59, 11:10 will be shown)
-// - the time shown will always be a maximum of 20 minutes later
-// (e.g. if it's 11:01, 11:20 will be shown)
-// This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
-const nowRoundedUpTenMinutes = roundToNearestMinutes(
-  add(
-    roundToNearestMinutes(now, {
-      roundingMethod: "ceil",
-      nearestTo: 10,
-    }),
-    { seconds: 1 },
-  ),
-  {
-    roundingMethod: "ceil",
-    nearestTo: 10,
-  },
-);
-
 type View = "update-moment" | "create-moment" | "read-moments";
 
 type Step = { id: number; intitule: string; details: string; duree: string };
@@ -149,10 +126,12 @@ export function CRUD({
   momentsToCRUD,
   createOrUpdateMoment,
   deleteMoment,
+  now,
 }: {
   momentsToCRUD: Moment[];
   createOrUpdateMoment: any;
   deleteMoment: any;
+  now: Date;
 }) {
   // let [view, setView] = useState<View>("create-moment");
   let [view, setView] = useState<View>("read-moments");
@@ -218,6 +197,7 @@ export function CRUD({
             moment={moment}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
+            now={now}
           />
         )}
       </div>
@@ -227,6 +207,7 @@ export function CRUD({
           moments={momentsToCRUD}
           setMoment={setMoment}
           setView={setView}
+          now={now}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
@@ -240,6 +221,7 @@ export function CRUD({
             // setMoments={setMoments}
             variant="creating"
             createOrUpdateMoment={createOrUpdateMoment}
+            now={now}
           />
         )}
       </div>
@@ -253,10 +235,12 @@ function ReadMomentsView({
   moments,
   setMoment,
   setView,
+  now,
 }: {
   moments: Moment[];
   setMoment: Dispatch<SetStateAction<Moment | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
+  now: Date;
 }) {
   let momentsDates = [
     ...new Set(moments.map((moment) => moment.dateetheure.split("T")[0])),
@@ -400,6 +384,7 @@ function MomentForms({
   moment,
   createOrUpdateMoment,
   deleteMoment,
+  now,
 }: {
   setView: Dispatch<SetStateAction<View>>;
   moments: Moment[];
@@ -408,7 +393,28 @@ function MomentForms({
   moment?: Moment;
   createOrUpdateMoment: any;
   deleteMoment?: any;
+  now: Date;
 }) {
+  // roundToNearestMinutes are nested to create a clamp method, meaning:
+  // - the time shown will always be a minimum of 10 minutes later
+  // (e.g. if it's 10:59, 11:10 will be shown)
+  // - the time shown will always be a maximum of 20 minutes later
+  // (e.g. if it's 11:01, 11:20 will be shown)
+  // This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
+  const nowRoundedUpTenMinutes = roundToNearestMinutes(
+    add(
+      roundToNearestMinutes(now, {
+        roundingMethod: "ceil",
+        nearestTo: 10,
+      }),
+      { seconds: 1 },
+    ),
+    {
+      roundingMethod: "ceil",
+      nearestTo: 10,
+    },
+  );
+
   // InputSwitch unfortunately has to be controlled for resetting
   let [indispensable, setIndispensable] = useState(
     moment ? moment.indispensable : false,

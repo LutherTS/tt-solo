@@ -26,7 +26,6 @@ const navLinks = [
 
 export function SideNavContents() {
   const pathname = usePathname();
-  console.log(pathname);
 
   return (
     <div
@@ -51,7 +50,11 @@ export function SideNavContents() {
             key={navLink.id}
           >
             <div className="size-10 rounded-full bg-neutral-500"></div>
-            <p className="text-xs leading-none text-white">{navLink.label}</p>
+            <p
+              className={`text-xs leading-none transition-colors ${pathname === navLink.href ? "text-cyan-950" : "text-white"}`}
+            >
+              {navLink.label}
+            </p>
           </Link>
         ))}
       </div>
