@@ -8,14 +8,17 @@ import clsx from "clsx";
 
 const navLinks = [
   {
+    id: 0,
     label: "Paramètres",
     href: "/settings",
   },
   {
+    id: 1,
     label: "Moments",
     href: "/moments",
   },
   {
+    id: 2,
     label: "Destinations",
     href: "/destinations",
   },
@@ -45,6 +48,7 @@ export function SideNavContents() {
           <Link
             href={navLink.href}
             className="flex flex-col items-center justify-between gap-2"
+            key={navLink.id}
           >
             <div className="size-10 rounded-full bg-neutral-500"></div>
             <p className="text-xs leading-none text-white">{navLink.label}</p>

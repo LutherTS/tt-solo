@@ -1,8 +1,9 @@
+import { revalidatePath } from "next/cache";
+
+import { Moment } from "@prisma/client";
+
 import prisma from "@/prisma/db";
 import { CRUD } from "./crud";
-import { revalidatePath } from "next/cache";
-import { Dispatch, SetStateAction } from "react";
-import { Moment } from "@prisma/client";
 
 type StepFromCRUD = {
   id: number;
@@ -22,8 +23,6 @@ type MomentFromCRUD = {
   etapes: StepFromCRUD[];
 };
 
-type ViewFromCRUD = "update-moment" | "create-moment" | "read-moments";
-
 export default async function MomentsPage() {
   const user = await prisma.user.findUnique({
     where: {
@@ -42,10 +41,20 @@ export default async function MomentsPage() {
     },
     include: {
       destination: true,
-      steps: true,
+      steps: {
+        orderBy: {
+          orderId: "asc",
+        },
+      },
     },
   });
   // console.log(userMoments);
+
+  // IMPORTANT
+  // Séparer les moments entre les moments qui ont fini avant maintenant, les moments qui dont le début et la fin inclus maintenant, et les moment qui commencent après maintenant. Il faut aussi en créer un de chaque dans les seeds. (Deux restants.)
+  // Et le mieux ce sera de créer les dates avec date-fns. Le passé commence à maintenant moins un mois. Le courant commence maintenant. Le futur commence maintenant plus un mois. Et au lieu de 10, 20, 30 minutes, ce sera 1 heure, (60), 2 heures (120) et 3 heures (180).
+  // Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba
+  // Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/)
 
   const momentsToCRUD: MomentFromCRUD[] = userMoments.map((e) => {
     return {
@@ -66,25 +75,19 @@ export default async function MomentsPage() {
       }),
     };
   });
-  console.log(momentsToCRUD);
+  // console.log(momentsToCRUD);
 
-  // Ça a marché. Il manque seulement les étapes... Et surtout le typage.
+  // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
     variant: "creating" | "updating",
     indispensable: boolean,
     momentDate: string,
     steps: StepFromCRUD[],
+    momentFromCRUD: MomentFromCRUD | undefined,
     formData: FormData,
   ) {
     "use server";
 
-    console.log(variant);
-    console.log(indispensable);
-    console.log(momentDate);
-    console.log(steps);
-    console.log(formData);
-
-    // ...
     let destination = formData.get("destination");
     let activite = formData.get("activite");
     let objectif = formData.get("objectif");
@@ -158,16 +161,97 @@ export default async function MomentsPage() {
       }
     }
 
+    if (variant === "updating") {
+      if (!momentFromCRUD)
+        return console.error("Somehow a moment was not passed.");
+
+      const destinationEntry = await prisma.destination.findUnique({
+        where: {
+          name_userId: {
+            name: destination,
+            userId: user.id,
+          },
+        },
+      });
+
+      let moment: Moment;
+
+      if (destinationEntry) {
+        moment = await prisma.moment.update({
+          where: {
+            id: momentFromCRUD.id,
+          },
+          data: {
+            activity: activite,
+            objective: objectif,
+            isIndispensable: indispensable,
+            context: contexte,
+            dateAndTime: momentDate,
+            destinationId: destinationEntry.id,
+          },
+        });
+      } else {
+        moment = await prisma.moment.update({
+          where: {
+            id: momentFromCRUD.id,
+          },
+          data: {
+            activity: activite,
+            objective: objectif,
+            isIndispensable: indispensable,
+            context: contexte,
+            dateAndTime: momentDate,
+            destination: {
+              create: {
+                name: destination,
+                userId: user.id,
+              },
+            },
+          },
+        });
+      }
+
+      await prisma.step.deleteMany({
+        where: {
+          momentId: moment.id,
+        },
+      });
+
+      let i = 1;
+      for (const step of steps) {
+        await prisma.step.create({
+          data: {
+            orderId: i,
+            title: step.intitule,
+            details: step.details,
+            duration: step.duree,
+            momentId: moment.id,
+          },
+        });
+        i++;
+      }
+    }
+
     revalidatePath("/moments");
-    // setView("read-moments");
-    // I'm probably going to need all of my setters because revalidate doesn't seem to reset them at all, only the server data.
-    // But since this is about the client I'm really not sure. Especially since usually we just shift to another route with redirect.
+  }
+
+  async function deleteMoment(momentFromCRUD: MomentFromCRUD) {
+    "use server";
+
+    await prisma.moment.delete({
+      where: {
+        id: momentFromCRUD.id,
+      },
+    });
+
+    revalidatePath("/moments");
   }
 
   return (
     <CRUD
       momentsToCRUD={momentsToCRUD}
       createOrUpdateMoment={createOrUpdateMoment}
+      deleteMoment={deleteMoment}
     />
   );
 }
@@ -175,4 +259,5 @@ export default async function MomentsPage() {
 /* Notes
 Connection closed is unrelated to setView("read-moments");
 That's actually the issue, it's passing hooks as arguments that trigger the error Connection closed.
+Crossing the server and the client works with onClick too, it just does not have access to the formData.
 */

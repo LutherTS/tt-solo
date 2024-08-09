@@ -8,6 +8,7 @@ import { fr } from "date-fns/locale";
 import * as Switch from "@radix-ui/react-switch";
 import { Reorder, useDragControls } from "framer-motion";
 import { ToWords } from "to-words";
+import { useFormStatus } from "react-dom";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -146,9 +147,11 @@ const exchangeOptions: Option[] = [
 export function CRUD({
   momentsToCRUD,
   createOrUpdateMoment,
+  deleteMoment,
 }: {
   momentsToCRUD: Moment[];
   createOrUpdateMoment: any;
+  deleteMoment: any;
 }) {
   // let [view, setView] = useState<View>("create-moment");
   let [view, setView] = useState<View>("read-moments");
@@ -160,86 +163,86 @@ export function CRUD({
   };
 
   // for ReadMomentsView
-  let [moments, setMoments] = useState<Moment[]>([]);
+  // let [moments, setMoments] = useState<Moment[]>([]);
 
   // for UpdateMomentView
   let [moment, setMoment] = useState<Moment>();
 
   return (
-    // w-full replacing w-screen with w-full on parent in layout
-    <main className="flex w-full flex-col items-center">
-      <div className="min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pb-12 pt-8 md:pb-24">
-        <div className="space-y-8">
-          <div className="flex justify-between align-baseline">
-            <PageTitle title={viewTitles[view]} />
-            {view === "update-moment" && (
-              <Button
-                type="button"
-                variant="destroy-step"
-                onClick={() => setView("read-moments")}
-              >
-                Vos moments
-              </Button>
-            )}
-            {view === "read-moments" && (
-              <Button
-                type="button"
-                variant="destroy-step"
-                onClick={() => setView("create-moment")}
-              >
-                Créez un moment
-              </Button>
-            )}
-            {view === "create-moment" && (
-              <Button
-                type="button"
-                variant="destroy-step"
-                onClick={() => setView("read-moments")}
-              >
-                Vos moments
-              </Button>
-            )}
-          </div>
-          <Divider />
-        </div>
-        {/* For now create and update views need to be removed from the DOM opposingly, but eventually I have to give them respective form names. Same needs to be considered for destination and activite, but the solution used here for now is satisfactory. */}
-        <div className={clsx(view !== "update-moment" && "hidden")}>
-          {/* Here, UpdateMomentView needs to be unmounted on ReadMomentsView to be reinstantiated with the correct defaults */}
+    <>
+      <div className="space-y-8">
+        <div className="flex justify-between align-baseline">
+          <PageTitle title={viewTitles[view]} />
           {view === "update-moment" && (
-            // UpdateMomentView
-            <MomentForms
-              setView={setView}
-              moments={moments}
-              setMoments={setMoments}
-              variant="updating"
-              moment={moment}
-              createOrUpdateMoment={createOrUpdateMoment}
-            />
+            <Button
+              type="button"
+              variant="destroy-step"
+              onClick={() => setView("read-moments")}
+            >
+              Vos moments
+            </Button>
+          )}
+          {view === "read-moments" && (
+            <Button
+              type="button"
+              variant="destroy-step"
+              onClick={() => setView("create-moment")}
+            >
+              Créez un moment
+            </Button>
+          )}
+          {view === "create-moment" && (
+            <Button
+              type="button"
+              variant="destroy-step"
+              onClick={() => setView("read-moments")}
+            >
+              Vos moments
+            </Button>
           )}
         </div>
-        <div className={clsx(view !== "read-moments" && "hidden")}>
-          <ReadMomentsView
+        <Divider />
+      </div>
+      {/* For now create and update views need to be removed from the DOM opposingly, but eventually I have to give them respective form names. Same needs to be considered for destination and activite, but the solution used here for now is satisfactory. */}
+      <div className={clsx(view !== "update-moment" && "hidden")}>
+        {/* Here, UpdateMomentView needs to be unmounted on ReadMomentsView to be reinstantiated with the correct defaults */}
+        {view === "update-moment" && (
+          // UpdateMomentView
+          <MomentForms
+            setView={setView}
             // moments={moments}
             moments={momentsToCRUD}
-            setMoment={setMoment}
-            setView={setView}
+            // setMoments={setMoments}
+            variant="updating"
+            moment={moment}
+            createOrUpdateMoment={createOrUpdateMoment}
+            deleteMoment={deleteMoment}
           />
-        </div>
-        <div className={clsx(view !== "create-moment" && "hidden")}>
-          {/* Here, CreateMomentView needs to stay in the DOM in order for the form contents to remain when looking at other moments on ReadMomentsView. But an improvement could be to give variants of MomentForms their own form input names. However, in a real project with a database, revalidate could negate this effort depending on how it is implemented. This will be it for this demo. */}
-          {view !== "update-moment" && (
-            // CreateMomentView
-            <MomentForms
-              setView={setView}
-              moments={moments}
-              setMoments={setMoments}
-              variant="creating"
-              createOrUpdateMoment={createOrUpdateMoment}
-            />
-          )}
-        </div>
+        )}
       </div>
-    </main>
+      <div className={clsx(view !== "read-moments" && "hidden")}>
+        <ReadMomentsView
+          // moments={moments}
+          moments={momentsToCRUD}
+          setMoment={setMoment}
+          setView={setView}
+        />
+      </div>
+      <div className={clsx(view !== "create-moment" && "hidden")}>
+        {/* Here, CreateMomentView needs to stay in the DOM in order for the form contents to remain when looking at other moments on ReadMomentsView. But an improvement could be to give variants of MomentForms their own form input names. However, in a real project with a database, revalidate could negate this effort depending on how it is implemented. This will be it for this demo. */}
+        {view !== "update-moment" && (
+          // CreateMomentView
+          <MomentForms
+            setView={setView}
+            // moments={moments}
+            moments={momentsToCRUD}
+            // setMoments={setMoments}
+            variant="creating"
+            createOrUpdateMoment={createOrUpdateMoment}
+          />
+        )}
+      </div>
+    </>
   );
 }
 
@@ -395,17 +398,19 @@ function ReadMomentsView({
 function MomentForms({
   setView,
   moments,
-  setMoments,
+  // setMoments,
   variant,
   moment,
   createOrUpdateMoment,
+  deleteMoment,
 }: {
   setView: Dispatch<SetStateAction<View>>;
   moments: Moment[];
-  setMoments: Dispatch<SetStateAction<Moment[]>>;
+  // setMoments: Dispatch<SetStateAction<Moment[]>>;
   variant: "creating" | "updating";
   moment?: Moment;
   createOrUpdateMoment: any;
+  deleteMoment?: any;
 }) {
   // InputSwitch unfortunately has to be controlled for resetting
   let [indispensable, setIndispensable] = useState(
@@ -448,7 +453,11 @@ function MomentForms({
     indispensable,
     momentDate,
     steps,
+    moment,
   );
+
+  let deleteMomentBound: any;
+  if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
   return (
     <>
@@ -470,62 +479,16 @@ function MomentForms({
         action={async (formData) => {
           await createOrUpdateMomentBound(formData);
 
-          setIndispensable(false);
-          setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-          setSteps([]);
-          setStepVisible("creating");
+          if (variant === "creating") {
+            setIndispensable(false);
+            setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+            setSteps([]);
+            setStepVisible("creating");
+          }
 
           setView("read-moments");
           // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
         }}
-        // action={(formData: FormData) => {
-        //   let destination = formData.get("destination");
-        //   let activite = formData.get("activite");
-        //   let objectif = formData.get("objectif");
-        //   let contexte = formData.get("contexte");
-
-        //   if (
-        //     typeof destination !== "string" ||
-        //     typeof activite !== "string" ||
-        //     typeof objectif !== "string" ||
-        //     typeof contexte !== "string"
-        //   )
-        //     return console.error(
-        //       "Le formulaire de l'étape n'a pas été correctement renseigné.",
-        //     );
-
-        //   let id: string = "";
-        //   if (variant === "creating") id = crypto.randomUUID();
-        //   if (variant === "updating") id = moment?.id || "";
-
-        //   const newMoment = {
-        //     id,
-        //     destination,
-        //     activite,
-        //     objectif,
-        //     indispensable,
-        //     contexte,
-        //     dateetheure: momentDate,
-        //     etapes: steps,
-        //   };
-
-        //   let newMoments: Moment[] = [];
-        //   if (variant === "creating") newMoments = [...moments, newMoment];
-        //   if (variant === "updating")
-        //     newMoments = moments.map((e) => {
-        //       if (e.id === moment?.id) return newMoment;
-        //       else return e;
-        //     });
-
-        //   setMoments(newMoments);
-
-        //   setIndispensable(false);
-        //   setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-        //   setSteps([]);
-        //   setStepVisible("creating");
-
-        //   setView("read-moments");
-        // }}
         onReset={(event) => {
           if (
             confirm(
@@ -843,17 +806,21 @@ function MomentForms({
               )}
               {variant === "updating" && (
                 <Button
-                  type="submit"
-                  formAction={() => {
+                  type="button"
+                  onClick={async () => {
+                    if (!moment)
+                      return console.error("Somehow a moment was not found.");
+
                     if (
                       confirm(
                         "Êtes-vous sûr que vous voulez effacer ce moment ?",
                       )
                     ) {
-                      let newMoments = moments.filter(
-                        (e) => e.id !== moment?.id,
-                      );
-                      setMoments(newMoments);
+                      if (deleteMomentBound) await deleteMomentBound();
+                      else
+                        return console.error(
+                          "Somehow deleteMomentBound was not a thing.",
+                        );
 
                       setView("read-moments");
                     }
@@ -873,16 +840,21 @@ function MomentForms({
               )}
               {variant === "updating" && (
                 <Button
-                  formAction={() => {
+                  type="button"
+                  onClick={async () => {
+                    if (!moment)
+                      return console.error("Somehow a moment was not found.");
+
                     if (
                       confirm(
                         "Êtes-vous sûr que vous voulez effacer ce moment ?",
                       )
                     ) {
-                      let newMoments = moments.filter(
-                        (e) => e.id !== moment?.id,
-                      );
-                      setMoments(newMoments);
+                      if (deleteMomentBound) await deleteMomentBound();
+                      else
+                        return console.error(
+                          "Somehow deleteMomentBound was not a thing.",
+                        );
 
                       setView("read-moments");
                     }
@@ -1178,17 +1150,17 @@ const focusVisibleTexts = clsx(
 
 // Main Supporting Components
 
-function PageTitle({ title }: { title: string }) {
+export function PageTitle({ title }: { title: string }) {
   return <h1 className="text-xl font-bold text-blue-950">{title}</h1>;
 }
 
-function Divider() {
+export function Divider() {
   return (
     <div className="h-px w-full origin-center scale-x-150 bg-neutral-200 md:scale-100"></div>
   );
 }
 
-function Section({
+export function Section({
   title,
   description,
   showDescription = true,
@@ -1692,20 +1664,25 @@ function Button({
   const notDestroy = "w-full rounded border py-2";
   const neutral =
     "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:!bg-neutral-200 hover:!text-neutral-950 focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
+  // disabled:border-neutral-800 disabled:bg-neutral-800
   const confirm =
-    "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400 disabled:border-neutral-800 disabled:bg-neutral-800";
+    "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400 disabled:grayscale disabled:hover:border-blue-500 disabled:hover:bg-blue-500";
+  // no disable styles on cancel for now because deleting a moment is currently fast enough that it's not worth highlighting visually
   const cancel =
     "border-blue-500 bg-white px-6 text-blue-500 hover:border-blue-600 hover:text-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:text-blue-400";
   const confirmStep =
     "border-cyan-500 bg-cyan-500 px-6 text-white hover:border-cyan-600 hover:bg-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:bg-cyan-400";
+  // disabled:border-neutral-500 disabled:text-neutral-500 bg-current
   const cancelStep =
-    "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400 disabled:border-neutral-500 disabled:text-neutral-500";
+    "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400 disabled:grayscale disabled:hover:border-cyan-500 disabled:hover:text-cyan-500";
+
+  const status = useFormStatus();
 
   return (
     <button
       form={form}
       type={type}
-      disabled={disabled}
+      disabled={status.pending || disabled}
       className={clsx(
         "font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
         variant === "destroy" && clsx(destroy),
