@@ -448,6 +448,7 @@ function MomentForms({
     indispensable,
     momentDate,
     steps,
+    moment,
   );
 
   return (
@@ -470,10 +471,12 @@ function MomentForms({
         action={async (formData) => {
           await createOrUpdateMomentBound(formData);
 
-          setIndispensable(false);
-          setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-          setSteps([]);
-          setStepVisible("creating");
+          if (variant === "creating") {
+            setIndispensable(false);
+            setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+            setSteps([]);
+            setStepVisible("creating");
+          }
 
           setView("read-moments");
           // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13

@@ -1,8 +1,9 @@
+import { revalidatePath } from "next/cache";
+
+import { Moment } from "@prisma/client";
+
 import prisma from "@/prisma/db";
 import { CRUD } from "./crud";
-import { revalidatePath } from "next/cache";
-import { Dispatch, SetStateAction } from "react";
-import { Moment } from "@prisma/client";
 
 type StepFromCRUD = {
   id: number;
@@ -74,17 +75,11 @@ export default async function MomentsPage() {
     indispensable: boolean,
     momentDate: string,
     steps: StepFromCRUD[],
+    momentFromCRUD: MomentFromCRUD | undefined,
     formData: FormData,
   ) {
     "use server";
 
-    console.log(variant);
-    console.log(indispensable);
-    console.log(momentDate);
-    console.log(steps);
-    console.log(formData);
-
-    // ...
     let destination = formData.get("destination");
     let activite = formData.get("activite");
     let objectif = formData.get("objectif");
@@ -158,10 +153,78 @@ export default async function MomentsPage() {
       }
     }
 
+    if (variant === "updating") {
+      if (!momentFromCRUD)
+        return console.error("Somehow a moment was not passed.");
+
+      const destinationEntry = await prisma.destination.findUnique({
+        where: {
+          name_userId: {
+            name: destination,
+            userId: user.id,
+          },
+        },
+      });
+
+      let moment: Moment;
+
+      if (destinationEntry) {
+        moment = await prisma.moment.update({
+          where: {
+            id: momentFromCRUD.id,
+          },
+          data: {
+            activity: activite,
+            objective: objectif,
+            isIndispensable: indispensable,
+            context: contexte,
+            dateAndTime: momentDate,
+            destinationId: destinationEntry.id,
+          },
+        });
+      } else {
+        moment = await prisma.moment.update({
+          where: {
+            id: momentFromCRUD.id,
+          },
+          data: {
+            activity: activite,
+            objective: objectif,
+            isIndispensable: indispensable,
+            context: contexte,
+            dateAndTime: momentDate,
+            destination: {
+              create: {
+                name: destination,
+                userId: user.id,
+              },
+            },
+          },
+        });
+      }
+
+      await prisma.step.deleteMany({
+        where: {
+          momentId: moment.id,
+        },
+      });
+
+      let i = 1;
+      for (const step of steps) {
+        await prisma.step.create({
+          data: {
+            orderId: i,
+            title: step.intitule,
+            details: step.details,
+            duration: step.duree,
+            momentId: moment.id,
+          },
+        });
+        i++;
+      }
+    }
+
     revalidatePath("/moments");
-    // setView("read-moments");
-    // I'm probably going to need all of my setters because revalidate doesn't seem to reset them at all, only the server data.
-    // But since this is about the client I'm really not sure. Especially since usually we just shift to another route with redirect.
   }
 
   return (
