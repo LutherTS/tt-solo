@@ -23,8 +23,6 @@ type MomentFromCRUD = {
   etapes: StepFromCRUD[];
 };
 
-type ViewFromCRUD = "update-moment" | "create-moment" | "read-moments";
-
 export default async function MomentsPage() {
   const user = await prisma.user.findUnique({
     where: {
@@ -43,7 +41,11 @@ export default async function MomentsPage() {
     },
     include: {
       destination: true,
-      steps: true,
+      steps: {
+        orderBy: {
+          orderId: "asc",
+        },
+      },
     },
   });
   // console.log(userMoments);
@@ -69,7 +71,7 @@ export default async function MomentsPage() {
   });
   console.log(momentsToCRUD);
 
-  // Ça a marché. Il manque seulement les étapes... Et surtout le typage.
+  // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
     variant: "creating" | "updating",
     indispensable: boolean,
