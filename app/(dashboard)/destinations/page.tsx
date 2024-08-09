@@ -1,7 +1,5 @@
+import { CRUD } from "./crud";
+
 export default function DestinationsPage() {
-  return (
-    <main>
-      <div>Destinations Page</div>
-    </main>
-  );
+  return <CRUD />;
 }

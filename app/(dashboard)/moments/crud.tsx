@@ -8,6 +8,7 @@ import { fr } from "date-fns/locale";
 import * as Switch from "@radix-ui/react-switch";
 import { Reorder, useDragControls } from "framer-motion";
 import { ToWords } from "to-words";
+import { useFormStatus } from "react-dom";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -162,7 +163,7 @@ export function CRUD({
   };
 
   // for ReadMomentsView
-  let [moments, setMoments] = useState<Moment[]>([]);
+  // let [moments, setMoments] = useState<Moment[]>([]);
 
   // for UpdateMomentView
   let [moment, setMoment] = useState<Moment>();
@@ -213,7 +214,7 @@ export function CRUD({
               setView={setView}
               // moments={moments}
               moments={momentsToCRUD}
-              setMoments={setMoments}
+              // setMoments={setMoments}
               variant="updating"
               moment={moment}
               createOrUpdateMoment={createOrUpdateMoment}
@@ -237,7 +238,7 @@ export function CRUD({
               setView={setView}
               // moments={moments}
               moments={momentsToCRUD}
-              setMoments={setMoments}
+              // setMoments={setMoments}
               variant="creating"
               createOrUpdateMoment={createOrUpdateMoment}
             />
@@ -400,7 +401,7 @@ function ReadMomentsView({
 function MomentForms({
   setView,
   moments,
-  setMoments,
+  // setMoments,
   variant,
   moment,
   createOrUpdateMoment,
@@ -408,7 +409,7 @@ function MomentForms({
 }: {
   setView: Dispatch<SetStateAction<View>>;
   moments: Moment[];
-  setMoments: Dispatch<SetStateAction<Moment[]>>;
+  // setMoments: Dispatch<SetStateAction<Moment[]>>;
   variant: "creating" | "updating";
   moment?: Moment;
   createOrUpdateMoment: any;
@@ -459,7 +460,7 @@ function MomentForms({
   );
 
   let deleteMomentBound: any;
-  if (deleteMoment) deleteMomentBound = deleteMoment.bind(moment);
+  if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
   return (
     <>
@@ -808,8 +809,8 @@ function MomentForms({
               )}
               {variant === "updating" && (
                 <Button
-                  type="submit"
-                  formAction={async () => {
+                  type="button"
+                  onClick={async () => {
                     if (!moment)
                       return console.error("Somehow a moment was not found.");
 
@@ -823,11 +824,6 @@ function MomentForms({
                         return console.error(
                           "Somehow deleteMomentBound was not a thing.",
                         );
-
-                      // let newMoments = moments.filter(
-                      //   (e) => e.id !== moment?.id,
-                      // );
-                      // setMoments(newMoments);
 
                       setView("read-moments");
                     }
@@ -847,7 +843,8 @@ function MomentForms({
               )}
               {variant === "updating" && (
                 <Button
-                  formAction={async () => {
+                  type="button"
+                  onClick={async () => {
                     if (!moment)
                       return console.error("Somehow a moment was not found.");
 
@@ -861,11 +858,6 @@ function MomentForms({
                         return console.error(
                           "Somehow deleteMomentBound was not a thing.",
                         );
-
-                      // let newMoments = moments.filter(
-                      //   (e) => e.id !== moment?.id,
-                      // );
-                      // setMoments(newMoments);
 
                       setView("read-moments");
                     }
@@ -1161,17 +1153,17 @@ const focusVisibleTexts = clsx(
 
 // Main Supporting Components
 
-function PageTitle({ title }: { title: string }) {
+export function PageTitle({ title }: { title: string }) {
   return <h1 className="text-xl font-bold text-blue-950">{title}</h1>;
 }
 
-function Divider() {
+export function Divider() {
   return (
     <div className="h-px w-full origin-center scale-x-150 bg-neutral-200 md:scale-100"></div>
   );
 }
 
-function Section({
+export function Section({
   title,
   description,
   showDescription = true,
@@ -1675,20 +1667,25 @@ function Button({
   const notDestroy = "w-full rounded border py-2";
   const neutral =
     "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:!bg-neutral-200 hover:!text-neutral-950 focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
+  // disabled:border-neutral-800 disabled:bg-neutral-800
   const confirm =
-    "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400 disabled:border-neutral-800 disabled:bg-neutral-800";
+    "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400 disabled:grayscale disabled:hover:border-blue-500 disabled:hover:bg-blue-500";
+  // no disable styles on cancel for now because deleting a moment is currently fast enough that it's not worth highlighting visually
   const cancel =
     "border-blue-500 bg-white px-6 text-blue-500 hover:border-blue-600 hover:text-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:text-blue-400";
   const confirmStep =
     "border-cyan-500 bg-cyan-500 px-6 text-white hover:border-cyan-600 hover:bg-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:bg-cyan-400";
+  // disabled:border-neutral-500 disabled:text-neutral-500 bg-current
   const cancelStep =
-    "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400 disabled:border-neutral-500 disabled:text-neutral-500";
+    "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400 disabled:grayscale disabled:hover:border-cyan-500 disabled:hover:text-cyan-500";
+
+  const status = useFormStatus();
 
   return (
     <button
       form={form}
       type={type}
-      disabled={disabled}
+      disabled={status.pending || disabled}
       className={clsx(
         "font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
         variant === "destroy" && clsx(destroy),

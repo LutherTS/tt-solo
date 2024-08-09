@@ -69,7 +69,7 @@ export default async function MomentsPage() {
       }),
     };
   });
-  console.log(momentsToCRUD);
+  // console.log(momentsToCRUD);
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
@@ -237,6 +237,8 @@ export default async function MomentsPage() {
         id: momentFromCRUD.id,
       },
     });
+
+    revalidatePath("/moments");
   }
 
   return (
@@ -251,4 +253,5 @@ export default async function MomentsPage() {
 /* Notes
 Connection closed is unrelated to setView("read-moments");
 That's actually the issue, it's passing hooks as arguments that trigger the error Connection closed.
+Crossing the server and the client works with onClick too, it just does not have access to the formData.
 */

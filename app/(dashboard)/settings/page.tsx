@@ -1,7 +1,5 @@
+import { CRUD } from "./crud";
+
 export default function SettingsPage() {
-  return (
-    <main>
-      <div>Settings Page</div>
-    </main>
-  );
+  return <CRUD />;
 }
