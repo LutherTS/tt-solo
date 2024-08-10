@@ -79,7 +79,12 @@ const numStringToTimeString = (string: string) => {
 
 type View = "update-moment" | "create-moment" | "read-moments";
 
-type Step = { id: number; intitule: string; details: string; duree: string };
+type Step = {
+  id: number;
+  intitule: string;
+  details: string;
+  duree: string;
+};
 
 type StepVisible = "create" | "creating" | "updating";
 
@@ -92,7 +97,8 @@ type Moment = {
   contexte: string;
   dateetheure: string;
   etapes: Step[];
-  duree: string;
+  duree: string; // calculated
+  findateetheure: string; // calculated
 };
 
 type Option = {
@@ -634,12 +640,15 @@ function MomentForms({
           {steps.length > 0 && (
             <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
               {steps.map((step, index) => {
-                const addingTime =
-                  index === 0
-                    ? 0
-                    : steps
-                        .slice(0, index)
-                        .reduce((acc, curr) => acc + +curr.duree, 0);
+                const map: Map<number, number> = new Map();
+                let durationTotal = 0;
+                for (let j = 0; j < steps.length; j++) {
+                  durationTotal += +steps[j].duree;
+                  map.set(j, durationTotal);
+                }
+
+                let addingTime = index === 0 ? 0 : map.get(index - 1)!; // I know what I'm doing for now.
+                // And with this, I can even compute "endTime" if I want: momentDate + map.get(index)
 
                 return (
                   <ReorderItem

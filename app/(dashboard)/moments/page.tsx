@@ -1,9 +1,19 @@
 import { revalidatePath } from "next/cache";
 
 import { Moment } from "@prisma/client";
+import { add, format } from "date-fns";
 
 import prisma from "@/prisma/db";
 import { CRUD } from "./crud";
+
+/* Utilities */
+// Eventually all of these will need their own file(s) under a utilities directory.
+
+export const dateToInputDatetime = (date: Date) =>
+  format(date, "yyyy-MM-dd'T'HH:mm");
+
+export const endDateAndTime = (dateAndTime: string, duration: string) =>
+  dateToInputDatetime(add(new Date(dateAndTime), { minutes: +duration }));
 
 // the time at rendering as a stable foundation for all time operations
 const now = new Date();
@@ -13,6 +23,8 @@ type StepFromCRUD = {
   intitule: string;
   details: string;
   duree: string;
+  dateetheure: string; // calculated
+  findateetheure: string; // calculated
 };
 
 type MomentFromCRUD = {
@@ -24,7 +36,8 @@ type MomentFromCRUD = {
   contexte: string;
   dateetheure: string;
   etapes: StepFromCRUD[];
-  duree: string;
+  duree: string; // calculated
+  findateetheure: string; // calculated
 };
 
 export default async function MomentsPage() {
@@ -64,6 +77,17 @@ export default async function MomentsPage() {
   // Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
 
   const momentsToCRUD: MomentFromCRUD[] = userMoments.map((e) => {
+    const dureedumoment = e.steps
+      .reduce((acc, curr) => acc + +curr.duration, 0)
+      .toString();
+
+    const map: Map<number, number> = new Map();
+    let durationTotal = 0;
+    for (let j = 0; j < e.steps.length; j++) {
+      durationTotal += +e.steps[j].duration;
+      map.set(j, durationTotal);
+    }
+
     return {
       id: e.id,
       destination: e.destination.name,
@@ -72,18 +96,36 @@ export default async function MomentsPage() {
       indispensable: e.isIndispensable,
       contexte: e.context,
       dateetheure: e.dateAndTime,
-      etapes: e.steps.map((e2) => {
+      etapes: e.steps.map((e2, i2) => {
+        let dateetheuredeletape: string;
+        if (i2 === 0) dateetheuredeletape = e.dateAndTime;
+        else
+          dateetheuredeletape = endDateAndTime(
+            e.dateAndTime,
+            // ! because e.steps and map have the same length
+            map.get(i2 - 1)!.toString(),
+          );
+        let findateetheuredeletape = endDateAndTime(
+          e.dateAndTime,
+          // really, so far at least I know what I'm doing here
+          map.get(i2)!.toString(),
+        );
+
         return {
           id: e2.orderId,
           intitule: e2.title,
           details: e2.details,
           duree: e2.duration,
+          dateetheure: dateetheuredeletape,
+          findateetheure: findateetheuredeletape,
         };
       }),
-      duree: e.steps.reduce((acc, curr) => acc + +curr.duration, 0).toString(),
+      duree: dureedumoment,
+      findateetheure: endDateAndTime(e.dateAndTime, dureedumoment),
     };
   });
-  // console.log(momentsToCRUD);
+  console.log(momentsToCRUD);
+  momentsToCRUD.forEach((e) => console.log(e.etapes));
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
@@ -269,4 +311,16 @@ export default async function MomentsPage() {
 Connection closed is unrelated to setView("read-moments");
 That's actually the issue, it's passing hooks as arguments that trigger the error Connection closed.
 Crossing the server and the client works with onClick too, it just does not have access to the formData.
+ALERT! 
+If you import something from a file that executes something else, THAT EXECUTE IS GOING TO RUN.
+EDIT:
+At least in a .js file importing from a page also executes... or something:
+return (<CRUD momentsToCRUD={momentsToCRUD} createOrUpdateMoment={createOrUpdateMoment} deleteMoment={deleteMoment} 
+SyntaxError: Unexpected token '<' (during npx prisma db seed)
+That's why it works fine when importing from a page component because, that component does execute on its own, it is being imported by React and Next.js to be executed by Next.js, not by the file itself.
+Previous inline notes:
+// OK. If I do it with reduce here, this which is already a O(n^2) is going to be a O(n^3)
+// The better solution is to create an object of all the data through a for loop at the moment level, and then assign the accrued data below.
+// I can accept O(n^2) because a moment has many steps, but anything beyond that is by no means mandatory.
+Ça se trouve je vais même pouvoir mettre en gras l'étape en cours d'un moment actuel.
 */
