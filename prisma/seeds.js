@@ -1,6 +1,15 @@
 import prisma from "./db.ts";
 
+const dateToInputDatetime = (date) => format(date, "yyyy-MM-dd'T'HH:mm");
+
 async function seed() {
+  console.log(`Defining time.`);
+  const now = new Date();
+
+  const nowHourFloored = roundToNearestHours(now, { roundingMethod: "floor" });
+  const lastMonth = sub(nowHourFloored, { months: 1 });
+  const nextMonth = add(nowHourFloored, { months: 1 });
+
   console.log(`Beginning initial seeds...`);
 
   ///////////////////////////////////////////////////////////////////////////
@@ -103,11 +112,27 @@ async function seed() {
   const momentsData = [
     {
       activity: "Développement de fonctionnalité",
-      objective: "Faire un formulaire indéniable pour TekTIME.",
+      objective: "Faire un formulaire indéniable pour TekTIME (passé).",
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
-      dateAndTime: "2024-10-12T14:30",
+      dateAndTime: dateToInputDatetime(lastMonth),
+    },
+    {
+      activity: "Développement de fonctionnalité",
+      objective: "Faire un formulaire indéniable pour TekTIME (actuel).",
+      isIndispensable: true,
+      context:
+        "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
+      dateAndTime: dateToInputDatetime(nowHourFloored),
+    },
+    {
+      activity: "Développement de fonctionnalité",
+      objective: "Faire un formulaire indéniable pour TekTIME (futur).",
+      isIndispensable: true,
+      context:
+        "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
+      dateAndTime: dateToInputDatetime(nextMonth),
     },
   ];
   console.log({ momentsData });
