@@ -3,7 +3,13 @@
 import { Dispatch, MouseEventHandler, SetStateAction, useState } from "react";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
-import { add, format, roundToNearestMinutes } from "date-fns";
+import {
+  add,
+  format,
+  roundToNearestMinutes,
+  compareAsc,
+  compareDesc,
+} from "date-fns";
 import { fr } from "date-fns/locale";
 import * as Switch from "@radix-ui/react-switch";
 import { Reorder, useDragControls } from "framer-motion";
@@ -248,64 +254,183 @@ function ReadMomentsView({
   setView: Dispatch<SetStateAction<View>>;
   now: Date;
 }) {
-  let momentsDates = [
-    ...new Set(moments.map((moment) => moment.dateetheure.split("T")[0])),
-  ].sort();
+  const [subView, setSubView] = useState<
+    "past-moments" | "current-moments" | "future-moments"
+  >("future-moments");
 
-  let momentsDatesWithMoments = momentsDates.map((e) => {
-    let momentsDateMoments = moments.filter((e2) =>
-      e2.dateetheure.startsWith(e),
-    );
-    return { date: e, moments: momentsDateMoments };
+  let subViewTitles = {
+    "past-moments": "Moments passés",
+    "current-moments": "Moments actuels",
+    "future-moments": "Moments futurs",
+  };
+
+  // ...
+  // A take (LIMIT) is going to be needed at scale. So each operation for past, present and future is going to be needed to be had from the database.
+  // But so since it's from the database, that means the database will have to save when the moment ends... Or that can––
+  // (The first thought was nice, but think about the cases where you are not senior enough to do a migration, and where even if that was the case you wouldn't be able to retroactively modify all previous entries, and even if you could your boss may not approve of you making such a dramatic implementation... for something that can be finetuned, for now, on the client, and can also be less error-prone doing so.)
+  // ...This is really something worth discussing.
+  // The real problem is, what I'm afraid of would make sense on an app that is in production, but it wouldn't in an app that is being constructed, where I would still have the chance at time to change this proactively forever. Except... I really, REALLY don't want to put hardcoded in my database anything that can be inferred, and that's my position until some performance issues make it obligatory.
+  // Basically, the idea is to yes, get all moments on top, but with the minimum amount of data from them. The most minimum. Then I filter and treat them in the client with JavaScript. And eventually I'll have some server components in the lists that will each go look for the extra data that is being needed.
+  // SO LET'S GO.
+
+  let pastMoments: Moment[] = [];
+  let currentMoments: Moment[] = [];
+  let futureMoments: Moment[] = [];
+
+  moments.forEach((e) => {
+    // if the end of the moment came before now
+    if (compareDesc(new Date(e.findateetheure), now) === 1) pastMoments.push(e);
+    // if the beginning of the moment comes after now
+    else if (compareAsc(new Date(e.dateetheure), now) == 1)
+      futureMoments.push(e);
+    // any of the situation is within the scope of now
+    else currentMoments.push(e);
   });
+  // console.log({ pastMoments, currentMoments, futureMoments });
 
-  let momentsDatesWithMomentsByDestinations = momentsDatesWithMoments.map(
-    (e) => {
-      return {
-        date: e.date,
-        destinations: [...new Set(e.moments.map((e2) => e2.destination))].sort(
-          (a, b) => {
+  let allMomentsDates = [
+    moments,
+    pastMoments,
+    currentMoments,
+    futureMoments,
+  ].map((e0) =>
+    [...new Set(e0.map((moment) => moment.dateetheure.split("T")[0]))].sort(),
+  );
+
+  // let momentsDates = [
+  //   ...new Set(moments.map((moment) => moment.dateetheure.split("T")[0])),
+  // ].sort();
+
+  let allMomentsDatesWithMoments = allMomentsDates.map((e0) =>
+    e0.map((e) => {
+      let momentsDateMoments = moments.filter((e2) =>
+        e2.dateetheure.startsWith(e),
+      );
+      return { date: e, moments: momentsDateMoments };
+    }),
+  );
+
+  // let momentsDatesWithMoments = momentsDates.map((e) => {
+  //   let momentsDateMoments = moments.filter((e2) =>
+  //     e2.dateetheure.startsWith(e),
+  //   );
+  //   return { date: e, moments: momentsDateMoments };
+  // });
+
+  let allMomentsDatesWithMomentsByDestinations = allMomentsDatesWithMoments.map(
+    (e0) =>
+      e0.map((e) => {
+        return {
+          date: e.date,
+          destinations: [
+            ...new Set(e.moments.map((e2) => e2.destination)),
+          ].sort((a, b) => {
             const destinationA = a.toLowerCase();
             const destinationB = b.toLowerCase();
             if (destinationA < destinationB) return -1;
             if (destinationA > destinationB) return 1;
             return 0;
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-          },
-        ),
-      };
-    },
+          }),
+        };
+      }),
   );
 
-  let trueMomentsDatesWithMomentsByDestinations =
-    momentsDatesWithMomentsByDestinations.map((e) => {
-      return {
-        date: e.date,
-        destinations: e.destinations.map((e2) => {
-          let theseMoments = moments
-            .filter((e3) => {
-              return e3.destination === e2 && e3.dateetheure.startsWith(e.date);
-            })
-            .sort((a, b) => {
-              const dateA = a.dateetheure;
-              const dateB = b.dateetheure;
-              if (dateA < dateB) return -1;
-              if (dateA > dateB) return 1;
-              return 0;
-            });
-          return {
-            destination: e2,
-            moments: theseMoments,
-          };
-        }),
-      };
-    });
+  // let momentsDatesWithMomentsByDestinations = momentsDatesWithMoments.map(
+  //   (e) => {
+  //     return {
+  //       date: e.date,
+  //       destinations: [...new Set(e.moments.map((e2) => e2.destination))].sort(
+  //         (a, b) => {
+  //           const destinationA = a.toLowerCase();
+  //           const destinationB = b.toLowerCase();
+  //           if (destinationA < destinationB) return -1;
+  //           if (destinationA > destinationB) return 1;
+  //           return 0;
+  //           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
+  //         },
+  //       ),
+  //     };
+  //   },
+  // );
+
+  let allTrueMomentsDatesWithMomentsByDestinations =
+    allMomentsDatesWithMomentsByDestinations.map((e0) =>
+      e0.map((e) => {
+        return {
+          date: e.date,
+          destinations: e.destinations.map((e2) => {
+            let theseMoments = moments
+              .filter((e3) => {
+                return (
+                  e3.destination === e2 && e3.dateetheure.startsWith(e.date)
+                );
+              })
+              .sort((a, b) => {
+                const dateA = a.dateetheure;
+                const dateB = b.dateetheure;
+                if (dateA < dateB) return -1;
+                if (dateA > dateB) return 1;
+                return 0;
+              });
+            return {
+              destination: e2,
+              moments: theseMoments,
+            };
+          }),
+        };
+      }),
+    );
+  console.log(allTrueMomentsDatesWithMomentsByDestinations);
+
+  // let trueMomentsDatesWithMomentsByDestinations =
+  //   momentsDatesWithMomentsByDestinations.map((e) => {
+  //     return {
+  //       date: e.date,
+  //       destinations: e.destinations.map((e2) => {
+  //         let theseMoments = moments
+  //           .filter((e3) => {
+  //             return e3.destination === e2 && e3.dateetheure.startsWith(e.date);
+  //           })
+  //           .sort((a, b) => {
+  //             const dateA = a.dateetheure;
+  //             const dateB = b.dateetheure;
+  //             if (dateA < dateB) return -1;
+  //             if (dateA > dateB) return 1;
+  //             return 0;
+  //           });
+  //         return {
+  //           destination: e2,
+  //           moments: theseMoments,
+  //         };
+  //       }),
+  //     };
+  //   });
+
+  const [
+    trueMomentsDatesWithMomentsByDestinations,
+    truePastMoments,
+    trueCurrentMoments,
+    trueFutureMoments,
+  ] = allTrueMomentsDatesWithMomentsByDestinations;
+
+  const showcaseMoments = {
+    "past-moments": truePastMoments,
+    "current-moments": trueCurrentMoments,
+    "future-moments": trueFutureMoments,
+  };
+
+  const subViews = ["past-moments", "current-moments", "future-moments"];
+
+  let displayedMoments = trueMomentsDatesWithMomentsByDestinations;
+  if (subView !== undefined && subViews.includes(subView))
+    displayedMoments = showcaseMoments[subView];
 
   return (
     <div className="space-y-8">
       {moments.length > 0 ? (
         <>
-          {trueMomentsDatesWithMomentsByDestinations.map((e, i, a) => (
+          {displayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <Section
                 title={format(new Date(e.date), "eeee d MMMM", {

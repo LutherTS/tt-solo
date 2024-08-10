@@ -323,4 +323,5 @@ Previous inline notes:
 // The better solution is to create an object of all the data through a for loop at the moment level, and then assign the accrued data below.
 // I can accept O(n^2) because a moment has many steps, but anything beyond that is by no means mandatory.
 Ça se trouve je vais même pouvoir mettre en gras l'étape en cours d'un moment actuel.
+Penser à mettre un revalidate qui s'effectue automatiquement à chaque fois 5 minutes, du genre 00:00, 00:05, puisque le min d'une étape est de 5 minutes. (Il n'y a pas de step par contre, ce qui n'en donnera aucun rapport.)
 */
