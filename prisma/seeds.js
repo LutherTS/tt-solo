@@ -1,3 +1,5 @@
+import { add, format, roundToNearestHours, sub } from "date-fns";
+
 import prisma from "./db.ts";
 
 const dateToInputDatetime = (date) => format(date, "yyyy-MM-dd'T'HH:mm");
@@ -184,21 +186,21 @@ async function seed() {
       title: "Réaliser la div d'une étape",
       details:
         "S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.",
-      duration: "10",
+      duration: "60",
     },
     {
       orderId: 2,
       title: "Implémenter le système de coulissement des étapes",
       details:
         "Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.",
-      duration: "20",
+      duration: "120",
     },
     {
       orderId: 3,
       title: "Finir de vérifier le formulaire",
       details:
         "S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.",
-      duration: "30",
+      duration: "180",
     },
   ];
   console.log({ stepsData });
