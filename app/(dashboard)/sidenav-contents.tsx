@@ -38,24 +38,25 @@ export function SideNavContents() {
       <div
         className={clsx(
           "custom-scrollbar-hiding",
-          "flex size-full items-center gap-8",
-          "flex-row overflow-x-auto overflow-y-clip",
-          "md:flex-col md:overflow-y-auto md:overflow-x-clip",
+          "flex size-full items-center rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+          "flex-row gap-4 overflow-x-auto overflow-y-clip px-2 py-2",
+          "md:flex-col md:gap-8 md:overflow-y-auto md:overflow-x-clip md:px-0 md:py-2",
         )}
       >
         {navLinks.map((navLink) => (
-          <Link
-            href={navLink.href}
-            className="flex flex-col items-center justify-between gap-2"
-            key={navLink.id}
-          >
-            <div className="size-10 rounded-full bg-neutral-500"></div>
-            <p
-              className={`text-xs leading-none transition-colors ${pathname === navLink.href ? "text-cyan-950" : "text-white"}`}
+          <div className="p-2" key={navLink.id}>
+            <Link
+              href={navLink.href}
+              className={`flex flex-col items-center justify-between gap-2 rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-8 ${pathname === navLink.href ? "focus-visible:outline-cyan-950" : "focus-visible:outline-white"}`}
             >
-              {navLink.label}
-            </p>
-          </Link>
+              <div className="size-10 rounded-full bg-neutral-500"></div>
+              <p
+                className={`text-xs leading-none transition-all ${pathname === navLink.href ? "font-bold text-cyan-950" : "text-white"}`}
+              >
+                {navLink.label}
+              </p>
+            </Link>
+          </div>
         ))}
       </div>
       <div className="relative size-16 flex-shrink-0">

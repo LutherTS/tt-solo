@@ -324,4 +324,5 @@ Previous inline notes:
 // I can accept O(n^2) because a moment has many steps, but anything beyond that is by no means mandatory.
 Ça se trouve je vais même pouvoir mettre en gras l'étape en cours d'un moment actuel.
 Penser à mettre un revalidate qui s'effectue automatiquement à chaque fois 5 minutes, du genre 00:00, 00:05, puisque le min d'une étape est de 5 minutes. (Il n'y a pas de step par contre, ce qui n'en donnera aucun rapport.)
+J'aimerais avoir les étapes en bulletpoints plutôt qu'en strings., surtout maintenant que j'ai la date de début.
 */

@@ -256,12 +256,12 @@ function ReadMomentsView({
 }) {
   const [subView, setSubView] = useState<
     "past-moments" | "current-moments" | "future-moments"
-  >("future-moments");
+  >("current-moments");
 
   let subViewTitles = {
-    "past-moments": "Moments passés",
-    "current-moments": "Moments actuels",
-    "future-moments": "Moments futurs",
+    "past-moments": "Passés",
+    "current-moments": "Actuels",
+    "future-moments": "Futurs",
   };
 
   // ...
@@ -297,10 +297,6 @@ function ReadMomentsView({
     [...new Set(e0.map((moment) => moment.dateetheure.split("T")[0]))].sort(),
   );
 
-  // let momentsDates = [
-  //   ...new Set(moments.map((moment) => moment.dateetheure.split("T")[0])),
-  // ].sort();
-
   let allMomentsDatesWithMoments = allMomentsDates.map((e0) =>
     e0.map((e) => {
       let momentsDateMoments = moments.filter((e2) =>
@@ -309,13 +305,6 @@ function ReadMomentsView({
       return { date: e, moments: momentsDateMoments };
     }),
   );
-
-  // let momentsDatesWithMoments = momentsDates.map((e) => {
-  //   let momentsDateMoments = moments.filter((e2) =>
-  //     e2.dateetheure.startsWith(e),
-  //   );
-  //   return { date: e, moments: momentsDateMoments };
-  // });
 
   let allMomentsDatesWithMomentsByDestinations = allMomentsDatesWithMoments.map(
     (e0) =>
@@ -335,24 +324,6 @@ function ReadMomentsView({
         };
       }),
   );
-
-  // let momentsDatesWithMomentsByDestinations = momentsDatesWithMoments.map(
-  //   (e) => {
-  //     return {
-  //       date: e.date,
-  //       destinations: [...new Set(e.moments.map((e2) => e2.destination))].sort(
-  //         (a, b) => {
-  //           const destinationA = a.toLowerCase();
-  //           const destinationB = b.toLowerCase();
-  //           if (destinationA < destinationB) return -1;
-  //           if (destinationA > destinationB) return 1;
-  //           return 0;
-  //           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-  //         },
-  //       ),
-  //     };
-  //   },
-  // );
 
   let allTrueMomentsDatesWithMomentsByDestinations =
     allMomentsDatesWithMomentsByDestinations.map((e0) =>
@@ -383,30 +354,6 @@ function ReadMomentsView({
     );
   console.log(allTrueMomentsDatesWithMomentsByDestinations);
 
-  // let trueMomentsDatesWithMomentsByDestinations =
-  //   momentsDatesWithMomentsByDestinations.map((e) => {
-  //     return {
-  //       date: e.date,
-  //       destinations: e.destinations.map((e2) => {
-  //         let theseMoments = moments
-  //           .filter((e3) => {
-  //             return e3.destination === e2 && e3.dateetheure.startsWith(e.date);
-  //           })
-  //           .sort((a, b) => {
-  //             const dateA = a.dateetheure;
-  //             const dateB = b.dateetheure;
-  //             if (dateA < dateB) return -1;
-  //             if (dateA > dateB) return 1;
-  //             return 0;
-  //           });
-  //         return {
-  //           destination: e2,
-  //           moments: theseMoments,
-  //         };
-  //       }),
-  //     };
-  //   });
-
   const [
     trueMomentsDatesWithMomentsByDestinations,
     truePastMoments,
@@ -420,7 +367,11 @@ function ReadMomentsView({
     "future-moments": trueFutureMoments,
   };
 
-  const subViews = ["past-moments", "current-moments", "future-moments"];
+  const subViews = [
+    "past-moments",
+    "current-moments",
+    "future-moments",
+  ] as const;
 
   let displayedMoments = trueMomentsDatesWithMomentsByDestinations;
   if (subView !== undefined && subViews.includes(subView))
@@ -428,8 +379,52 @@ function ReadMomentsView({
 
   return (
     <div className="space-y-8">
-      {moments.length > 0 ? (
+      {displayedMoments.length > 0 ? (
         <>
+          <div className="-ml-0.5 flex flex-wrap gap-4">
+            {subViews.map((e) => {
+              const className = "px-4 py-2";
+              return (
+                <button
+                  onClick={() => setSubView(e)}
+                  key={e}
+                  className={clsx(
+                    className,
+                    "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+                    subView === e && "focus-visible:outline-blue-500",
+                    subView !== e && "focus-visible:outline-cyan-500",
+                  )}
+                >
+                  {/* real occupied space */}
+                  <span className="invisible static">{subViewTitles[e]}</span>
+                  {/* gradient text */}
+                  <span
+                    className={clsx(
+                      className,
+                      "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+                    )}
+                  >
+                    {subViewTitles[e]}
+                  </span>
+                  {/* white background */}
+                  <div
+                    className={clsx(
+                      "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+                    )}
+                  ></div>
+                  {/* gradient border */}
+                  <div
+                    className={clsx(
+                      "absolute inset-0 rounded-full",
+                      subView === e &&
+                        "bg-gradient-to-r from-blue-500 to-cyan-500",
+                      subView !== e && "bg-transparent",
+                    )}
+                  ></div>
+                </button>
+              );
+            })}
+          </div>
           {displayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <Section
