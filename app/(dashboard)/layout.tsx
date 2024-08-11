@@ -56,7 +56,7 @@ function RecursiveSideNav({
         className={clsx(
           isFixed && "fixed",
           isInvisible && "invisible",
-          "z-50 shrink-0 from-[#5882f2] to-[#0fb8cb] p-6",
+          "z-50 shrink-0 from-[#5882f2] to-[#0fb8cb] p-4",
           "inset-x-0 bottom-0 top-auto h-32 w-auto bg-gradient-to-r",
           "md:inset-y-0 md:left-0 md:right-auto md:h-auto md:w-36 md:bg-gradient-to-b",
         )}

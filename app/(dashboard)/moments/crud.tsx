@@ -297,6 +297,9 @@ function ReadMomentsView({
     else currentMoments.push(e);
   });
 
+  let allMoments = [moments, pastMoments, currentMoments, futureMoments];
+  console.log({ allMoments });
+
   let allMomentsDates = [
     moments,
     pastMoments,
@@ -306,9 +309,9 @@ function ReadMomentsView({
     [...new Set(e0.map((moment) => moment.dateetheure.split("T")[0]))].sort(),
   );
 
-  let allMomentsDatesWithMoments = allMomentsDates.map((e0) =>
+  let allMomentsDatesWithMoments = allMomentsDates.map((e0, i0) =>
     e0.map((e) => {
-      let momentsDateMoments = moments.filter((e2) =>
+      let momentsDateMoments = allMoments[i0].filter((e2) =>
         e2.dateetheure.startsWith(e),
       );
       return { date: e, moments: momentsDateMoments };
@@ -335,12 +338,12 @@ function ReadMomentsView({
   );
 
   let allTrueMomentsDatesWithMomentsByDestinations =
-    allMomentsDatesWithMomentsByDestinations.map((e0) =>
+    allMomentsDatesWithMomentsByDestinations.map((e0, i0) =>
       e0.map((e) => {
         return {
           date: e.date,
           destinations: e.destinations.map((e2) => {
-            let theseMoments = moments
+            let theseMoments = allMoments[i0]
               .filter((e3) => {
                 return (
                   e3.destination === e2 && e3.dateetheure.startsWith(e.date)
@@ -387,7 +390,7 @@ function ReadMomentsView({
 
   return (
     <div className="space-y-8">
-      <div className="-ml-0.5 flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4">
         {subViews.map((e) => {
           const className = "px-4 py-2";
           return (

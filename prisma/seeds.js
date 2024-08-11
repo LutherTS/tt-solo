@@ -114,7 +114,7 @@ async function seed() {
   const momentsData = [
     {
       activity: "Développement de fonctionnalité",
-      objective: "Faire un formulaire indéniable pour TekTIME (passé).",
+      objective: "Faire un formulaire indéniable pour TekTIME. (passé)",
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
@@ -122,7 +122,7 @@ async function seed() {
     },
     {
       activity: "Développement de fonctionnalité",
-      objective: "Faire un formulaire indéniable pour TekTIME (actuel).",
+      objective: "Faire un formulaire indéniable pour TekTIME. (actuel)",
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
@@ -130,7 +130,7 @@ async function seed() {
     },
     {
       activity: "Développement de fonctionnalité",
-      objective: "Faire un formulaire indéniable pour TekTIME (futur).",
+      objective: "Faire un formulaire indéniable pour TekTIME. (futur)",
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",

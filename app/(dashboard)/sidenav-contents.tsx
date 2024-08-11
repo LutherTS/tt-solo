@@ -75,7 +75,13 @@ export function SideNavContents() {
           );
         })}
       </div>
-      <div className="relative size-16 flex-shrink-0">
+      <div
+        className={clsx(
+          "relative size-16 flex-shrink-0",
+          "mb-0, mr-4",
+          "md:mb-4 md:mr-0",
+        )}
+      >
         <Image
           src="/logo-white.png"
           alt="TekTime logo white"
