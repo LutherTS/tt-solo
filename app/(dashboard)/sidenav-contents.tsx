@@ -51,7 +51,7 @@ export function SideNavContents() {
             >
               <div className="size-10 rounded-full bg-neutral-500"></div>
               <p
-                className={`text-xs leading-none transition-all ${pathname === navLink.href ? "font-bold text-cyan-950" : "text-white"}`}
+                className={`text-xs leading-none transition-all ${pathname === navLink.href ? "text-cyan-950" : "text-white"}`}
               >
                 {navLink.label}
               </p>

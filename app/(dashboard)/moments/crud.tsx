@@ -5,10 +5,11 @@ import { Dispatch, MouseEventHandler, SetStateAction, useState } from "react";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
   add,
-  format,
-  roundToNearestMinutes,
   compareAsc,
   compareDesc,
+  format,
+  roundToNearestMinutes,
+  sub,
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import * as Switch from "@radix-ui/react-switch";
@@ -85,11 +86,15 @@ const numStringToTimeString = (string: string) => {
 
 type View = "update-moment" | "create-moment" | "read-moments";
 
+type SubView = "past-moments" | "current-moments" | "future-moments";
+
 type Step = {
   id: number;
   intitule: string;
   details: string;
   duree: string;
+  dateetheure?: string; // calculated
+  findateetheure?: string; // calculated
 };
 
 type StepVisible = "create" | "creating" | "updating";
@@ -143,7 +148,7 @@ export function CRUD({
   momentsToCRUD: Moment[];
   createOrUpdateMoment: any;
   deleteMoment: any;
-  now: Date;
+  now: string;
 }) {
   // let [view, setView] = useState<View>("create-moment");
   let [view, setView] = useState<View>("read-moments");
@@ -154,8 +159,7 @@ export function CRUD({
     "create-moment": "Créez un moment",
   };
 
-  // for ReadMomentsView
-  // let [moments, setMoments] = useState<Moment[]>([]);
+  const [subView, setSubView] = useState<SubView>("current-moments");
 
   // for UpdateMomentView
   let [moment, setMoment] = useState<Moment>();
@@ -209,6 +213,7 @@ export function CRUD({
             moment={moment}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
+            setSubView={setSubView}
             now={now}
           />
         )}
@@ -219,6 +224,8 @@ export function CRUD({
           moments={momentsToCRUD}
           setMoment={setMoment}
           setView={setView}
+          subView={subView}
+          setSubView={setSubView}
           now={now}
         />
       </div>
@@ -234,6 +241,7 @@ export function CRUD({
             variant="creating"
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
+            setSubView={setSubView}
           />
         )}
       </div>
@@ -247,16 +255,18 @@ function ReadMomentsView({
   moments,
   setMoment,
   setView,
+  subView,
+  setSubView,
   now,
 }: {
   moments: Moment[];
   setMoment: Dispatch<SetStateAction<Moment | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
-  now: Date;
+  subView: SubView;
+  setSubView: Dispatch<SetStateAction<SubView>>;
+  now: string;
 }) {
-  const [subView, setSubView] = useState<
-    "past-moments" | "current-moments" | "future-moments"
-  >("current-moments");
+  // const [subView, setSubView] = useState<SubView>("current-moments");
 
   let subViewTitles = {
     "past-moments": "Passés",
@@ -278,15 +288,14 @@ function ReadMomentsView({
   let futureMoments: Moment[] = [];
 
   moments.forEach((e) => {
+    console.log(now);
     // if the end of the moment came before now
-    if (compareDesc(new Date(e.findateetheure), now) === 1) pastMoments.push(e);
+    if (compareDesc(e.findateetheure, now) === 1) pastMoments.push(e);
     // if the beginning of the moment comes after now
-    else if (compareAsc(new Date(e.dateetheure), now) == 1)
-      futureMoments.push(e);
+    else if (compareAsc(e.dateetheure, now) == 1) futureMoments.push(e);
     // any of the situation is within the scope of now
     else currentMoments.push(e);
   });
-  // console.log({ pastMoments, currentMoments, futureMoments });
 
   let allMomentsDates = [
     moments,
@@ -352,7 +361,6 @@ function ReadMomentsView({
         };
       }),
     );
-  console.log(allTrueMomentsDatesWithMomentsByDestinations);
 
   const [
     trueMomentsDatesWithMomentsByDestinations,
@@ -379,52 +387,51 @@ function ReadMomentsView({
 
   return (
     <div className="space-y-8">
+      <div className="-ml-0.5 flex flex-wrap gap-4">
+        {subViews.map((e) => {
+          const className = "px-4 py-2";
+          return (
+            <button
+              onClick={() => setSubView(e)}
+              key={e}
+              className={clsx(
+                className,
+                "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+                subView === e && "focus-visible:outline-blue-500",
+                subView !== e && "focus-visible:outline-cyan-500",
+              )}
+            >
+              {/* real occupied space */}
+              <span className="invisible static">{subViewTitles[e]}</span>
+              {/* gradient text */}
+              <span
+                className={clsx(
+                  className,
+                  "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+                )}
+              >
+                {subViewTitles[e]}
+              </span>
+              {/* white background */}
+              <div
+                className={clsx(
+                  "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+                )}
+              ></div>
+              {/* gradient border */}
+              <div
+                className={clsx(
+                  "absolute inset-0 rounded-full",
+                  subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
+                  subView !== e && "bg-transparent",
+                )}
+              ></div>
+            </button>
+          );
+        })}
+      </div>
       {displayedMoments.length > 0 ? (
         <>
-          <div className="-ml-0.5 flex flex-wrap gap-4">
-            {subViews.map((e) => {
-              const className = "px-4 py-2";
-              return (
-                <button
-                  onClick={() => setSubView(e)}
-                  key={e}
-                  className={clsx(
-                    className,
-                    "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-                    subView === e && "focus-visible:outline-blue-500",
-                    subView !== e && "focus-visible:outline-cyan-500",
-                  )}
-                >
-                  {/* real occupied space */}
-                  <span className="invisible static">{subViewTitles[e]}</span>
-                  {/* gradient text */}
-                  <span
-                    className={clsx(
-                      className,
-                      "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
-                    )}
-                  >
-                    {subViewTitles[e]}
-                  </span>
-                  {/* white background */}
-                  <div
-                    className={clsx(
-                      "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-                    )}
-                  ></div>
-                  {/* gradient border */}
-                  <div
-                    className={clsx(
-                      "absolute inset-0 rounded-full",
-                      subView === e &&
-                        "bg-gradient-to-r from-blue-500 to-cyan-500",
-                      subView !== e && "bg-transparent",
-                    )}
-                  ></div>
-                </button>
-              );
-            })}
-          </div>
           {displayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <Section
@@ -444,46 +451,48 @@ function ReadMomentsView({
                           {e2.destination}
                         </p>
                       </div>
-                      {e2.moments.map((e3) => {
-                        let etapesString = e3.etapes
-                          .map((e4) => `${e4.intitule}`)
-                          .join(" ➤ ");
-
-                        return (
-                          <div className="group space-y-2" key={e3.id}>
-                            <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
-                              <p className="font-medium text-blue-950">
-                                {e3.objectif}
-                              </p>
-                              <div className="hidden justify-end group-hover:flex">
-                                <Button
-                                  type="button"
-                                  variant="destroy-step"
-                                  onClick={() => {
-                                    setMoment(
-                                      moments.find((e) => e.id === e3.id),
-                                    );
-                                    setView("update-moment");
-                                  }}
-                                >
-                                  Éditer
-                                </Button>
-                              </div>
-                            </div>
-                            <p>
-                              <span
-                                className={"font-semibold text-neutral-800"}
+                      {e2.moments.map((e3) => (
+                        <div className="group space-y-2" key={e3.id}>
+                          <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
+                            <p className="font-medium text-blue-950">
+                              {e3.objectif}
+                            </p>
+                            <div className="hidden justify-end group-hover:flex">
+                              <Button
+                                type="button"
+                                variant="destroy-step"
+                                onClick={() => {
+                                  setMoment(
+                                    moments.find((e) => e.id === e3.id),
+                                  );
+                                  setView("update-moment");
+                                }}
                               >
-                                {e3.dateetheure.split("T")[1]}
-                              </span>{" "}
-                              • {numStringToTimeString(e3.duree)}
-                            </p>
-                            <p className="text-sm text-neutral-500">
-                              {etapesString}
-                            </p>
+                                Éditer
+                              </Button>
+                            </div>
                           </div>
-                        );
-                      })}
+                          <p>
+                            <span className={"font-semibold text-neutral-800"}>
+                              {e3.dateetheure.split("T")[1]}
+                            </span>{" "}
+                            • {numStringToTimeString(e3.duree)}
+                            {e3.indispensable && <> • indispensable</>}
+                          </p>
+                          <ol>
+                            {e3.etapes.map((e4) => (
+                              <li
+                                key={e4.id}
+                                className="text-sm leading-loose text-neutral-500"
+                              >
+                                {e4.dateetheure?.split("T")[1]} -{" "}
+                                {e4.findateetheure?.split("T")[1]} :{" "}
+                                {e4.intitule}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      ))}
                     </div>
                   );
                 })}
@@ -505,21 +514,21 @@ function ReadMomentsView({
 function MomentForms({
   setView,
   moments,
-  // setMoments,
   variant,
   moment,
   createOrUpdateMoment,
   deleteMoment,
+  setSubView,
   now,
 }: {
   setView: Dispatch<SetStateAction<View>>;
   moments: Moment[];
-  // setMoments: Dispatch<SetStateAction<Moment[]>>;
   variant: "creating" | "updating";
   moment?: Moment;
   createOrUpdateMoment: any;
   deleteMoment?: any;
-  now: Date;
+  setSubView: Dispatch<SetStateAction<SubView>>;
+  now: string;
 }) {
   // roundToNearestMinutes are nested to create a clamp method, meaning:
   // - the time shown will always be a minimum of 10 minutes later
@@ -614,6 +623,12 @@ function MomentForms({
             setSteps([]);
             setStepVisible("creating");
           }
+
+          // momentDateAsDate, though correctly registered, also needed the same treatment as now for comparisons, because of the data saved by datetime-local.
+          if (compareDesc(momentDate, now) === 1) setSubView("past-moments");
+          else if (compareAsc(momentDate, now) == 1)
+            setSubView("future-moments");
+          else setSubView("current-moments");
 
           setView("read-moments");
           // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
@@ -747,7 +762,7 @@ function MomentForms({
             description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
             definedValue={momentDate}
             definedOnValueChange={setMomentDate}
-            min={format(now, "yyyy-MM-dd'T'HH:mm")}
+            min={now}
           />
         </Section>
         <Divider />
@@ -779,6 +794,7 @@ function MomentForms({
                     currentStepId={currentStepId}
                     setCurrentStepId={setCurrentStepId}
                     setStepVisible={setStepVisible}
+                    // momentDateAsDate still works but will need to be removed in favor of momentDate since we're moving away from the Date object here
                     momentDateAsDate={momentDateAsDate}
                     addingTime={addingTime}
                     currentStep={currentStep}

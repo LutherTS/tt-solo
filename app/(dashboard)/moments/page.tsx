@@ -16,7 +16,10 @@ export const endDateAndTime = (dateAndTime: string, duration: string) =>
   dateToInputDatetime(add(new Date(dateAndTime), { minutes: +duration }));
 
 // the time at rendering as a stable foundation for all time operations
-const now = new Date();
+let now = new Date();
+// sharing time as string to bypass timezone adaptations
+let nowString = dateToInputDatetime(now);
+console.log(nowString);
 
 type StepFromCRUD = {
   id: number;
@@ -124,8 +127,8 @@ export default async function MomentsPage() {
       findateetheure: endDateAndTime(e.dateAndTime, dureedumoment),
     };
   });
-  console.log(momentsToCRUD);
-  momentsToCRUD.forEach((e) => console.log(e.etapes));
+  // console.log(momentsToCRUD);
+  // momentsToCRUD.forEach((e) => console.log(e.etapes));
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
@@ -302,7 +305,7 @@ export default async function MomentsPage() {
       momentsToCRUD={momentsToCRUD}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
-      now={now}
+      now={nowString}
     />
   );
 }
@@ -322,7 +325,14 @@ Previous inline notes:
 // OK. If I do it with reduce here, this which is already a O(n^2) is going to be a O(n^3)
 // The better solution is to create an object of all the data through a for loop at the moment level, and then assign the accrued data below.
 // I can accept O(n^2) because a moment has many steps, but anything beyond that is by no means mandatory.
-Ça se trouve je vais même pouvoir mettre en gras l'étape en cours d'un moment actuel.
+Ça se trouve je vais même pouvoir mettre en gras l'étape en cours d'un moment actuel. // Non, vu que si quelqu'un est sur la page des moments lors d'un moment, c'est qu'il n'a pas encore commencé le moment.
 Penser à mettre un revalidate qui s'effectue automatiquement à chaque fois 5 minutes, du genre 00:00, 00:05, puisque le min d'une étape est de 5 minutes. (Il n'y a pas de step par contre, ce qui n'en donnera aucun rapport.)
-J'aimerais avoir les étapes en bulletpoints plutôt qu'en strings., surtout maintenant que j'ai la date de début.
+J'aimerais avoir les étapes en bulletpoints plutôt qu'en strings., surtout maintenant que j'ai la date de début. // DONE.
+Demain : 
+- important
+- Éditer en-dessous
+- Adapter éditer à archiver pour moments passés,
+- effacer pour moments en cours.
+...En vrai même pas. Pour l'instant je considère qu'on peut toujours modifier un moment a posteriori. C'est uniqueement une fois la fonctionnalité de lancement du moment mise en place qu'on pourra penser à archiver, etc. Pour l'instant, on se limite au CRUD, et il a toute son autorité qu'importe les circonstances.
+This is where I stop and, as expected, time is causing a whole slew of issues.
 */
