@@ -6,21 +6,28 @@ import { usePathname } from "next/navigation";
 
 import clsx from "clsx";
 
+import * as Icons from "./sidenav-icons";
+
+// Up next: Icons file for navigation icons.
+
 const navLinks = [
   {
     id: 0,
     label: "Paramètres",
     href: "/settings",
+    icon: "Cog8Tooth",
   },
   {
     id: 1,
     label: "Moments",
     href: "/moments",
+    icon: "CalendarDays",
   },
   {
     id: 2,
     label: "Destinations",
     href: "/destinations",
+    icon: "PaperAirplane",
   },
 ];
 
@@ -43,21 +50,30 @@ export function SideNavContents() {
           "md:flex-col md:gap-8 md:overflow-y-auto md:overflow-x-clip md:px-0 md:py-2",
         )}
       >
-        {navLinks.map((navLink) => (
-          <div className="p-2" key={navLink.id}>
-            <Link
-              href={navLink.href}
-              className={`flex flex-col items-center justify-between gap-2 rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-8 ${pathname === navLink.href ? "focus-visible:outline-cyan-950" : "focus-visible:outline-white"}`}
-            >
-              <div className="size-10 rounded-full bg-neutral-500"></div>
-              <p
-                className={`text-xs leading-none transition-all ${pathname === navLink.href ? "text-cyan-950" : "text-white"}`}
+        {navLinks.map((navLink) => {
+          // @ts-ignore // this is between TypeScript and its god
+          const Icon = Icons[navLink.icon];
+
+          return (
+            <div className="p-2" key={navLink.id}>
+              <Link
+                href={navLink.href}
+                className={`flex flex-col items-center justify-between gap-2 rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-8 ${pathname === navLink.href ? "focus-visible:outline-cyan-950" : "focus-visible:outline-white"}`}
               >
-                {navLink.label}
-              </p>
-            </Link>
-          </div>
-        ))}
+                <div className="flex size-10 items-center justify-center rounded-full">
+                  <Icon
+                    className={`size-10 ${pathname === navLink.href ? "text-cyan-950" : "text-white"}`}
+                  />
+                </div>
+                <p
+                  className={`text-xs leading-none transition-all ${pathname === navLink.href ? "text-cyan-950" : "text-white"}`}
+                >
+                  {navLink.label}
+                </p>
+              </Link>
+            </div>
+          );
+        })}
       </div>
       <div className="relative size-16 flex-shrink-0">
         <Image
