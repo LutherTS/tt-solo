@@ -51,7 +51,11 @@ export default async function DestinationsPage({
           dateAndTime: "asc",
         },
         include: {
-          steps: true,
+          steps: {
+            orderBy: {
+              orderId: "asc",
+            },
+          },
         },
       },
     },
@@ -59,10 +63,10 @@ export default async function DestinationsPage({
       updatedAt: "desc",
     },
   });
-  console.log(userDestinations);
-  userDestinations.forEach((e) => console.log(e.moments));
+  // console.log(userDestinations);
+  // userDestinations.forEach((e) => console.log(e.moments));
 
-  // For now I'm working with name description, but that will be updated to objective and context in the database to match with Moment.
+  // old
   const destinationsToCRUD: DestinationFromCRUD[] = userDestinations.map(
     (e) => {
       return {
@@ -94,6 +98,22 @@ export default async function DestinationsPage({
       };
     },
   );
+
+  // new
+  const destinationsA = userDestinations.map((e) => {
+    return {
+      dates: [
+        ...new Set(e.moments.map((moment) => moment.dateAndTime.split("T")[0])),
+      ].sort(),
+    };
+  });
+  destinationsA.forEach((e) => console.log(e.dates));
+
+  // OK. THIS IS WHERE IT STARTS.
+  // The goal is for Moments and Destinations to be pretty much two different ways to view the same data, two different contexts in viewing moments.
+  // - on Moments, day comes first, then destinations and moments
+  // - on Destinations, destination comes first, then days and moments
+  // ALL OF THIS, IN BOTH CASES, COMPUTE FROM THE SERVER, THEN SENT TO THE CLIENT. Starting with Destinations here for ease of adapting.
 
   async function createOrUpdateDestination(
     variant: "creating" | "updating",
