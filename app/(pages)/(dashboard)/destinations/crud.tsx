@@ -1,4 +1,4 @@
-import { Divider, PageTitle } from "../moments/crud";
+import { Divider, PageTitle } from "../components";
 
 export function CRUD() {
   return (

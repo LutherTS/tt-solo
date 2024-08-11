@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { Moment } from "@prisma/client";
 
 import prisma from "@/prisma/db";
+
 import { CRUD } from "./crud";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 
@@ -34,10 +35,21 @@ type MomentFromCRUD = {
   findateetheure: string; // calculated
 };
 
-export default async function MomentsPage() {
+export default async function MomentsPage({
+  params,
+}: {
+  params: {
+    username: string;
+  };
+}) {
+  const username = params.username;
+
   const user = await prisma.user.findUnique({
     where: {
+      // username,
       signInEmailAddress: "l@l.me",
+      // I should implement URL pages: /users/LePapier/moments
+      // This way too, on invite, your boss can create your username for you.
     },
   });
   // console.log(user);
