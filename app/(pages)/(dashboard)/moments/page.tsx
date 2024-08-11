@@ -1,18 +1,10 @@
 import { revalidatePath } from "next/cache";
 
 import { Moment } from "@prisma/client";
-import { add, format } from "date-fns";
 
 import prisma from "@/prisma/db";
 import { CRUD } from "./crud";
-
-/* Utilities */
-// Eventually all of these will need their own file(s) under a utilities directory.
-
-const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
-
-const endDateAndTime = (dateAndTime: string, duration: string) =>
-  dateToInputDatetime(add(new Date(dateAndTime), { minutes: +duration }));
+import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();

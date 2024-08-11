@@ -1,6 +1,7 @@
 "use client";
 
 import { Dispatch, MouseEventHandler, SetStateAction, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
@@ -9,13 +10,12 @@ import {
   compareDesc,
   format,
   roundToNearestMinutes,
-  sub,
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import * as Switch from "@radix-ui/react-switch";
 import { Reorder, useDragControls } from "framer-motion";
-import { ToWords } from "to-words";
-import { useFormStatus } from "react-dom";
+
+import { numStringToTimeString, toWordsing } from "@/app/utilities/moments";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -36,49 +36,6 @@ Finir de vérifier le formulaire
 S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.
 30 minutes
 */
-
-/* Utilities */
-
-// enables Prettier plugin behavior outside of className attributes
-// const tw = (strings: any, ...values: any) =>
-//   String.raw({ raw: strings }, ...values);
-// https://github.com/tailwindlabs/prettier-plugin-tailwindcss?tab=readme-ov-file#sorting-classes-in-template-literals
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/raw#building_an_identity_tag
-
-// translates numbers to French
-const toWords = new ToWords({ localeCode: "fr-FR" });
-const toWordsing = (number: number) => {
-  let words = toWords.convert(number);
-  if (words.endsWith("Un")) words = words.slice(0, -2).concat("Une");
-  words = words.toLocaleLowerCase();
-  return words;
-}; // if could have just been words = words + "e"
-
-// transform number strings from InputNumber into French hours and minutes
-const numStringToTimeString = (string: string) => {
-  const num = +string;
-  let timeString = "";
-
-  let numInFlooredHours = Math.floor(num / 60);
-  let numInRemainingMinutes = num % 60;
-
-  if (num <= 60) {
-    if (num === 1) timeString = `1 minute`;
-    if (num === 60) timeString = `1 heure`;
-    else timeString = `${num} minutes`;
-  } else {
-    // heures
-    if (numInFlooredHours === 1) timeString = `${numInFlooredHours} heure`;
-    else timeString = `${numInFlooredHours} heures`;
-    // minutes
-    if (numInRemainingMinutes === 1)
-      timeString += ` et ${numInRemainingMinutes} minute`;
-    if (numInRemainingMinutes > 1)
-      timeString += ` et ${numInRemainingMinutes} minutes`;
-  }
-
-  return timeString;
-}; // sometimes actual numbers have to be turned into strings for this
 
 /* Main */
 
