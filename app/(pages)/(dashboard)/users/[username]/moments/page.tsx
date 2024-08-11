@@ -93,9 +93,9 @@ export default async function MomentsPage({
       id: e.id,
       destination: e.destination.name,
       activite: e.activity,
-      objectif: e.objective,
+      objectif: e.name,
       indispensable: e.isIndispensable,
-      contexte: e.context,
+      contexte: e.description,
       dateetheure: e.dateAndTime,
       etapes: e.steps.map((e2, i2) => {
         let dateetheuredeletape: string;
@@ -114,8 +114,8 @@ export default async function MomentsPage({
 
         return {
           id: e2.orderId,
-          intitule: e2.title,
-          details: e2.details,
+          intitule: e2.name,
+          details: e2.description,
           duree: e2.duration,
           dateetheure: dateetheuredeletape,
           findateetheure: findateetheuredeletape,
@@ -172,9 +172,9 @@ export default async function MomentsPage({
         moment = await prisma.moment.create({
           data: {
             activity: activite,
-            objective: objectif,
+            name: objectif,
             isIndispensable: indispensable,
-            context: contexte,
+            description: contexte,
             dateAndTime: momentDate,
             destinationId: destinationEntry.id,
           },
@@ -183,9 +183,9 @@ export default async function MomentsPage({
         moment = await prisma.moment.create({
           data: {
             activity: activite,
-            objective: objectif,
+            name: objectif,
             isIndispensable: indispensable,
-            context: contexte,
+            description: contexte,
             dateAndTime: momentDate,
             destination: {
               create: {
@@ -202,8 +202,8 @@ export default async function MomentsPage({
         await prisma.step.create({
           data: {
             orderId: i,
-            title: step.intitule,
-            details: step.details,
+            name: step.intitule,
+            description: step.details,
             duration: step.duree,
             momentId: moment.id,
           },
@@ -234,9 +234,9 @@ export default async function MomentsPage({
           },
           data: {
             activity: activite,
-            objective: objectif,
+            name: objectif,
             isIndispensable: indispensable,
-            context: contexte,
+            description: contexte,
             dateAndTime: momentDate,
             destinationId: destinationEntry.id,
           },
@@ -248,9 +248,9 @@ export default async function MomentsPage({
           },
           data: {
             activity: activite,
-            objective: objectif,
+            name: objectif,
             isIndispensable: indispensable,
-            context: contexte,
+            description: contexte,
             dateAndTime: momentDate,
             destination: {
               create: {
@@ -273,8 +273,8 @@ export default async function MomentsPage({
         await prisma.step.create({
           data: {
             orderId: i,
-            title: step.intitule,
-            details: step.details,
+            name: step.intitule,
+            description: step.details,
             duration: step.duree,
             momentId: moment.id,
           },

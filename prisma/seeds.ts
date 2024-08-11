@@ -151,17 +151,17 @@ async function seed() {
       momentsData.map(async (momentData) => {
         return await prisma.moment.upsert({
           where: {
-            objective_destinationId: {
-              objective: momentData.objective,
+            name_destinationId: {
+              name: momentData.objective,
               destinationId: destination.id,
             },
           },
           update: {},
           create: {
             activity: momentData.activity,
-            objective: momentData.objective,
+            name: momentData.objective,
             isIndispensable: momentData.isIndispensable,
-            context: momentData.context,
+            description: momentData.context,
             dateAndTime: momentData.dateAndTime,
             destinationId: destination.id,
           },
@@ -217,16 +217,16 @@ async function seed() {
       stepsData.map(async (stepData) => {
         return await prisma.step.upsert({
           where: {
-            title_momentId: {
-              title: stepData.title,
+            name_momentId: {
+              name: stepData.title,
               momentId: moment.id,
             },
           },
           update: {},
           create: {
             orderId: stepData.orderId,
-            title: stepData.title,
-            details: stepData.details,
+            name: stepData.title,
+            description: stepData.details,
             duration: stepData.duration,
             momentId: moment.id,
           },

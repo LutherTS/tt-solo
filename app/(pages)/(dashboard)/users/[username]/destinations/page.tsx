@@ -83,9 +83,9 @@ export default async function DestinationsPage({
           return {
             id: e2.id,
             activite: e2.activity,
-            objectif: e2.objective,
+            objectif: e2.name,
             indispensable: e2.isIndispensable,
-            contexte: e2.context,
+            contexte: e2.description,
             dateetheure: e2.dateAndTime,
             duree: dureedumoment,
             findateetheure: endDateAndTime(e2.dateAndTime, dureedumoment),
