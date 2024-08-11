@@ -477,7 +477,15 @@ function ReadMomentsView({
                               {e3.dateetheure.split("T")[1]}
                             </span>{" "}
                             • {numStringToTimeString(e3.duree)}
-                            {e3.indispensable && <> • indispensable</>}
+                            {e3.indispensable && (
+                              <>
+                                {" "}
+                                •{" "}
+                                <span className="text-sm font-semibold uppercase">
+                                  indispensable
+                                </span>
+                              </>
+                            )}
                           </p>
                           <ol>
                             {e3.etapes.map((e4) => (
