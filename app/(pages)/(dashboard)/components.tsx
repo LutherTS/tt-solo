@@ -566,7 +566,7 @@ export function Button({
     <button
       form={form}
       type={type}
-      disabled={status.pending || disabled}
+      disabled={disabled ? status.pending || disabled : status.pending}
       className={clsx(
         "font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
         variant === "destroy" && clsx(destroy),

@@ -151,7 +151,7 @@ export default async function MomentsPage({
       typeof contexte !== "string"
     )
       return console.error(
-        "Le formulaire de l'étape n'a pas été correctement renseigné.",
+        "Le formulaire du moment n'a pas été correctement renseigné.",
       );
 
     if (!user) return console.error("Somehow a user was not found.");
@@ -283,7 +283,7 @@ export default async function MomentsPage({
       }
     }
 
-    revalidatePath("/moments");
+    revalidatePath(`/users/${username}/moments`);
   }
 
   async function deleteMoment(momentFromCRUD: MomentFromCRUD) {
@@ -295,7 +295,7 @@ export default async function MomentsPage({
       },
     });
 
-    revalidatePath("/moments");
+    revalidatePath(`/users/${username}/moments`);
   }
 
   return (

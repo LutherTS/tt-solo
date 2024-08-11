@@ -126,6 +126,7 @@ export function CRUD({
     "create-moment": "Créez un moment",
   };
 
+  // ! Pour pouvoir déterminer la subView dynamiquement, il me faudra segmenter mes moments en amont depuis le serveur. (En vrai il faut juste y copier le code.)
   const [subView, setSubView] = useState<SubView>("current-moments");
 
   // for UpdateMomentView
@@ -228,8 +229,6 @@ function ReadMomentsView({
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
 }) {
-  // const [subView, setSubView] = useState<SubView>("current-moments");
-
   let subViewTitles = {
     "past-moments": "Passés",
     "current-moments": "Actuels",
@@ -426,7 +425,7 @@ function ReadMomentsView({
                                 variant="destroy-step"
                                 onClick={() => {
                                   setMoment(
-                                    moments.find((e) => e.id === e3.id),
+                                    moments.find((e4) => e4.id === e3.id),
                                   );
                                   setView("update-moment");
                                 }}
@@ -544,6 +543,8 @@ function MomentForms({
   let [destinationSelect, setDestinationSelect] = useState(false);
   let [activitySelect, setActivitySelect] = useState(false);
 
+  // Destinations will need to be passed since it will be possible to create a destination without a moment.
+  // Therefore, moments will then not be needed anymore.
   const momentsDestinations = [
     ...new Set(moments.map((moment) => moment.destination)),
   ];
@@ -595,7 +596,6 @@ function MomentForms({
             setStepVisible("creating");
           }
 
-          // momentDateAsDate, though correctly registered, also needed the same treatment as now for comparisons, because of the data saved by datetime-local.
           if (compareDesc(momentDate, now) === 1) setSubView("past-moments");
           else if (compareAsc(momentDate, now) == 1)
             setSubView("future-moments");
