@@ -9,10 +9,9 @@ import { CRUD } from "./crud";
 /* Utilities */
 // Eventually all of these will need their own file(s) under a utilities directory.
 
-export const dateToInputDatetime = (date: Date) =>
-  format(date, "yyyy-MM-dd'T'HH:mm");
+const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
-export const endDateAndTime = (dateAndTime: string, duration: string) =>
+const endDateAndTime = (dateAndTime: string, duration: string) =>
   dateToInputDatetime(add(new Date(dateAndTime), { minutes: +duration }));
 
 // the time at rendering as a stable foundation for all time operations
