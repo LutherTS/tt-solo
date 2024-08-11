@@ -18,7 +18,13 @@ export default function Layout({
         {/* w-full replacing w-screen with w-full from CRUD main */}
         <main className="flex w-full flex-col items-center">
           {/* Page Container */}
-          <div className="min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pb-12 pt-8 md:pb-24">
+          <div
+            className={clsx(
+              "min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pt-8",
+              "pb-12",
+              "md:pb-24",
+            )}
+          >
             {/* Page Contents */}
             {children}
           </div>
@@ -50,10 +56,9 @@ function RecursiveSideNav({
         className={clsx(
           isFixed && "fixed",
           isInvisible && "invisible",
-          // from-blue-500 from-[#5882f2], to-cyan-500 to-[#0fb8cb]
-          "z-50 from-[#5882f2] to-[#0fb8cb] p-8",
-          "inset-x-0 bottom-0 top-auto shrink-0 bg-gradient-to-r",
-          "md:inset-y-0 md:left-0 md:right-auto md:bg-gradient-to-b",
+          "z-50 shrink-0 from-[#5882f2] to-[#0fb8cb] p-4",
+          "inset-x-0 bottom-0 top-auto h-32 w-auto bg-gradient-to-r",
+          "md:inset-y-0 md:left-0 md:right-auto md:h-auto md:w-36 md:bg-gradient-to-b",
         )}
       >
         <SideNavContents />

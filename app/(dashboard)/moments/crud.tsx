@@ -3,7 +3,14 @@
 import { Dispatch, MouseEventHandler, SetStateAction, useState } from "react";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
-import { add, format, roundToNearestMinutes } from "date-fns";
+import {
+  add,
+  compareAsc,
+  compareDesc,
+  format,
+  roundToNearestMinutes,
+  sub,
+} from "date-fns";
 import { fr } from "date-fns/locale";
 import * as Switch from "@radix-ui/react-switch";
 import { Reorder, useDragControls } from "framer-motion";
@@ -77,32 +84,18 @@ const numStringToTimeString = (string: string) => {
 
 // Main Data
 
-// the time at rendering as a stable foundation for all time operations
-const now = new Date();
-
-// roundToNearestMinutes are nested to create a clamp method, meaning:
-// - the time shown will always be a minimum of 10 minutes later
-// (e.g. if it's 10:59, 11:10 will be shown)
-// - the time shown will always be a maximum of 20 minutes later
-// (e.g. if it's 11:01, 11:20 will be shown)
-// This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
-const nowRoundedUpTenMinutes = roundToNearestMinutes(
-  add(
-    roundToNearestMinutes(now, {
-      roundingMethod: "ceil",
-      nearestTo: 10,
-    }),
-    { seconds: 1 },
-  ),
-  {
-    roundingMethod: "ceil",
-    nearestTo: 10,
-  },
-);
-
 type View = "update-moment" | "create-moment" | "read-moments";
 
-type Step = { id: number; intitule: string; details: string; duree: string };
+type SubView = "past-moments" | "current-moments" | "future-moments";
+
+type Step = {
+  id: number;
+  intitule: string;
+  details: string;
+  duree: string;
+  dateetheure?: string; // calculated
+  findateetheure?: string; // calculated
+};
 
 type StepVisible = "create" | "creating" | "updating";
 
@@ -115,6 +108,8 @@ type Moment = {
   contexte: string;
   dateetheure: string;
   etapes: Step[];
+  duree: string; // calculated
+  findateetheure: string; // calculated
 };
 
 type Option = {
@@ -148,10 +143,12 @@ export function CRUD({
   momentsToCRUD,
   createOrUpdateMoment,
   deleteMoment,
+  now,
 }: {
   momentsToCRUD: Moment[];
   createOrUpdateMoment: any;
   deleteMoment: any;
+  now: string;
 }) {
   // let [view, setView] = useState<View>("create-moment");
   let [view, setView] = useState<View>("read-moments");
@@ -162,8 +159,7 @@ export function CRUD({
     "create-moment": "Créez un moment",
   };
 
-  // for ReadMomentsView
-  // let [moments, setMoments] = useState<Moment[]>([]);
+  const [subView, setSubView] = useState<SubView>("current-moments");
 
   // for UpdateMomentView
   let [moment, setMoment] = useState<Moment>();
@@ -217,6 +213,8 @@ export function CRUD({
             moment={moment}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
+            setSubView={setSubView}
+            now={now}
           />
         )}
       </div>
@@ -226,6 +224,9 @@ export function CRUD({
           moments={momentsToCRUD}
           setMoment={setMoment}
           setView={setView}
+          subView={subView}
+          setSubView={setSubView}
+          now={now}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
@@ -239,6 +240,8 @@ export function CRUD({
             // setMoments={setMoments}
             variant="creating"
             createOrUpdateMoment={createOrUpdateMoment}
+            now={now}
+            setSubView={setSubView}
           />
         )}
       </div>
@@ -252,69 +255,187 @@ function ReadMomentsView({
   moments,
   setMoment,
   setView,
+  subView,
+  setSubView,
+  now,
 }: {
   moments: Moment[];
   setMoment: Dispatch<SetStateAction<Moment | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
+  subView: SubView;
+  setSubView: Dispatch<SetStateAction<SubView>>;
+  now: string;
 }) {
-  let momentsDates = [
-    ...new Set(moments.map((moment) => moment.dateetheure.split("T")[0])),
-  ].sort();
+  // const [subView, setSubView] = useState<SubView>("current-moments");
 
-  let momentsDatesWithMoments = momentsDates.map((e) => {
-    let momentsDateMoments = moments.filter((e2) =>
-      e2.dateetheure.startsWith(e),
-    );
-    return { date: e, moments: momentsDateMoments };
+  let subViewTitles = {
+    "past-moments": "Passés",
+    "current-moments": "Actuels",
+    "future-moments": "Futurs",
+  };
+
+  // ...
+  // A take (LIMIT) is going to be needed at scale. So each operation for past, present and future is going to be needed to be had from the database.
+  // But so since it's from the database, that means the database will have to save when the moment ends... Or that can––
+  // (The first thought was nice, but think about the cases where you are not senior enough to do a migration, and where even if that was the case you wouldn't be able to retroactively modify all previous entries, and even if you could your boss may not approve of you making such a dramatic implementation... for something that can be finetuned, for now, on the client, and can also be less error-prone doing so.)
+  // ...This is really something worth discussing.
+  // The real problem is, what I'm afraid of would make sense on an app that is in production, but it wouldn't in an app that is being constructed, where I would still have the chance at time to change this proactively forever. Except... I really, REALLY don't want to put hardcoded in my database anything that can be inferred, and that's my position until some performance issues make it obligatory.
+  // Basically, the idea is to yes, get all moments on top, but with the minimum amount of data from them. The most minimum. Then I filter and treat them in the client with JavaScript. And eventually I'll have some server components in the lists that will each go look for the extra data that is being needed.
+  // SO LET'S GO.
+
+  let pastMoments: Moment[] = [];
+  let currentMoments: Moment[] = [];
+  let futureMoments: Moment[] = [];
+
+  moments.forEach((e) => {
+    console.log(now);
+    // if the end of the moment came before now
+    if (compareDesc(e.findateetheure, now) === 1) pastMoments.push(e);
+    // if the beginning of the moment comes after now
+    else if (compareAsc(e.dateetheure, now) == 1) futureMoments.push(e);
+    // any of the situation is within the scope of now
+    else currentMoments.push(e);
   });
 
-  let momentsDatesWithMomentsByDestinations = momentsDatesWithMoments.map(
-    (e) => {
-      return {
-        date: e.date,
-        destinations: [...new Set(e.moments.map((e2) => e2.destination))].sort(
-          (a, b) => {
+  let allMoments = [moments, pastMoments, currentMoments, futureMoments];
+  console.log({ allMoments });
+
+  let allMomentsDates = [
+    moments,
+    pastMoments,
+    currentMoments,
+    futureMoments,
+  ].map((e0) =>
+    [...new Set(e0.map((moment) => moment.dateetheure.split("T")[0]))].sort(),
+  );
+
+  let allMomentsDatesWithMoments = allMomentsDates.map((e0, i0) =>
+    e0.map((e) => {
+      let momentsDateMoments = allMoments[i0].filter((e2) =>
+        e2.dateetheure.startsWith(e),
+      );
+      return { date: e, moments: momentsDateMoments };
+    }),
+  );
+
+  let allMomentsDatesWithMomentsByDestinations = allMomentsDatesWithMoments.map(
+    (e0) =>
+      e0.map((e) => {
+        return {
+          date: e.date,
+          destinations: [
+            ...new Set(e.moments.map((e2) => e2.destination)),
+          ].sort((a, b) => {
             const destinationA = a.toLowerCase();
             const destinationB = b.toLowerCase();
             if (destinationA < destinationB) return -1;
             if (destinationA > destinationB) return 1;
             return 0;
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-          },
-        ),
-      };
-    },
+          }),
+        };
+      }),
   );
 
-  let trueMomentsDatesWithMomentsByDestinations =
-    momentsDatesWithMomentsByDestinations.map((e) => {
-      return {
-        date: e.date,
-        destinations: e.destinations.map((e2) => {
-          let theseMoments = moments
-            .filter((e3) => {
-              return e3.destination === e2 && e3.dateetheure.startsWith(e.date);
-            })
-            .sort((a, b) => {
-              const dateA = a.dateetheure;
-              const dateB = b.dateetheure;
-              if (dateA < dateB) return -1;
-              if (dateA > dateB) return 1;
-              return 0;
-            });
-          return {
-            destination: e2,
-            moments: theseMoments,
-          };
-        }),
-      };
-    });
+  let allTrueMomentsDatesWithMomentsByDestinations =
+    allMomentsDatesWithMomentsByDestinations.map((e0, i0) =>
+      e0.map((e) => {
+        return {
+          date: e.date,
+          destinations: e.destinations.map((e2) => {
+            let theseMoments = allMoments[i0]
+              .filter((e3) => {
+                return (
+                  e3.destination === e2 && e3.dateetheure.startsWith(e.date)
+                );
+              })
+              .sort((a, b) => {
+                const dateA = a.dateetheure;
+                const dateB = b.dateetheure;
+                if (dateA < dateB) return -1;
+                if (dateA > dateB) return 1;
+                return 0;
+              });
+            return {
+              destination: e2,
+              moments: theseMoments,
+            };
+          }),
+        };
+      }),
+    );
+
+  const [
+    trueMomentsDatesWithMomentsByDestinations,
+    truePastMoments,
+    trueCurrentMoments,
+    trueFutureMoments,
+  ] = allTrueMomentsDatesWithMomentsByDestinations;
+
+  const showcaseMoments = {
+    "past-moments": truePastMoments,
+    "current-moments": trueCurrentMoments,
+    "future-moments": trueFutureMoments,
+  };
+
+  const subViews = [
+    "past-moments",
+    "current-moments",
+    "future-moments",
+  ] as const;
+
+  let displayedMoments = trueMomentsDatesWithMomentsByDestinations;
+  if (subView !== undefined && subViews.includes(subView))
+    displayedMoments = showcaseMoments[subView];
 
   return (
     <div className="space-y-8">
-      {moments.length > 0 ? (
+      <div className="flex flex-wrap gap-4">
+        {subViews.map((e) => {
+          const className = "px-4 py-2";
+          return (
+            <button
+              onClick={() => setSubView(e)}
+              key={e}
+              className={clsx(
+                className,
+                "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+                subView === e && "focus-visible:outline-blue-500",
+                subView !== e && "focus-visible:outline-cyan-500",
+              )}
+            >
+              {/* real occupied space */}
+              <span className="invisible static">{subViewTitles[e]}</span>
+              {/* gradient text */}
+              <span
+                className={clsx(
+                  className,
+                  "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+                )}
+              >
+                {subViewTitles[e]}
+              </span>
+              {/* white background */}
+              <div
+                className={clsx(
+                  "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+                )}
+              ></div>
+              {/* gradient border */}
+              <div
+                className={clsx(
+                  "absolute inset-0 rounded-full",
+                  subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
+                  subView !== e && "bg-transparent",
+                )}
+              ></div>
+            </button>
+          );
+        })}
+      </div>
+      {displayedMoments.length > 0 ? (
         <>
-          {trueMomentsDatesWithMomentsByDestinations.map((e, i, a) => (
+          {displayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <Section
                 title={format(new Date(e.date), "eeee d MMMM", {
@@ -333,50 +454,56 @@ function ReadMomentsView({
                           {e2.destination}
                         </p>
                       </div>
-                      {e2.moments.map((e3) => {
-                        let sum = e3.etapes.reduce(
-                          (acc, curr) => acc + +curr.duree,
-                          0,
-                        );
-                        let etapesString = e3.etapes
-                          .map((e4) => `${e4.intitule}`)
-                          .join(" ➤ ");
-
-                        return (
-                          <div className="group space-y-2" key={e3.id}>
-                            <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
-                              <p className="font-medium text-blue-950">
-                                {e3.objectif}
-                              </p>
-                              <div className="hidden justify-end group-hover:flex">
-                                <Button
-                                  type="button"
-                                  variant="destroy-step"
-                                  onClick={() => {
-                                    setMoment(
-                                      moments.find((e) => e.id === e3.id),
-                                    );
-                                    setView("update-moment");
-                                  }}
-                                >
-                                  Éditer
-                                </Button>
-                              </div>
-                            </div>
-                            <p>
-                              <span
-                                className={"font-semibold text-neutral-800"}
+                      {e2.moments.map((e3) => (
+                        <div className="group space-y-2" key={e3.id}>
+                          <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
+                            <p className="font-medium text-blue-950">
+                              {e3.objectif}
+                            </p>
+                            <div className="hidden justify-end group-hover:flex">
+                              <Button
+                                type="button"
+                                variant="destroy-step"
+                                onClick={() => {
+                                  setMoment(
+                                    moments.find((e) => e.id === e3.id),
+                                  );
+                                  setView("update-moment");
+                                }}
                               >
-                                {e3.dateetheure.split("T")[1]}
-                              </span>{" "}
-                              • {numStringToTimeString(sum.toString())}
-                            </p>
-                            <p className="text-sm text-neutral-500">
-                              {etapesString}
-                            </p>
+                                Éditer
+                              </Button>
+                            </div>
                           </div>
-                        );
-                      })}
+                          <p>
+                            <span className={"font-semibold text-neutral-800"}>
+                              {e3.dateetheure.split("T")[1]}
+                            </span>{" "}
+                            • {numStringToTimeString(e3.duree)}
+                            {e3.indispensable && (
+                              <>
+                                {" "}
+                                •{" "}
+                                <span className="text-sm font-semibold uppercase">
+                                  indispensable
+                                </span>
+                              </>
+                            )}
+                          </p>
+                          <ol>
+                            {e3.etapes.map((e4) => (
+                              <li
+                                key={e4.id}
+                                className="text-sm leading-loose text-neutral-500"
+                              >
+                                {e4.dateetheure?.split("T")[1]} -{" "}
+                                {e4.findateetheure?.split("T")[1]} :{" "}
+                                {e4.intitule}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      ))}
                     </div>
                   );
                 })}
@@ -398,20 +525,42 @@ function ReadMomentsView({
 function MomentForms({
   setView,
   moments,
-  // setMoments,
   variant,
   moment,
   createOrUpdateMoment,
   deleteMoment,
+  setSubView,
+  now,
 }: {
   setView: Dispatch<SetStateAction<View>>;
   moments: Moment[];
-  // setMoments: Dispatch<SetStateAction<Moment[]>>;
   variant: "creating" | "updating";
   moment?: Moment;
   createOrUpdateMoment: any;
   deleteMoment?: any;
+  setSubView: Dispatch<SetStateAction<SubView>>;
+  now: string;
 }) {
+  // roundToNearestMinutes are nested to create a clamp method, meaning:
+  // - the time shown will always be a minimum of 10 minutes later
+  // (e.g. if it's 10:59, 11:10 will be shown)
+  // - the time shown will always be a maximum of 20 minutes later
+  // (e.g. if it's 11:01, 11:20 will be shown)
+  // This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
+  const nowRoundedUpTenMinutes = roundToNearestMinutes(
+    add(
+      roundToNearestMinutes(now, {
+        roundingMethod: "ceil",
+        nearestTo: 10,
+      }),
+      { seconds: 1 },
+    ),
+    {
+      roundingMethod: "ceil",
+      nearestTo: 10,
+    },
+  );
+
   // InputSwitch unfortunately has to be controlled for resetting
   let [indispensable, setIndispensable] = useState(
     moment ? moment.indispensable : false,
@@ -485,6 +634,12 @@ function MomentForms({
             setSteps([]);
             setStepVisible("creating");
           }
+
+          // momentDateAsDate, though correctly registered, also needed the same treatment as now for comparisons, because of the data saved by datetime-local.
+          if (compareDesc(momentDate, now) === 1) setSubView("past-moments");
+          else if (compareAsc(momentDate, now) == 1)
+            setSubView("future-moments");
+          else setSubView("current-moments");
 
           setView("read-moments");
           // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
@@ -618,7 +773,7 @@ function MomentForms({
             description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
             definedValue={momentDate}
             definedOnValueChange={setMomentDate}
-            min={format(now, "yyyy-MM-dd'T'HH:mm")}
+            min={now}
           />
         </Section>
         <Divider />
@@ -631,12 +786,15 @@ function MomentForms({
           {steps.length > 0 && (
             <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
               {steps.map((step, index) => {
-                const addingTime =
-                  index === 0
-                    ? 0
-                    : steps
-                        .slice(0, index)
-                        .reduce((acc, curr) => acc + +curr.duree, 0);
+                const map: Map<number, number> = new Map();
+                let durationTotal = 0;
+                for (let j = 0; j < steps.length; j++) {
+                  durationTotal += +steps[j].duree;
+                  map.set(j, durationTotal);
+                }
+
+                let addingTime = index === 0 ? 0 : map.get(index - 1)!; // I know what I'm doing for now.
+                // And with this, I can even compute "endTime" if I want: momentDate + map.get(index)
 
                 return (
                   <ReorderItem
@@ -647,6 +805,7 @@ function MomentForms({
                     currentStepId={currentStepId}
                     setCurrentStepId={setCurrentStepId}
                     setStepVisible={setStepVisible}
+                    // momentDateAsDate still works but will need to be removed in favor of momentDate since we're moving away from the Date object here
                     momentDateAsDate={momentDateAsDate}
                     addingTime={addingTime}
                     currentStep={currentStep}
