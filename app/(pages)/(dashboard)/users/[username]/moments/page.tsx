@@ -45,12 +45,7 @@ export default async function MomentsPage({
   const username = params.username;
 
   const user = await prisma.user.findUnique({
-    where: {
-      // username,
-      signInEmailAddress: "l@l.me",
-      // I should implement URL pages: /users/LePapier/moments
-      // This way too, on invite, your boss can create your username for you.
-    },
+    where: { username },
   });
   // console.log(user);
 
