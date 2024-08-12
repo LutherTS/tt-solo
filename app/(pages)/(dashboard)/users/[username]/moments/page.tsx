@@ -180,53 +180,62 @@ export default async function MomentsPage({
       return {
         dates: [
           ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
-        ].map((e3) => {
-          return {
-            date: e3,
-            destinations: [
-              ...new Set(
-                e
-                  .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                  .map((moment) => moment.destination.name),
-              ),
-            ]
-              .sort()
-              .map((e5) => {
-                return {
-                  destinationIdeal: e5,
-                  moments: e
-                    .filter(
-                      (moment) =>
-                        moment.destination.name === e5 &&
-                        moment.startDateAndTime.startsWith(e3),
-                    )
-                    .map((e6) => {
-                      return {
-                        id: e6.id,
-                        activity: e6.activity,
-                        objective: e6.name,
-                        isIndispensable: e6.isIndispensable,
-                        context: e6.description,
-                        startDateAndTime: e6.startDateAndTime,
-                        duration: e6.duration,
-                        endDateAndTime: e6.endDateAndTime,
-                        steps: e6.steps.map((e7) => {
-                          return {
-                            id: e7.id,
-                            orderId: e7.orderId,
-                            title: e7.name,
-                            details: e7.description,
-                            startDateAndTime: e7.startDateAndTime,
-                            duration: e7.duration,
-                            endDateAndTime: e7.endDateAndTime,
-                          };
-                        }),
-                      };
-                    }),
-                };
-              }),
-          };
-        }),
+        ]
+          .map((e3) => {
+            return {
+              date: e3,
+              destinations: [
+                ...new Set(
+                  e
+                    .filter((moment) => moment.startDateAndTime.startsWith(e3))
+                    .map((moment) => moment.destination.name),
+                ),
+              ]
+                .sort()
+                .map((e5) => {
+                  return {
+                    destinationIdeal: e5,
+                    moments: e
+                      .filter(
+                        (moment) =>
+                          moment.destination.name === e5 &&
+                          moment.startDateAndTime.startsWith(e3),
+                      )
+                      .map((e6) => {
+                        return {
+                          id: e6.id,
+                          activity: e6.activity,
+                          objective: e6.name,
+                          isIndispensable: e6.isIndispensable,
+                          context: e6.description,
+                          startDateAndTime: e6.startDateAndTime,
+                          duration: e6.duration,
+                          endDateAndTime: e6.endDateAndTime,
+                          steps: e6.steps.map((e7) => {
+                            return {
+                              id: e7.id,
+                              orderId: e7.orderId,
+                              title: e7.name,
+                              details: e7.description,
+                              startDateAndTime: e7.startDateAndTime,
+                              duration: e7.duration,
+                              endDateAndTime: e7.endDateAndTime,
+                            };
+                          }),
+                        };
+                      }),
+                  };
+                }),
+            };
+          })
+          .sort((a, b) => {
+            const dateA = a.date;
+            const dateB = b.date;
+            if (dateA < dateB) return -1;
+            if (dateB > dateA) return 1;
+            return 0;
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
+          }),
       };
     },
   );
