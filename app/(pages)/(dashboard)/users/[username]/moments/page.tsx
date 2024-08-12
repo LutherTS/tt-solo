@@ -88,6 +88,8 @@ export default async function MomentsPage({
 
   if (!user) return console.error("Somehow a user was not found.");
 
+  // take and skip randomly implemented below for scalable defaults
+
   const userMoments = await prisma.moment.findMany({
     where: {
       destination: {
@@ -102,6 +104,11 @@ export default async function MomentsPage({
         },
       },
     },
+    orderBy: {
+      startDateAndTime: "desc",
+    },
+    take: 20,
+    skip: 0,
   });
   // console.log(userMoments);
 
@@ -122,28 +129,13 @@ export default async function MomentsPage({
         },
       },
     },
+    orderBy: {
+      startDateAndTime: "desc",
+    },
+    take: 10,
+    skip: 0,
   });
   // console.log(pastUserMoments);
-
-  const futureUserMoments = await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId: user.id,
-      },
-      startDateAndTime: {
-        gt: nowString,
-      },
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-  });
-  // console.log(futureUserMoments);
 
   const currentUserMoments = await prisma.moment.findMany({
     where: {
@@ -163,8 +155,38 @@ export default async function MomentsPage({
         },
       },
     },
+    orderBy: {
+      startDateAndTime: "asc",
+    },
+    take: 10,
+    skip: 0,
   });
   // console.log(currentUserMoments);
+
+  const futureUserMoments = await prisma.moment.findMany({
+    where: {
+      destination: {
+        userId: user.id,
+      },
+      startDateAndTime: {
+        gt: nowString,
+      },
+    },
+    include: {
+      destination: true,
+      steps: {
+        orderBy: {
+          orderId: "asc",
+        },
+      },
+    },
+    orderBy: {
+      startDateAndTime: "asc",
+    },
+    take: 10,
+    skip: 0,
+  });
+  // console.log(futureUserMoments);
 
   // This will be optimized in a Promise.all once all queries will be organized in their own folder.
   const allUserMoments = [
@@ -176,66 +198,73 @@ export default async function MomentsPage({
   // console.log(allUserMoments);
 
   const allUserMomentsForCRUD: UserMomentsForCRUD[] = allUserMoments.map(
-    (e) => {
+    (e, i) => {
       return {
         dates: [
           ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
-        ]
-          .map((e3) => {
-            return {
-              date: e3,
-              destinations: [
-                ...new Set(
-                  e
-                    .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                    .map((moment) => moment.destination.name),
-                ),
-              ]
-                .sort()
-                .map((e5) => {
-                  return {
-                    destinationIdeal: e5,
-                    moments: e
-                      .filter(
-                        (moment) =>
-                          moment.destination.name === e5 &&
-                          moment.startDateAndTime.startsWith(e3),
-                      )
-                      .map((e6) => {
-                        return {
-                          id: e6.id,
-                          activity: e6.activity,
-                          objective: e6.name,
-                          isIndispensable: e6.isIndispensable,
-                          context: e6.description,
-                          startDateAndTime: e6.startDateAndTime,
-                          duration: e6.duration,
-                          endDateAndTime: e6.endDateAndTime,
-                          steps: e6.steps.map((e7) => {
-                            return {
-                              id: e7.id,
-                              orderId: e7.orderId,
-                              title: e7.name,
-                              details: e7.description,
-                              startDateAndTime: e7.startDateAndTime,
-                              duration: e7.duration,
-                              endDateAndTime: e7.endDateAndTime,
-                            };
-                          }),
-                        };
-                      }),
-                  };
-                }),
-            };
-          })
-          .sort((a, b) => {
-            const dateA = a.date;
-            const dateB = b.date;
-            if (dateA < dateB) return -1;
-            if (dateB > dateA) return 1;
-            return 0;
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-          }),
+        ].map((e3) => {
+          return {
+            date: e3,
+            destinations: [
+              ...new Set(
+                e
+                  .filter((moment) => moment.startDateAndTime.startsWith(e3))
+                  .map((moment) => moment.destination.name),
+              ),
+            ]
+              // organizes destinations per day alphabetically
+              .sort((a, b) => {
+                const destinationA = a.toLowerCase();
+                const destinationB = b.toLowerCase();
+                if (destinationA < destinationB) return -1;
+                if (destinationB > destinationA) return 1;
+                return 0;
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
+              })
+              .map((e5) => {
+                return {
+                  destinationIdeal: e5,
+                  moments: e
+                    .filter(
+                      (moment) =>
+                        moment.destination.name === e5 &&
+                        moment.startDateAndTime.startsWith(e3),
+                    )
+                    // organizes moments per destination chronologically
+                    .sort((a, b) => {
+                      const startDateAndTimeA = a.startDateAndTime;
+                      const startDateAndTimeB = b.startDateAndTime;
+                      if (startDateAndTimeA < startDateAndTimeB) return -1;
+                      if (startDateAndTimeB > startDateAndTimeA) return 1;
+                      return 0;
+                    })
+                    .map((e6) => {
+                      return {
+                        id: e6.id,
+                        activity: e6.activity,
+                        objective: e6.name,
+                        isIndispensable: e6.isIndispensable,
+                        context: e6.description,
+                        startDateAndTime: e6.startDateAndTime,
+                        duration: e6.duration,
+                        endDateAndTime: e6.endDateAndTime,
+                        steps: e6.steps.map((e7) => {
+                          return {
+                            id: e7.id,
+                            orderId: e7.orderId,
+                            title: e7.name,
+                            details: e7.description,
+                            startDateAndTime: e7.startDateAndTime,
+                            duration: e7.duration,
+                            endDateAndTime: e7.endDateAndTime,
+                          };
+                        }),
+                      };
+                    }),
+                };
+              }),
+          };
+        }),
       };
     },
   );

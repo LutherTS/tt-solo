@@ -52,7 +52,11 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 
 type View = "update-moment" | "create-moment" | "read-moments";
 
-type SubView = "past-moments" | "current-moments" | "future-moments";
+type SubView =
+  | "all-moments"
+  | "past-moments"
+  | "current-moments"
+  | "future-moments";
 
 type StepForCRUD = {
   id: string;
@@ -271,6 +275,7 @@ function ReadMomentsView({
   // now: string;
 }) {
   let subViewTitles = {
+    "all-moments": "Tous",
     "past-moments": "Passés",
     "current-moments": "Actuels",
     "future-moments": "Futurs",
@@ -388,6 +393,7 @@ function ReadMomentsView({
   ] = allUserMomentsForCRUD;
 
   const realShowcaseMoments = {
+    "all-moments": realAllMoments,
     "past-moments": realPastMoments,
     "current-moments": realCurrentMoments,
     "future-moments": realFutureMoments,
@@ -396,6 +402,7 @@ function ReadMomentsView({
   //
 
   const subViews = [
+    "all-moments",
     "past-moments",
     "current-moments",
     "future-moments",
@@ -526,17 +533,19 @@ function ReadMomentsView({
                               </>
                             )}
                           </p>
-                          <ol>
-                            {e3.steps.map((e4) => (
-                              <li
-                                key={e4.id}
-                                className="text-sm leading-loose text-neutral-500"
-                              >
-                                {e4.startDateAndTime.split("T")[1]} -{" "}
-                                {e4.endDateAndTime.split("T")[1]} : {e4.title}
-                              </li>
-                            ))}
-                          </ol>
+                          {subView !== "all-moments" && (
+                            <ol>
+                              {e3.steps.map((e4) => (
+                                <li
+                                  key={e4.id}
+                                  className="text-sm leading-loose text-neutral-500"
+                                >
+                                  {e4.startDateAndTime.split("T")[1]} -{" "}
+                                  {e4.endDateAndTime.split("T")[1]} : {e4.title}
+                                </li>
+                              ))}
+                            </ol>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -712,6 +721,7 @@ function MomentForms({
                     ? "Ou choissisez parmi vos destinations précédemment instanciées."
                     : undefined
                 }
+                fieldFlexIsNotLabel
                 tekTime
               >
                 {momentsDestinations.length > 0 && (
