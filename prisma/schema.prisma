@@ -57,7 +57,9 @@ model Moment {
   // the Moment's context
   description                    String
   // saved as a string just like in the FormData
-  dateAndTime                    String
+  // previously dateAndTime
+  startDateAndTime               String
+  endDateAndTime                 String
 
   createdAt                      DateTime                  @default(now())
   updatedAt                      DateTime                  @updatedAt @default(now())
@@ -70,6 +72,7 @@ model Moment {
   @@unique([name, destinationId])
 }
 
+// I'd implement startDateAndTime and endDateAndTime on Step only if it ends up being required.
 model Step {
   id                             String                    @id @default(uuid())
   orderId                        Int

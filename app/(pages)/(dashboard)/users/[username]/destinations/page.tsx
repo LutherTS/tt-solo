@@ -114,6 +114,8 @@ export default async function DestinationsPage({
   // - on Moments, day comes first, then destinations and moments
   // - on Destinations, destination comes first, then days and moments
   // ALL OF THIS, IN BOTH CASES, COMPUTE FROM THE SERVER, THEN SENT TO THE CLIENT. Starting with Destinations here for ease of adapting.
+  // And yes, now is going to remain on the server.
+  // La décision est prise : startDateAndTime et EndDateAndTime vont être enreg
 
   async function createOrUpdateDestination(
     variant: "creating" | "updating",

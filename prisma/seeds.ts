@@ -2,6 +2,7 @@ import { User, Destination, Moment, Step } from "@prisma/client";
 import { add, format, roundToNearestHours, sub } from "date-fns";
 
 import prisma from "./db";
+import { endDateAndTime } from "@/app/utilities/moments";
 
 const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
@@ -12,6 +13,12 @@ async function seed() {
   const nowHourFloored = roundToNearestHours(now, { roundingMethod: "floor" });
   const lastMonth = sub(nowHourFloored, { months: 1 });
   const nextMonth = add(nowHourFloored, { months: 1 });
+
+  console.log(`Defining step durations.`);
+  const stepDuration1 = 60;
+  const stepDuration2 = 120;
+  const stepDuration3 = 180;
+  const momentDuration = stepDuration1 + stepDuration2 + stepDuration3;
 
   console.log(`Beginning initial seeds...`);
 
@@ -120,6 +127,9 @@ async function seed() {
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
       dateAndTime: dateToInputDatetime(lastMonth),
+      endDateAndTime: dateToInputDatetime(
+        add(lastMonth, { minutes: momentDuration }),
+      ),
     },
     {
       activity: "Développement de fonctionnalité",
@@ -128,6 +138,9 @@ async function seed() {
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
       dateAndTime: dateToInputDatetime(nowHourFloored),
+      endDateAndTime: dateToInputDatetime(
+        add(nowHourFloored, { minutes: momentDuration }),
+      ),
     },
     {
       activity: "Développement de fonctionnalité",
@@ -136,6 +149,9 @@ async function seed() {
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
       dateAndTime: dateToInputDatetime(nextMonth),
+      endDateAndTime: dateToInputDatetime(
+        add(nextMonth, { minutes: momentDuration }),
+      ),
     },
   ];
   console.log({ momentsData });
@@ -187,21 +203,21 @@ async function seed() {
       title: "Réaliser la div d'une étape",
       details:
         "S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.",
-      duration: "60",
+      duration: stepDuration1.toString(),
     },
     {
       orderId: 2,
       title: "Implémenter le système de coulissement des étapes",
       details:
         "Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.",
-      duration: "120",
+      duration: stepDuration2.toString(),
     },
     {
       orderId: 3,
       title: "Finir de vérifier le formulaire",
       details:
         "S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.",
-      duration: "180",
+      duration: stepDuration3.toString(),
     },
   ];
   console.log({ stepsData });
