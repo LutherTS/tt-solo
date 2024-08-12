@@ -210,7 +210,7 @@ function ReadDestinationsView({
                           )}
                         </div>
                         {e2.moments.map((e3) => (
-                          <div className="group space-y-2" key={e3.id}>
+                          <div className="space-y-2" key={e3.id}>
                             <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
                               <p className="font-medium text-blue-950">
                                 {e3.objective}
@@ -251,9 +251,25 @@ function ReadDestinationsView({
                     ))}
                   </>
                 ) : (
-                  <p className="text-neutral-500">
-                    (Pas de moment pour le moment.)
-                  </p>
+                  <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
+                    <p className="text-neutral-500">
+                      (Pas de moment pour le moment.)
+                    </p>
+                    <div className="hidden justify-end group-hover:flex">
+                      <Button
+                        type="button"
+                        variant="destroy-step"
+                        onClick={() => {
+                          setDestination(
+                            destinations.find((e2) => e2.id === e.id),
+                          );
+                          setView("update-destination");
+                        }}
+                      >
+                        Éditer
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </Section>
               {i !== a.length - 1 && <Divider />}
