@@ -57,8 +57,10 @@ model Moment {
   // the Moment's context
   description                    String
   // saved as a string just like in the FormData
-  // previously dateAndTime
   startDateAndTime               String
+  // in minutes, saved as a string just like in the FormData
+  duration                       String
+  // saved as a string just like in the FormData
   endDateAndTime                 String
 
   createdAt                      DateTime                  @default(now())
@@ -81,8 +83,12 @@ model Step {
   name                           String
   // the Step's details
   description                    String
+  // saved as a string just like in the FormData
+  startDateAndTime               String
   // in minutes, saved as a string just like in the FormData
   duration                       String
+  // saved as a string just like in the FormData
+  endDateAndTime                 String
 
   createdAt                      DateTime                  @default(now())
   updatedAt                      DateTime                  @updatedAt @default(now())

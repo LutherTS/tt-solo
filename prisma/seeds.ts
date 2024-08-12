@@ -2,7 +2,6 @@ import { User, Destination, Moment, Step } from "@prisma/client";
 import { add, format, roundToNearestHours, sub } from "date-fns";
 
 import prisma from "./db";
-import { endDateAndTime } from "@/app/utilities/moments";
 
 const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
@@ -18,6 +17,7 @@ async function seed() {
   const stepDuration1 = 60;
   const stepDuration2 = 120;
   const stepDuration3 = 180;
+
   const momentDuration = stepDuration1 + stepDuration2 + stepDuration3;
 
   console.log(`Beginning initial seeds...`);
@@ -126,7 +126,7 @@ async function seed() {
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
-      dateAndTime: dateToInputDatetime(lastMonth),
+      startDateAndTime: dateToInputDatetime(lastMonth),
       endDateAndTime: dateToInputDatetime(
         add(lastMonth, { minutes: momentDuration }),
       ),
@@ -137,7 +137,7 @@ async function seed() {
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
-      dateAndTime: dateToInputDatetime(nowHourFloored),
+      startDateAndTime: dateToInputDatetime(nowHourFloored),
       endDateAndTime: dateToInputDatetime(
         add(nowHourFloored, { minutes: momentDuration }),
       ),
@@ -148,7 +148,7 @@ async function seed() {
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
-      dateAndTime: dateToInputDatetime(nextMonth),
+      startDateAndTime: dateToInputDatetime(nextMonth),
       endDateAndTime: dateToInputDatetime(
         add(nextMonth, { minutes: momentDuration }),
       ),
@@ -178,7 +178,9 @@ async function seed() {
             name: momentData.objective,
             isIndispensable: momentData.isIndispensable,
             description: momentData.context,
-            dateAndTime: momentData.dateAndTime,
+            startDateAndTime: momentData.startDateAndTime,
+            duration: momentDuration.toString(),
+            endDateAndTime: momentData.endDateAndTime,
             destinationId: destination.id,
           },
         });
@@ -229,8 +231,15 @@ async function seed() {
   console.log(`Seeding all Steps...`);
 
   for (const moment of moments) {
+    const map: Map<number, number> = new Map();
+    let durationTotal = 0;
+    for (let j = 0; j < stepsData.length; j++) {
+      durationTotal += +stepsData[j].duration;
+      map.set(j, durationTotal);
+    }
+
     const momentSteps = await Promise.all(
-      stepsData.map(async (stepData) => {
+      stepsData.map(async (stepData, index) => {
         return await prisma.step.upsert({
           where: {
             name_momentId: {
@@ -243,7 +252,20 @@ async function seed() {
             orderId: stepData.orderId,
             name: stepData.title,
             description: stepData.details,
+            startDateAndTime:
+              index === 0
+                ? moment.startDateAndTime
+                : dateToInputDatetime(
+                    add(moment.startDateAndTime, {
+                      minutes: map.get(index - 1),
+                    }),
+                  ),
             duration: stepData.duration,
+            endDateAndTime: dateToInputDatetime(
+              add(moment.startDateAndTime, {
+                minutes: map.get(index),
+              }),
+            ),
             momentId: moment.id,
           },
         });

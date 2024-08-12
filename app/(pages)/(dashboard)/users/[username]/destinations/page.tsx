@@ -1,9 +1,10 @@
 import { revalidatePath } from "next/cache";
 
+import { Moment } from "@prisma/client";
+
 import prisma from "@/prisma/db";
 
 import { CRUD } from "./crud";
-import { endDateAndTime } from "@/app/utilities/moments";
 
 type MomentFromCRUD = {
   id: string;
@@ -13,7 +14,7 @@ type MomentFromCRUD = {
   indispensable: boolean;
   contexte: string;
   dateetheure: string;
-  // etapes: StepFromCRUD[]; // too low level here
+  // etapes: StepFromCRUD[]; // to be actually added
   duree: string; // calculated
   findateetheure: string; // calculated
 };
@@ -23,6 +24,38 @@ type DestinationFromCRUD = {
   objectif: string;
   contexte: string | null;
   moments: MomentFromCRUD[];
+};
+
+type StepForCRUD = {
+  id: string;
+  orderId: number;
+  title: string;
+  details: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+};
+
+type MomentForCRUD = {
+  id: string;
+  activity: string;
+  objective: string;
+  isIndispensable: boolean;
+  context: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+  steps: StepForCRUD[];
+};
+
+type DestinationForCRUD = {
+  id: string;
+  ideal: string;
+  aspiration: string | null;
+  dates: {
+    date: string;
+    moments: MomentForCRUD[];
+  }[];
 };
 
 export default async function DestinationsPage({
@@ -48,7 +81,7 @@ export default async function DestinationsPage({
     include: {
       moments: {
         orderBy: {
-          dateAndTime: "asc",
+          startDateAndTime: "asc",
         },
         include: {
           steps: {
@@ -74,25 +107,25 @@ export default async function DestinationsPage({
         objectif: e.name,
         contexte: e.description,
         moments: e.moments.map((e2) => {
-          const dureedumoment = e2.steps
-            .reduce((acc, curr) => acc + +curr.duration, 0)
-            .toString();
+          // const dureedumoment = e2.steps
+          //   .reduce((acc, curr) => acc + +curr.duration, 0)
+          //   .toString();
 
-          const map: Map<number, number> = new Map();
-          let durationTotal = 0;
-          for (let j = 0; j < e2.steps.length; j++) {
-            durationTotal += +e2.steps[j].duration;
-            map.set(j, durationTotal);
-          }
+          // const map: Map<number, number> = new Map();
+          // let durationTotal = 0;
+          // for (let j = 0; j < e2.steps.length; j++) {
+          //   durationTotal += +e2.steps[j].duration;
+          //   map.set(j, durationTotal);
+          // }
           return {
             id: e2.id,
             activite: e2.activity,
             objectif: e2.name,
             indispensable: e2.isIndispensable,
             contexte: e2.description,
-            dateetheure: e2.dateAndTime,
-            duree: dureedumoment,
-            findateetheure: endDateAndTime(e2.dateAndTime, dureedumoment),
+            dateetheure: e2.startDateAndTime,
+            duree: e2.duration.toString(),
+            findateetheure: e2.endDateAndTime,
           };
         }),
       };
@@ -102,12 +135,107 @@ export default async function DestinationsPage({
   // new
   const destinationsA = userDestinations.map((e) => {
     return {
+      id: e.id,
+      ideal: e.name,
+      aspiration: e.description,
       dates: [
-        ...new Set(e.moments.map((moment) => moment.dateAndTime.split("T")[0])),
-      ].sort(),
+        ...new Set(
+          e.moments.map((moment) => moment.startDateAndTime.split("T")[0]),
+        ), // I could have done everything here in one go. Which I will. Now.
+      ],
+      moments: e.moments,
     };
   });
-  destinationsA.forEach((e) => console.log(e.dates));
+  // destinationsA.forEach((e) => console.log(e.dates));
+
+  // I'm registering start and end times on Steps in the database too. This way all the compute only has to be done during createOrUpdate, and not at every rendering of the page. Also, this way, createOrUpdate is the only action where I need to make sure the data is correctly implemented.
+  const destinationsB: DestinationForCRUD[] = destinationsA.map((e) => {
+    return {
+      id: e.id,
+      ideal: e.ideal,
+      aspiration: e.aspiration,
+      dates: e.dates.map((e2) => {
+        return {
+          date: e2,
+          moments: e.moments
+            .filter((e3) => e3.startDateAndTime.startsWith(e2))
+            .map((e3) => {
+              return {
+                id: e3.id,
+                activity: e3.activity,
+                objective: e3.name,
+                isIndispensable: e3.isIndispensable,
+                context: e3.description,
+                startDateAndTime: e3.startDateAndTime,
+                duration: e3.duration,
+                endDateAndTime: e3.endDateAndTime,
+                steps: e3.steps.map((e4) => {
+                  return {
+                    id: e4.id,
+                    orderId: e4.orderId,
+                    title: e4.name,
+                    details: e4.description,
+                    startDateAndTime: e4.startDateAndTime,
+                    duration: e4.duration,
+                    endDateAndTime: e4.endDateAndTime,
+                  };
+                }),
+              };
+            }),
+        };
+      }),
+    };
+  });
+  // console.log(destinationsB);
+  destinationsB.forEach((e) =>
+    e.dates.forEach((e2) => console.log(e2.moments)),
+  );
+
+  // Pour l'instant je laisse, mais il va falloir aussi séparer entre ce qui est à venir, ce qui est en cours, et ce qui est déjà fait. Donc toujours avec le temps. Mais peut-être que ça ça peut être laisser au client pour l'instantanéité.
+  const destinationsForCRUD: DestinationForCRUD[] = userDestinations.map(
+    (e) => {
+      return {
+        id: e.id,
+        ideal: e.name,
+        aspiration: e.description,
+        dates: [
+          ...new Set(
+            e.moments.map((moment) => moment.startDateAndTime.split("T")[0]),
+          ),
+        ].map((e2) => {
+          return {
+            date: e2,
+            moments: e.moments
+              .filter((e3) => e3.startDateAndTime.startsWith(e2))
+              .map((e3) => {
+                return {
+                  id: e3.id,
+                  activity: e3.activity,
+                  objective: e3.name,
+                  isIndispensable: e3.isIndispensable,
+                  context: e3.description,
+                  startDateAndTime: e3.startDateAndTime,
+                  duration: e3.duration,
+                  endDateAndTime: e3.endDateAndTime,
+                  steps: e3.steps.map((e4) => {
+                    return {
+                      id: e4.id,
+                      orderId: e4.orderId,
+                      title: e4.name,
+                      details: e4.description,
+                      startDateAndTime: e4.startDateAndTime,
+                      duration: e4.duration,
+                      endDateAndTime: e4.endDateAndTime,
+                    };
+                  }),
+                };
+              }),
+          };
+        }),
+        moments: e.moments,
+      };
+    },
+  );
 
   // OK. THIS IS WHERE IT STARTS.
   // The goal is for Moments and Destinations to be pretty much two different ways to view the same data, two different contexts in viewing moments.
@@ -119,42 +247,40 @@ export default async function DestinationsPage({
 
   async function createOrUpdateDestination(
     variant: "creating" | "updating",
-    destinationFromCRUD: DestinationFromCRUD | undefined,
+    destinationForCRUD: DestinationForCRUD | undefined,
     formData: FormData,
   ) {
     "use server";
 
-    let objectif = formData.get("objectif");
-    let contexte = formData.get("contexte");
+    let ideal = formData.get("ideal");
+    let aspiration = formData.get("aspiration");
 
-    if (typeof objectif !== "string" || typeof contexte !== "string")
-      return console.error(
-        "Le formulaire da destination n'a pas été correctement renseigné.",
-      );
+    if (typeof ideal !== "string" || typeof aspiration !== "string")
+      return console.error("The destination form was not correctly submitted.");
 
     if (!user) return console.error("Somehow a user was not found.");
 
     if (variant === "creating") {
       await prisma.destination.create({
         data: {
-          name: objectif,
-          description: contexte,
+          name: ideal,
+          description: aspiration,
           userId: user.id,
         },
       });
     }
 
     if (variant === "updating") {
-      if (!destinationFromCRUD)
+      if (!destinationForCRUD)
         return console.error("Somehow a destination was not passed.");
 
       await prisma.destination.update({
         where: {
-          id: destinationFromCRUD.id,
+          id: destinationForCRUD.id,
         },
         data: {
-          name: objectif,
-          description: contexte,
+          name: ideal,
+          description: aspiration,
           userId: user.id,
         },
       });
@@ -163,13 +289,12 @@ export default async function DestinationsPage({
     revalidatePath(`/users/${username}/destinations`);
   }
 
-  async function deleteDestination(destinationFromCRUD: DestinationFromCRUD) {
+  async function deleteDestination(destinationForCRUD: DestinationForCRUD) {
     "use server";
 
     await prisma.destination.delete({
       where: {
-        // Cascade will be necessary. To be implemented at the same time as objective and context on Destination model
-        id: destinationFromCRUD.id,
+        id: destinationForCRUD.id,
       },
     });
 
@@ -178,7 +303,7 @@ export default async function DestinationsPage({
 
   return (
     <CRUD
-      destinationsToCRUD={destinationsToCRUD}
+      destinationsForCRUD={destinationsForCRUD}
       createOrUpdateDestination={createOrUpdateDestination}
       deleteDestination={deleteDestination}
     />

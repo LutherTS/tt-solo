@@ -14,6 +14,8 @@ import {
   Textarea,
 } from "../../../components";
 import { numStringToTimeString } from "@/app/utilities/moments";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 // Main Data
 
@@ -39,14 +41,46 @@ type Destination = {
   moments: Moment[];
 };
 
+type StepForCRUD = {
+  id: string;
+  orderId: number;
+  title: string;
+  details: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+};
+
+type MomentForCRUD = {
+  id: string;
+  activity: string;
+  objective: string;
+  isIndispensable: boolean;
+  context: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+  steps: StepForCRUD[];
+};
+
+type DestinationForCRUD = {
+  id: string;
+  ideal: string;
+  aspiration: string | null;
+  dates: {
+    date: string;
+    moments: MomentForCRUD[];
+  }[];
+};
+
 // Main Component
 
 export function CRUD({
-  destinationsToCRUD,
+  destinationsForCRUD,
   createOrUpdateDestination,
   deleteDestination,
 }: {
-  destinationsToCRUD: Destination[];
+  destinationsForCRUD: DestinationForCRUD[];
   createOrUpdateDestination: any;
   deleteDestination: any;
 }) {
@@ -59,22 +93,13 @@ export function CRUD({
   };
 
   // for UpdateDestinationView
-  let [destination, setDestination] = useState<Destination>();
+  let [destination, setDestination] = useState<DestinationForCRUD>();
 
   return (
     <>
       <div className="space-y-8">
         <div className="flex justify-between align-baseline">
           <PageTitle title={viewTitles[view]} />
-          {view === "update-destination" && (
-            <Button
-              type="button"
-              variant="destroy-step"
-              onClick={() => setView("read-destinations")}
-            >
-              Vos destinations
-            </Button>
-          )}
           {view === "read-destinations" && (
             <Button
               type="button"
@@ -84,11 +109,14 @@ export function CRUD({
               Créez un destination
             </Button>
           )}
-          {view === "create-destination" && (
+          {(view === "update-destination" || view === "create-destination") && (
             <Button
               type="button"
               variant="destroy-step"
-              onClick={() => setView("read-destinations")}
+              onClick={() => {
+                setDestination(undefined);
+                setView("read-destinations");
+              }}
             >
               Vos destinations
             </Button>
@@ -110,7 +138,7 @@ export function CRUD({
       </div>
       <div className={clsx(view !== "read-destinations" && "hidden")}>
         <ReadDestinationsView
-          destinations={destinationsToCRUD}
+          destinations={destinationsForCRUD}
           setDestination={setDestination}
           setView={setView}
         />
@@ -138,8 +166,8 @@ function ReadDestinationsView({
   setDestination,
   setView,
 }: {
-  destinations: Destination[];
-  setDestination: Dispatch<SetStateAction<Destination | undefined>>;
+  destinations: DestinationForCRUD[];
+  setDestination: Dispatch<SetStateAction<DestinationForCRUD | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
 }) {
   return (
@@ -147,131 +175,86 @@ function ReadDestinationsView({
       {destinations.length > 0 ? (
         <>
           {destinations.map((e, i, a) => (
-            <div className="group space-y-8" key={e.id}>
+            <div key={e.id} className="group space-y-8">
               <Section
-                title={e.objectif}
+                title={e.ideal}
                 description={
-                  e.contexte ? e.contexte : "(Pas de contexte défini.)"
+                  e.aspiration ? e.aspiration : "(Pas d'aspiration défini.)"
                 }
               >
-                <div className="flex flex-col gap-y-8">
-                  <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
-                    <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
-                      Moments
-                    </p>
-                    <div className="hidden justify-end group-hover:flex">
-                      <Button
-                        type="button"
-                        variant="destroy-step"
-                        onClick={() => {
-                          setDestination(
-                            destinations.find((e2) => e2.id === e.id),
-                          );
-                          setView("update-destination");
-                        }}
-                      >
-                        Éditer
-                      </Button>
-                    </div>
-                  </div>
-                  {e.moments.length > 0 ? (
-                    <>
-                      {e.moments.map((e3) => (
-                        <div className="group space-y-2" key={e3.id}>
-                          <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
-                            <p className="font-medium text-blue-950">
-                              {e3.objectif}
-                            </p>
-                          </div>
-                          <p>
-                            <span className={"font-semibold text-neutral-800"}>
-                              {e3.dateetheure.split("T")[1]}
-                            </span>{" "}
-                            • {numStringToTimeString(e3.duree)}
-                            {e3.indispensable && (
-                              <>
-                                {" "}
-                                •{" "}
-                                <span className="text-sm font-semibold uppercase">
-                                  indispensable
-                                </span>
-                              </>
-                            )}
+                {e.dates.length > 0 ? (
+                  <>
+                    {e.dates.map((e2, i2) => (
+                      <div key={e2.date} className="flex flex-col gap-y-8">
+                        <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
+                          <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+                            {format(e2.date, "eeee d MMMM", {
+                              locale: fr,
+                            })}
                           </p>
-                        </div>
-                      ))}
-                    </>
-                  ) : (
-                    <p className="text-neutral-500">
-                      (Pas de moment pour le moment.)
-                    </p>
-                  )}
-                </div>
-                {/* {e.destinations.map((e2) => {
-                  return (
-                    <div key={e2.destination} className="flex flex-col gap-y-8">
-                      <div className="flex select-none items-baseline justify-between">
-                        <p
-                          className={clsx(
-                            "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-                          )}
-                        >
-                          {e2.destination}
-                        </p>
-                      </div>
-                      {e2.moments.map((e3) => (
-                        <div className="group space-y-2" key={e3.id}>
-                          <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
-                            <p className="font-medium text-blue-950">
-                              {e3.objectif}
-                            </p>
+                          {i2 === 0 && (
                             <div className="hidden justify-end group-hover:flex">
                               <Button
                                 type="button"
                                 variant="destroy-step"
                                 onClick={() => {
-                                  setMoment(
-                                    moments.find((e) => e.id === e3.id),
+                                  setDestination(
+                                    destinations.find((e2) => e2.id === e.id),
                                   );
-                                  setView("update-moment");
+                                  setView("update-destination");
                                 }}
                               >
                                 Éditer
                               </Button>
                             </div>
-                          </div>
-                          <p>
-                            <span className={"font-semibold text-neutral-800"}>
-                              {e3.dateetheure.split("T")[1]}
-                            </span>{" "}
-                            • {numStringToTimeString(e3.duree)}
-                            {e3.indispensable && (
-                              <>
-                                {" "}
-                                •{" "}
-                                <span className="text-sm font-semibold uppercase">
-                                  indispensable
-                                </span>
-                              </>
-                            )}
-                          </p>
-                          <ol>
-                            {e3.etapes.map((e4) => (
-                              <li
-                                key={e4.id}
-                                className="text-sm leading-loose text-neutral-500"
-                              >
-                                {e4.dateetheure?.split("T")[1]} -{" "}
-                                {e4.findateetheure?.split("T")[1]} :{" "}
-                                {e4.intitule}
-                              </li>
-                            ))}
-                          </ol>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  );
-                })} */}
+                        {e2.moments.map((e3) => (
+                          <div className="group space-y-2" key={e3.id}>
+                            <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
+                              <p className="font-medium text-blue-950">
+                                {e3.objective}
+                              </p>
+                            </div>
+                            <p>
+                              <span
+                                className={"font-semibold text-neutral-800"}
+                              >
+                                {e3.startDateAndTime.split("T")[1]}
+                              </span>{" "}
+                              • {numStringToTimeString(e3.duration)}
+                              {e3.isIndispensable && (
+                                <>
+                                  {" "}
+                                  •{" "}
+                                  <span className="text-sm font-semibold uppercase">
+                                    indispensable
+                                  </span>
+                                </>
+                              )}
+                            </p>
+                            <ol>
+                              {e3.steps.map((e4) => (
+                                <li
+                                  key={e4.id}
+                                  className="text-sm leading-loose text-neutral-500"
+                                >
+                                  {e4.startDateAndTime?.split("T")[1]} -{" "}
+                                  {e4.endDateAndTime?.split("T")[1]} :{" "}
+                                  {e4.title}
+                                </li>
+                              ))}
+                            </ol>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <p className="text-neutral-500">
+                    (Pas de moment pour le moment.)
+                  </p>
+                )}
               </Section>
               {i !== a.length - 1 && <Divider />}
             </div>
@@ -298,7 +281,7 @@ function DestinationForm({
 }: {
   setView: Dispatch<SetStateAction<View>>;
   variant: "creating" | "updating";
-  destination?: Destination;
+  destination?: DestinationForCRUD;
   createOrUpdateDestination: any;
   deleteDestination?: any;
 }) {
@@ -338,19 +321,19 @@ function DestinationForm({
           {/* fixing some padding towards the section title */}
           <div className="-mt-0.5">
             <InputText
-              label="Objectif"
-              name="objectif"
-              defaultValue={destination ? destination.objectif : undefined}
+              label="Idéal"
+              name="ideal"
+              defaultValue={destination ? destination.ideal : undefined}
               description="Indiquez en une phrase le résultat que vers lequel vous souhaitez tendre par le biais de cette destination."
             />
           </div>
 
           <Textarea
-            label="Contexte"
-            name="contexte"
+            label="Aspiration"
+            name="aspiration"
             defaultValue={
-              destination && destination.contexte !== null
-                ? destination.contexte
+              destination && destination.aspiration !== null
+                ? destination.aspiration
                 : undefined
             }
             description="Expliquez de manière étendue en quoi cette destination vous tient à cœur."
