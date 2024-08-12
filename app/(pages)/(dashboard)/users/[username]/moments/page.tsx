@@ -6,6 +6,7 @@ import prisma from "@/prisma/db";
 
 import { CRUD } from "./crud";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
+import { add } from "date-fns";
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -18,8 +19,8 @@ type StepFromCRUD = {
   intitule: string;
   details: string;
   duree: string;
-  dateetheure: string; // calculated
-  findateetheure: string; // calculated
+  dateetheure?: string; // calculated
+  findateetheure?: string; // calculated
 };
 
 type MomentFromCRUD = {
@@ -295,6 +296,8 @@ export default async function MomentsPage({
   // console.log(momentsToCRUD);
   // momentsToCRUD.forEach((e) => console.log(e.etapes));
 
+  // The very least I could do before I leave is make my form derelict work with the new database schema.
+
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
     variant: "creating" | "updating",
@@ -323,6 +326,15 @@ export default async function MomentsPage({
 
     if (!user) return console.error("Somehow a user was not found.");
 
+    let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
+
+    const map: Map<number, number> = new Map();
+    let durationTotal = 0;
+    for (let j = 0; j < steps.length; j++) {
+      durationTotal += +steps[j].duree;
+      map.set(j, durationTotal);
+    }
+
     if (variant === "creating") {
       const destinationEntry = await prisma.destination.findUnique({
         where: {
@@ -343,6 +355,8 @@ export default async function MomentsPage({
             isIndispensable: indispensable,
             description: contexte,
             startDateAndTime: momentDate,
+            duration,
+            endDateAndTime: endDateAndTime(momentDate, duration),
             destinationId: destinationEntry.id,
           },
         });
@@ -354,6 +368,8 @@ export default async function MomentsPage({
             isIndispensable: indispensable,
             description: contexte,
             startDateAndTime: momentDate,
+            duration,
+            endDateAndTime: endDateAndTime(momentDate, duration),
             destination: {
               create: {
                 name: destination,
@@ -365,13 +381,24 @@ export default async function MomentsPage({
       }
 
       let i = 1;
-      for (const step of steps) {
+      for (let j = 0; j < steps.length; j++) {
+        const step = steps[j];
+
         await prisma.step.create({
           data: {
             orderId: i,
             name: step.intitule,
             description: step.details,
+            startDateAndTime:
+              j === 0
+                ? momentDate
+                : dateToInputDatetime(
+                    add(momentDate, { minutes: map.get(j - 1) }),
+                  ),
             duration: step.duree,
+            endDateAndTime: dateToInputDatetime(
+              add(momentDate, { minutes: map.get(j) }),
+            ),
             momentId: moment.id,
           },
         });
@@ -405,6 +432,8 @@ export default async function MomentsPage({
             isIndispensable: indispensable,
             description: contexte,
             startDateAndTime: momentDate,
+            duration,
+            endDateAndTime: endDateAndTime(momentDate, duration),
             destinationId: destinationEntry.id,
           },
         });
@@ -419,6 +448,8 @@ export default async function MomentsPage({
             isIndispensable: indispensable,
             description: contexte,
             startDateAndTime: momentDate,
+            duration,
+            endDateAndTime: endDateAndTime(momentDate, duration),
             destination: {
               create: {
                 name: destination,
@@ -436,13 +467,24 @@ export default async function MomentsPage({
       });
 
       let i = 1;
-      for (const step of steps) {
+      for (let j = 0; j < steps.length; j++) {
+        const step = steps[j];
+
         await prisma.step.create({
           data: {
             orderId: i,
             name: step.intitule,
             description: step.details,
+            startDateAndTime:
+              j === 0
+                ? momentDate
+                : dateToInputDatetime(
+                    add(momentDate, { minutes: map.get(j - 1) }),
+                  ),
             duration: step.duree,
+            endDateAndTime: dateToInputDatetime(
+              add(momentDate, { minutes: map.get(j) }),
+            ),
             momentId: moment.id,
           },
         });

@@ -230,7 +230,7 @@ export function CRUD({
           setView={setView}
           subView={subView}
           setSubView={setSubView}
-          now={now}
+          // now={now}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
@@ -260,7 +260,7 @@ function ReadMomentsView({
   setView,
   subView,
   setSubView,
-  now,
+  // now,
 }: {
   moments: Moment[];
   allUserMomentsForCRUD: UserMomentsForCRUD[];
@@ -268,7 +268,7 @@ function ReadMomentsView({
   setView: Dispatch<SetStateAction<View>>;
   subView: SubView;
   setSubView: Dispatch<SetStateAction<SubView>>;
-  now: string;
+  // now: string;
 }) {
   let subViewTitles = {
     "past-moments": "Passés",
@@ -285,98 +285,98 @@ function ReadMomentsView({
   // Basically, the idea is to yes, get all moments on top, but with the minimum amount of data from them. The most minimum. Then I filter and treat them in the client with JavaScript. And eventually I'll have some server components in the lists that will each go look for the extra data that is being needed.
   // SO LET'S GO.
 
-  let pastMoments: Moment[] = [];
-  let currentMoments: Moment[] = [];
-  let futureMoments: Moment[] = [];
+  // let pastMoments: Moment[] = [];
+  // let currentMoments: Moment[] = [];
+  // let futureMoments: Moment[] = [];
 
-  moments.forEach((e) => {
-    // if the end of the moment came before now
-    if (compareDesc(e.findateetheure, now) === 1) pastMoments.push(e);
-    // if the beginning of the moment comes after now
-    else if (compareAsc(e.dateetheure, now) == 1) futureMoments.push(e);
-    // any of the situation is within the scope of now
-    else currentMoments.push(e);
-  });
+  // moments.forEach((e) => {
+  //   // if the end of the moment came before now
+  //   if (compareDesc(e.findateetheure, now) === 1) pastMoments.push(e);
+  //   // if the beginning of the moment comes after now
+  //   else if (compareAsc(e.dateetheure, now) == 1) futureMoments.push(e);
+  //   // any of the situation is within the scope of now
+  //   else currentMoments.push(e);
+  // });
 
-  let allMoments = [moments, pastMoments, currentMoments, futureMoments];
+  // let allMoments = [moments, pastMoments, currentMoments, futureMoments];
 
-  let allMomentsDates = [
-    moments,
-    pastMoments,
-    currentMoments,
-    futureMoments,
-  ].map((e0) =>
-    [...new Set(e0.map((moment) => moment.dateetheure.split("T")[0]))].sort(),
-  );
+  // let allMomentsDates = [
+  //   moments,
+  //   pastMoments,
+  //   currentMoments,
+  //   futureMoments,
+  // ].map((e0) =>
+  //   [...new Set(e0.map((moment) => moment.dateetheure.split("T")[0]))].sort(),
+  // );
 
-  let allMomentsDatesWithMoments = allMomentsDates.map((e0, i0) =>
-    e0.map((e) => {
-      let momentsDateMoments = allMoments[i0].filter((e2) =>
-        e2.dateetheure.startsWith(e),
-      );
-      return { date: e, moments: momentsDateMoments };
-    }),
-  );
+  // let allMomentsDatesWithMoments = allMomentsDates.map((e0, i0) =>
+  //   e0.map((e) => {
+  //     let momentsDateMoments = allMoments[i0].filter((e2) =>
+  //       e2.dateetheure.startsWith(e),
+  //     );
+  //     return { date: e, moments: momentsDateMoments };
+  //   }),
+  // );
 
-  let allMomentsDatesWithMomentsByDestinations = allMomentsDatesWithMoments.map(
-    (e0) =>
-      e0.map((e) => {
-        return {
-          date: e.date,
-          destinations: [
-            ...new Set(e.moments.map((e2) => e2.destination)),
-          ].sort((a, b) => {
-            const destinationA = a.toLowerCase();
-            const destinationB = b.toLowerCase();
-            if (destinationA < destinationB) return -1;
-            if (destinationA > destinationB) return 1;
-            return 0;
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-          }),
-        };
-      }),
-  );
+  // let allMomentsDatesWithMomentsByDestinations = allMomentsDatesWithMoments.map(
+  //   (e0) =>
+  //     e0.map((e) => {
+  //       return {
+  //         date: e.date,
+  //         destinations: [
+  //           ...new Set(e.moments.map((e2) => e2.destination)),
+  //         ].sort((a, b) => {
+  //           const destinationA = a.toLowerCase();
+  //           const destinationB = b.toLowerCase();
+  //           if (destinationA < destinationB) return -1;
+  //           if (destinationA > destinationB) return 1;
+  //           return 0;
+  //           // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
+  //         }),
+  //       };
+  //     }),
+  // );
 
-  let allTrueMomentsDatesWithMomentsByDestinations =
-    allMomentsDatesWithMomentsByDestinations.map((e0, i0) =>
-      e0.map((e) => {
-        return {
-          date: e.date,
-          destinations: e.destinations.map((e2) => {
-            let theseMoments = allMoments[i0]
-              .filter((e3) => {
-                return (
-                  e3.destination === e2 && e3.dateetheure.startsWith(e.date)
-                );
-              })
-              .sort((a, b) => {
-                const dateA = a.dateetheure;
-                const dateB = b.dateetheure;
-                if (dateA < dateB) return -1;
-                if (dateA > dateB) return 1;
-                return 0;
-              });
-            return {
-              destination: e2,
-              moments: theseMoments,
-            };
-          }),
-        };
-      }),
-    );
+  // let allTrueMomentsDatesWithMomentsByDestinations =
+  //   allMomentsDatesWithMomentsByDestinations.map((e0, i0) =>
+  //     e0.map((e) => {
+  //       return {
+  //         date: e.date,
+  //         destinations: e.destinations.map((e2) => {
+  //           let theseMoments = allMoments[i0]
+  //             .filter((e3) => {
+  //               return (
+  //                 e3.destination === e2 && e3.dateetheure.startsWith(e.date)
+  //               );
+  //             })
+  //             .sort((a, b) => {
+  //               const dateA = a.dateetheure;
+  //               const dateB = b.dateetheure;
+  //               if (dateA < dateB) return -1;
+  //               if (dateA > dateB) return 1;
+  //               return 0;
+  //             });
+  //           return {
+  //             destination: e2,
+  //             moments: theseMoments,
+  //           };
+  //         }),
+  //       };
+  //     }),
+  //   );
 
-  const [
-    trueMomentsDatesWithMomentsByDestinations,
-    truePastMoments,
-    trueCurrentMoments,
-    trueFutureMoments,
-  ] = allTrueMomentsDatesWithMomentsByDestinations;
+  // const [
+  //   trueMomentsDatesWithMomentsByDestinations,
+  //   truePastMoments,
+  //   trueCurrentMoments,
+  //   trueFutureMoments,
+  // ] = allTrueMomentsDatesWithMomentsByDestinations;
 
-  const showcaseMoments = {
-    "past-moments": truePastMoments,
-    "current-moments": trueCurrentMoments,
-    "future-moments": trueFutureMoments,
-  };
+  // const showcaseMoments = {
+  //   "past-moments": truePastMoments,
+  //   "current-moments": trueCurrentMoments,
+  //   "future-moments": trueFutureMoments,
+  // };
 
   //
 
@@ -401,15 +401,22 @@ function ReadMomentsView({
     "future-moments",
   ] as const;
 
-  let displayedMoments = trueMomentsDatesWithMomentsByDestinations;
-  if (subView !== undefined && subViews.includes(subView))
-    displayedMoments = showcaseMoments[subView];
+  // let displayedMoments = trueMomentsDatesWithMomentsByDestinations;
+  // if (subView !== undefined && subViews.includes(subView))
+  //   displayedMoments = showcaseMoments[subView];
 
   //
 
-  let realDisplayedMoments = realAllMoments;
+  let realDisplayedMoments = realAllMoments.dates;
   if (subView !== undefined && subViews.includes(subView))
-    realDisplayedMoments = realShowcaseMoments[subView];
+    realDisplayedMoments = realShowcaseMoments[subView].dates;
+
+  let realMoments: MomentForCRUD[] = [];
+  realDisplayedMoments.forEach((e) =>
+    e.destinations.forEach((e2) =>
+      e2.moments.forEach((e3) => realMoments.push(e3)),
+    ),
+  );
 
   //
 
@@ -458,9 +465,9 @@ function ReadMomentsView({
           );
         })}
       </div>
-      {displayedMoments.length > 0 ? (
+      {realDisplayedMoments.length > 0 ? (
         <>
-          {displayedMoments.map((e, i, a) => (
+          {realDisplayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <Section
                 title={format(new Date(e.date), "eeee d MMMM", {
@@ -469,21 +476,24 @@ function ReadMomentsView({
               >
                 {e.destinations.map((e2) => {
                   return (
-                    <div key={e2.destination} className="flex flex-col gap-y-8">
+                    <div
+                      key={e2.destinationIdeal}
+                      className="flex flex-col gap-y-8"
+                    >
                       <div className="flex select-none items-baseline justify-between">
                         <p
                           className={clsx(
                             "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
                           )}
                         >
-                          {e2.destination}
+                          {e2.destinationIdeal}
                         </p>
                       </div>
                       {e2.moments.map((e3) => (
                         <div className="group space-y-2" key={e3.id}>
                           <div className="grid select-none grid-cols-[4fr_1fr] items-baseline gap-4">
                             <p className="font-medium text-blue-950">
-                              {e3.objectif}
+                              {e3.objective}
                             </p>
                             <div className="hidden justify-end group-hover:flex">
                               <Button
@@ -492,7 +502,8 @@ function ReadMomentsView({
                                 onClick={() => {
                                   setMoment(
                                     moments.find((e4) => e4.id === e3.id),
-                                  );
+                                  ); // TO BE CORRECTED.
+                                  // I still need the old format for the moment in order not to break my form. Whose mechanism will probably need to be rethought.
                                   setView("update-moment");
                                 }}
                               >
@@ -502,10 +513,10 @@ function ReadMomentsView({
                           </div>
                           <p>
                             <span className={"font-semibold text-neutral-800"}>
-                              {e3.dateetheure.split("T")[1]}
+                              {e3.startDateAndTime.split("T")[1]}
                             </span>{" "}
-                            • {numStringToTimeString(e3.duree)}
-                            {e3.indispensable && (
+                            • {numStringToTimeString(e3.duration)}
+                            {e3.isIndispensable && (
                               <>
                                 {" "}
                                 •{" "}
@@ -516,14 +527,13 @@ function ReadMomentsView({
                             )}
                           </p>
                           <ol>
-                            {e3.etapes.map((e4) => (
+                            {e3.steps.map((e4) => (
                               <li
                                 key={e4.id}
                                 className="text-sm leading-loose text-neutral-500"
                               >
-                                {e4.dateetheure?.split("T")[1]} -{" "}
-                                {e4.findateetheure?.split("T")[1]} :{" "}
-                                {e4.intitule}
+                                {e4.startDateAndTime.split("T")[1]} -{" "}
+                                {e4.endDateAndTime.split("T")[1]} : {e4.title}
                               </li>
                             ))}
                           </ol>
