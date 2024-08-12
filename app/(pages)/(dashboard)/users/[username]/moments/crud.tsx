@@ -54,6 +54,42 @@ type View = "update-moment" | "create-moment" | "read-moments";
 
 type SubView = "past-moments" | "current-moments" | "future-moments";
 
+type StepForCRUD = {
+  id: string;
+  orderId: number;
+  title: string;
+  details: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+};
+
+type MomentForCRUD = {
+  id: string;
+  activity: string;
+  objective: string;
+  isIndispensable: boolean;
+  context: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+  steps: StepForCRUD[];
+};
+
+type MomentsDestinationForCRUD = {
+  destinationIdeal: string;
+  moments: MomentForCRUD[];
+};
+
+type MomentsDateForCRUD = {
+  date: string;
+  destinations: MomentsDestinationForCRUD[];
+};
+
+type UserMomentsForCRUD = {
+  dates: MomentsDateForCRUD[];
+};
+
 type Step = {
   id: number;
   intitule: string;
@@ -107,11 +143,13 @@ const exchangeOptions: Option[] = [
 
 export function CRUD({
   momentsToCRUD,
+  allUserMomentsForCRUD,
   createOrUpdateMoment,
   deleteMoment,
   now,
 }: {
   momentsToCRUD: Moment[];
+  allUserMomentsForCRUD: UserMomentsForCRUD[];
   createOrUpdateMoment: any;
   deleteMoment: any;
   now: string;
@@ -187,6 +225,7 @@ export function CRUD({
       <div className={clsx(view !== "read-moments" && "hidden")}>
         <ReadMomentsView
           moments={momentsToCRUD}
+          allUserMomentsForCRUD={allUserMomentsForCRUD}
           setMoment={setMoment}
           setView={setView}
           subView={subView}
@@ -216,6 +255,7 @@ export function CRUD({
 
 function ReadMomentsView({
   moments,
+  allUserMomentsForCRUD,
   setMoment,
   setView,
   subView,
@@ -223,6 +263,7 @@ function ReadMomentsView({
   now,
 }: {
   moments: Moment[];
+  allUserMomentsForCRUD: UserMomentsForCRUD[];
   setMoment: Dispatch<SetStateAction<Moment | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
   subView: SubView;
@@ -337,6 +378,23 @@ function ReadMomentsView({
     "future-moments": trueFutureMoments,
   };
 
+  //
+
+  const [
+    realAllMoments,
+    realPastMoments,
+    realCurrentMoments,
+    realFutureMoments,
+  ] = allUserMomentsForCRUD;
+
+  const realShowcaseMoments = {
+    "past-moments": realPastMoments,
+    "current-moments": realCurrentMoments,
+    "future-moments": realFutureMoments,
+  };
+
+  //
+
   const subViews = [
     "past-moments",
     "current-moments",
@@ -346,6 +404,14 @@ function ReadMomentsView({
   let displayedMoments = trueMomentsDatesWithMomentsByDestinations;
   if (subView !== undefined && subViews.includes(subView))
     displayedMoments = showcaseMoments[subView];
+
+  //
+
+  let realDisplayedMoments = realAllMoments;
+  if (subView !== undefined && subViews.includes(subView))
+    realDisplayedMoments = realShowcaseMoments[subView];
+
+  //
 
   return (
     <div className="space-y-8">
@@ -483,7 +549,7 @@ function ReadMomentsView({
 
 function MomentForms({
   setView,
-  moments,
+  moments, // gonna go for destinations from the database
   variant,
   moment,
   createOrUpdateMoment,
@@ -492,7 +558,7 @@ function MomentForms({
   now,
 }: {
   setView: Dispatch<SetStateAction<View>>;
-  moments: Moment[];
+  moments: Moment[]; // gonna go for destinations from the database
   variant: "creating" | "updating";
   moment?: Moment;
   createOrUpdateMoment: any;

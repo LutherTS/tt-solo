@@ -35,6 +35,42 @@ type MomentFromCRUD = {
   findateetheure: string; // calculated
 };
 
+type StepForCRUD = {
+  id: string;
+  orderId: number;
+  title: string;
+  details: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+};
+
+type MomentForCRUD = {
+  id: string;
+  activity: string;
+  objective: string;
+  isIndispensable: boolean;
+  context: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+  steps: StepForCRUD[];
+};
+
+type MomentsDestinationForCRUD = {
+  destinationIdeal: string;
+  moments: MomentForCRUD[];
+};
+
+type MomentsDateForCRUD = {
+  date: string;
+  destinations: MomentsDestinationForCRUD[];
+};
+
+type UserMomentsForCRUD = {
+  dates: MomentsDateForCRUD[];
+};
+
 export default async function MomentsPage({
   params,
 }: {
@@ -68,6 +104,137 @@ export default async function MomentsPage({
   });
   // console.log(userMoments);
 
+  const pastUserMoments = await prisma.moment.findMany({
+    where: {
+      destination: {
+        userId: user.id,
+      },
+      endDateAndTime: {
+        lt: nowString,
+      },
+    },
+    include: {
+      destination: true,
+      steps: {
+        orderBy: {
+          orderId: "asc",
+        },
+      },
+    },
+  });
+  // console.log(pastUserMoments);
+
+  const futureUserMoments = await prisma.moment.findMany({
+    where: {
+      destination: {
+        userId: user.id,
+      },
+      startDateAndTime: {
+        gt: nowString,
+      },
+    },
+    include: {
+      destination: true,
+      steps: {
+        orderBy: {
+          orderId: "asc",
+        },
+      },
+    },
+  });
+  // console.log(futureUserMoments);
+
+  const currentUserMoments = await prisma.moment.findMany({
+    where: {
+      destination: {
+        userId: user.id,
+      },
+      AND: [
+        { startDateAndTime: { lte: nowString } },
+        { endDateAndTime: { gte: nowString } },
+      ],
+    },
+    include: {
+      destination: true,
+      steps: {
+        orderBy: {
+          orderId: "asc",
+        },
+      },
+    },
+  });
+  // console.log(currentUserMoments);
+
+  // This will be optimized in a Promise.all once all queries will be organized in their own folder.
+  const allUserMoments = [
+    userMoments,
+    pastUserMoments,
+    currentUserMoments,
+    futureUserMoments,
+  ];
+  // console.log(allUserMoments);
+
+  const allUserMomentsForCRUD: UserMomentsForCRUD[] = allUserMoments.map(
+    (e) => {
+      return {
+        dates: [
+          ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
+        ].map((e3) => {
+          return {
+            date: e3,
+            destinations: [
+              ...new Set(
+                e
+                  .filter((moment) => moment.startDateAndTime.startsWith(e3))
+                  .map((moment) => moment.destination.name),
+              ),
+            ]
+              .sort()
+              .map((e5) => {
+                return {
+                  destinationIdeal: e5,
+                  moments: e
+                    .filter(
+                      (moment) =>
+                        moment.destination.name === e5 &&
+                        moment.startDateAndTime.startsWith(e3),
+                    )
+                    .map((e6) => {
+                      return {
+                        id: e6.id,
+                        activity: e6.activity,
+                        objective: e6.name,
+                        isIndispensable: e6.isIndispensable,
+                        context: e6.description,
+                        startDateAndTime: e6.startDateAndTime,
+                        duration: e6.duration,
+                        endDateAndTime: e6.endDateAndTime,
+                        steps: e6.steps.map((e7) => {
+                          return {
+                            id: e7.id,
+                            orderId: e7.orderId,
+                            title: e7.name,
+                            details: e7.description,
+                            startDateAndTime: e7.startDateAndTime,
+                            duration: e7.duration,
+                            endDateAndTime: e7.endDateAndTime,
+                          };
+                        }),
+                      };
+                    }),
+                };
+              }),
+          };
+        }),
+      };
+    },
+  );
+
+  // console.log(allUserMomentsForCRUD);
+  // allUserMomentsForCRUD.forEach((e) => console.log(e));
+  // console.log(allUserMomentsForCRUD[0]);
+  // console.log(allUserMomentsForCRUD[0].dates[0]);
+
   // IMPORTANT
   // Séparer les moments entre les moments qui ont fini avant maintenant, les moments qui dont le début et la fin inclus maintenant, et les moment qui commencent après maintenant. Il faut aussi en créer un de chaque dans les seeds. (Deux restants.)
   // Et le mieux ce sera de créer les dates avec date-fns. Le passé commence à maintenant moins un mois. Le courant commence maintenant. Le futur commence maintenant plus un mois. Et au lieu de 10, 20, 30 minutes, ce sera 1 heure, (60), 2 heures (120) et 3 heures (180).
@@ -96,18 +263,18 @@ export default async function MomentsPage({
       objectif: e.name,
       indispensable: e.isIndispensable,
       contexte: e.description,
-      dateetheure: e.dateAndTime,
+      dateetheure: e.startDateAndTime,
       etapes: e.steps.map((e2, i2) => {
         let dateetheuredeletape: string;
-        if (i2 === 0) dateetheuredeletape = e.dateAndTime;
+        if (i2 === 0) dateetheuredeletape = e.startDateAndTime;
         else
           dateetheuredeletape = endDateAndTime(
-            e.dateAndTime,
+            e.startDateAndTime,
             // ! because e.steps and map have the same length
             map.get(i2 - 1)!.toString(),
           );
         let findateetheuredeletape = endDateAndTime(
-          e.dateAndTime,
+          e.startDateAndTime,
           // really, so far at least I know what I'm doing here
           map.get(i2)!.toString(),
         );
@@ -122,7 +289,7 @@ export default async function MomentsPage({
         };
       }),
       duree: dureedumoment,
-      findateetheure: endDateAndTime(e.dateAndTime, dureedumoment),
+      findateetheure: endDateAndTime(e.startDateAndTime, dureedumoment),
     };
   });
   // console.log(momentsToCRUD);
@@ -175,7 +342,7 @@ export default async function MomentsPage({
             name: objectif,
             isIndispensable: indispensable,
             description: contexte,
-            dateAndTime: momentDate,
+            startDateAndTime: momentDate,
             destinationId: destinationEntry.id,
           },
         });
@@ -186,7 +353,7 @@ export default async function MomentsPage({
             name: objectif,
             isIndispensable: indispensable,
             description: contexte,
-            dateAndTime: momentDate,
+            startDateAndTime: momentDate,
             destination: {
               create: {
                 name: destination,
@@ -237,7 +404,7 @@ export default async function MomentsPage({
             name: objectif,
             isIndispensable: indispensable,
             description: contexte,
-            dateAndTime: momentDate,
+            startDateAndTime: momentDate,
             destinationId: destinationEntry.id,
           },
         });
@@ -251,7 +418,7 @@ export default async function MomentsPage({
             name: objectif,
             isIndispensable: indispensable,
             description: contexte,
-            dateAndTime: momentDate,
+            startDateAndTime: momentDate,
             destination: {
               create: {
                 name: destination,
@@ -300,7 +467,8 @@ export default async function MomentsPage({
 
   return (
     <CRUD
-      momentsToCRUD={momentsToCRUD}
+      momentsToCRUD={momentsToCRUD} // to be removed
+      allUserMomentsForCRUD={allUserMomentsForCRUD}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
       now={nowString}
