@@ -504,12 +504,19 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
+  async function revalidateMoments() {
+    "use server";
+
+    revalidatePath(`/users/${username}/moments`);
+  }
+
   return (
     <CRUD
       allUserMomentsToCRUD={allUserMomentsToCRUD}
       destinationOptions={destinationOptions}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
+      revalidateMoments={revalidateMoments}
       now={nowString}
     />
   );
