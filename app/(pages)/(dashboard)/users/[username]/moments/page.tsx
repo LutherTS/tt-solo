@@ -26,12 +26,28 @@ console.log(nowString);
 
 export default async function MomentsPage({
   params,
+  searchParams,
 }: {
   params: {
     username: string;
   };
+  searchParams?: {
+    contains?: string;
+    usermomentspage?: string;
+    pastusermomentspage?: string;
+    currentusermomentspage?: string;
+    futureusermomentspage?: string;
+  };
 }) {
   const username = params.username;
+
+  const contains = searchParams?.contains || "";
+  const userMomentsPage = Number(searchParams?.usermomentspage) || 1;
+  const pastUserMomentsPage = Number(searchParams?.pastusermomentspage) || 1;
+  const currentUserMomentsPage =
+    Number(searchParams?.currentusermomentspage) || 1;
+  const futureUserMomentsPage =
+    Number(searchParams?.futureusermomentspage) || 1;
 
   const user = await prisma.user.findUnique({
     where: { username },
@@ -43,8 +59,7 @@ export default async function MomentsPage({
   // take and skip randomly implemented below for scalable defaults.
   // All of these will be optimized in a Promise.all once all queries will be organized in their own folders.
 
-  const TAKE = 10;
-  const DEFAULT_PAGE = 1;
+  const TAKE = 1;
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
@@ -52,6 +67,9 @@ export default async function MomentsPage({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
         },
         include: {
@@ -66,12 +84,15 @@ export default async function MomentsPage({
           startDateAndTime: "desc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (userMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
           endDateAndTime: {
             lt: nowString,
@@ -89,12 +110,15 @@ export default async function MomentsPage({
           startDateAndTime: "desc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (pastUserMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
           AND: [
             { startDateAndTime: { lte: nowString } },
@@ -113,12 +137,15 @@ export default async function MomentsPage({
           startDateAndTime: "asc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (currentUserMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
           startDateAndTime: {
             gt: nowString,
@@ -136,7 +163,7 @@ export default async function MomentsPage({
           startDateAndTime: "asc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (futureUserMomentsPage - 1) * TAKE,
       }),
     ]);
   // console.log(userMoments);
