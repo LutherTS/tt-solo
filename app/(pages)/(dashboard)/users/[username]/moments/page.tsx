@@ -13,6 +13,15 @@ let now = new Date();
 // sharing time as string to bypass timezone adaptations
 let nowString = dateToInputDatetime(now);
 console.log(nowString);
+// There's a problem with cache when it comes to time here
+// It's only when the page recompiles that the correct time is taken into account.
+
+type Option = {
+  // that needs to be a file in a types folder.
+  key: number;
+  label: string;
+  value: string;
+};
 
 type StepFromCRUD = {
   id: number;
@@ -56,6 +65,7 @@ type MomentForCRUD = {
   duration: string;
   endDateAndTime: string;
   steps: StepForCRUD[];
+  destinationIdeal: string;
 };
 
 type MomentsDestinationForCRUD = {
@@ -88,7 +98,8 @@ export default async function MomentsPage({
 
   if (!user) return console.error("Somehow a user was not found.");
 
-  // take and skip randomly implemented below for scalable defaults
+  // take and skip randomly implemented below for scalable defaults.
+  // All of these will be optimized in a Promise.all once all queries will be organized in their own folders.
 
   const userMoments = await prisma.moment.findMany({
     where: {
@@ -188,7 +199,6 @@ export default async function MomentsPage({
   });
   // console.log(futureUserMoments);
 
-  // This will be optimized in a Promise.all once all queries will be organized in their own folder.
   const allUserMoments = [
     userMoments,
     pastUserMoments,
@@ -259,6 +269,7 @@ export default async function MomentsPage({
                             endDateAndTime: e7.endDateAndTime,
                           };
                         }),
+                        destinationIdeal: e5,
                       };
                     }),
                 };
@@ -269,10 +280,30 @@ export default async function MomentsPage({
     },
   );
 
-  // console.log(allUserMomentsForCRUD);
-  // allUserMomentsForCRUD.forEach((e) => console.log(e));
-  // console.log(allUserMomentsForCRUD[0]);
-  // console.log(allUserMomentsForCRUD[0].dates[0]);
+  const userDestinations = await prisma.destination.findMany({
+    where: {
+      userId: user.id,
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+  });
+
+  const destinationOptions: Option[] = userDestinations
+    .sort((a, b) => {
+      const nameA = a.name.toLowerCase();
+      const nameB = b.name.toLowerCase();
+      if (nameA < nameB) return -1;
+      if (nameB > nameA) return 1;
+      return 0;
+    })
+    .map((e, i) => {
+      return {
+        key: i + 1,
+        label: e.name,
+        value: e.name,
+      };
+    });
 
   // IMPORTANT
   // Séparer les moments entre les moments qui ont fini avant maintenant, les moments qui dont le début et la fin inclus maintenant, et les moment qui commencent après maintenant. Il faut aussi en créer un de chaque dans les seeds. (Deux restants.)
@@ -283,58 +314,58 @@ export default async function MomentsPage({
   // Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
   // Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
 
-  const momentsToCRUD: MomentFromCRUD[] = userMoments.map((e) => {
-    const dureedumoment = e.steps
-      .reduce((acc, curr) => acc + +curr.duration, 0)
-      .toString();
+  // const momentsToCRUD: MomentFromCRUD[] = userMoments.map((e) => {
+  //   const dureedumoment = e.steps
+  //     .reduce((acc, curr) => acc + +curr.duration, 0)
+  //     .toString();
 
-    const map: Map<number, number> = new Map();
-    let durationTotal = 0;
-    for (let j = 0; j < e.steps.length; j++) {
-      durationTotal += +e.steps[j].duration;
-      map.set(j, durationTotal);
-    }
+  //   const map: Map<number, number> = new Map();
+  //   let durationTotal = 0;
+  //   for (let j = 0; j < e.steps.length; j++) {
+  //     durationTotal += +e.steps[j].duration;
+  //     map.set(j, durationTotal);
+  //   }
 
-    return {
-      id: e.id,
-      destination: e.destination.name,
-      activite: e.activity,
-      objectif: e.name,
-      indispensable: e.isIndispensable,
-      contexte: e.description,
-      dateetheure: e.startDateAndTime,
-      etapes: e.steps.map((e2, i2) => {
-        let dateetheuredeletape: string;
-        if (i2 === 0) dateetheuredeletape = e.startDateAndTime;
-        else
-          dateetheuredeletape = endDateAndTime(
-            e.startDateAndTime,
-            // ! because e.steps and map have the same length
-            map.get(i2 - 1)!.toString(),
-          );
-        let findateetheuredeletape = endDateAndTime(
-          e.startDateAndTime,
-          // really, so far at least I know what I'm doing here
-          map.get(i2)!.toString(),
-        );
+  //   return {
+  //     id: e.id,
+  //     destination: e.destination.name,
+  //     activite: e.activity,
+  //     objectif: e.name,
+  //     indispensable: e.isIndispensable,
+  //     contexte: e.description,
+  //     dateetheure: e.startDateAndTime,
+  //     etapes: e.steps.map((e2, i2) => {
+  //       let dateetheuredeletape: string;
+  //       if (i2 === 0) dateetheuredeletape = e.startDateAndTime;
+  //       else
+  //         dateetheuredeletape = endDateAndTime(
+  //           e.startDateAndTime,
+  //           // ! because e.steps and map have the same length
+  //           map.get(i2 - 1)!.toString(),
+  //         );
+  //       let findateetheuredeletape = endDateAndTime(
+  //         e.startDateAndTime,
+  //         // really, so far at least I know what I'm doing here
+  //         map.get(i2)!.toString(),
+  //       );
 
-        return {
-          id: e2.orderId,
-          intitule: e2.name,
-          details: e2.description,
-          duree: e2.duration,
-          dateetheure: dateetheuredeletape,
-          findateetheure: findateetheuredeletape,
-        };
-      }),
-      duree: dureedumoment,
-      findateetheure: endDateAndTime(e.startDateAndTime, dureedumoment),
-    };
-  });
+  //       return {
+  //         id: e2.orderId,
+  //         intitule: e2.name,
+  //         details: e2.description,
+  //         duree: e2.duration,
+  //         dateetheure: dateetheuredeletape,
+  //         findateetheure: findateetheuredeletape,
+  //       };
+  //     }),
+  //     duree: dureedumoment,
+  //     findateetheure: endDateAndTime(e.startDateAndTime, dureedumoment),
+  //   };
+  // });
   // console.log(momentsToCRUD);
   // momentsToCRUD.forEach((e) => console.log(e.etapes));
 
-  // The very least I could do before I leave is make my form derelict work with the new database schema.
+  // The very least I could do before I leave is make my form work with the new database schema.
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
@@ -547,8 +578,9 @@ export default async function MomentsPage({
 
   return (
     <CRUD
-      momentsToCRUD={momentsToCRUD} // to be removed
+      // momentsToCRUD={momentsToCRUD} // to be removed
       allUserMomentsForCRUD={allUserMomentsForCRUD}
+      destinationOptions={destinationOptions}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
       now={nowString}
