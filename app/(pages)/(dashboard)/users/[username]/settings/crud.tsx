@@ -7,7 +7,7 @@ export function CRUD() {
         <div className="flex justify-between align-baseline">
           <PageTitle title="Vos paramètres" />
         </div>
-        <Divider />
+        {/* <Divider /> */}
       </div>
     </>
   );

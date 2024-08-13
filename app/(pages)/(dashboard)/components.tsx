@@ -40,6 +40,12 @@ export function Divider() {
   );
 }
 
+export function SectionWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl bg-white px-4 py-5 shadow-sm">{children}</div>
+  );
+}
+
 export function Section({
   title,
   description,
