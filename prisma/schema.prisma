@@ -27,6 +27,11 @@ model User {
   destinations                   Destination[]
 }
 
+// Destination is going to need a table above called Projects.
+// Doing the User seeds of Grevents v3 is a Moment.
+// Transcribing the seeds from Grevents v2 to Grevents v3 is a Destination.
+// Completing Grevents v3 is a Project. That is the anticipated hierarchy.
+
 model Destination {
   id                             String                    @id @default(uuid())
 
@@ -74,7 +79,6 @@ model Moment {
   @@unique([name, destinationId])
 }
 
-// I'd implement startDateAndTime and endDateAndTime on Step only if it ends up being required.
 model Step {
   id                             String                    @id @default(uuid())
   orderId                        Int
