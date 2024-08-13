@@ -13,6 +13,13 @@ async function seed() {
   const lastMonth = sub(nowHourFloored, { months: 1 });
   const nextMonth = add(nowHourFloored, { months: 1 });
 
+  console.log(`Defining step durations.`);
+  const stepDuration1 = 60;
+  const stepDuration2 = 120;
+  const stepDuration3 = 180;
+
+  const momentDuration = stepDuration1 + stepDuration2 + stepDuration3;
+
   console.log(`Beginning initial seeds...`);
 
   ///////////////////////////////////////////////////////////////////////////
@@ -119,7 +126,10 @@ async function seed() {
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
-      dateAndTime: dateToInputDatetime(lastMonth),
+      startDateAndTime: dateToInputDatetime(lastMonth),
+      endDateAndTime: dateToInputDatetime(
+        add(lastMonth, { minutes: momentDuration }),
+      ),
     },
     {
       activity: "Développement de fonctionnalité",
@@ -127,7 +137,10 @@ async function seed() {
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
-      dateAndTime: dateToInputDatetime(nowHourFloored),
+      startDateAndTime: dateToInputDatetime(nowHourFloored),
+      endDateAndTime: dateToInputDatetime(
+        add(nowHourFloored, { minutes: momentDuration }),
+      ),
     },
     {
       activity: "Développement de fonctionnalité",
@@ -135,7 +148,10 @@ async function seed() {
       isIndispensable: true,
       context:
         "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
-      dateAndTime: dateToInputDatetime(nextMonth),
+      startDateAndTime: dateToInputDatetime(nextMonth),
+      endDateAndTime: dateToInputDatetime(
+        add(nextMonth, { minutes: momentDuration }),
+      ),
     },
   ];
   console.log({ momentsData });
@@ -151,18 +167,20 @@ async function seed() {
       momentsData.map(async (momentData) => {
         return await prisma.moment.upsert({
           where: {
-            objective_destinationId: {
-              objective: momentData.objective,
+            name_destinationId: {
+              name: momentData.objective,
               destinationId: destination.id,
             },
           },
           update: {},
           create: {
             activity: momentData.activity,
-            objective: momentData.objective,
+            name: momentData.objective,
             isIndispensable: momentData.isIndispensable,
-            context: momentData.context,
-            dateAndTime: momentData.dateAndTime,
+            description: momentData.context,
+            startDateAndTime: momentData.startDateAndTime,
+            duration: momentDuration.toString(),
+            endDateAndTime: momentData.endDateAndTime,
             destinationId: destination.id,
           },
         });
@@ -187,21 +205,21 @@ async function seed() {
       title: "Réaliser la div d'une étape",
       details:
         "S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.",
-      duration: "60",
+      duration: stepDuration1.toString(),
     },
     {
       orderId: 2,
       title: "Implémenter le système de coulissement des étapes",
       details:
         "Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.",
-      duration: "120",
+      duration: stepDuration2.toString(),
     },
     {
       orderId: 3,
       title: "Finir de vérifier le formulaire",
       details:
         "S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.",
-      duration: "180",
+      duration: stepDuration3.toString(),
     },
   ];
   console.log({ stepsData });
@@ -213,21 +231,41 @@ async function seed() {
   console.log(`Seeding all Steps...`);
 
   for (const moment of moments) {
+    const map: Map<number, number> = new Map();
+    let durationTotal = 0;
+    for (let j = 0; j < stepsData.length; j++) {
+      durationTotal += +stepsData[j].duration;
+      map.set(j, durationTotal);
+    }
+
     const momentSteps = await Promise.all(
-      stepsData.map(async (stepData) => {
+      stepsData.map(async (stepData, index) => {
         return await prisma.step.upsert({
           where: {
-            title_momentId: {
-              title: stepData.title,
+            name_momentId: {
+              name: stepData.title,
               momentId: moment.id,
             },
           },
           update: {},
           create: {
             orderId: stepData.orderId,
-            title: stepData.title,
-            details: stepData.details,
+            name: stepData.title,
+            description: stepData.details,
+            startDateAndTime:
+              index === 0
+                ? moment.startDateAndTime
+                : dateToInputDatetime(
+                    add(moment.startDateAndTime, {
+                      minutes: map.get(index - 1),
+                    }),
+                  ),
             duration: stepData.duration,
+            endDateAndTime: dateToInputDatetime(
+              add(moment.startDateAndTime, {
+                minutes: map.get(index),
+              }),
+            ),
             momentId: moment.id,
           },
         });

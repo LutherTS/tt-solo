@@ -19,6 +19,7 @@ export default function Layout({
         <main className="flex w-full flex-col items-center">
           {/* Page Container */}
           <div
+            // this is going to be thrown back to the children
             className={clsx(
               "min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pt-8",
               "pb-12",
