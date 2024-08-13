@@ -29,7 +29,9 @@ const focusVisibleTexts = clsx(
 // Main Supporting Components
 
 export function PageTitle({ title }: { title: string }) {
-  return <h1 className="text-xl font-bold text-blue-950">{title}</h1>;
+  return (
+    <h1 className="text-xl font-bold leading-none text-blue-950">{title}</h1>
+  );
 }
 
 export function Divider() {

@@ -87,9 +87,9 @@ export function CRUD({
   let [view, setView] = useState<View>("read-destinations");
 
   let viewTitles = {
-    "update-destination": "Modifiez votre destination",
+    "update-destination": "Modifiez",
     "read-destinations": "Vos destinations",
-    "create-destination": "Créez une destination",
+    "create-destination": "Créez",
   };
 
   // for UpdateDestinationView
@@ -106,7 +106,7 @@ export function CRUD({
               variant="destroy-step"
               onClick={() => setView("create-destination")}
             >
-              Créez un destination
+              Créez une destination
             </Button>
           )}
           {(view === "update-destination" || view === "create-destination") && (
