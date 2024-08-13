@@ -2,39 +2,16 @@ import { revalidatePath } from "next/cache";
 
 import prisma from "@/prisma/db";
 
+import { DestinationToCRUD } from "@/app/types/destinations";
+import { dateToInputDatetime } from "@/app/utilities/moments";
+
 import { CRUD } from "./crud";
 
-type StepForCRUD = {
-  id: string;
-  orderId: number;
-  title: string;
-  details: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-};
-
-type MomentForCRUD = {
-  id: string;
-  activity: string;
-  objective: string;
-  isIndispensable: boolean;
-  context: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-  steps: StepForCRUD[];
-};
-
-type DestinationForCRUD = {
-  id: string;
-  ideal: string;
-  aspiration: string | null;
-  dates: {
-    date: string;
-    moments: MomentForCRUD[];
-  }[];
-};
+// the time at rendering as a stable foundation for all time operations
+let now = new Date();
+// sharing time as string to bypass timezone adaptations
+let nowString = dateToInputDatetime(now);
+console.log(nowString);
 
 export default async function DestinationsPage({
   params,
@@ -52,103 +29,142 @@ export default async function DestinationsPage({
 
   if (!user) return console.error("Somehow a user was not found.");
 
-  const userDestinations = await prisma.destination.findMany({
-    where: {
-      userId: user.id,
-    },
-    include: {
-      moments: {
-        orderBy: {
-          startDateAndTime: "asc",
+  // The take and skip, a.k.a. pagination stuff takes time to implement because I need enough seeds to test it all. That being said, with that logic here, it's already in place and just needs the proper data from the search params and the URLs made on pagination buttons.
+
+  const TAKE = 10;
+  const DEFAULT_PAGE = 1;
+
+  const [
+    userDestinations,
+    userDestinationsAllMomentsCount,
+    userDestinationsPastMomentsCount,
+    userDestinationsCurrentMomentsCount,
+    userDestinationsFutureMomentsCount,
+  ] = await Promise.all([
+    prisma.destination.findMany({
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: TAKE,
+      skip: (DEFAULT_PAGE - 1) * TAKE,
+    }),
+    prisma.destination.findMany({
+      select: {
+        _count: {
+          select: {
+            moments: true,
+          },
         },
-        include: {
-          steps: {
-            orderBy: {
-              orderId: "asc",
+      },
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: TAKE,
+      skip: (DEFAULT_PAGE - 1) * TAKE,
+    }),
+    prisma.destination.findMany({
+      select: {
+        _count: {
+          select: {
+            moments: {
+              where: {
+                endDateAndTime: {
+                  lt: nowString,
+                },
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
-
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: TAKE,
+      skip: (DEFAULT_PAGE - 1) * TAKE,
+    }),
+    prisma.destination.findMany({
+      select: {
+        _count: {
+          select: {
+            moments: {
+              where: {
+                AND: [
+                  { startDateAndTime: { lte: nowString } },
+                  { endDateAndTime: { gte: nowString } },
+                ],
+              },
+            },
+          },
+        },
+      },
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: TAKE,
+      skip: (DEFAULT_PAGE - 1) * TAKE,
+    }),
+    prisma.destination.findMany({
+      select: {
+        _count: {
+          select: {
+            moments: {
+              where: {
+                startDateAndTime: {
+                  gt: nowString,
+                },
+              },
+            },
+          },
+        },
+      },
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+      take: TAKE,
+      skip: (DEFAULT_PAGE - 1) * TAKE,
+    }),
+  ]);
   // console.log(userDestinations);
-  // userDestinations.forEach((e) => {
-  //   console.log(e.moments);
-  //   e.moments.forEach((e2) => console.log(e2.steps));
-  // });
+  // console.log(userDestinationsAllMomentsCount);
+  // console.log(userDestinationsPastMomentsCount);
+  // console.log(userDestinationsCurrentMomentsCount);
+  // console.log(userDestinationsFutureMomentsCount);
 
-  // Pour l'instant je laisse, mais il va falloir aussi séparer entre ce qui est à venir, ce qui est en cours, et ce qui est déjà fait. Donc toujours avec le temps. Mais peut-être que ça peut être laisser au client pour l'instantanéité.
-  const destinationsForCRUD: DestinationForCRUD[] = userDestinations.map(
-    (e) => {
+  const destinationsToCRUD: DestinationToCRUD[] = userDestinations.map(
+    (e, i) => {
       return {
         id: e.id,
         ideal: e.name,
         aspiration: e.description,
-        dates: [
-          ...new Set(
-            e.moments.map((moment) => moment.startDateAndTime.split("T")[0]),
-          ),
-        ].map((e2) => {
-          return {
-            date: e2,
-            moments: e.moments
-              .filter((e3) => e3.startDateAndTime.startsWith(e2))
-              .map((e3) => {
-                return {
-                  id: e3.id,
-                  activity: e3.activity,
-                  objective: e3.name,
-                  isIndispensable: e3.isIndispensable,
-                  context: e3.description,
-                  startDateAndTime: e3.startDateAndTime,
-                  duration: e3.duration,
-                  endDateAndTime: e3.endDateAndTime,
-                  steps: e3.steps.map((e4) => {
-                    return {
-                      id: e4.id,
-                      orderId: e4.orderId,
-                      title: e4.name,
-                      details: e4.description,
-                      startDateAndTime: e4.startDateAndTime,
-                      duration: e4.duration,
-                      endDateAndTime: e4.endDateAndTime,
-                    };
-                  }),
-                };
-              }),
-          };
-        }),
-        moments: e.moments,
+        allMomentsCount: userDestinationsAllMomentsCount[i]._count.moments,
+        pastMomentsCount: userDestinationsPastMomentsCount[i]._count.moments,
+        currentMomentsCount:
+          userDestinationsCurrentMomentsCount[i]._count.moments,
+        futureMomentsCount:
+          userDestinationsFutureMomentsCount[i]._count.moments,
       };
     },
   );
-
-  // console.log(destinationsForCRUD);
-  // destinationsForCRUD.forEach((e) => {
-  //   console.log(e.dates);
-  //   e.dates.forEach((e2) => {
-  //     console.log(e2.moments);
-  //     e2.moments.forEach((e3) => {
-  //       console.log(e3.steps);
-  //     });
-  //   });
-  // });
-
-  // OK. THIS IS WHERE IT STARTS.
-  // The goal is for Moments and Destinations to be pretty much two different ways to view the same data, two different contexts in viewing moments.
-  // - on Moments, day comes first, then destinations and moments
-  // - on Destinations, destination comes first, then days and moments
-  // ALL OF THIS, IN BOTH CASES, COMPUTE FROM THE SERVER, THEN SENT TO THE CLIENT. Starting with Destinations here for ease of adapting.
-  // And yes, now is going to remain on the server.
-  // La décision est prise : startDateAndTime et EndDateAndTime vont être enreg
+  // console.log(destinationsToCRUD);
 
   async function createOrUpdateDestination(
     variant: "creating" | "updating",
-    destinationForCRUD: DestinationForCRUD | undefined,
+    destinationToCRUD: DestinationToCRUD | undefined,
     formData: FormData,
   ) {
     "use server";
@@ -172,12 +188,12 @@ export default async function DestinationsPage({
     }
 
     if (variant === "updating") {
-      if (!destinationForCRUD)
+      if (!destinationToCRUD)
         return console.error("Somehow a destination was not passed.");
 
       await prisma.destination.update({
         where: {
-          id: destinationForCRUD.id,
+          id: destinationToCRUD.id,
         },
         data: {
           name: ideal,
@@ -190,23 +206,80 @@ export default async function DestinationsPage({
     revalidatePath(`/users/${username}/destinations`);
   }
 
-  async function deleteDestination(destinationForCRUD: DestinationForCRUD) {
+  async function deleteDestination(destinationToCRUD: DestinationToCRUD) {
     "use server";
 
     await prisma.destination.delete({
       where: {
-        id: destinationForCRUD.id,
+        id: destinationToCRUD.id,
       },
     });
 
-    revalidatePath(`/users/${username}/moments`);
+    revalidatePath(`/users/${username}/destinations`);
+  }
+
+  async function revalidateDestinations() {
+    "use server";
+
+    revalidatePath(`/users/${username}/destinations`);
   }
 
   return (
     <CRUD
-      destinationsForCRUD={destinationsForCRUD}
+      destinationsToCRUD={destinationsToCRUD}
       createOrUpdateDestination={createOrUpdateDestination}
       deleteDestination={deleteDestination}
+      revalidateDestinations={revalidateDestinations}
     />
   );
 }
+
+/* Notes
+In raw PostgreSQL, I can get all the counts in the single query. But in Prisma for now I have to do it in several.
+A transaction is sequential (or interactive). This is not what I'm looking for. I'm for a required Promise.all... where I'm basically crossing my fingers that no change in this corner of the database will happen within the operation. (I literally just have to replace prisma.$transaction by Promise.all.)
+PREVIOUS CODE, my first big one-op mapping:
+const destinationsForCRUD: DestinationForCRUD[] = userDestinationsOld.map(
+  (e) => {
+    return {
+      id: e.id,
+      ideal: e.name,
+      aspiration: e.description,
+      dates: [
+        ...new Set(
+          e.moments.map((moment) => moment.startDateAndTime.split("T")[0]),
+        ),
+      ].map((e2) => {
+        return {
+          date: e2,
+          moments: e.moments
+            .filter((e3) => e3.startDateAndTime.startsWith(e2))
+            .map((e3) => {
+              return {
+                id: e3.id,
+                activity: e3.activity,
+                objective: e3.name,
+                isIndispensable: e3.isIndispensable,
+                context: e3.description,
+                startDateAndTime: e3.startDateAndTime,
+                duration: e3.duration,
+                endDateAndTime: e3.endDateAndTime,
+                steps: e3.steps.map((e4) => {
+                  return {
+                    id: e4.id,
+                    orderId: e4.orderId,
+                    title: e4.name,
+                    details: e4.description,
+                    startDateAndTime: e4.startDateAndTime,
+                    duration: e4.duration,
+                    endDateAndTime: e4.endDateAndTime,
+                  };
+                }),
+              };
+            }),
+        };
+      }),
+      moments: e.moments,
+    };
+  },
+);
+*/

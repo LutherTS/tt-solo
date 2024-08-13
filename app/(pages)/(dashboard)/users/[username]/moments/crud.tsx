@@ -15,6 +15,12 @@ import {
 import { fr } from "date-fns/locale";
 import { Reorder, useDragControls } from "framer-motion";
 
+import { Option } from "@/app/types/general";
+import {
+  UserMomentsToCRUD,
+  MomentToCRUD,
+  StepFromCRUD,
+} from "@/app/types/moments";
 import {
   dateToInputDatetime,
   numStringToTimeString,
@@ -35,6 +41,7 @@ import {
   SelectWithOptions,
   Textarea,
 } from "../../../components";
+import * as Icons from "../icons";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -58,13 +65,6 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 
 // Main Data
 
-// that needs to be a file in a types folder
-type Option = {
-  key: number;
-  label: string;
-  value: string;
-};
-
 type View = "update-moment" | "create-moment" | "read-moments";
 
 type SubView =
@@ -72,50 +72,6 @@ type SubView =
   | "past-moments"
   | "current-moments"
   | "future-moments";
-
-type StepToCRUD = {
-  id: string;
-  orderId: number;
-  title: string;
-  details: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-};
-
-type MomentToCRUD = {
-  id: string;
-  activity: string;
-  objective: string;
-  isIndispensable: boolean;
-  context: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-  steps: StepToCRUD[];
-  destinationIdeal: string;
-};
-
-type MomentsDestinationToCRUD = {
-  destinationIdeal: string;
-  moments: MomentToCRUD[];
-};
-
-type MomentsDateToCRUD = {
-  date: string;
-  destinations: MomentsDestinationToCRUD[];
-};
-
-type UserMomentsToCRUD = {
-  dates: MomentsDateToCRUD[];
-};
-
-type StepFromCRUD = {
-  id: string;
-  intitule: string;
-  details: string;
-  duree: string;
-};
 
 type StepVisible = "create" | "creating" | "updating";
 
@@ -160,7 +116,7 @@ export function CRUD({
   let [view, setView] = useState<View>("read-moments");
 
   let viewTitles = {
-    "update-moment": "Modifiez",
+    "update-moment": "Éditez",
     "read-moments": "Vos moments",
     "create-moment": "Créez",
   };
@@ -320,7 +276,7 @@ function ReadMomentsView({
 
   return (
     <div className="space-y-8">
-      {/* -mt to resolve padding from Vos moments */}
+      {/* -mt-4 to resolve padding from Vos moments */}
       <div className="-mt-4 flex flex-wrap gap-4">
         {subViews.map((e) => {
           const className = "px-4 py-2 h-9 flex items-center justify-center";
@@ -375,7 +331,7 @@ function ReadMomentsView({
         >
           {/* real occupied space */}
           <span className="invisible static">
-            <ArrowPathIcon />
+            <Icons.ArrowPathSolid />
           </span>
           {/* gradient text */}
           <span
@@ -384,7 +340,7 @@ function ReadMomentsView({
               "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
             )}
           >
-            <ArrowPathIcon className="size-6 text-blue-950" />
+            <Icons.ArrowPathSolid className="size-6 text-blue-950" />
           </span>
           {/* white background */}
           <div
@@ -398,10 +354,9 @@ function ReadMomentsView({
           ></div>
         </button>
       </div>
-      {/* <Divider /> */}
       {realDisplayedMoments.length > 0 ? (
         <>
-          {realDisplayedMoments.map((e, i, a) => (
+          {realDisplayedMoments.map((e) => (
             <div className="space-y-8" key={e.date}>
               <SectionWrapper>
                 <Section
@@ -436,7 +391,7 @@ function ReadMomentsView({
                               <p className="font-medium text-blue-950">
                                 {e3.objective}
                               </p>
-                              <div className="hidden justify-end group-hover:flex">
+                              <div className="invisible flex justify-end group-hover:visible">
                                 <Button
                                   type="button"
                                   variant="destroy-step"
@@ -447,7 +402,7 @@ function ReadMomentsView({
                                     setView("update-moment");
                                   }}
                                 >
-                                  <PencilSquareIcon className="size-5" />
+                                  <Icons.PencilSquareSolid className="size-5" />
                                 </Button>
                               </div>
                             </div>
@@ -468,20 +423,20 @@ function ReadMomentsView({
                                 </>
                               )}
                             </p>
-                            {subView !== "all-moments" && (
-                              <ol>
-                                {e3.steps.map((e4) => (
-                                  <li
-                                    key={e4.id}
-                                    className="text-sm leading-loose text-neutral-500"
-                                  >
-                                    {e4.startDateAndTime.split("T")[1]} -{" "}
-                                    {e4.endDateAndTime.split("T")[1]} :{" "}
-                                    {e4.title}
-                                  </li>
-                                ))}
-                              </ol>
-                            )}
+                            <ol>
+                              {e3.steps.map((e4) => (
+                                <li
+                                  key={e4.id}
+                                  className="font-serif font-light leading-loose text-neutral-500"
+                                >
+                                  <span>
+                                    {e4.startDateAndTime.split("T")[1]}
+                                  </span>{" "}
+                                  - {e4.endDateAndTime.split("T")[1]} :{" "}
+                                  {e4.title}
+                                </li>
+                              ))}
+                            </ol>
                           </div>
                         ))}
                       </div>
@@ -489,48 +444,15 @@ function ReadMomentsView({
                   })}
                 </Section>
               </SectionWrapper>
-              {/* {i !== a.length - 1 && <Divider />} */}
             </div>
           ))}
         </>
       ) : (
-        // fixing some padding towards the section title
         <SectionWrapper>
           <FieldTitle title={"Pas de moment... pour le moment. 😅"} />
         </SectionWrapper>
       )}
     </div>
-  );
-}
-
-function ArrowPathIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className || "size-6"}
-    >
-      <path
-        fillRule="evenodd"
-        d="M4.755 10.059a7.5 7.5 0 0 1 12.548-3.364l1.903 1.903h-3.183a.75.75 0 1 0 0 1.5h4.992a.75.75 0 0 0 .75-.75V4.356a.75.75 0 0 0-1.5 0v3.18l-1.9-1.9A9 9 0 0 0 3.306 9.67a.75.75 0 1 0 1.45.388Zm15.408 3.352a.75.75 0 0 0-.919.53 7.5 7.5 0 0 1-12.548 3.364l-1.902-1.903h3.183a.75.75 0 0 0 0-1.5H2.984a.75.75 0 0 0-.75.75v4.992a.75.75 0 0 0 1.5 0v-3.18l1.9 1.9a9 9 0 0 0 15.059-4.035.75.75 0 0 0-.53-.918Z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function PencilSquareIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className || "size-6"}
-    >
-      <path d="M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32l8.4-8.4Z" />
-      <path d="M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z" />
-    </svg>
   );
 }
 
@@ -670,54 +592,51 @@ function MomentForms({
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
         >
-          {/* fixing some padding towards the section title */}
-          <div className="-mt-0.5">
-            {!destinationSelect ? (
-              <InputText
-                label="Destination"
-                name="destination"
-                // controlling the value for SelectWithOptions crossover is something to keep in mind, but for now, default values from preceding moment will only be on InputText components
-                defaultValue={moment ? moment.destinationIdeal : undefined}
-                description="Votre projet vise à atteindre quel idéal ?"
-                addendum={
-                  destinationOptions.length > 0
-                    ? "Ou choissisez parmi vos destinations précédemment instanciées."
-                    : undefined
-                }
-                fieldFlexIsNotLabel
-                tekTime
-              >
-                {destinationOptions.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="destroy"
-                    onClick={() => setDestinationSelect(true)}
-                  >
-                    Choisir la destination
-                  </Button>
-                )}
-              </InputText>
-            ) : (
-              <SelectWithOptions
-                label="Destination"
-                description="Choisissez la destination que cherche à atteindre ce moment."
-                addendum="Ou définissez la vous-même via le bouton ci-dessus."
-                name="destination"
-                placeholder="Choisissez..."
-                options={destinationOptions}
-                fieldFlexIsNotLabel
-                tekTime
-              >
+          {!destinationSelect ? (
+            <InputText
+              label="Destination"
+              name="destination"
+              // controlling the value for SelectWithOptions crossover is something to keep in mind, but for now, default values from preceding moment will only be on InputText components
+              defaultValue={moment ? moment.destinationIdeal : undefined}
+              description="Votre projet vise à atteindre quel idéal ?"
+              addendum={
+                destinationOptions.length > 0
+                  ? "Ou choissisez parmi vos destinations précédemment instanciées."
+                  : undefined
+              }
+              fieldFlexIsNotLabel
+              tekTime
+            >
+              {destinationOptions.length > 0 && (
                 <Button
                   type="button"
                   variant="destroy"
-                  onClick={() => setDestinationSelect(false)}
+                  onClick={() => setDestinationSelect(true)}
                 >
-                  Définir la destination
+                  Choisir la destination
                 </Button>
-              </SelectWithOptions>
-            )}
-          </div>
+              )}
+            </InputText>
+          ) : (
+            <SelectWithOptions
+              label="Destination"
+              description="Choisissez la destination que cherche à atteindre ce moment."
+              addendum="Ou définissez la vous-même via le bouton ci-dessus."
+              name="destination"
+              placeholder="Choisissez..."
+              options={destinationOptions}
+              fieldFlexIsNotLabel
+              tekTime
+            >
+              <Button
+                type="button"
+                variant="destroy"
+                onClick={() => setDestinationSelect(false)}
+              >
+                Définir la destination
+              </Button>
+            </SelectWithOptions>
+          )}
           {!activitySelect ? (
             <InputText
               label="Activité"
@@ -965,7 +884,7 @@ function MomentForms({
               >
                 Confirmer le moment
               </Button>
-              {/* this will eventually be a component too */}
+              {/* this could eventually be a component too */}
               {variant === "creating" && (
                 <Button type="reset" variant="cancel">
                   Réinitialiser le moment

@@ -11,12 +11,12 @@ import * as Icons from "./sidenav-icons";
 // Up next: Icons file for navigation icons.
 
 const navLinks = [
-  {
-    id: 0,
-    label: "Paramètres",
-    href: "/settings",
-    icon: "Cog8Tooth",
-  },
+  // {
+  //   id: 0,
+  //   label: "Paramètres",
+  //   href: "/settings",
+  //   icon: "Cog8Tooth",
+  // },
   {
     id: 1,
     label: "Moments",

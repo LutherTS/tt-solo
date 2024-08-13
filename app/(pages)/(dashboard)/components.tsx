@@ -41,9 +41,7 @@ export function Divider() {
 }
 
 export function SectionWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl bg-white px-4 py-5 shadow-sm">{children}</div>
-  );
+  return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
 }
 
 export function Section({
@@ -63,7 +61,7 @@ export function Section({
 }) {
   return (
     // pb-1 making up for input padding inconsistencies
-    <section className="grid gap-8 pb-1 md:grid-cols-[1fr_2fr]">
+    <section className="grid items-baseline gap-8 pb-1 md:grid-cols-[1fr_2fr]">
       <div
         className={clsx(
           !title && "hidden md:block",
@@ -72,9 +70,7 @@ export function Section({
       >
         {title && (
           <>
-            <h2 className="text-lg font-semibold leading-none text-blue-950">
-              {title}
-            </h2>
+            <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
             {description && showDescription && (
               // Last handmade padding fix...
               <p className="-mt-1 max-w-prose text-sm text-neutral-500">

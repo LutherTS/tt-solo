@@ -6,6 +6,12 @@ import prisma from "@/prisma/db";
 
 import { add } from "date-fns";
 
+import { Option } from "@/app/types/general";
+import {
+  UserMomentsToCRUD,
+  StepFromCRUD,
+  MomentToCRUD,
+} from "@/app/types/moments";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 
 import { CRUD } from "./crud";
@@ -17,57 +23,6 @@ let nowString = dateToInputDatetime(now);
 console.log(nowString);
 // There's a problem with cache when it comes to time here
 // It's only when the page recompiles that the correct time is taken into account. Probably something with noStore, I don't know.
-
-// that needs to be a file in a types folder
-type Option = {
-  key: number;
-  label: string;
-  value: string;
-};
-
-type StepFromCRUD = {
-  id: number;
-  intitule: string;
-  details: string;
-  duree: string;
-};
-
-type StepToCRUD = {
-  id: string;
-  orderId: number;
-  title: string;
-  details: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-};
-
-type MomentToCRUD = {
-  id: string;
-  activity: string;
-  objective: string;
-  isIndispensable: boolean;
-  context: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-  steps: StepToCRUD[];
-  destinationIdeal: string;
-};
-
-type MomentsDestinationToCRUD = {
-  destinationIdeal: string;
-  moments: MomentToCRUD[];
-};
-
-type MomentsDateToCRUD = {
-  date: string;
-  destinations: MomentsDestinationToCRUD[];
-};
-
-type UserMomentsToCRUD = {
-  dates: MomentsDateToCRUD[];
-};
 
 export default async function MomentsPage({
   params,
@@ -88,102 +43,105 @@ export default async function MomentsPage({
   // take and skip randomly implemented below for scalable defaults.
   // All of these will be optimized in a Promise.all once all queries will be organized in their own folders.
 
-  const userMoments = await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId: user.id,
-      },
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
+  const TAKE = 10;
+  const DEFAULT_PAGE = 1;
+
+  const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
+    await Promise.all([
+      prisma.moment.findMany({
+        where: {
+          destination: {
+            userId: user.id,
+          },
         },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "desc",
-    },
-    take: 20,
-    skip: 0,
-  });
+        include: {
+          destination: true,
+          steps: {
+            orderBy: {
+              orderId: "asc",
+            },
+          },
+        },
+        orderBy: {
+          startDateAndTime: "desc",
+        },
+        take: TAKE,
+        skip: (DEFAULT_PAGE - 1) * TAKE,
+      }),
+      prisma.moment.findMany({
+        where: {
+          destination: {
+            userId: user.id,
+          },
+          endDateAndTime: {
+            lt: nowString,
+          },
+        },
+        include: {
+          destination: true,
+          steps: {
+            orderBy: {
+              orderId: "asc",
+            },
+          },
+        },
+        orderBy: {
+          startDateAndTime: "desc",
+        },
+        take: TAKE,
+        skip: (DEFAULT_PAGE - 1) * TAKE,
+      }),
+      prisma.moment.findMany({
+        where: {
+          destination: {
+            userId: user.id,
+          },
+          AND: [
+            { startDateAndTime: { lte: nowString } },
+            { endDateAndTime: { gte: nowString } },
+          ],
+        },
+        include: {
+          destination: true,
+          steps: {
+            orderBy: {
+              orderId: "asc",
+            },
+          },
+        },
+        orderBy: {
+          startDateAndTime: "asc",
+        },
+        take: TAKE,
+        skip: (DEFAULT_PAGE - 1) * TAKE,
+      }),
+      prisma.moment.findMany({
+        where: {
+          destination: {
+            userId: user.id,
+          },
+          startDateAndTime: {
+            gt: nowString,
+          },
+        },
+        include: {
+          destination: true,
+          steps: {
+            orderBy: {
+              orderId: "asc",
+            },
+          },
+        },
+        orderBy: {
+          startDateAndTime: "asc",
+        },
+        take: TAKE,
+        skip: (DEFAULT_PAGE - 1) * TAKE,
+      }),
+    ]);
   // console.log(userMoments);
-
-  const pastUserMoments = await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId: user.id,
-      },
-      endDateAndTime: {
-        lt: nowString,
-      },
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "desc",
-    },
-    take: 10,
-    skip: 0,
-  });
   // console.log(pastUserMoments);
-
-  const currentUserMoments = await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId: user.id,
-      },
-      AND: [
-        { startDateAndTime: { lte: nowString } },
-        { endDateAndTime: { gte: nowString } },
-      ],
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "asc",
-    },
-    take: 10,
-    skip: 0,
-  });
   // console.log(currentUserMoments);
-
-  const futureUserMoments = await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId: user.id,
-      },
-      startDateAndTime: {
-        gt: nowString,
-      },
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "asc",
-    },
-    take: 10,
-    skip: 0,
-  });
   // console.log(futureUserMoments);
 
   const allUserMoments = [
@@ -289,11 +247,6 @@ export default async function MomentsPage({
         value: e.name,
       };
     });
-
-  // TÂCHES FUTURES
-  // ...
-  // Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
-  // Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   async function createOrUpdateMoment(
@@ -547,4 +500,8 @@ Demain :
 - effacer pour moments en cours.
 ...En vrai même pas. Pour l'instant je considère qu'on peut toujours modifier un moment a posteriori. C'est uniqueement une fois la fonctionnalité de lancement du moment mise en place qu'on pourra penser à archiver, etc. Pour l'instant, on se limite au CRUD, et il a toute son autorité qu'importe les circonstances.
 This is where I stop and, as expected, time is causing a whole slew of issues.
+TÂCHES FUTURES
+...
+Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
+Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
 */
