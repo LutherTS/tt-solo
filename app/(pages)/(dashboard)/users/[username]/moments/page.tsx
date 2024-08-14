@@ -16,6 +16,9 @@ import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 
 import { CRUD } from "./crud";
 
+// IMPORTANT
+// Just that weird this about time not being current correctly now.
+
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
 // sharing time as string to bypass timezone adaptations
@@ -118,12 +121,12 @@ export default async function MomentsPage({
       },
     }),
   ]);
-  console.log({
-    userMomentsTotal,
-    pastUserMomentsTotal,
-    currentUserMomentsTotal,
-    futureUserMomentsTotal,
-  });
+  // console.log({
+  //   userMomentsTotal,
+  //   pastUserMomentsTotal,
+  //   currentUserMomentsTotal,
+  //   futureUserMomentsTotal,
+  // });
 
   const totals = [
     userMomentsTotal,
