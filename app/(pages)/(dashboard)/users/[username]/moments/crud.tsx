@@ -101,6 +101,7 @@ const exchangeOptions: Option[] = [
 export function CRUD({
   allUserMomentsToCRUD,
   destinationOptions,
+  maxPages,
   createOrUpdateMoment,
   deleteMoment,
   revalidateMoments,
@@ -108,6 +109,7 @@ export function CRUD({
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   destinationOptions: Option[];
+  maxPages: number[];
   createOrUpdateMoment: any;
   deleteMoment: any;
   revalidateMoments: any;
@@ -195,6 +197,7 @@ export function CRUD({
       <div className={clsx(view !== "read-moments" && "hidden")}>
         <ReadMomentsView
           allUserMomentsToCRUD={allUserMomentsToCRUD}
+          maxPages={maxPages}
           setMoment={setMoment}
           setView={setView}
           subView={subView}
@@ -224,6 +227,7 @@ export function CRUD({
 
 function ReadMomentsView({
   allUserMomentsToCRUD,
+  maxPages,
   setMoment,
   setView,
   subView,
@@ -231,6 +235,7 @@ function ReadMomentsView({
   revalidateMoments,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
+  maxPages: number[];
   setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
   subView: SubView;
@@ -302,14 +307,24 @@ function ReadMomentsView({
     "current-moments": "currentusermomentspage",
     "future-moments": "futureusermomentspage",
   };
+  const [
+    maxPageAllMoments,
+    maxPagePastMoments,
+    maxPageCurrentMoments,
+    maxPageFutureMoments,
+  ] = maxPages;
+
+  let subViewMaxPages = {
+    "all-moments": maxPageAllMoments,
+    "past-moments": maxPagePastMoments,
+    "current-moments": maxPageCurrentMoments,
+    "future-moments": maxPageFutureMoments,
+  };
+
+  const params = new URLSearchParams(searchParams);
+  let currentPage = +(params.get(subViewSearchParams[subView]) || "1");
 
   function handlePagination(direction: "left" | "right", subView: SubView) {
-    const params = new URLSearchParams(searchParams);
-    console.log({ direction, subView, params });
-
-    let currentPage = +(params.get(subViewSearchParams[subView]) || "1");
-    console.log({ currentPage });
-
     if (direction === "left")
       params.set(
         subViewSearchParams[subView],
@@ -318,7 +333,7 @@ function ReadMomentsView({
     if (direction === "right")
       params.set(
         subViewSearchParams[subView],
-        Math.max(1, currentPage + 1).toString(),
+        Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
     replace(`${pathname}?${params.toString()}`);
@@ -513,20 +528,26 @@ function ReadMomentsView({
                   })}
                 </Section>
               </SectionWrapper>
-              <div className="flex justify-between">
-                <button onClick={() => handlePagination("left", subView)}>
-                  <div className="rounded-lg bg-white p-2 shadow">
-                    <Icons.ArrowLeftSolid />
-                  </div>
-                </button>
-                <button onClick={() => handlePagination("right", subView)}>
-                  <div className="rounded-lg bg-white p-2 shadow">
-                    <Icons.ArrowRightSolid />
-                  </div>
-                </button>
-              </div>
             </div>
           ))}
+          <div className="flex justify-between">
+            <button
+              onClick={() => handlePagination("left", subView)}
+              disabled={currentPage === 1}
+            >
+              <div className="rounded-lg bg-white p-2 shadow">
+                <Icons.ArrowLeftSolid />
+              </div>
+            </button>
+            <button
+              onClick={() => handlePagination("right", subView)}
+              disabled={currentPage === subViewMaxPages[subView]}
+            >
+              <div className="rounded-lg bg-white p-2 shadow">
+                <Icons.ArrowRightSolid />
+              </div>
+            </button>
+          </div>
         </>
       ) : (
         <SectionWrapper>

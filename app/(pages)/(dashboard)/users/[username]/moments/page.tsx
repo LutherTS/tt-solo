@@ -59,7 +59,81 @@ export default async function MomentsPage({
   // take and skip randomly implemented below for scalable defaults.
   // All of these will be optimized and organized in their own folders.
 
-  const TAKE = 1;
+  const TAKE = 2;
+
+  const [
+    userMomentsTotal,
+    pastUserMomentsTotal,
+    currentUserMomentsTotal,
+    futureUserMomentsTotal,
+  ] = await Promise.all([
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+      },
+    }),
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+        endDateAndTime: {
+          lt: nowString,
+        },
+      },
+    }),
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+        AND: [
+          { startDateAndTime: { lte: nowString } },
+          { endDateAndTime: { gte: nowString } },
+        ],
+      },
+    }),
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+        startDateAndTime: {
+          gt: nowString,
+        },
+      },
+    }),
+  ]);
+  console.log({
+    userMomentsTotal,
+    pastUserMomentsTotal,
+    currentUserMomentsTotal,
+    futureUserMomentsTotal,
+  });
+
+  const totals = [
+    userMomentsTotal,
+    pastUserMomentsTotal,
+    currentUserMomentsTotal,
+    futureUserMomentsTotal,
+  ];
+
+  const maxPages = totals.map((e) => Math.ceil(e / TAKE));
+  console.log(maxPages);
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
@@ -494,6 +568,7 @@ export default async function MomentsPage({
     <CRUD
       allUserMomentsToCRUD={allUserMomentsToCRUD}
       destinationOptions={destinationOptions}
+      maxPages={maxPages}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
       revalidateMoments={revalidateMoments}

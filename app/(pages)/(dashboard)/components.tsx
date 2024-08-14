@@ -96,24 +96,20 @@ export function Section({
 }
 
 export function InputText({
-  form,
   label,
   description,
   addendum,
   name,
-  defaultValue,
   tekTime,
   children,
   fieldFlexIsNotLabel,
   required = true,
   ...rest
 }: {
-  form?: string;
   label?: string;
   description?: string;
   addendum?: string;
   name: string;
-  defaultValue?: string;
   tekTime?: boolean;
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
@@ -137,9 +133,7 @@ export function InputText({
         <input
           {...rest}
           type="text"
-          form={form}
           name={name}
-          defaultValue={defaultValue}
           required={required}
           onKeyDown={(event) => {
             if (event.key === "Enter") event.preventDefault();
@@ -155,9 +149,7 @@ export function InputText({
           <input
             {...rest}
             type="text"
-            form={form}
             name={name}
-            defaultValue={defaultValue}
             required={required}
             onKeyDown={(event) => {
               if (event.key === "Enter") event.preventDefault();
