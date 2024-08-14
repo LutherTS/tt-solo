@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, Dispatch, SetStateAction, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
@@ -37,7 +37,6 @@ import {
   InputNumber,
   InputSwitchControlled,
   InputText,
-  InputTextControlled,
   PageTitle,
   Section,
   SectionWrapper,
@@ -45,7 +44,6 @@ import {
   Textarea,
 } from "../../../components";
 import * as Icons from "../icons";
-import { useDebouncedCallback } from "use-debounce";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -326,45 +324,6 @@ function ReadMomentsView({
     replace(`${pathname}?${params.toString()}`);
   }
 
-  // const [contains, setContains] = useState(searchParams.get("contains") || "");
-
-  // function handleSearchControlled(term: string) {
-  //   setContains(term);
-
-  //   const params = new URLSearchParams(searchParams);
-
-  //   if (term) params.set("contains", term);
-  //   else params.delete("contains");
-
-  //   params.set("usermomentspage", "1");
-  //   params.set("pastusermomentspage", "1");
-  //   params.set("currentusermomentspage", "1");
-  //   params.set("futureusermomentspage", "1");
-
-  //   replace(`${pathname}?${params.toString()}`);
-  // } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
-
-  // const debouncedHandleSearchControlled = debounce(handleSearchControlled, 300);
-
-  // const [contains2, setContains2] = useState(
-  //   searchParams.get("contains") || "",
-  // );
-  // const debounced = useDebouncedCallback((contains2) => {
-  //   setContains2(contains2);
-
-  //   const params = new URLSearchParams(searchParams);
-
-  //   if (contains2) params.set("contains", contains2);
-  //   else params.delete("contains");
-
-  //   params.set("usermomentspage", "1");
-  //   params.set("pastusermomentspage", "1");
-  //   params.set("currentusermomentspage", "1");
-  //   params.set("futureusermomentspage", "1");
-
-  //   replace(`${pathname}?${params.toString()}`);
-  // }, 300);
-
   return (
     <div className="space-y-8">
       {/* -mt-4 to resolve padding from Vos moments */}
@@ -411,6 +370,7 @@ function ReadMomentsView({
           );
         })}
         <button
+          // to target the input in form that needs to be reset
           form="form"
           onClick={async (event) => {
             const button = event.currentTarget;
@@ -451,8 +411,7 @@ function ReadMomentsView({
           ></div>
         </button>
       </div>
-      {/* the issue here is debounced while controlled */}
-      {/* perhaps I'll just do it on Enter */}
+      {/* to place the input into a form so it can be reset */}
       <form id="form">
         <InputText
           id="contains"
@@ -462,9 +421,6 @@ function ReadMomentsView({
           onChange={(e) => {
             debouncedHandleSearch(e.currentTarget.value);
           }}
-          // definedOnValueChange={handleSearchControlled}
-          // Here's how it's going to go. I'm going to keep the non-debounced method for now (since this is just development), and then I'll shift the solution to something that updates the URL on Enter, which is more to my liking anyway.
-          // ...Où alors je peux programmatiquement transform l'input en form et reset the form. Ce sera la solution ce soir.
         />
       </form>
       {realDisplayedMoments.length > 0 ? (
