@@ -1,6 +1,11 @@
 "use client";
 
-import { Dispatch, MouseEventHandler, SetStateAction } from "react";
+import {
+  ComponentProps,
+  Dispatch,
+  MouseEventHandler,
+  SetStateAction,
+} from "react";
 import { useFormStatus } from "react-dom";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
@@ -101,9 +106,10 @@ export function InputText({
   children,
   fieldFlexIsNotLabel,
   required = true,
+  ...rest
 }: {
   form?: string;
-  label: string;
+  label?: string;
   description?: string;
   addendum?: string;
   name: string;
@@ -112,11 +118,11 @@ export function InputText({
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
   required?: boolean;
-}) {
+} & ComponentProps<"input">) {
   return (
     <FieldFlex isLabel={!fieldFlexIsNotLabel}>
       <div className="flex justify-between">
-        <FieldTitle title={label} />
+        {label && <FieldTitle title={label} />}
         {children}
       </div>
       {description && (
@@ -129,6 +135,7 @@ export function InputText({
       )}
       {!tekTime ? (
         <input
+          {...rest}
           type="text"
           form={form}
           name={name}
@@ -146,10 +153,100 @@ export function InputText({
       ) : (
         <div className="relative">
           <input
+            {...rest}
             type="text"
             form={form}
             name={name}
             defaultValue={defaultValue}
+            required={required}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.preventDefault();
+            }}
+            className={clsx(
+              "peer relative z-30 w-full rounded border-2 border-transparent bg-white bg-clip-padding",
+              notDatetimeLocalPadding,
+              "outline-none",
+            )}
+          />
+          {/* gradient border */}
+          {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
+          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          {/* background merging foundation */}
+          {/* [calc(100%+4px)] adds the original outline-offset-2 */}
+          {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
+          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          {/* gradient focus-visible */}
+          {/* [calc(100%+8px)] adds the original outline-2 */}
+          {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
+          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
+          {/* outline's rounded is more pronounced, lg is the exact fit */}
+        </div>
+      )}
+    </FieldFlex>
+  );
+}
+
+export function InputTextControlled({
+  label,
+  description,
+  addendum,
+  definedValue,
+  // definedOnValueChange = () => {},
+  tekTime,
+  children,
+  fieldFlexIsNotLabel,
+  required = true,
+  ...rest
+}: {
+  form?: string;
+  label?: string;
+  description?: string;
+  addendum?: string;
+  definedValue: string;
+  // definedOnValueChange: any;
+  tekTime?: boolean;
+  children?: React.ReactNode;
+  fieldFlexIsNotLabel?: boolean;
+  required?: boolean;
+} & ComponentProps<"input">) {
+  return (
+    <FieldFlex isLabel={!fieldFlexIsNotLabel}>
+      <div className="flex justify-between">
+        {label && <FieldTitle title={label} />}
+        {children}
+      </div>
+      {description && (
+        <div className="flex flex-col gap-1">
+          <p className="select-none text-sm text-neutral-500">{description}</p>
+          {addendum && (
+            <p className="select-none text-sm text-neutral-500">({addendum})</p>
+          )}
+        </div>
+      )}
+      {!tekTime ? (
+        <input
+          {...rest}
+          type="text"
+          value={definedValue}
+          // onChange={(event) => definedOnValueChange(event.currentTarget.value)}
+          required={required}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.preventDefault();
+          }}
+          className={clsx(
+            baseInputTexts,
+            notDatetimeLocalPadding,
+            focusVisibleTexts,
+          )}
+        />
+      ) : (
+        <div className="relative">
+          <input
+            type="text"
+            value={definedValue}
+            // onChange={(event) =>
+            //   definedOnValueChange(event.currentTarget.value)
+            // }
             required={required}
             onKeyDown={(event) => {
               if (event.key === "Enter") event.preventDefault();

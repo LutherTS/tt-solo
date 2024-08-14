@@ -57,7 +57,7 @@ export default async function MomentsPage({
   if (!user) return console.error("Somehow a user was not found.");
 
   // take and skip randomly implemented below for scalable defaults.
-  // All of these will be optimized in a Promise.all once all queries will be organized in their own folders.
+  // All of these will be optimized and organized in their own folders.
 
   const TAKE = 1;
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Dispatch, SetStateAction, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
@@ -124,12 +125,19 @@ function ReadDestinationsView({
   setView: Dispatch<SetStateAction<View>>;
   revalidateDestinations: any;
 }) {
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
   return (
     <div className="space-y-8">
       <div className="-mt-4 flex flex-wrap gap-4">
         <button
-          onClick={async () => {
-            revalidateDestinations();
+          onClick={async (event) => {
+            const button = event.currentTarget;
+            button.disabled = true;
+            await revalidateDestinations();
+            replace(`${pathname}`);
+            button.disabled = false;
           }}
           className={clsx(
             "flex h-9 items-center justify-center px-4 py-2",

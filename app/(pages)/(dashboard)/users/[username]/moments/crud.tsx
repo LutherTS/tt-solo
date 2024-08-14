@@ -1,6 +1,7 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useRef, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
@@ -14,6 +15,7 @@ import {
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Reorder, useDragControls } from "framer-motion";
+import debounce from "debounce";
 
 import { Option } from "@/app/types/general";
 import {
@@ -35,6 +37,7 @@ import {
   InputNumber,
   InputSwitchControlled,
   InputText,
+  InputTextControlled,
   PageTitle,
   Section,
   SectionWrapper,
@@ -42,6 +45,7 @@ import {
   Textarea,
 } from "../../../components";
 import * as Icons from "../icons";
+import { useDebouncedCallback } from "use-debounce";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -274,6 +278,93 @@ function ReadMomentsView({
     ),
   );
 
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  function handleSearch(term: string) {
+    const params = new URLSearchParams(searchParams);
+
+    if (term) params.set("contains", term);
+    else params.delete("contains");
+
+    params.set("usermomentspage", "1");
+    params.set("pastusermomentspage", "1");
+    params.set("currentusermomentspage", "1");
+    params.set("futureusermomentspage", "1");
+
+    replace(`${pathname}?${params.toString()}`);
+  } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
+
+  const debouncedHandleSearch = debounce(handleSearch, 300);
+
+  const subViewSearchParams = {
+    "all-moments": "usermomentspage",
+    "past-moments": "pastusermomentspage",
+    "current-moments": "currentusermomentspage",
+    "future-moments": "futureusermomentspage",
+  };
+
+  function handlePagination(direction: "left" | "right", subView: SubView) {
+    const params = new URLSearchParams(searchParams);
+    console.log({ direction, subView, params });
+
+    let currentPage = +(params.get(subViewSearchParams[subView]) || "1");
+    console.log({ currentPage });
+
+    if (direction === "left")
+      params.set(
+        subViewSearchParams[subView],
+        Math.max(1, currentPage - 1).toString(),
+      );
+    if (direction === "right")
+      params.set(
+        subViewSearchParams[subView],
+        Math.max(1, currentPage + 1).toString(),
+      );
+
+    replace(`${pathname}?${params.toString()}`);
+  }
+
+  // const [contains, setContains] = useState(searchParams.get("contains") || "");
+
+  // function handleSearchControlled(term: string) {
+  //   setContains(term);
+
+  //   const params = new URLSearchParams(searchParams);
+
+  //   if (term) params.set("contains", term);
+  //   else params.delete("contains");
+
+  //   params.set("usermomentspage", "1");
+  //   params.set("pastusermomentspage", "1");
+  //   params.set("currentusermomentspage", "1");
+  //   params.set("futureusermomentspage", "1");
+
+  //   replace(`${pathname}?${params.toString()}`);
+  // } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
+
+  // const debouncedHandleSearchControlled = debounce(handleSearchControlled, 300);
+
+  // const [contains2, setContains2] = useState(
+  //   searchParams.get("contains") || "",
+  // );
+  // const debounced = useDebouncedCallback((contains2) => {
+  //   setContains2(contains2);
+
+  //   const params = new URLSearchParams(searchParams);
+
+  //   if (contains2) params.set("contains", contains2);
+  //   else params.delete("contains");
+
+  //   params.set("usermomentspage", "1");
+  //   params.set("pastusermomentspage", "1");
+  //   params.set("currentusermomentspage", "1");
+  //   params.set("futureusermomentspage", "1");
+
+  //   replace(`${pathname}?${params.toString()}`);
+  // }, 300);
+
   return (
     <div className="space-y-8">
       {/* -mt-4 to resolve padding from Vos moments */}
@@ -320,8 +411,14 @@ function ReadMomentsView({
           );
         })}
         <button
-          onClick={async () => {
-            revalidateMoments();
+          form="form"
+          onClick={async (event) => {
+            const button = event.currentTarget;
+            button.disabled = true;
+            await revalidateMoments();
+            replace(`${pathname}`);
+            button.form!.reset(); // LAISSE.
+            button.disabled = false;
           }}
           className={clsx(
             "flex h-9 items-center justify-center px-4 py-2",
@@ -354,6 +451,22 @@ function ReadMomentsView({
           ></div>
         </button>
       </div>
+      {/* the issue here is debounced while controlled */}
+      {/* perhaps I'll just do it on Enter */}
+      <form id="form">
+        <InputText
+          id="contains"
+          name="contains"
+          placeholder="Cherchez parmi vos moments..."
+          defaultValue={searchParams.get("contains")?.toString()}
+          onChange={(e) => {
+            debouncedHandleSearch(e.currentTarget.value);
+          }}
+          // definedOnValueChange={handleSearchControlled}
+          // Here's how it's going to go. I'm going to keep the non-debounced method for now (since this is just development), and then I'll shift the solution to something that updates the URL on Enter, which is more to my liking anyway.
+          // ...Où alors je peux programmatiquement transform l'input en form et reset the form. Ce sera la solution ce soir.
+        />
+      </form>
       {realDisplayedMoments.length > 0 ? (
         <>
           {realDisplayedMoments.map((e) => (
@@ -387,7 +500,7 @@ function ReadMomentsView({
                             )}
                             key={e3.id}
                           >
-                            <div className="grid select-none grid-cols-[4fr_1fr] items-center gap-4">
+                            <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
                               <p className="font-medium text-blue-950">
                                 {e3.objective}
                               </p>
@@ -444,6 +557,18 @@ function ReadMomentsView({
                   })}
                 </Section>
               </SectionWrapper>
+              <div className="flex justify-between">
+                <button onClick={() => handlePagination("left", subView)}>
+                  <div className="rounded-lg bg-white p-2 shadow">
+                    <Icons.ArrowLeftSolid />
+                  </div>
+                </button>
+                <button onClick={() => handlePagination("right", subView)}>
+                  <div className="rounded-lg bg-white p-2 shadow">
+                    <Icons.ArrowRightSolid />
+                  </div>
+                </button>
+              </div>
             </div>
           ))}
         </>
