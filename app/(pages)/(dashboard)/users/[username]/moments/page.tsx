@@ -52,6 +52,13 @@ export default async function MomentsPage({
   const futureUserMomentsPage =
     Number(searchParams?.futureusermomentspage) || 1;
 
+  const pages = [
+    userMomentsPage,
+    pastUserMomentsPage,
+    currentUserMomentsPage,
+    futureUserMomentsPage,
+  ];
+
   const user = await prisma.user.findUnique({
     where: { username },
   });
@@ -134,9 +141,10 @@ export default async function MomentsPage({
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ];
+  // console.log(totals)
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
-  console.log(maxPages);
+  // console.log(maxPages);
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
@@ -256,76 +264,84 @@ export default async function MomentsPage({
   ];
   // console.log(allUserMoments);
 
-  const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map((e) => {
-    return {
-      dates: [
-        ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
-      ].map((e3) => {
-        return {
-          date: e3,
-          destinations: [
-            ...new Set(
-              e
-                .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                .map((moment) => moment.destination.name),
-            ),
-          ]
-            // organizes destinations per day alphabetically
-            .sort((a, b) => {
-              const destinationA = a.toLowerCase();
-              const destinationB = b.toLowerCase();
-              if (destinationA < destinationB) return -1;
-              if (destinationB > destinationA) return 1;
-              return 0;
-              // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-            })
-            .map((e5) => {
-              return {
-                destinationIdeal: e5,
-                moments: e
-                  .filter(
-                    (moment) =>
-                      moment.destination.name === e5 &&
-                      moment.startDateAndTime.startsWith(e3),
-                  )
-                  // organizes moments per destination chronologically
-                  .sort((a, b) => {
-                    const startDateAndTimeA = a.startDateAndTime;
-                    const startDateAndTimeB = b.startDateAndTime;
-                    if (startDateAndTimeA < startDateAndTimeB) return -1;
-                    if (startDateAndTimeB > startDateAndTimeA) return 1;
-                    return 0;
-                  })
-                  .map((e6) => {
-                    return {
-                      id: e6.id,
-                      activity: e6.activity,
-                      objective: e6.name,
-                      isIndispensable: e6.isIndispensable,
-                      context: e6.description,
-                      startDateAndTime: e6.startDateAndTime,
-                      duration: e6.duration,
-                      endDateAndTime: e6.endDateAndTime,
-                      steps: e6.steps.map((e7) => {
-                        return {
-                          id: e7.id,
-                          orderId: e7.orderId,
-                          title: e7.name,
-                          details: e7.description,
-                          startDateAndTime: e7.startDateAndTime,
-                          duration: e7.duration,
-                          endDateAndTime: e7.endDateAndTime,
-                        };
-                      }),
-                      destinationIdeal: e5,
-                    };
-                  }),
-              };
-            }),
-        };
-      }),
-    };
-  });
+  const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map(
+    (e, i, a) => {
+      return {
+        dates: [
+          ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
+        ].map((e3) => {
+          return {
+            date: e3,
+            destinations: [
+              ...new Set(
+                e
+                  .filter((moment) => moment.startDateAndTime.startsWith(e3))
+                  .map((moment) => moment.destination.name),
+              ),
+            ]
+              // organizes destinations per day alphabetically
+              .sort((a, b) => {
+                const destinationA = a.toLowerCase();
+                const destinationB = b.toLowerCase();
+                if (destinationA < destinationB) return -1;
+                if (destinationB > destinationA) return 1;
+                return 0;
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
+              })
+              .map((e5) => {
+                return {
+                  destinationIdeal: e5,
+                  moments: e
+                    .filter(
+                      (moment) =>
+                        moment.destination.name === e5 &&
+                        moment.startDateAndTime.startsWith(e3),
+                    )
+                    // organizes moments per destination chronologically
+                    .sort((a, b) => {
+                      const startDateAndTimeA = a.startDateAndTime;
+                      const startDateAndTimeB = b.startDateAndTime;
+                      if (startDateAndTimeA < startDateAndTimeB) return -1;
+                      if (startDateAndTimeB > startDateAndTimeA) return 1;
+                      return 0;
+                    })
+                    .map((e6) => {
+                      return {
+                        id: e6.id,
+                        activity: e6.activity,
+                        objective: e6.name,
+                        isIndispensable: e6.isIndispensable,
+                        context: e6.description,
+                        startDateAndTime: e6.startDateAndTime,
+                        duration: e6.duration,
+                        endDateAndTime: e6.endDateAndTime,
+                        steps: e6.steps.map((e7) => {
+                          return {
+                            id: e7.id,
+                            orderId: e7.orderId,
+                            title: e7.name,
+                            details: e7.description,
+                            startDateAndTime: e7.startDateAndTime,
+                            duration: e7.duration,
+                            endDateAndTime: e7.endDateAndTime,
+                          };
+                        }),
+                        destinationIdeal: e5,
+                      };
+                    }),
+                };
+              }),
+            momentsTotal: a[i].length,
+            momentFirstIndex: (pages[i] - 1) * TAKE + 1,
+            momentLastIndex: (pages[i] - 1) * TAKE + a[i].length,
+            allMomentsTotal: totals[i],
+            currentPage: pages[i],
+            totalPage: maxPages[i],
+          };
+        }),
+      };
+    },
+  );
 
   const userDestinations = await prisma.destination.findMany({
     where: {

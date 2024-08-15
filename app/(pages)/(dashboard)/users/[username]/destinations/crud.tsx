@@ -130,7 +130,7 @@ function ReadDestinationsView({
 
   return (
     <div className="space-y-8">
-      <div className="-mt-4 flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4">
         <button
           onClick={async (event) => {
             const button = event.currentTarget;
@@ -205,42 +205,44 @@ function ReadDestinationsView({
                           </div>
                         </div>
                       </div>
-                      <div>
-                        <p className={className}>
-                          {e.allMomentsCount >= 2
-                            ? `${e.allMomentsCount} moments au total`
-                            : e.allMomentsCount === 1
-                              ? `${e.allMomentsCount} moment au total`
-                              : "Aucun moment pour le moment."}
-                        </p>
-                      </div>
-                      <div>
-                        <p className={className}>
-                          {e.pastMomentsCount >= 2
-                            ? `${e.pastMomentsCount} moments passés`
-                            : e.pastMomentsCount === 1
-                              ? `${e.pastMomentsCount} moment passé`
-                              : "Aucun moment passé."}
-                        </p>
-                      </div>
-                      <div>
-                        <p className={className}>
-                          {e.currentMomentsCount >= 2
-                            ? `${e.currentMomentsCount} moments actuels`
-                            : e.currentMomentsCount === 1
-                              ? `${e.currentMomentsCount} moment actuel`
-                              : "Aucun moment actuel."}
-                        </p>
-                      </div>
-                      <div>
-                        <p className={className}>
-                          {e.futureMomentsCount >= 2
-                            ? `${e.futureMomentsCount} moments futurs`
-                            : e.futureMomentsCount === 1
-                              ? `${e.futureMomentsCount} moment futur`
-                              : "Aucun moment futur."}
-                        </p>
-                      </div>
+                      <ul className="space-y-2">
+                        <li className="list-inside list-disc">
+                          <p className={className}>
+                            {e.allMomentsCount >= 2
+                              ? `${e.allMomentsCount} moments au total`
+                              : e.allMomentsCount === 1
+                                ? `${e.allMomentsCount} moment au total`
+                                : "Aucun moment pour le moment."}
+                          </p>
+                        </li>
+                        <li className="list-inside list-disc">
+                          <p className={className}>
+                            {e.pastMomentsCount >= 2
+                              ? `${e.pastMomentsCount} moments passés`
+                              : e.pastMomentsCount === 1
+                                ? `${e.pastMomentsCount} moment passé`
+                                : "Aucun moment passé."}
+                          </p>
+                        </li>
+                        <li className="list-inside list-disc">
+                          <p className={className}>
+                            {e.currentMomentsCount >= 2
+                              ? `${e.currentMomentsCount} moments actuels`
+                              : e.currentMomentsCount === 1
+                                ? `${e.currentMomentsCount} moment actuel`
+                                : "Aucun moment actuel."}
+                          </p>
+                        </li>
+                        <li className="list-inside list-disc">
+                          <p className={className}>
+                            {e.futureMomentsCount >= 2
+                              ? `${e.futureMomentsCount} moments futurs`
+                              : e.futureMomentsCount === 1
+                                ? `${e.futureMomentsCount} moment futur`
+                                : "Aucun moment futur."}
+                          </p>
+                        </li>
+                      </ul>
                     </div>
                   </Section>
                 </SectionWrapper>
