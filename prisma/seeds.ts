@@ -3,6 +3,23 @@ import { add, format, roundToNearestHours, sub } from "date-fns";
 
 import prisma from "./db";
 
+// Pour les nouvelles seeds.
+// Faire deux destinations :
+// - Créer le nouveau schéma de données de Grevents v3
+// - Retranscrire les seeds de Grevents v2 sur Grevents v3
+// Chacune avec neuf moments par table de la base de données :
+// - User
+// - Relation
+// - Criterion
+// - GroupOfUsers
+// - GroupOfUsersUser
+// - GroupOfCriteria
+// - GroupOfCriteriaCriterion
+// - GroupOfUsersGroupOfCriteria
+// - UserCriterion
+// Je me débrouillerai ensuite pour les contextes et les étapes, en accord justement avec la façon dont j'ai accompli cet exercice, mais pour chacun des cas, trois moments devront être faits dans le passé, trois moments dans le présent, et trois moments dans le futur.
+// J'aurai ainsi dix-huit moments dans la partie Tous, ce qui me permettra d'y faire une pagination de dix à onze vers dix-huit. (1-10, 11-18)
+
 const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
 async function seed() {

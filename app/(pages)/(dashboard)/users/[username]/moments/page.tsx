@@ -16,6 +16,9 @@ import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 
 import { CRUD } from "./crud";
 
+// IMPORTANT
+// Just that weird this about time not being current correctly now.
+
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
 // sharing time as string to bypass timezone adaptations
@@ -26,12 +29,35 @@ console.log(nowString);
 
 export default async function MomentsPage({
   params,
+  searchParams,
 }: {
   params: {
     username: string;
   };
+  searchParams?: {
+    contains?: string;
+    usermomentspage?: string;
+    pastusermomentspage?: string;
+    currentusermomentspage?: string;
+    futureusermomentspage?: string;
+  };
 }) {
   const username = params.username;
+
+  const contains = searchParams?.contains || "";
+  const userMomentsPage = Number(searchParams?.usermomentspage) || 1;
+  const pastUserMomentsPage = Number(searchParams?.pastusermomentspage) || 1;
+  const currentUserMomentsPage =
+    Number(searchParams?.currentusermomentspage) || 1;
+  const futureUserMomentsPage =
+    Number(searchParams?.futureusermomentspage) || 1;
+
+  const pages = [
+    userMomentsPage,
+    pastUserMomentsPage,
+    currentUserMomentsPage,
+    futureUserMomentsPage,
+  ];
 
   const user = await prisma.user.findUnique({
     where: { username },
@@ -41,10 +67,84 @@ export default async function MomentsPage({
   if (!user) return console.error("Somehow a user was not found.");
 
   // take and skip randomly implemented below for scalable defaults.
-  // All of these will be optimized in a Promise.all once all queries will be organized in their own folders.
+  // All of these will be optimized and organized in their own folders.
 
-  const TAKE = 10;
-  const DEFAULT_PAGE = 1;
+  const TAKE = 2;
+
+  const [
+    userMomentsTotal,
+    pastUserMomentsTotal,
+    currentUserMomentsTotal,
+    futureUserMomentsTotal,
+  ] = await Promise.all([
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+      },
+    }),
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+        endDateAndTime: {
+          lt: nowString,
+        },
+      },
+    }),
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+        AND: [
+          { startDateAndTime: { lte: nowString } },
+          { endDateAndTime: { gte: nowString } },
+        ],
+      },
+    }),
+    prisma.moment.count({
+      where: {
+        destination: {
+          userId: user.id,
+        },
+        name: {
+          contains: contains !== "" ? contains : undefined,
+        },
+        startDateAndTime: {
+          gt: nowString,
+        },
+      },
+    }),
+  ]);
+  // console.log({
+  //   userMomentsTotal,
+  //   pastUserMomentsTotal,
+  //   currentUserMomentsTotal,
+  //   futureUserMomentsTotal,
+  // });
+
+  const totals = [
+    userMomentsTotal,
+    pastUserMomentsTotal,
+    currentUserMomentsTotal,
+    futureUserMomentsTotal,
+  ];
+  // console.log(totals)
+
+  const maxPages = totals.map((e) => Math.ceil(e / TAKE));
+  // console.log(maxPages);
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
@@ -52,6 +152,9 @@ export default async function MomentsPage({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
         },
         include: {
@@ -66,12 +169,15 @@ export default async function MomentsPage({
           startDateAndTime: "desc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (userMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
           endDateAndTime: {
             lt: nowString,
@@ -89,12 +195,15 @@ export default async function MomentsPage({
           startDateAndTime: "desc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (pastUserMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
           AND: [
             { startDateAndTime: { lte: nowString } },
@@ -113,12 +222,15 @@ export default async function MomentsPage({
           startDateAndTime: "asc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (currentUserMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
           destination: {
             userId: user.id,
+          },
+          name: {
+            contains: contains !== "" ? contains : undefined,
           },
           startDateAndTime: {
             gt: nowString,
@@ -136,7 +248,7 @@ export default async function MomentsPage({
           startDateAndTime: "asc",
         },
         take: TAKE,
-        skip: (DEFAULT_PAGE - 1) * TAKE,
+        skip: (futureUserMomentsPage - 1) * TAKE,
       }),
     ]);
   // console.log(userMoments);
@@ -152,76 +264,84 @@ export default async function MomentsPage({
   ];
   // console.log(allUserMoments);
 
-  const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map((e) => {
-    return {
-      dates: [
-        ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
-      ].map((e3) => {
-        return {
-          date: e3,
-          destinations: [
-            ...new Set(
-              e
-                .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                .map((moment) => moment.destination.name),
-            ),
-          ]
-            // organizes destinations per day alphabetically
-            .sort((a, b) => {
-              const destinationA = a.toLowerCase();
-              const destinationB = b.toLowerCase();
-              if (destinationA < destinationB) return -1;
-              if (destinationB > destinationA) return 1;
-              return 0;
-              // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-            })
-            .map((e5) => {
-              return {
-                destinationIdeal: e5,
-                moments: e
-                  .filter(
-                    (moment) =>
-                      moment.destination.name === e5 &&
-                      moment.startDateAndTime.startsWith(e3),
-                  )
-                  // organizes moments per destination chronologically
-                  .sort((a, b) => {
-                    const startDateAndTimeA = a.startDateAndTime;
-                    const startDateAndTimeB = b.startDateAndTime;
-                    if (startDateAndTimeA < startDateAndTimeB) return -1;
-                    if (startDateAndTimeB > startDateAndTimeA) return 1;
-                    return 0;
-                  })
-                  .map((e6) => {
-                    return {
-                      id: e6.id,
-                      activity: e6.activity,
-                      objective: e6.name,
-                      isIndispensable: e6.isIndispensable,
-                      context: e6.description,
-                      startDateAndTime: e6.startDateAndTime,
-                      duration: e6.duration,
-                      endDateAndTime: e6.endDateAndTime,
-                      steps: e6.steps.map((e7) => {
-                        return {
-                          id: e7.id,
-                          orderId: e7.orderId,
-                          title: e7.name,
-                          details: e7.description,
-                          startDateAndTime: e7.startDateAndTime,
-                          duration: e7.duration,
-                          endDateAndTime: e7.endDateAndTime,
-                        };
-                      }),
-                      destinationIdeal: e5,
-                    };
-                  }),
-              };
-            }),
-        };
-      }),
-    };
-  });
+  const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map(
+    (e, i, a) => {
+      return {
+        dates: [
+          ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
+        ].map((e3) => {
+          return {
+            date: e3,
+            destinations: [
+              ...new Set(
+                e
+                  .filter((moment) => moment.startDateAndTime.startsWith(e3))
+                  .map((moment) => moment.destination.name),
+              ),
+            ]
+              // organizes destinations per day alphabetically
+              .sort((a, b) => {
+                const destinationA = a.toLowerCase();
+                const destinationB = b.toLowerCase();
+                if (destinationA < destinationB) return -1;
+                if (destinationB > destinationA) return 1;
+                return 0;
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
+              })
+              .map((e5) => {
+                return {
+                  destinationIdeal: e5,
+                  moments: e
+                    .filter(
+                      (moment) =>
+                        moment.destination.name === e5 &&
+                        moment.startDateAndTime.startsWith(e3),
+                    )
+                    // organizes moments per destination chronologically
+                    .sort((a, b) => {
+                      const startDateAndTimeA = a.startDateAndTime;
+                      const startDateAndTimeB = b.startDateAndTime;
+                      if (startDateAndTimeA < startDateAndTimeB) return -1;
+                      if (startDateAndTimeB > startDateAndTimeA) return 1;
+                      return 0;
+                    })
+                    .map((e6) => {
+                      return {
+                        id: e6.id,
+                        activity: e6.activity,
+                        objective: e6.name,
+                        isIndispensable: e6.isIndispensable,
+                        context: e6.description,
+                        startDateAndTime: e6.startDateAndTime,
+                        duration: e6.duration,
+                        endDateAndTime: e6.endDateAndTime,
+                        steps: e6.steps.map((e7) => {
+                          return {
+                            id: e7.id,
+                            orderId: e7.orderId,
+                            title: e7.name,
+                            details: e7.description,
+                            startDateAndTime: e7.startDateAndTime,
+                            duration: e7.duration,
+                            endDateAndTime: e7.endDateAndTime,
+                          };
+                        }),
+                        destinationIdeal: e5,
+                      };
+                    }),
+                };
+              }),
+            momentsTotal: a[i].length,
+            momentFirstIndex: (pages[i] - 1) * TAKE + 1,
+            momentLastIndex: (pages[i] - 1) * TAKE + a[i].length,
+            allMomentsTotal: totals[i],
+            currentPage: pages[i],
+            totalPage: maxPages[i],
+          };
+        }),
+      };
+    },
+  );
 
   const userDestinations = await prisma.destination.findMany({
     where: {
@@ -467,6 +587,7 @@ export default async function MomentsPage({
     <CRUD
       allUserMomentsToCRUD={allUserMomentsToCRUD}
       destinationOptions={destinationOptions}
+      maxPages={maxPages}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
       revalidateMoments={revalidateMoments}

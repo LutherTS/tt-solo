@@ -23,12 +23,12 @@ const navLinks = [
     href: "/moments",
     icon: "CalendarDays",
   },
-  {
-    id: 2,
-    label: "Destinations",
-    href: "/destinations",
-    icon: "PaperAirplane",
-  },
+  // {
+  //   id: 2,
+  //   label: "Destinations",
+  //   href: "/destinations",
+  //   icon: "PaperAirplane",
+  // },
 ];
 
 export function SideNavContents() {

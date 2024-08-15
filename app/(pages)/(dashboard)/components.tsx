@@ -1,6 +1,11 @@
 "use client";
 
-import { Dispatch, MouseEventHandler, SetStateAction } from "react";
+import {
+  ComponentProps,
+  Dispatch,
+  MouseEventHandler,
+  SetStateAction,
+} from "react";
 import { useFormStatus } from "react-dom";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
@@ -91,32 +96,29 @@ export function Section({
 }
 
 export function InputText({
-  form,
   label,
   description,
   addendum,
   name,
-  defaultValue,
   tekTime,
   children,
   fieldFlexIsNotLabel,
   required = true,
+  ...rest
 }: {
-  form?: string;
-  label: string;
+  label?: string;
   description?: string;
   addendum?: string;
   name: string;
-  defaultValue?: string;
   tekTime?: boolean;
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
   required?: boolean;
-}) {
+} & ComponentProps<"input">) {
   return (
     <FieldFlex isLabel={!fieldFlexIsNotLabel}>
       <div className="flex justify-between">
-        <FieldTitle title={label} />
+        {label && <FieldTitle title={label} />}
         {children}
       </div>
       {description && (
@@ -129,10 +131,9 @@ export function InputText({
       )}
       {!tekTime ? (
         <input
+          {...rest}
           type="text"
-          form={form}
           name={name}
-          defaultValue={defaultValue}
           required={required}
           onKeyDown={(event) => {
             if (event.key === "Enter") event.preventDefault();
@@ -146,10 +147,9 @@ export function InputText({
       ) : (
         <div className="relative">
           <input
+            {...rest}
             type="text"
-            form={form}
             name={name}
-            defaultValue={defaultValue}
             required={required}
             onKeyDown={(event) => {
               if (event.key === "Enter") event.preventDefault();

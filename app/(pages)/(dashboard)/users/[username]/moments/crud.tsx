@@ -1,12 +1,11 @@
 "use client";
 
 import { Dispatch, SetStateAction, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
   add,
-  compareAsc,
-  compareDesc,
   format,
   roundToNearestHours,
   roundToNearestMinutes,
@@ -14,6 +13,7 @@ import {
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Reorder, useDragControls } from "framer-motion";
+import debounce from "debounce";
 
 import { Option } from "@/app/types/general";
 import {
@@ -99,6 +99,7 @@ const exchangeOptions: Option[] = [
 export function CRUD({
   allUserMomentsToCRUD,
   destinationOptions,
+  maxPages,
   createOrUpdateMoment,
   deleteMoment,
   revalidateMoments,
@@ -106,6 +107,7 @@ export function CRUD({
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   destinationOptions: Option[];
+  maxPages: number[];
   createOrUpdateMoment: any;
   deleteMoment: any;
   revalidateMoments: any;
@@ -185,7 +187,7 @@ export function CRUD({
             moment={moment}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
-            setSubView={setSubView}
+            // setSubView={setSubView}
             now={now}
           />
         )}
@@ -193,6 +195,7 @@ export function CRUD({
       <div className={clsx(view !== "read-moments" && "hidden")}>
         <ReadMomentsView
           allUserMomentsToCRUD={allUserMomentsToCRUD}
+          maxPages={maxPages}
           setMoment={setMoment}
           setView={setView}
           subView={subView}
@@ -210,7 +213,7 @@ export function CRUD({
             variant="creating"
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
-            setSubView={setSubView}
+            // setSubView={setSubView}
           />
         )}
       </div>
@@ -222,6 +225,7 @@ export function CRUD({
 
 function ReadMomentsView({
   allUserMomentsToCRUD,
+  maxPages,
   setMoment,
   setView,
   subView,
@@ -229,6 +233,7 @@ function ReadMomentsView({
   revalidateMoments,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
+  maxPages: number[];
   setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
   subView: SubView;
@@ -274,10 +279,73 @@ function ReadMomentsView({
     ),
   );
 
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  function handleSearch(term: string) {
+    const params = new URLSearchParams(searchParams);
+
+    if (term) params.set("contains", term);
+    else params.delete("contains");
+
+    params.delete("usermomentspage");
+    params.delete("pastusermomentspage");
+    params.delete("currentusermomentspage");
+    params.delete("futureusermomentspage");
+
+    replace(`${pathname}?${params.toString()}`);
+  } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
+
+  const debouncedHandleSearch = debounce(handleSearch, 300);
+
+  const subViewSearchParams = {
+    "all-moments": "usermomentspage",
+    "past-moments": "pastusermomentspage",
+    "current-moments": "currentusermomentspage",
+    "future-moments": "futureusermomentspage",
+  };
+  const [
+    maxPageAllMoments,
+    maxPagePastMoments,
+    maxPageCurrentMoments,
+    maxPageFutureMoments,
+  ] = maxPages;
+
+  let subViewMaxPages = {
+    "all-moments": maxPageAllMoments,
+    "past-moments": maxPagePastMoments,
+    "current-moments": maxPageCurrentMoments,
+    "future-moments": maxPageFutureMoments,
+  };
+
+  const params = new URLSearchParams(searchParams);
+  let currentPage = +(params.get(subViewSearchParams[subView]) || "1");
+
+  function handlePagination(direction: "left" | "right", subView: SubView) {
+    if (direction === "left")
+      params.set(
+        subViewSearchParams[subView],
+        Math.max(1, currentPage - 1).toString(),
+      );
+    if (direction === "right")
+      params.set(
+        subViewSearchParams[subView],
+        Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
+      );
+
+    replace(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <div className="space-y-8">
       {/* -mt-4 to resolve padding from Vos moments */}
-      <div className="-mt-4 flex flex-wrap gap-4">
+      <div
+        className={clsx(
+          "flex flex-wrap gap-4",
+          // "-mt-4",
+        )}
+      >
         {subViews.map((e) => {
           const className = "px-4 py-2 h-9 flex items-center justify-center";
           return (
@@ -320,8 +388,15 @@ function ReadMomentsView({
           );
         })}
         <button
-          onClick={async () => {
-            revalidateMoments();
+          // to target the input in form that needs to be reset
+          form="form"
+          onClick={async (event) => {
+            const button = event.currentTarget;
+            button.disabled = true;
+            await revalidateMoments();
+            replace(`${pathname}`);
+            button.form!.reset(); // EXACTLY.
+            button.disabled = false;
           }}
           className={clsx(
             "flex h-9 items-center justify-center px-4 py-2",
@@ -354,98 +429,144 @@ function ReadMomentsView({
           ></div>
         </button>
       </div>
+      {/* to place the input into a form so it can be reset */}
+      <form id="form">
+        <InputText
+          id="contains"
+          name="contains"
+          placeholder="Cherchez parmi vos moments..."
+          defaultValue={searchParams.get("contains")?.toString()}
+          onChange={(e) => {
+            debouncedHandleSearch(e.currentTarget.value);
+          }}
+        />
+      </form>
       {realDisplayedMoments.length > 0 ? (
         <>
-          {realDisplayedMoments.map((e) => (
-            <div className="space-y-8" key={e.date}>
-              <SectionWrapper>
-                <Section
-                  title={format(new Date(e.date), "eeee d MMMM", {
-                    locale: fr,
-                  })}
-                >
-                  {e.destinations.map((e2) => {
-                    return (
-                      <div
-                        key={e2.destinationIdeal}
-                        className="flex flex-col gap-y-8"
-                      >
-                        <div className="flex select-none items-baseline justify-between">
-                          <p
-                            className={clsx(
-                              "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-                            )}
-                          >
-                            {e2.destinationIdeal}
-                          </p>
-                        </div>
-                        {e2.moments.map((e3, i3) => (
-                          <div
-                            className={clsx(
-                              "group space-y-2",
-                              i3 === 0 && "-mt-5",
-                            )}
-                            key={e3.id}
-                          >
-                            <div className="grid select-none grid-cols-[4fr_1fr] items-center gap-4">
-                              <p className="font-medium text-blue-950">
-                                {e3.objective}
-                              </p>
-                              <div className="invisible flex justify-end group-hover:visible">
-                                <Button
-                                  type="button"
-                                  variant="destroy-step"
-                                  onClick={() => {
-                                    setMoment(
-                                      realMoments.find((e4) => e4.id === e3.id),
-                                    );
-                                    setView("update-moment");
-                                  }}
-                                >
-                                  <Icons.PencilSquareSolid className="size-5" />
-                                </Button>
-                              </div>
-                            </div>
-                            <p>
-                              <span
-                                className={"font-semibold text-neutral-800"}
-                              >
-                                {e3.startDateAndTime.split("T")[1]}
-                              </span>{" "}
-                              • {numStringToTimeString(e3.duration)}
-                              {e3.isIndispensable && (
-                                <>
-                                  {" "}
-                                  •{" "}
-                                  <span className="text-sm font-semibold uppercase">
-                                    indispensable
-                                  </span>
-                                </>
+          {realDisplayedMoments.map((e, i, a) => (
+            <>
+              <div className="space-y-8" key={e.date}>
+                <SectionWrapper>
+                  <Section
+                    title={format(new Date(e.date), "eeee d MMMM", {
+                      locale: fr,
+                    })}
+                  >
+                    {e.destinations.map((e2) => {
+                      return (
+                        <div
+                          key={e2.destinationIdeal}
+                          className="flex flex-col gap-y-8"
+                        >
+                          <div className="flex select-none items-baseline justify-between">
+                            <p
+                              className={clsx(
+                                "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
                               )}
+                            >
+                              {e2.destinationIdeal}
                             </p>
-                            <ol>
-                              {e3.steps.map((e4) => (
-                                <li
-                                  key={e4.id}
-                                  className="font-serif font-light leading-loose text-neutral-500"
-                                >
-                                  <span>
-                                    {e4.startDateAndTime.split("T")[1]}
-                                  </span>{" "}
-                                  - {e4.endDateAndTime.split("T")[1]} :{" "}
-                                  {e4.title}
-                                </li>
-                              ))}
-                            </ol>
                           </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </Section>
-              </SectionWrapper>
-            </div>
+                          {e2.moments.map((e3, i3) => (
+                            <div
+                              className={clsx(
+                                "group space-y-2",
+                                i3 === 0 && "-mt-5",
+                              )}
+                              key={e3.id}
+                            >
+                              <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+                                <p className="font-medium text-blue-950">
+                                  {e3.objective}
+                                </p>
+                                <div className="invisible flex justify-end group-hover:visible">
+                                  <Button
+                                    type="button"
+                                    variant="destroy-step"
+                                    onClick={() => {
+                                      setMoment(
+                                        realMoments.find(
+                                          (e4) => e4.id === e3.id,
+                                        ),
+                                      );
+                                      setView("update-moment");
+                                    }}
+                                  >
+                                    <Icons.PencilSquareSolid className="size-5" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <p>
+                                <span
+                                  className={"font-semibold text-neutral-800"}
+                                >
+                                  {e3.startDateAndTime.split("T")[1]}
+                                </span>{" "}
+                                • {numStringToTimeString(e3.duration)}
+                                {e3.isIndispensable && (
+                                  <>
+                                    {" "}
+                                    •{" "}
+                                    <span className="text-sm font-semibold uppercase">
+                                      indispensable
+                                    </span>
+                                  </>
+                                )}
+                              </p>
+                              <ol>
+                                {e3.steps.map((e4) => (
+                                  <li
+                                    key={e4.id}
+                                    className="list-inside list-disc font-serif font-light leading-loose text-neutral-500"
+                                  >
+                                    <span>
+                                      {e4.startDateAndTime.split("T")[1]}
+                                    </span>{" "}
+                                    - {e4.endDateAndTime.split("T")[1]} :{" "}
+                                    {e4.title}
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </Section>
+                </SectionWrapper>
+              </div>
+              {i === a.length - 1 && (
+                <p className="font-extralight text-neutral-800">
+                  {e.momentsTotal} moment(s) affiché(s) (
+                  {e.momentFirstIndex !== e.momentLastIndex
+                    ? `${e.momentFirstIndex}-${e.momentLastIndex}`
+                    : `${e.momentFirstIndex}`}
+                  ) sur {e.allMomentsTotal} à la page {e.currentPage} sur{" "}
+                  {e.totalPage}
+                </p>
+              )}
+            </>
           ))}
+          <div className="flex justify-between">
+            <button
+              onClick={() => handlePagination("left", subView)}
+              disabled={currentPage === 1}
+              className="disabled:text-neutral-200"
+            >
+              <div className="rounded-lg bg-white p-2 shadow">
+                <Icons.ArrowLeftSolid />
+              </div>
+            </button>
+            <button
+              onClick={() => handlePagination("right", subView)}
+              disabled={currentPage === subViewMaxPages[subView]}
+              className="disabled:text-neutral-200"
+            >
+              <div className="rounded-lg bg-white p-2 shadow">
+                <Icons.ArrowRightSolid />
+              </div>
+            </button>
+          </div>
         </>
       ) : (
         <SectionWrapper>
@@ -463,7 +584,7 @@ function MomentForms({
   destinationOptions,
   createOrUpdateMoment,
   deleteMoment,
-  setSubView,
+  // setSubView,
   now,
 }: {
   setView: Dispatch<SetStateAction<View>>;
@@ -472,7 +593,7 @@ function MomentForms({
   destinationOptions: Option[];
   createOrUpdateMoment: any;
   deleteMoment?: any;
-  setSubView: Dispatch<SetStateAction<SubView>>;
+  // setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
 }) {
   // roundToNearestMinutes are nested to create a clamp method, meaning:
@@ -565,11 +686,6 @@ function MomentForms({
             setSteps([]);
             setStepVisible("creating");
           }
-
-          if (compareDesc(momentDate, now) === 1) setSubView("past-moments");
-          else if (compareAsc(momentDate, now) == 1)
-            setSubView("future-moments");
-          else setSubView("current-moments");
 
           setView("read-moments");
           // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
@@ -1244,4 +1360,12 @@ No longer in use since submitting on Enter is not prevented all around:
 // forcing with "!" because AFAIK there will always be a form.
 // event.currentTarget.form!.requestSubmit();
 Required supercedes display none. After all required is HTML, while display-none is CSS.
+PREVIOUS CODE
+// console.log({ momentDate });
+// console.log({ now });
+// This should sleep for now. The now I send is stuck to prevent timezone issues, so that's why it gets things messy.
+// if (compareDesc(momentDate, now) === 1) setSubView("past-moments");
+// else if (compareAsc(momentDate, now) === 1)
+//   setSubView("future-moments");
+// else setSubView("current-moments");
 */

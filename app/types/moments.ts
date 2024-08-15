@@ -36,6 +36,12 @@ export type MomentsDestinationToCRUD = {
 export type MomentsDateToCRUD = {
   date: string;
   destinations: MomentsDestinationToCRUD[];
+  momentsTotal: number;
+  momentFirstIndex: number;
+  momentLastIndex: number;
+  allMomentsTotal: number;
+  currentPage: number;
+  totalPage: number;
 };
 
 export type UserMomentsToCRUD = {
