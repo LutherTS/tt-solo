@@ -11,6 +11,7 @@ import {
 } from "@/app/types/moments";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 import { CRUD } from "./crud";
+import { redirect } from "next/navigation";
 
 // IMPORTANT
 // Just that weird this about time not being current correctly now.
@@ -577,6 +578,7 @@ export default async function MomentsPage({
     "use server";
 
     revalidatePath(`/users/${username}/moments`);
+    redirect(`/users/${username}/moments`);
   }
 
   return (

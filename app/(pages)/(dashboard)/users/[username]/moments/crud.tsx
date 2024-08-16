@@ -445,8 +445,8 @@ function ReadMomentsView({
       {realDisplayedMoments.length > 0 ? (
         <>
           {realDisplayedMoments.map((e, i, a) => (
-            <>
-              <div className="space-y-8" key={e.date}>
+            <div className="space-y-8" key={e.date}>
+              <div className="space-y-8">
                 <SectionWrapper>
                   <Section
                     title={format(new Date(e.date), "eeee d MMMM", {
@@ -456,8 +456,8 @@ function ReadMomentsView({
                     {e.destinations.map((e2) => {
                       return (
                         <div
-                          key={e2.destinationIdeal}
                           className="flex flex-col gap-y-8"
+                          key={e2.destinationIdeal}
                         >
                           <div className="flex select-none items-baseline justify-between">
                             <p
@@ -517,8 +517,8 @@ function ReadMomentsView({
                               <ol>
                                 {e3.steps.map((e4) => (
                                   <li
-                                    key={e4.id}
                                     className="list-inside list-disc font-serif font-light leading-loose text-neutral-500"
+                                    key={e4.id}
                                   >
                                     <span>
                                       {e4.startDateAndTime.split("T")[1]}
@@ -552,7 +552,7 @@ function ReadMomentsView({
                   sur <span className="font-normal">{e.totalPage}</span>
                 </p>
               )}
-            </>
+            </div>
           ))}
           <div className="flex justify-between">
             <button
