@@ -332,6 +332,9 @@ function ReadMomentsView({
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
+    if (params.get(subViewSearchParams[subView]) === "1")
+      params.delete(subViewSearchParams[subView]);
+
     replace(`${pathname}?${params.toString()}`);
   }
 
