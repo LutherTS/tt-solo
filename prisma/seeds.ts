@@ -19,6 +19,8 @@ import prisma from "./db";
 // - UserCriterion
 // Je me débrouillerai ensuite pour les contextes et les étapes, en accord justement avec la façon dont j'ai accompli cet exercice, mais pour chacun des cas, trois moments devront être faits dans le passé, trois moments dans le présent, et trois moments dans le futur.
 // J'aurai ainsi dix-huit moments dans la partie Tous, ce qui me permettra d'y faire une pagination de dix à onze vers dix-huit. (1-10, 11-18)
+// ...
+// Honnêtement, étant donné que j'ai fait la pagination et d'abord même la recherche, les trois petits moments que j'ai aujourd'hui suffisent largement, démontrant le passé, le présent et le futur, et avec un take de 2 sur Tous on peut démontrer la pagination et la recherche.
 
 const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
@@ -48,7 +50,7 @@ async function seed() {
       signInEmailAddress: "l@l.me",
       hashedPassword:
         "$2a$12$7IgXH7ORHd4x5O7.VC5LROJJFMq620II9ESleuMIYs.6KNDAsEYAe", // LePapier
-      username: "LePapier",
+      username: "demo", // shifted from "LePapier" to "demo"
       pseudoname: "“me”",
       firstName: "Luther",
       lastName: "Tchofo Safo",

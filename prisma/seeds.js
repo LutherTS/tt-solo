@@ -30,7 +30,7 @@ async function seed() {
       signInEmailAddress: "l@l.me",
       hashedPassword:
         "$2a$12$7IgXH7ORHd4x5O7.VC5LROJJFMq620II9ESleuMIYs.6KNDAsEYAe", // LePapier
-      username: "LePapier",
+      username: "demo", // shifted from "LePapier" to "demo"
       pseudoname: "“me”",
       firstName: "Luther",
       lastName: "Tchofo Safo",

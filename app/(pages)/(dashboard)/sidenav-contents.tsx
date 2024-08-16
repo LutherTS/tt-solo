@@ -8,8 +8,6 @@ import clsx from "clsx";
 
 import * as Icons from "./sidenav-icons";
 
-// Up next: Icons file for navigation icons.
-
 const navLinks = [
   // {
   //   id: 0,

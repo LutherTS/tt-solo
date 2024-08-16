@@ -1,11 +1,8 @@
 import { revalidatePath } from "next/cache";
-
 import { Moment } from "@prisma/client";
-
-import prisma from "@/prisma/db";
-
 import { add } from "date-fns";
 
+import prisma from "@/prisma/db";
 import { Option } from "@/app/types/general";
 import {
   UserMomentsToCRUD,
@@ -13,7 +10,6 @@ import {
   MomentToCRUD,
 } from "@/app/types/moments";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
-
 import { CRUD } from "./crud";
 
 // IMPORTANT
