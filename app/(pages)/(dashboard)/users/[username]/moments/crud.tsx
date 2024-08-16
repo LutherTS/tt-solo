@@ -2,7 +2,6 @@
 
 import { Dispatch, SetStateAction, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
   add,
@@ -26,7 +25,6 @@ import {
   numStringToTimeString,
   toWordsing,
 } from "@/app/utilities/moments";
-
 import {
   Button,
   Divider,
@@ -297,7 +295,7 @@ function ReadMomentsView({
     replace(`${pathname}?${params.toString()}`);
   } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
 
-  const debouncedHandleSearch = debounce(handleSearch, 300);
+  const debouncedHandleSearch = debounce(handleSearch, 500);
 
   const subViewSearchParams = {
     "all-moments": "usermomentspage",
@@ -537,12 +535,18 @@ function ReadMomentsView({
               </div>
               {i === a.length - 1 && (
                 <p className="font-extralight text-neutral-800">
-                  {e.momentsTotal} moment(s) affiché(s) (
-                  {e.momentFirstIndex !== e.momentLastIndex
-                    ? `${e.momentFirstIndex}-${e.momentLastIndex}`
-                    : `${e.momentFirstIndex}`}
-                  ) sur {e.allMomentsTotal} à la page {e.currentPage} sur{" "}
-                  {e.totalPage}
+                  <span className="font-normal">{e.momentsTotal}</span>{" "}
+                  moment(s) affiché(s){" "}
+                  <span className="font-normal">
+                    (
+                    {e.momentFirstIndex !== e.momentLastIndex
+                      ? `${e.momentFirstIndex}-${e.momentLastIndex}`
+                      : `${e.momentFirstIndex}`}
+                    )
+                  </span>{" "}
+                  sur <span className="font-normal">{e.allMomentsTotal}</span> à
+                  la page <span className="font-normal">{e.currentPage}</span>{" "}
+                  sur <span className="font-normal">{e.totalPage}</span>
                 </p>
               )}
             </>

@@ -11,7 +11,7 @@ import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Switch from "@radix-ui/react-switch";
 
-// Main Classname Variables
+// Variables
 
 // temporarily change variable name to className for Intellisense
 // (or add it to "tailwindCSS.classAttributes" in VSCode settings)
@@ -31,7 +31,7 @@ const focusVisibleTexts = clsx(
   "focus-visible:border-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500",
 );
 
-// Main Supporting Components
+// Components
 
 export function PageTitle({ title }: { title: string }) {
   return (
