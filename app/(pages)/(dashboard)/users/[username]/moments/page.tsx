@@ -248,7 +248,7 @@ export default async function MomentsPage({
         skip: (futureUserMomentsPage - 1) * TAKE,
       }),
     ]);
-  // console.log(userMoments);
+  console.log(userMoments);
   // console.log(pastUserMoments);
   // console.log(currentUserMoments);
   // console.log(futureUserMoments);
@@ -578,6 +578,7 @@ export default async function MomentsPage({
     "use server";
 
     revalidatePath(`/users/${username}/moments`);
+    // this... worked a little on the time issue
     redirect(`/users/${username}/moments`);
   }
 
@@ -623,4 +624,6 @@ TÂCHES FUTURES
 ...
 Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
 Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
+...
+In the end... It's better my code stays the same when it comes to durations, startDateAndTimes and endDateAndTimes. I know these are essentially computed fields. But if they have be computed every time I access the data, it's immensely slower if they're only computed on every insert and every update. 
 */
