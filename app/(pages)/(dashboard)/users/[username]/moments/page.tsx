@@ -566,8 +566,11 @@ export default async function MomentsPage({
   }
 
   // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
-  async function deleteMoment(momentFromCRUD: MomentToCRUD) {
+  async function deleteMoment(momentFromCRUD?: MomentToCRUD) {
     "use server";
+
+    if (!momentFromCRUD)
+      return console.error("Somehow a moment was not found.");
 
     await prisma.moment.delete({
       where: {

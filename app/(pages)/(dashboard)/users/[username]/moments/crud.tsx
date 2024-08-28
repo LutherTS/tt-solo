@@ -672,6 +672,9 @@ function MomentForms({
 
   const [isPending1, startTransition1] = useTransition();
 
+  type State1 = { message: string };
+  const [state1, setState1] = useState<State1 | null>(null);
+
   // let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async (formData: FormData) => {
     startTransition1(async () => {
@@ -708,12 +711,27 @@ function MomentForms({
     createOrUpdateMomentBound,
     createOrUpdateMomentInitialState,
   );
-  */
+  */ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
 
   let deleteMomentBound: any;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
   const [isPending2, startTransition2] = useTransition();
+
+  type State2 = { message: string };
+  const [state2, setState2] = useState<State2 | null>(null);
+
+  // I'll just have to replace my console.error by some state2 in the sense that for example, even though moment is from the client, I'll have to handle it from the server.)
+  const deleteMomentAction = async () => {
+    startTransition2(async () => {
+      if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
+        if (deleteMomentBound) await deleteMomentBound();
+        else return console.error("Somehow deleteMomentBound was not a thing."); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on updating variants
+
+        setView("read-moments");
+      }
+    });
+  };
 
   /*
   // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
@@ -723,7 +741,7 @@ function MomentForms({
 
   let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
     useActionState(deleteMomentBound, deleteMomentInitialState);
-  */
+  */ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
 
   return (
     <>
@@ -1075,24 +1093,25 @@ function MomentForms({
               {variant === "updating" && (
                 <Button
                   type="button"
-                  onClick={async () => {
-                    if (!moment)
-                      return console.error("Somehow a moment was not found.");
+                  onClick={deleteMomentAction}
+                  // onClick={async () => {
+                  //   if (!moment)
+                  //     return console.error("Somehow a moment was not found.");
 
-                    if (
-                      confirm(
-                        "Êtes-vous sûr que vous voulez effacer ce moment ?",
-                      )
-                    ) {
-                      if (deleteMomentBound) await deleteMomentBound();
-                      else
-                        return console.error(
-                          "Somehow deleteMomentBound was not a thing.",
-                        );
+                  //   if (
+                  //     confirm(
+                  //       "Êtes-vous sûr que vous voulez effacer ce moment ?",
+                  //     )
+                  //   ) {
+                  //     if (deleteMomentBound) await deleteMomentBound();
+                  //     else
+                  //       return console.error(
+                  //         "Somehow deleteMomentBound was not a thing.",
+                  //       );
 
-                      setView("read-moments");
-                    }
-                  }}
+                  //     setView("read-moments");
+                  //   }
+                  // }}
                   variant="cancel"
                 >
                   Effacer le moment
@@ -1109,24 +1128,25 @@ function MomentForms({
               {variant === "updating" && (
                 <Button
                   type="button"
-                  onClick={async () => {
-                    if (!moment)
-                      return console.error("Somehow a moment was not found.");
+                  onClick={deleteMomentAction}
+                  // onClick={async () => {
+                  //   if (!moment)
+                  //     return console.error("Somehow a moment was not found.");
 
-                    if (
-                      confirm(
-                        "Êtes-vous sûr que vous voulez effacer ce moment ?",
-                      )
-                    ) {
-                      if (deleteMomentBound) await deleteMomentBound();
-                      else
-                        return console.error(
-                          "Somehow deleteMomentBound was not a thing.",
-                        );
+                  //   if (
+                  //     confirm(
+                  //       "Êtes-vous sûr que vous voulez effacer ce moment ?",
+                  //     )
+                  //   ) {
+                  //     if (deleteMomentBound) await deleteMomentBound();
+                  //     else
+                  //       return console.error(
+                  //         "Somehow deleteMomentBound was not a thing.",
+                  //       );
 
-                      setView("read-moments");
-                    }
-                  }}
+                  //     setView("read-moments");
+                  //   }
+                  // }}
                   variant="cancel"
                 >
                   Effacer le moment
