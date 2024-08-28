@@ -390,11 +390,16 @@ export default async function MomentsPage({
       typeof objectif !== "string" ||
       typeof contexte !== "string"
     )
-      return console.error(
-        "Le formulaire du moment n'a pas été correctement renseigné.",
-      );
+      // return console.error(
+      //   "Le formulaire du moment n'a pas été correctement renseigné.",
+      // );
+      return {
+        message: "Le formulaire du moment n'a pas été correctement renseigné.",
+      };
 
-    if (!user) return console.error("Somehow a user was not found.");
+    if (!user)
+      // return console.error("Somehow a user was not found.");
+      return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
 
     let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
@@ -478,7 +483,8 @@ export default async function MomentsPage({
 
     if (variant === "updating") {
       if (!momentFromCRUD)
-        return console.error("Somehow a moment was not passed.");
+        // return console.error("Somehow a moment was not passed.");
+        return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
       const destinationEntry = await prisma.destination.findUnique({
         where: {
@@ -571,7 +577,8 @@ export default async function MomentsPage({
     "use server";
 
     if (!momentFromCRUD)
-      return console.error("Somehow a moment was not found.");
+      // return console.error("Somehow a moment was not found.");
+      return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
     await prisma.moment.delete({
       where: {

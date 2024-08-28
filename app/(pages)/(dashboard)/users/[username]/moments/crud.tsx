@@ -679,7 +679,10 @@ function MomentForms({
   // Let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async (formData: FormData) => {
     startTransition1(async () => {
-      await createOrUpdateMomentBound(formData);
+      // I don't have type safety.
+      const state = await createOrUpdateMomentBound(formData);
+
+      if (state) return setState1(state);
 
       if (variant === "creating") {
         setIndispensable(false);
@@ -706,12 +709,16 @@ function MomentForms({
     startTransition2(async () => {
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
         if (deleteMomentBound) {
-          await deleteMomentBound();
+          // I don't have type safety.
+          const state = await deleteMomentBound();
+
+          if (state) return setState2(state);
+
           setView("read-moments");
         }
         // else return console.error("Somehow deleteMomentBound was not a thing."); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on updating variants
         else
-          setState2({
+          return setState2({
             message: "Somehow deleteMomentBound was not a thing.",
           });
       }
