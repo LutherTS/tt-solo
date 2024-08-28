@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useActionState, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
@@ -664,8 +664,35 @@ function MomentForms({
     moment,
   );
 
+  // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
+  let createOrUpdateMomentInitialState: {
+    errors?: {
+      zod1?: string;
+      zod2?: string;
+      zod3?: string;
+    };
+    message: string;
+  } | null = null;
+
+  let [
+    createOrUpdateMomentState,
+    createOrUpdateMomentAction,
+    createOrUpdateMomentIsPending,
+  ] = useActionState(
+    createOrUpdateMomentBound,
+    createOrUpdateMomentInitialState,
+  );
+
   let deleteMomentBound: any;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
+
+  // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
+  let deleteMomentInitialState: {
+    message: string;
+  } | null = null;
+
+  let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
+    useActionState(deleteMomentBound, deleteMomentInitialState);
 
   return (
     <>

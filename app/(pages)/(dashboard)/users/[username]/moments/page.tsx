@@ -366,6 +366,7 @@ export default async function MomentsPage({
     });
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
+  // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
   async function createOrUpdateMoment(
     variant: "creating" | "updating",
     indispensable: boolean,
@@ -562,6 +563,7 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
+  // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
   async function deleteMoment(momentFromCRUD: MomentToCRUD) {
     "use server";
 
