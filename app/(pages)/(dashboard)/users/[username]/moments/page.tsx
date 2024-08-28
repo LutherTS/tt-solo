@@ -566,6 +566,7 @@ export default async function MomentsPage({
   }
 
   // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
+  // And it all works. Without useActionState.
   async function deleteMoment(momentFromCRUD?: MomentToCRUD) {
     "use server";
 

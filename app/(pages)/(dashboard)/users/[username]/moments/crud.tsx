@@ -670,12 +670,13 @@ function MomentForms({
     moment,
   );
 
-  const [isPending1, startTransition1] = useTransition();
+  // since this is used in a form, the button already has isPending from useFormStatus making this isPending1 superfluous
+  const [_, startTransition1] = useTransition();
 
   type State1 = { message: string };
   const [state1, setState1] = useState<State1 | null>(null);
 
-  // let's just try first without the error and see if it simply works with startTransition.
+  // Let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async (formData: FormData) => {
     startTransition1(async () => {
       await createOrUpdateMomentBound(formData);
@@ -692,27 +693,6 @@ function MomentForms({
     });
   };
 
-  /*
-  // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
-  let createOrUpdateMomentInitialState: {
-    errors?: {
-      zod1?: string;
-      zod2?: string;
-      zod3?: string;
-    };
-    message: string;
-  } | null = null;
-
-  let [
-    createOrUpdateMomentState,
-    createOrUpdateMomentAction,
-    createOrUpdateMomentIsPending,
-  ] = useActionState(
-    createOrUpdateMomentBound,
-    createOrUpdateMomentInitialState,
-  );
-  */ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
-
   let deleteMomentBound: any;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
@@ -721,30 +701,28 @@ function MomentForms({
   type State2 = { message: string };
   const [state2, setState2] = useState<State2 | null>(null);
 
-  // I'll just have to replace my console.error by some state2 in the sense that for example, even though moment is from the client, I'll have to handle it from the server.)
+  // I'll just have to replace my console.error by some state2 in the sense that for example, even though moment is from the client, I'll have to handle it from the server.
   const deleteMomentAction = async () => {
     startTransition2(async () => {
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
-        if (deleteMomentBound) await deleteMomentBound();
-        else return console.error("Somehow deleteMomentBound was not a thing."); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on updating variants
-
-        setView("read-moments");
+        if (deleteMomentBound) {
+          await deleteMomentBound();
+          setView("read-moments");
+        }
+        // else return console.error("Somehow deleteMomentBound was not a thing."); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on updating variants
+        else
+          setState2({
+            message: "Somehow deleteMomentBound was not a thing.",
+          });
       }
     });
   };
 
-  /*
-  // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
-  let deleteMomentInitialState: {
-    message: string;
-  } | null = null;
-
-  let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
-    useActionState(deleteMomentBound, deleteMomentInitialState);
-  */ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
-
   return (
     <>
+      {/* temporary debugging */}
+      {state1?.message && <>state1</>}
+      {state2?.message && <>state2</>}
       <StepForm
         currentStepId={currentStepId}
         steps={steps}
@@ -761,19 +739,6 @@ function MomentForms({
       />
       <form
         action={createOrUpdateMomentAction}
-        // action={async (formData) => {
-        //   await createOrUpdateMomentBound(formData);
-
-        //   if (variant === "creating") {
-        //     setIndispensable(false);
-        //     setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-        //     setSteps([]);
-        //     setStepVisible("creating");
-        //   }
-
-        //   setView("read-moments");
-        //   // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-        // }}
         onReset={(event) => {
           if (
             confirm(
@@ -1094,25 +1059,8 @@ function MomentForms({
                 <Button
                   type="button"
                   onClick={deleteMomentAction}
-                  // onClick={async () => {
-                  //   if (!moment)
-                  //     return console.error("Somehow a moment was not found.");
-
-                  //   if (
-                  //     confirm(
-                  //       "Êtes-vous sûr que vous voulez effacer ce moment ?",
-                  //     )
-                  //   ) {
-                  //     if (deleteMomentBound) await deleteMomentBound();
-                  //     else
-                  //       return console.error(
-                  //         "Somehow deleteMomentBound was not a thing.",
-                  //       );
-
-                  //     setView("read-moments");
-                  //   }
-                  // }}
                   variant="cancel"
+                  disabled={isPending2}
                 >
                   Effacer le moment
                 </Button>
@@ -1129,25 +1077,8 @@ function MomentForms({
                 <Button
                   type="button"
                   onClick={deleteMomentAction}
-                  // onClick={async () => {
-                  //   if (!moment)
-                  //     return console.error("Somehow a moment was not found.");
-
-                  //   if (
-                  //     confirm(
-                  //       "Êtes-vous sûr que vous voulez effacer ce moment ?",
-                  //     )
-                  //   ) {
-                  //     if (deleteMomentBound) await deleteMomentBound();
-                  //     else
-                  //       return console.error(
-                  //         "Somehow deleteMomentBound was not a thing.",
-                  //       );
-
-                  //     setView("read-moments");
-                  //   }
-                  // }}
                   variant="cancel"
+                  disabled={isPending2}
                 >
                   Effacer le moment
                 </Button>
@@ -1455,3 +1386,88 @@ PREVIOUS CODE
 //   setSubView("future-moments");
 // else setSubView("current-moments");
 */
+
+/* Obsolete endeavors */
+
+/*
+// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
+let createOrUpdateMomentInitialState: {
+  errors?: {
+    zod1?: string;
+    zod2?: string;
+    zod3?: string;
+  };
+  message: string;
+} | null = null;
+
+let [
+  createOrUpdateMomentState,
+  createOrUpdateMomentAction,
+  createOrUpdateMomentIsPending,
+] = useActionState(
+  createOrUpdateMomentBound,
+  createOrUpdateMomentInitialState,
+);
+*/ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
+
+/*
+// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
+let deleteMomentInitialState: {
+  message: string;
+} | null = null;
+
+let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
+  useActionState(deleteMomentBound, deleteMomentInitialState);
+*/ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
+
+// action={async (formData) => {
+//   await createOrUpdateMomentBound(formData);
+
+//   if (variant === "creating") {
+//     setIndispensable(false);
+//     setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+//     setSteps([]);
+//     setStepVisible("creating");
+//   }
+
+//   setView("read-moments");
+//   // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+// }}
+
+// onClick={async () => {
+//   if (!moment)
+//     return console.error("Somehow a moment was not found.");
+
+//   if (
+//     confirm(
+//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
+//     )
+//   ) {
+//     if (deleteMomentBound) await deleteMomentBound();
+//     else
+//       return console.error(
+//         "Somehow deleteMomentBound was not a thing.",
+//       );
+
+//     setView("read-moments");
+//   }
+// }}
+
+// onClick={async () => {
+//   if (!moment)
+//     return console.error("Somehow a moment was not found.");
+
+//   if (
+//     confirm(
+//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
+//     )
+//   ) {
+//     if (deleteMomentBound) await deleteMomentBound();
+//     else
+//       return console.error(
+//         "Somehow deleteMomentBound was not a thing.",
+//       );
+
+//     setView("read-moments");
+//   }
+// }}
