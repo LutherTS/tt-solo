@@ -728,8 +728,9 @@ function MomentForms({
   return (
     <>
       {/* temporary debugging */}
-      {state1?.message && <>state1</>}
-      {state2?.message && <>state2</>}
+      {/* {state1?.message && <>{state1.message}</>}
+      {state2?.message && <>state2</>} */}
+      {/* The connection to the server has been established. */}
       <StepForm
         currentStepId={currentStepId}
         steps={steps}

@@ -379,6 +379,10 @@ export default async function MomentsPage({
   ) {
     "use server";
 
+    // test
+    // return { message: "I'm testing things here." };
+    // It works and with that, I now know my way around useTransition.
+
     let destination = formData.get("destination");
     let activite = formData.get("activite");
     let objectif = formData.get("objectif");
@@ -641,4 +645,6 @@ Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
 Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
 ...
 In the end... It's better my code stays the same when it comes to durations, startDateAndTimes and endDateAndTimes. I know these are essentially computed fields. But if they have be computed every time I access the data, it's immensely slower if they're only computed on every insert and every update. 
+...
+Now aside from validations the only thing I'm missing from my server actions is a good old try...catch for the unexpected errors I simply could not be held responsible for. (Those I'm unlikely to encounter locally.)
 */
