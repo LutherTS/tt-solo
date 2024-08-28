@@ -248,7 +248,7 @@ export default async function MomentsPage({
         skip: (futureUserMomentsPage - 1) * TAKE,
       }),
     ]);
-  console.log(userMoments);
+  // console.log(userMoments);
   // console.log(pastUserMoments);
   // console.log(currentUserMoments);
   // console.log(futureUserMoments);
@@ -368,6 +368,8 @@ export default async function MomentsPage({
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
   async function createOrUpdateMoment(
+    // state: any, // for useActionState's version, createOrUpdateMomentAction
+    // it seems I'm supposed to do it by hand with startTransition.
     variant: "creating" | "updating",
     indispensable: boolean,
     momentDate: string,

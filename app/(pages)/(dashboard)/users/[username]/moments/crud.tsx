@@ -1,6 +1,12 @@
 "use client";
 
-import { Dispatch, SetStateAction, useActionState, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useActionState,
+  useState,
+  useTransition,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
@@ -664,6 +670,26 @@ function MomentForms({
     moment,
   );
 
+  const [isPending1, startTransition1] = useTransition();
+
+  // let's just try first without the error and see if it simply works with startTransition.
+  const createOrUpdateMomentAction = async (formData: FormData) => {
+    startTransition1(async () => {
+      await createOrUpdateMomentBound(formData);
+
+      if (variant === "creating") {
+        setIndispensable(false);
+        setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+        setSteps([]);
+        setStepVisible("creating");
+      }
+
+      setView("read-moments");
+      // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+    });
+  };
+
+  /*
   // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
   let createOrUpdateMomentInitialState: {
     errors?: {
@@ -682,10 +708,14 @@ function MomentForms({
     createOrUpdateMomentBound,
     createOrUpdateMomentInitialState,
   );
+  */
 
   let deleteMomentBound: any;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
+  const [isPending2, startTransition2] = useTransition();
+
+  /*
   // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
   let deleteMomentInitialState: {
     message: string;
@@ -693,6 +723,7 @@ function MomentForms({
 
   let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
     useActionState(deleteMomentBound, deleteMomentInitialState);
+  */
 
   return (
     <>
@@ -711,19 +742,20 @@ function MomentForms({
         variant="updating"
       />
       <form
-        action={async (formData) => {
-          await createOrUpdateMomentBound(formData);
+        action={createOrUpdateMomentAction}
+        // action={async (formData) => {
+        //   await createOrUpdateMomentBound(formData);
 
-          if (variant === "creating") {
-            setIndispensable(false);
-            setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-            setSteps([]);
-            setStepVisible("creating");
-          }
+        //   if (variant === "creating") {
+        //     setIndispensable(false);
+        //     setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+        //     setSteps([]);
+        //     setStepVisible("creating");
+        //   }
 
-          setView("read-moments");
-          // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-        }}
+        //   setView("read-moments");
+        //   // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+        // }}
         onReset={(event) => {
           if (
             confirm(
