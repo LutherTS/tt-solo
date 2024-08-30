@@ -1,6 +1,12 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useActionState,
+  useState,
+  useTransition,
+} from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
@@ -332,8 +338,31 @@ function ReadMomentsView({
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
+    if (params.get(subViewSearchParams[subView]) === "1")
+      params.delete(subViewSearchParams[subView]);
+
     replace(`${pathname}?${params.toString()}`);
   }
+
+  // revalidateMomentsAction
+
+  const [isRevalidateMomentsPending, startRevalidateMomentsTransition] =
+    useTransition();
+
+  // no need for RevalidateMomentsState, revalidateMomentsState and setRevalidateMomentsState for now since no error message is planned for this
+  // type RevalidateMomentsState = { message: string };
+  // const [revalidateMomentsState, setRevalidateMomentsState] =
+  //   useState<RevalidateMomentsState | null>(null);
+
+  // MouseEvent<HTMLButtonElement>
+  const revalidateMomentsAction = async (event: any) => {
+    startRevalidateMomentsTransition(async () => {
+      const button = event.currentTarget;
+      await revalidateMoments();
+      replace(`${pathname}`);
+      button.form!.reset(); // EXACTLY.
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -388,14 +417,8 @@ function ReadMomentsView({
         <button
           // to target the input in form that needs to be reset
           form="form"
-          onClick={async (event) => {
-            const button = event.currentTarget;
-            button.disabled = true;
-            await revalidateMoments();
-            replace(`${pathname}`);
-            button.form!.reset(); // EXACTLY.
-            button.disabled = false;
-          }}
+          onClick={revalidateMomentsAction}
+          disabled={isRevalidateMomentsPending}
           className={clsx(
             "flex h-9 items-center justify-center px-4 py-2",
             "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -442,8 +465,8 @@ function ReadMomentsView({
       {realDisplayedMoments.length > 0 ? (
         <>
           {realDisplayedMoments.map((e, i, a) => (
-            <>
-              <div className="space-y-8" key={e.date}>
+            <div className="space-y-8" key={e.date}>
+              <div className="space-y-8">
                 <SectionWrapper>
                   <Section
                     title={format(new Date(e.date), "eeee d MMMM", {
@@ -453,8 +476,8 @@ function ReadMomentsView({
                     {e.destinations.map((e2) => {
                       return (
                         <div
-                          key={e2.destinationIdeal}
                           className="flex flex-col gap-y-8"
+                          key={e2.destinationIdeal}
                         >
                           <div className="flex select-none items-baseline justify-between">
                             <p
@@ -514,8 +537,8 @@ function ReadMomentsView({
                               <ol>
                                 {e3.steps.map((e4) => (
                                   <li
-                                    key={e4.id}
                                     className="list-inside list-disc font-serif font-light leading-loose text-neutral-500"
+                                    key={e4.id}
                                   >
                                     <span>
                                       {e4.startDateAndTime.split("T")[1]}
@@ -549,7 +572,7 @@ function ReadMomentsView({
                   sur <span className="font-normal">{e.totalPage}</span>
                 </p>
               )}
-            </>
+            </div>
           ))}
           <div className="flex justify-between">
             <button
@@ -661,11 +684,71 @@ function MomentForms({
     moment,
   );
 
+  // createOrUpdateMomentAction
+
+  // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
+  const [_, startCreateOrUpdateMomentTransition] = useTransition();
+
+  type CreateOrUpdateMomentState = { message: string };
+  const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
+    useState<CreateOrUpdateMomentState | null>(null);
+
+  // Let's just try first without the error and see if it simply works with startTransition.
+  const createOrUpdateMomentAction = async (formData: FormData) => {
+    startCreateOrUpdateMomentTransition(async () => {
+      // I don't have type safety.
+      const state = await createOrUpdateMomentBound(formData);
+
+      if (state) return setCreateOrUpdateMomentState(state);
+
+      if (variant === "creating") {
+        setIndispensable(false);
+        setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+        setSteps([]);
+        setStepVisible("creating");
+      }
+
+      setView("read-moments");
+      // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+    });
+  };
+
   let deleteMomentBound: any;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
+  // deleteMomentAction
+
+  const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
+
+  type DeleteMomentState = { message: string };
+  const [deleteMomentState, setDeleteMomentState] =
+    useState<DeleteMomentState | null>(null);
+
+  // I'll just have to replace my console.error by some state2 in the sense that for example, even though moment is from the client, I'll have to handle it from the server.
+  const deleteMomentAction = async () => {
+    startDeleteMomentTransition(async () => {
+      if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
+        if (deleteMomentBound) {
+          // I don't have type safety.
+          const state = await deleteMomentBound();
+
+          if (state) return setDeleteMomentState(state);
+
+          setView("read-moments");
+        } else
+          return setDeleteMomentState({
+            message: "Somehow deleteMomentBound was not a thing.",
+          }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
+      }
+    });
+  };
+
   return (
     <>
+      {/* temporary debugging */}
+      {/* {createOrUpdateMomentState?.message && <>{createOrUpdateMomentState.message}</>}
+      {deleteMomentState?.message && <>deleteMomentState</>} */}
+      {/* The connection to the server has been established. */}
       <StepForm
         currentStepId={currentStepId}
         steps={steps}
@@ -681,19 +764,7 @@ function MomentForms({
         variant="updating"
       />
       <form
-        action={async (formData) => {
-          await createOrUpdateMomentBound(formData);
-
-          if (variant === "creating") {
-            setIndispensable(false);
-            setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-            setSteps([]);
-            setStepVisible("creating");
-          }
-
-          setView("read-moments");
-          // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-        }}
+        action={createOrUpdateMomentAction}
         onReset={(event) => {
           if (
             confirm(
@@ -1013,25 +1084,9 @@ function MomentForms({
               {variant === "updating" && (
                 <Button
                   type="button"
-                  onClick={async () => {
-                    if (!moment)
-                      return console.error("Somehow a moment was not found.");
-
-                    if (
-                      confirm(
-                        "Êtes-vous sûr que vous voulez effacer ce moment ?",
-                      )
-                    ) {
-                      if (deleteMomentBound) await deleteMomentBound();
-                      else
-                        return console.error(
-                          "Somehow deleteMomentBound was not a thing.",
-                        );
-
-                      setView("read-moments");
-                    }
-                  }}
+                  onClick={deleteMomentAction}
                   variant="cancel"
+                  disabled={isDeleteMomentPending}
                 >
                   Effacer le moment
                 </Button>
@@ -1047,25 +1102,9 @@ function MomentForms({
               {variant === "updating" && (
                 <Button
                   type="button"
-                  onClick={async () => {
-                    if (!moment)
-                      return console.error("Somehow a moment was not found.");
-
-                    if (
-                      confirm(
-                        "Êtes-vous sûr que vous voulez effacer ce moment ?",
-                      )
-                    ) {
-                      if (deleteMomentBound) await deleteMomentBound();
-                      else
-                        return console.error(
-                          "Somehow deleteMomentBound was not a thing.",
-                        );
-
-                      setView("read-moments");
-                    }
-                  }}
+                  onClick={deleteMomentAction}
                   variant="cancel"
+                  disabled={isDeleteMomentPending}
                 >
                   Effacer le moment
                 </Button>
@@ -1373,3 +1412,99 @@ PREVIOUS CODE
 //   setSubView("future-moments");
 // else setSubView("current-moments");
 */
+
+/* Obsolete endeavors */
+
+/*
+// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
+let createOrUpdateMomentInitialState: {
+  errors?: {
+    zod1?: string;
+    zod2?: string;
+    zod3?: string;
+  };
+  message: string;
+} | null = null;
+
+let [
+  createOrUpdateMomentState,
+  createOrUpdateMomentAction,
+  createOrUpdateMomentIsPending,
+] = useActionState(
+  createOrUpdateMomentBound,
+  createOrUpdateMomentInitialState,
+);
+*/ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
+
+/*
+// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
+let deleteMomentInitialState: {
+  message: string;
+} | null = null;
+
+let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
+  useActionState(deleteMomentBound, deleteMomentInitialState);
+*/ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
+
+// action={async (formData) => {
+//   await createOrUpdateMomentBound(formData);
+
+//   if (variant === "creating") {
+//     setIndispensable(false);
+//     setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+//     setSteps([]);
+//     setStepVisible("creating");
+//   }
+
+//   setView("read-moments");
+//   // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+// }}
+
+// onClick={async () => {
+//   if (!moment)
+//     return console.error("Somehow a moment was not found.");
+
+//   if (
+//     confirm(
+//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
+//     )
+//   ) {
+//     if (deleteMomentBound) await deleteMomentBound();
+//     else
+//       return console.error(
+//         "Somehow deleteMomentBound was not a thing.",
+//       );
+
+//     setView("read-moments");
+//   }
+// }}
+
+// onClick={async () => {
+//   if (!moment)
+//     return console.error("Somehow a moment was not found.");
+
+//   if (
+//     confirm(
+//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
+//     )
+//   ) {
+//     if (deleteMomentBound) await deleteMomentBound();
+//     else
+//       return console.error(
+//         "Somehow deleteMomentBound was not a thing.",
+//       );
+
+//     setView("read-moments");
+//   }
+// }}
+
+/* onClick before useTransition */
+// // this, is looking like an action to make on Friday
+// onClick={async (event) => {
+//   const button = event.currentTarget;
+//   button.disabled = true;
+//   await revalidateMoments();
+//   replace(`${pathname}`);
+//   button.form!.reset(); // EXACTLY.
+//   button.disabled = false;
+// }}

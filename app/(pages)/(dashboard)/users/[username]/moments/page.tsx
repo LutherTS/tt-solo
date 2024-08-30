@@ -11,9 +11,10 @@ import {
 } from "@/app/types/moments";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 import { CRUD } from "./crud";
+import { redirect } from "next/navigation";
 
-// IMPORTANT
-// Just that weird this about time not being current correctly now.
+// IMPORTANT?
+// Just that weird thing about time not being current correctly now.
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -365,7 +366,10 @@ export default async function MomentsPage({
     });
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
+  // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
   async function createOrUpdateMoment(
+    // state: any, // for useActionState's version, createOrUpdateMomentAction
+    // it seems I'm supposed to do it by hand with startTransition.
     variant: "creating" | "updating",
     indispensable: boolean,
     momentDate: string,
@@ -374,6 +378,10 @@ export default async function MomentsPage({
     formData: FormData,
   ) {
     "use server";
+
+    // test
+    // return { message: "I'm testing things here." };
+    // It works and with that, I now know my way around useTransition.
 
     let destination = formData.get("destination");
     let activite = formData.get("activite");
@@ -386,11 +394,16 @@ export default async function MomentsPage({
       typeof objectif !== "string" ||
       typeof contexte !== "string"
     )
-      return console.error(
-        "Le formulaire du moment n'a pas été correctement renseigné.",
-      );
+      // return console.error(
+      //   "Le formulaire du moment n'a pas été correctement renseigné.",
+      // );
+      return {
+        message: "Le formulaire du moment n'a pas été correctement renseigné.",
+      };
 
-    if (!user) return console.error("Somehow a user was not found.");
+    if (!user)
+      // return console.error("Somehow a user was not found.");
+      return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
 
     let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
@@ -474,7 +487,8 @@ export default async function MomentsPage({
 
     if (variant === "updating") {
       if (!momentFromCRUD)
-        return console.error("Somehow a moment was not passed.");
+        // return console.error("Somehow a moment was not passed.");
+        return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
       const destinationEntry = await prisma.destination.findUnique({
         where: {
@@ -561,8 +575,14 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
-  async function deleteMoment(momentFromCRUD: MomentToCRUD) {
+  // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
+  // And it all works. Without useActionState.
+  async function deleteMoment(momentFromCRUD?: MomentToCRUD) {
     "use server";
+
+    if (!momentFromCRUD)
+      // return console.error("Somehow a moment was not found.");
+      return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
     await prisma.moment.delete({
       where: {
@@ -577,6 +597,8 @@ export default async function MomentsPage({
     "use server";
 
     revalidatePath(`/users/${username}/moments`);
+    // this... worked a little on the time issue
+    redirect(`/users/${username}/moments`);
   }
 
   return (
@@ -621,4 +643,8 @@ TÂCHES FUTURES
 ...
 Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
 Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
+...
+In the end... It's better my code stays the same when it comes to durations, startDateAndTimes and endDateAndTimes. I know these are essentially computed fields. But if they have be computed every time I access the data, it's immensely slower if they're only computed on every insert and every update. 
+...
+Now aside from validations the only thing I'm missing from my server actions is a good old try...catch for the unexpected errors I simply could not be held responsible for. (Those I'm unlikely to encounter locally.)
 */
