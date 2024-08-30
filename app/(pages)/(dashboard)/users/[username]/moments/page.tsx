@@ -13,8 +13,8 @@ import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 import { CRUD } from "./crud";
 import { redirect } from "next/navigation";
 
-// IMPORTANT
-// Just that weird this about time not being current correctly now.
+// IMPORTANT?
+// Just that weird thing about time not being current correctly now.
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
