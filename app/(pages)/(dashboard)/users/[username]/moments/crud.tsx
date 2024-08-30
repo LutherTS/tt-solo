@@ -344,6 +344,26 @@ function ReadMomentsView({
     replace(`${pathname}?${params.toString()}`);
   }
 
+  // revalidateMomentsAction
+
+  const [isRevalidateMomentsPending, startRevalidateMomentsTransition] =
+    useTransition();
+
+  // no need for RevalidateMomentsState, revalidateMomentsState and setRevalidateMomentsState for now since no error message is planned for this
+  // type RevalidateMomentsState = { message: string };
+  // const [revalidateMomentsState, setRevalidateMomentsState] =
+  //   useState<RevalidateMomentsState | null>(null);
+
+  // MouseEvent<HTMLButtonElement>
+  const revalidateMomentsAction = async (event: any) => {
+    startRevalidateMomentsTransition(async () => {
+      const button = event.currentTarget;
+      await revalidateMoments();
+      replace(`${pathname}`);
+      button.form!.reset(); // EXACTLY.
+    });
+  };
+
   return (
     <div className="space-y-8">
       {/* -mt-4 to resolve padding from Vos moments */}
@@ -397,14 +417,8 @@ function ReadMomentsView({
         <button
           // to target the input in form that needs to be reset
           form="form"
-          onClick={async (event) => {
-            const button = event.currentTarget;
-            button.disabled = true;
-            await revalidateMoments();
-            replace(`${pathname}`);
-            button.form!.reset(); // EXACTLY.
-            button.disabled = false;
-          }}
+          onClick={revalidateMomentsAction}
+          disabled={isRevalidateMomentsPending}
           className={clsx(
             "flex h-9 items-center justify-center px-4 py-2",
             "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -670,19 +684,22 @@ function MomentForms({
     moment,
   );
 
-  // since this is used in a form, the button already has isPending from useFormStatus making this isPending1 superfluous
-  const [_, startTransition1] = useTransition();
+  // createOrUpdateMomentAction
 
-  type State1 = { message: string };
-  const [state1, setState1] = useState<State1 | null>(null);
+  // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
+  const [_, startCreateOrUpdateMomentTransition] = useTransition();
+
+  type CreateOrUpdateMomentState = { message: string };
+  const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
+    useState<CreateOrUpdateMomentState | null>(null);
 
   // Let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async (formData: FormData) => {
-    startTransition1(async () => {
+    startCreateOrUpdateMomentTransition(async () => {
       // I don't have type safety.
       const state = await createOrUpdateMomentBound(formData);
 
-      if (state) return setState1(state);
+      if (state) return setCreateOrUpdateMomentState(state);
 
       if (variant === "creating") {
         setIndispensable(false);
@@ -699,28 +716,29 @@ function MomentForms({
   let deleteMomentBound: any;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
-  const [isPending2, startTransition2] = useTransition();
+  // deleteMomentAction
 
-  type State2 = { message: string };
-  const [state2, setState2] = useState<State2 | null>(null);
+  const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
+
+  type DeleteMomentState = { message: string };
+  const [deleteMomentState, setDeleteMomentState] =
+    useState<DeleteMomentState | null>(null);
 
   // I'll just have to replace my console.error by some state2 in the sense that for example, even though moment is from the client, I'll have to handle it from the server.
   const deleteMomentAction = async () => {
-    startTransition2(async () => {
+    startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
         if (deleteMomentBound) {
           // I don't have type safety.
           const state = await deleteMomentBound();
 
-          if (state) return setState2(state);
+          if (state) return setDeleteMomentState(state);
 
           setView("read-moments");
-        }
-        // else return console.error("Somehow deleteMomentBound was not a thing."); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on updating variants
-        else
-          return setState2({
+        } else
+          return setDeleteMomentState({
             message: "Somehow deleteMomentBound was not a thing.",
-          });
+          }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
       }
     });
   };
@@ -728,8 +746,8 @@ function MomentForms({
   return (
     <>
       {/* temporary debugging */}
-      {/* {state1?.message && <>{state1.message}</>}
-      {state2?.message && <>state2</>} */}
+      {/* {createOrUpdateMomentState?.message && <>{createOrUpdateMomentState.message}</>}
+      {deleteMomentState?.message && <>deleteMomentState</>} */}
       {/* The connection to the server has been established. */}
       <StepForm
         currentStepId={currentStepId}
@@ -1068,7 +1086,7 @@ function MomentForms({
                   type="button"
                   onClick={deleteMomentAction}
                   variant="cancel"
-                  disabled={isPending2}
+                  disabled={isDeleteMomentPending}
                 >
                   Effacer le moment
                 </Button>
@@ -1086,7 +1104,7 @@ function MomentForms({
                   type="button"
                   onClick={deleteMomentAction}
                   variant="cancel"
-                  disabled={isPending2}
+                  disabled={isDeleteMomentPending}
                 >
                   Effacer le moment
                 </Button>
@@ -1478,4 +1496,15 @@ let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
 
 //     setView("read-moments");
 //   }
+// }}
+
+/* onClick before useTransition */
+// // this, is looking like an action to make on Friday
+// onClick={async (event) => {
+//   const button = event.currentTarget;
+//   button.disabled = true;
+//   await revalidateMoments();
+//   replace(`${pathname}`);
+//   button.form!.reset(); // EXACTLY.
+//   button.disabled = false;
 // }}
