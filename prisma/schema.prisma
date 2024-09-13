@@ -58,6 +58,7 @@ model Moment {
   activity                       String
   // the Moment's objective
   name                           String
+  // may return to being a string ("low", "mid", "high", "mandatory")
   isIndispensable                Boolean                   @default(false)
   // the Moment's context
   description                    String

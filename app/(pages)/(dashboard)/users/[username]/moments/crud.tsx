@@ -3,7 +3,7 @@
 import {
   Dispatch,
   SetStateAction,
-  useActionState,
+  // useActionState, // proudly commented out
   useState,
   useTransition,
 } from "react";
@@ -696,7 +696,7 @@ function MomentForms({
   // Let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async (formData: FormData) => {
     startCreateOrUpdateMomentTransition(async () => {
-      // I don't have type safety.
+      // I don't have type safety. Which I will with an actions.ts file
       const state = await createOrUpdateMomentBound(formData);
 
       if (state) return setCreateOrUpdateMomentState(state);
@@ -729,7 +729,7 @@ function MomentForms({
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
         if (deleteMomentBound) {
-          // I don't have type safety.
+          // Again I don't have type safety.
           const state = await deleteMomentBound();
 
           if (state) return setDeleteMomentState(state);
@@ -1379,38 +1379,10 @@ function ReorderItem({
 }
 
 /* Notes
-Based out of /complex-form-after.
-Sincerely, for now, my work is on this file and not on the former, as if they are two different projets altogether. It's only once I'm sufficiently done here that I shall adapt the advancements made here on complex-form-after, if needed.
-The flow is not competely stable. I'll work on it tomorrow. 
-Keeping it here if I even allow only one minute.
-{overallAddingTime >= 60 && (
-  <>
-    de {Math.floor(overallAddingTime / 60)} h{" "}
-    {overallAddingTime % 60 !== 0 && (
-      <>
-        et {overallAddingTime % 60}{" "}
-        {overallAddingTime % 60 === 1 ? (
-          <>minute</>
-        ) : (
-          <>minutes</>
-        )}
-      </>
-    )}
-  </>
-)}
-Shifting inputs on Destination will have to wait when the full flow of creating a moment will be made.
 No longer in use since submitting on Enter is not prevented all around:
 // forcing with "!" because AFAIK there will always be a form.
 // event.currentTarget.form!.requestSubmit();
 Required supercedes display none. After all required is HTML, while display-none is CSS.
-PREVIOUS CODE
-// console.log({ momentDate });
-// console.log({ now });
-// This should sleep for now. The now I send is stuck to prevent timezone issues, so that's why it gets things messy.
-// if (compareDesc(momentDate, now) === 1) setSubView("past-moments");
-// else if (compareAsc(momentDate, now) === 1)
-//   setSubView("future-moments");
-// else setSubView("current-moments");
 */
 
 /* Obsolete endeavors */

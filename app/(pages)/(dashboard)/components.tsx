@@ -65,6 +65,7 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
+    // IMPORTANT: padding fixes will have to be handled in the true version
     // pb-1 making up for input padding inconsistencies
     <section className="grid items-baseline gap-8 pb-1 md:grid-cols-[1fr_2fr]">
       <div
@@ -95,6 +96,7 @@ export function Section({
   );
 }
 
+// IMPORTANT: inputs and all will have to be upgraded to ComponentProps
 export function InputText({
   label,
   description,
@@ -170,8 +172,8 @@ export function InputText({
           {/* gradient focus-visible */}
           {/* [calc(100%+8px)] adds the original outline-2 */}
           {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
-          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
           {/* outline's rounded is more pronounced, lg is the exact fit */}
+          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
     </FieldFlex>
@@ -291,8 +293,8 @@ export function SelectWithOptions({
           {/* gradient focus-visible */}
           {/* [calc(100%+8px)] adds the original outline-2 */}
           {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
-          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
           {/* outline's rounded is more pronounced, lg is the exact fit */}
+          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
     </FieldFlex>
@@ -520,6 +522,8 @@ export function FieldTitle({ title }: { title: string }) {
   return <p className="font-medium text-blue-950">{title}</p>;
 }
 
+// This is the perfect example of what Sam Selikoff called a bad abstract, which will have to evolve in the final version.
+// https://www.youtube.com/watch?v=9iJK-Vl6PhE&t=693s&pp=ygUMc2FtIHNlbGlrb2Zm
 export function Button({
   form,
   type,
