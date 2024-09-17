@@ -11,11 +11,15 @@ import {
 } from "@/app/types/moments";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 import { CRUD } from "./crud";
-import { redirect } from "next/navigation";
+
+export const dynamic = "force-dynamic";
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 
 // IMPORTANT
 // Just that weird thing about time not being current correctly now.
 // Either something to do with cache or the need for a useEffect.
+// (Which I'm now trying to address above with export const dynamic.)
+// (I'll need to test more but I think "force-dynamic" got things done.)
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
