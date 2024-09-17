@@ -11,10 +11,15 @@ import {
 } from "@/app/types/moments";
 import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
 import { CRUD } from "./crud";
-import { redirect } from "next/navigation";
 
-// IMPORTANT?
+export const dynamic = "force-dynamic";
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
+
+// IMPORTANT
 // Just that weird thing about time not being current correctly now.
+// Either something to do with cache or the need for a useEffect.
+// (Which I'm now trying to address above with export const dynamic.)
+// (I'll need to test more but I think "force-dynamic" got things done.)
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -366,10 +371,7 @@ export default async function MomentsPage({
     });
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
-  // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
   async function createOrUpdateMoment(
-    // state: any, // for useActionState's version, createOrUpdateMomentAction
-    // it seems I'm supposed to do it by hand with startTransition.
     variant: "creating" | "updating",
     indispensable: boolean,
     momentDate: string,
@@ -402,7 +404,7 @@ export default async function MomentsPage({
       };
 
     if (!user)
-      // return console.error("Somehow a user was not found.");
+      // return console.error("Surprenamment un utilisateur n'a pas été retrouvé.");
       return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
 
     let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
@@ -487,7 +489,7 @@ export default async function MomentsPage({
 
     if (variant === "updating") {
       if (!momentFromCRUD)
-        // return console.error("Somehow a moment was not passed.");
+        // return console.error("Surprenamment un moment n'a pas été réceptionné.");
         return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
       const destinationEntry = await prisma.destination.findUnique({
@@ -575,13 +577,11 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
-  // !!! IF I'M USING THIS WITH USEACTIONSTATE, THE FIRST ARGUMENT SHOULD BE THE STATE, A.K.A IN THIS AND MOST CASES THE ERRORS.
-  // And it all works. Without useActionState.
   async function deleteMoment(momentFromCRUD?: MomentToCRUD) {
     "use server";
 
     if (!momentFromCRUD)
-      // return console.error("Somehow a moment was not found.");
+      // return console.error("Surprenamment un moment n'a pas été réceptionné.");
       return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
     await prisma.moment.delete({
@@ -593,12 +593,11 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
+  // still bugging with time, at this time
   async function revalidateMoments() {
     "use server";
 
     revalidatePath(`/users/${username}/moments`);
-    // this... worked a little on the time issue
-    redirect(`/users/${username}/moments`);
   }
 
   return (
@@ -627,22 +626,8 @@ SyntaxError: Unexpected token '<' (during npx prisma db seed)
 That's why it works fine when importing from a page component because, that component does execute on its own, it is being imported by React and Next.js to be executed by Next.js, not by the file itself.
 Previous inline notes:
 // OK. If I do it with reduce here, this which is already a O(n^2) is going to be a O(n^3)
-// The better solution is to create an object of all the data through a for loop at the moment level, and then assign the accrued data below.
+// The better solution is to create an object of all the data through a for loop at the Moment level, and then assign the accrued data below.
 // I can accept O(n^2) because a moment has many steps, but anything beyond that is by no means mandatory.
-Ça se trouve je vais même pouvoir mettre en gras l'étape en cours d'un moment actuel. // Non, vu que si quelqu'un est sur la page des moments lors d'un moment, c'est qu'il n'a pas encore commencé le moment.
-Penser à mettre un revalidate qui s'effectue automatiquement à chaque fois 5 minutes, du genre 00:00, 00:05, puisque le min d'une étape est de 5 minutes. (Il n'y a pas de step par contre, ce qui n'en donnera aucun rapport.)
-J'aimerais avoir les étapes en bulletpoints plutôt qu'en strings., surtout maintenant que j'ai la date de début. // DONE.
-Demain : 
-- important
-- Éditer en-dessous
-- Adapter éditer à archiver pour moments passés,
-- effacer pour moments en cours.
-...En vrai même pas. Pour l'instant je considère qu'on peut toujours modifier un moment a posteriori. C'est uniqueement une fois la fonctionnalité de lancement du moment mise en place qu'on pourra penser à archiver, etc. Pour l'instant, on se limite au CRUD, et il a toute son autorité qu'importe les circonstances.
-This is where I stop and, as expected, time is causing a whole slew of issues.
-TÂCHES FUTURES
-...
-Ensuite je vais mettre en place l'authentification suivant la vidéo de Delba.
-Et ensuite peut-être même faire les e-mails de login via React Email (https://react.email/).
 ...
 In the end... It's better my code stays the same when it comes to durations, startDateAndTimes and endDateAndTimes. I know these are essentially computed fields. But if they have be computed every time I access the data, it's immensely slower if they're only computed on every insert and every update. 
 ...

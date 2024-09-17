@@ -94,5 +94,5 @@ export function SideNavContents() {
 }
 
 /* Notes
-The component file logic is going to be: if you see me go out of my way to make a colocated component file, it's because I had to because it's a client component. Therefore, all colocated component files are client components.
+The component file logic is going to be: if you see me go out of my way to make a colocated component file, that means I had to because it's a client component. Therefore, all colocated component files are client components.
 */

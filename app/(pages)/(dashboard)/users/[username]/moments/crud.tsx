@@ -3,7 +3,7 @@
 import {
   Dispatch,
   SetStateAction,
-  useActionState,
+  // useActionState, // proudly commented out
   useState,
   useTransition,
 } from "react";
@@ -11,6 +11,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
   add,
+  compareAsc,
+  compareDesc,
   format,
   roundToNearestHours,
   roundToNearestMinutes,
@@ -191,7 +193,7 @@ export function CRUD({
             moment={moment}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
-            // setSubView={setSubView}
+            setSubView={setSubView}
             now={now}
           />
         )}
@@ -217,7 +219,7 @@ export function CRUD({
             variant="creating"
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
-            // setSubView={setSubView}
+            setSubView={setSubView}
           />
         )}
       </div>
@@ -604,6 +606,7 @@ function ReadMomentsView({
   );
 }
 
+// Maybe now I should be able to setSubView again.
 function MomentForms({
   setView,
   variant,
@@ -611,7 +614,7 @@ function MomentForms({
   destinationOptions,
   createOrUpdateMoment,
   deleteMoment,
-  // setSubView,
+  setSubView,
   now,
 }: {
   setView: Dispatch<SetStateAction<View>>;
@@ -620,7 +623,7 @@ function MomentForms({
   destinationOptions: Option[];
   createOrUpdateMoment: any;
   deleteMoment?: any;
-  // setSubView: Dispatch<SetStateAction<SubView>>;
+  setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
 }) {
   // roundToNearestMinutes are nested to create a clamp method, meaning:
@@ -647,8 +650,9 @@ function MomentForms({
   let [indispensable, setIndispensable] = useState(
     moment ? moment.isIndispensable : false,
   );
+
   // datetime-local input is now controlled.
-  let [momentDate, setMomentDate] = useState(
+  let [startMomentDate, setStartMomentDate] = useState(
     moment
       ? moment.startDateAndTime
       : format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
@@ -668,6 +672,12 @@ function MomentForms({
     momentSteps ? momentSteps : [],
   );
   let overallAddingTime = steps.reduce((acc, curr) => acc + +curr.duree, 0);
+  let endMomentDate = format(
+    add(startMomentDate, {
+      minutes: overallAddingTime,
+    }),
+    "yyyy-MM-dd'T'HH:mm",
+  );
 
   let [currentStepId, setCurrentStepId] = useState("");
   let currentStep = steps.find((step) => step.id === currentStepId);
@@ -679,7 +689,7 @@ function MomentForms({
     null,
     variant,
     indispensable,
-    momentDate,
+    startMomentDate,
     steps,
     moment,
   );
@@ -696,17 +706,29 @@ function MomentForms({
   // Let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async (formData: FormData) => {
     startCreateOrUpdateMomentTransition(async () => {
-      // I don't have type safety.
+      // I don't have type safety. Which I will with an actions.ts file
       const state = await createOrUpdateMomentBound(formData);
 
+      // trying return void
+      // https://github.com/immerjs/use-immer?tab=readme-ov-file#useimmerreducer
       if (state) return setCreateOrUpdateMomentState(state);
 
       if (variant === "creating") {
         setIndispensable(false);
-        setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+        setStartMomentDate(
+          format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+        );
         setSteps([]);
         setStepVisible("creating");
       }
+
+      // this now works thanks to export const dynamic = "force-dynamic";
+      // console.log({ startMomentDate, endMomentDate, now });
+      if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
+      else if (compareAsc(startMomentDate, now) === 1)
+        setSubView("future-moments");
+      // therefore present by default
+      else setSubView("current-moments");
 
       setView("read-moments");
       // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
@@ -729,9 +751,11 @@ function MomentForms({
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
         if (deleteMomentBound) {
-          // I don't have type safety.
+          // Again I don't have type safety.
           const state = await deleteMomentBound();
 
+          // actually setState already returns void
+          // https://react.dev/reference/react/useState#setstate
           if (state) return setDeleteMomentState(state);
 
           setView("read-moments");
@@ -772,7 +796,9 @@ function MomentForms({
             )
           ) {
             setIndispensable(false);
-            setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
+            setStartMomentDate(
+              format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+            );
             setSteps([]);
             setStepVisible("creating");
           } else event.preventDefault();
@@ -890,8 +916,8 @@ function MomentForms({
             label="Date et heure"
             name="dateetheure"
             description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
-            definedValue={momentDate}
-            definedOnValueChange={setMomentDate}
+            definedValue={startMomentDate}
+            definedOnValueChange={setStartMomentDate}
             min={dateToInputDatetime(
               roundToNearestHours(sub(now, { hours: 1 }), {
                 roundingMethod: "floor",
@@ -917,7 +943,7 @@ function MomentForms({
                 }
 
                 let addingTime = index === 0 ? 0 : map.get(index - 1)!; // I know what I'm doing for now.
-                // And with this, I can even compute "endTime" if I want: momentDate + map.get(index)
+                // And with this, I can even compute "endTime" if I want: startMomentDate + map.get(index)
 
                 return (
                   <ReorderItem
@@ -928,7 +954,7 @@ function MomentForms({
                     currentStepId={currentStepId}
                     setCurrentStepId={setCurrentStepId}
                     setStepVisible={setStepVisible}
-                    momentDate={momentDate}
+                    startMomentDate={startMomentDate}
                     addingTime={addingTime}
                     currentStep={currentStep}
                     setSteps={setSteps}
@@ -950,12 +976,7 @@ function MomentForms({
                   <p className="font-medium text-blue-950">Fin attendue</p>
                   <p className="font-semibold">
                     <span className="font-medium text-neutral-800">à</span>{" "}
-                    {format(
-                      add(momentDate, {
-                        minutes: overallAddingTime,
-                      }),
-                      "HH:mm",
-                    )}
+                    {format(endMomentDate, "HH:mm")}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -1195,7 +1216,7 @@ function ReorderItem({
   currentStepId,
   setCurrentStepId,
   setStepVisible,
-  momentDate,
+  startMomentDate,
   addingTime,
   currentStep,
   setSteps,
@@ -1207,7 +1228,7 @@ function ReorderItem({
   currentStepId: string;
   setCurrentStepId: Dispatch<SetStateAction<string>>;
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
-  momentDate: string;
+  startMomentDate: string;
   addingTime: number;
   currentStep: StepFromCRUD | undefined;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
@@ -1360,7 +1381,7 @@ function ReorderItem({
                   )}
                 >
                   {format(
-                    add(momentDate, {
+                    add(startMomentDate, {
                       minutes: addingTime,
                     }),
                     "HH:mm",
@@ -1379,38 +1400,10 @@ function ReorderItem({
 }
 
 /* Notes
-Based out of /complex-form-after.
-Sincerely, for now, my work is on this file and not on the former, as if they are two different projets altogether. It's only once I'm sufficiently done here that I shall adapt the advancements made here on complex-form-after, if needed.
-The flow is not competely stable. I'll work on it tomorrow. 
-Keeping it here if I even allow only one minute.
-{overallAddingTime >= 60 && (
-  <>
-    de {Math.floor(overallAddingTime / 60)} h{" "}
-    {overallAddingTime % 60 !== 0 && (
-      <>
-        et {overallAddingTime % 60}{" "}
-        {overallAddingTime % 60 === 1 ? (
-          <>minute</>
-        ) : (
-          <>minutes</>
-        )}
-      </>
-    )}
-  </>
-)}
-Shifting inputs on Destination will have to wait when the full flow of creating a moment will be made.
 No longer in use since submitting on Enter is not prevented all around:
 // forcing with "!" because AFAIK there will always be a form.
 // event.currentTarget.form!.requestSubmit();
 Required supercedes display none. After all required is HTML, while display-none is CSS.
-PREVIOUS CODE
-// console.log({ momentDate });
-// console.log({ now });
-// This should sleep for now. The now I send is stuck to prevent timezone issues, so that's why it gets things messy.
-// if (compareDesc(momentDate, now) === 1) setSubView("past-moments");
-// else if (compareAsc(momentDate, now) === 1)
-//   setSubView("future-moments");
-// else setSubView("current-moments");
 */
 
 /* Obsolete endeavors */

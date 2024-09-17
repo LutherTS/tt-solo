@@ -3,25 +3,6 @@ import { add, format, roundToNearestHours, sub } from "date-fns";
 
 import prisma from "./db";
 
-// Pour les nouvelles seeds.
-// Faire deux destinations :
-// - Créer le nouveau schéma de données de Grevents v3
-// - Retranscrire les seeds de Grevents v2 sur Grevents v3
-// Chacune avec neuf moments par table de la base de données :
-// - User
-// - Relation
-// - Criterion
-// - GroupOfUsers
-// - GroupOfUsersUser
-// - GroupOfCriteria
-// - GroupOfCriteriaCriterion
-// - GroupOfUsersGroupOfCriteria
-// - UserCriterion
-// Je me débrouillerai ensuite pour les contextes et les étapes, en accord justement avec la façon dont j'ai accompli cet exercice, mais pour chacun des cas, trois moments devront être faits dans le passé, trois moments dans le présent, et trois moments dans le futur.
-// J'aurai ainsi dix-huit moments dans la partie Tous, ce qui me permettra d'y faire une pagination de dix à onze vers dix-huit. (1-10, 11-18)
-// ...
-// Honnêtement, étant donné que j'ai fait la pagination et d'abord même la recherche, les trois petits moments que j'ai aujourd'hui suffisent largement, démontrant le passé, le présent et le futur, et avec un take de 2 sur Tous on peut démontrer la pagination et la recherche.
-
 const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
 
 async function seed() {
@@ -304,6 +285,6 @@ async function seed() {
 seed();
 
 /* Notes
-For now since there's only one test User and their only one test Destination and its only one test Moment and its Steps, I'm simplifying the seeds process to have all parent models have the exact same child data.
+For now I'm simplifying the seeds process to have all parent models have the exact same child data.
 Then as this evolves, it's at the heart of this logic that I'll be able to specify which child data is supposed to be assigned to which parent respectively.
 */
