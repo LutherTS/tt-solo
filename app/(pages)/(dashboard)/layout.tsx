@@ -21,9 +21,11 @@ export default function Layout({
           <div
             // this could be thrown back to the children for headers
             className={clsx(
-              "min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pt-8",
+              // container can coexist with max-w-4xl
+              "container min-h-screen w-full space-y-8 overflow-clip px-8 pt-8",
               "pb-12",
               "md:pb-24",
+              "lg:max-w-4xl",
             )}
           >
             {/* Page Contents */}

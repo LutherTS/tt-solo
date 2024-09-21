@@ -29,6 +29,9 @@ console.log(nowString);
 // There's a problem with cache when it comes to time here
 // It's only when the page recompiles that the correct time is taken into account. Probably something with noStore, I don't know.
 
+// FLASH NOTE
+// I don't know though why I did not include now in the MomentsPage function.
+
 export default async function MomentsPage({
   params,
   searchParams,
@@ -593,7 +596,7 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
-  // still bugging with time, at this time
+  // still bugging with time, at this time... not anymore?
   async function revalidateMoments() {
     "use server";
 

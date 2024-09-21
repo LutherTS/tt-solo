@@ -4,8 +4,11 @@ import {
   Dispatch,
   SetStateAction,
   // useActionState, // proudly commented out
+  useCallback,
+  useEffect,
   useState,
   useTransition,
+  MouseEvent,
 } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
@@ -21,6 +24,8 @@ import {
 import { fr } from "date-fns/locale";
 import { Reorder, useDragControls } from "framer-motion";
 import debounce from "debounce";
+
+import { useTimer } from "react-use-precision-timer";
 
 import { Option } from "@/app/types/general";
 import {
@@ -100,6 +105,29 @@ const exchangeOptions: Option[] = [
   { key: 16, label: "Séminaire", value: "Séminaire" },
 ];
 
+type CreateOrUpdateMoment = (
+  variant: "creating" | "updating",
+  indispensable: boolean,
+  momentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentToCRUD | undefined,
+  formData: FormData,
+) => Promise<
+  | {
+      message: string;
+    }
+  | undefined
+>;
+
+type DeleteMoment = (momentFromCRUD?: MomentToCRUD) => Promise<
+  | {
+      message: string;
+    }
+  | undefined
+>;
+
+type RevalidateMoments = () => Promise<void>;
+
 // Main Component
 
 export function CRUD({
@@ -114,12 +142,26 @@ export function CRUD({
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   destinationOptions: Option[];
   maxPages: number[];
-  createOrUpdateMoment: any;
-  deleteMoment: any;
-  revalidateMoments: any;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
+  revalidateMoments: RevalidateMoments;
   now: string;
 }) {
   console.log(now);
+
+  /* Functioning timer logic, with useTimer
+  // The callback function to fire every step of the timer.
+  const callback = useCallback(
+    (overdueCallCount: number) => console.log("Boom", overdueCallCount),
+    // https://justinmahar.github.io/react-use-precision-timer/iframe.html?viewMode=docs&id=docs-usetimer--docs&args=#low-delays-expensive-callbacks-and-overdue-calls
+    [],
+  );
+  // The callback will be called every 1000 milliseconds.
+  const timer = useTimer({ delay: 1000, startImmediately: true }, callback);
+  // The callback is where the whole moment logic will operate, with a mix of
+  // states, calls to update the database every minute, etc. The orchestration
+  // here on its own is going to be worth an entire file.
+  */
 
   let [view, setView] = useState<View>("read-moments");
 
@@ -244,7 +286,7 @@ function ReadMomentsView({
   setView: Dispatch<SetStateAction<View>>;
   subView: SubView;
   setSubView: Dispatch<SetStateAction<SubView>>;
-  revalidateMoments: any;
+  revalidateMoments: RevalidateMoments;
 }) {
   let subViewTitles = {
     "all-moments": "Tous",
@@ -356,8 +398,9 @@ function ReadMomentsView({
   // const [revalidateMomentsState, setRevalidateMomentsState] =
   //   useState<RevalidateMomentsState | null>(null);
 
-  // MouseEvent<HTMLButtonElement>
-  const revalidateMomentsAction = async (event: any) => {
+  const revalidateMomentsAction = async (
+    event: MouseEvent<HTMLButtonElement>,
+  ) => {
     startRevalidateMomentsTransition(async () => {
       const button = event.currentTarget;
       await revalidateMoments();
@@ -621,8 +664,8 @@ function MomentForms({
   variant: "creating" | "updating";
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  createOrUpdateMoment: any;
-  deleteMoment?: any;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment?: DeleteMoment;
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
 }) {
