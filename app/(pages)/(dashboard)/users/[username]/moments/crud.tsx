@@ -24,7 +24,12 @@ import {
   sub,
 } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Reorder, useDragControls } from "framer-motion";
+import {
+  Reorder,
+  useDragControls,
+  useMotionValueEvent,
+  useScroll,
+} from "framer-motion";
 import debounce from "debounce";
 import { useTimer } from "react-use-precision-timer";
 // @ts-ignore // no type declaration file on npm
@@ -449,6 +454,26 @@ function ReadMomentsView({
       }
     }
   });
+
+  /* FLASH IDEA
+  One "last" thing I could do is save the scroll position in a state so that hopefully the scrollTo is fast enough that we don't notice the correct position being brought back on searchParms changes when switching pages inside a subView.
+  */ // DONE.
+
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  const { scrollY } = useScroll();
+
+  const settingScrollPosition = (latest: number) => setScrollPosition(latest);
+
+  const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    debouncedSettingScrollPosition(latest);
+  });
+
+  useEffect(() => {
+    window.scrollTo({ top: scrollPosition });
+  }, [allUserMomentsToCRUD, currentPage]);
 
   // revalidateMomentsAction
 
