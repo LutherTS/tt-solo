@@ -400,11 +400,26 @@ function ReadMomentsView({
   With alt, arrow left and arrow right do "reverseSetSubView", setSubView.
   */ // DONE.
 
-  const rotateSubView = (direction: "left" | "right") => {
-    if (direction === "right")
-      setSubView(subViews.at(subViews.indexOf(subView) + 1)!);
-    else setSubView(subViews.at(subViews.indexOf(subView) - 1)!);
+  const rotateStates = <T,>(
+    // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
+    direction: "left" | "right",
+    setState: Dispatch<SetStateAction<T>>,
+    statesArray: readonly T[],
+    state: T,
+  ) => {
+    if (direction === "right") {
+      setState(
+        statesArray.at(
+          statesArray.indexOf(state) + 1 > statesArray.length - 1
+            ? 0
+            : statesArray.indexOf(state) + 1,
+        )!,
+      );
+    } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
   };
+
+  const rotateSubView = (direction: "left" | "right") =>
+    rotateStates(direction, setSubView, subViews, subView);
 
   useKeypress("ArrowLeft", (event: KeyboardEvent) => {
     if (view === "read-moments") {
