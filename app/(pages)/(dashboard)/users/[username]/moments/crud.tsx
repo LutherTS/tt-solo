@@ -458,6 +458,7 @@ function ReadMomentsView({
   /* FLASH IDEA
   One "last" thing I could do is save the scroll position in a state so that hopefully the scrollTo is fast enough that we don't notice the correct position being brought back on searchParms changes when switching pages inside a subView.
   */ // DONE.
+  // Also, no need to lift subView to the URL. Since the page is time dependent, making someone land on a specific subView is inherently inconsistent. The current model of landing first on Actuels, then Futurs, then Passés, then Tous as a fallback makes the most sense.
 
   const [scrollPosition, setScrollPosition] = useState(0);
 
