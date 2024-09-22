@@ -15,6 +15,7 @@ import { CRUD } from "./crud";
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 
+/*
 // IMPORTANT
 // Just that weird thing about time not being current correctly now.
 // Either something to do with cache or the need for a useEffect.
@@ -30,7 +31,8 @@ console.log(nowString);
 // It's only when the page recompiles that the correct time is taken into account. Probably something with noStore, I don't know.
 
 // FLASH NOTE
-// I don't know though why I did not include now in the MomentsPage function.
+// I don't know though why I did not include now in the MomentsPage function. (Actually it wasn't supposed to be this way.)
+*/
 
 export default async function MomentsPage({
   params,
@@ -47,6 +49,10 @@ export default async function MomentsPage({
     futureusermomentspage?: string;
   };
 }) {
+  let now = new Date();
+  let nowString = dateToInputDatetime(now);
+  console.log(nowString);
+
   const username = params.username;
 
   const contains = searchParams?.contains || "";

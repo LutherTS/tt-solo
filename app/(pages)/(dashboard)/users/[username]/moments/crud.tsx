@@ -10,7 +10,9 @@ import {
   useTransition,
   MouseEvent,
 } from "react";
+
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
   add,
@@ -24,8 +26,9 @@ import {
 import { fr } from "date-fns/locale";
 import { Reorder, useDragControls } from "framer-motion";
 import debounce from "debounce";
-
 import { useTimer } from "react-use-precision-timer";
+// @ts-ignore // no type declaration file on npm
+import useKeypress from "react-use-keypress";
 
 import { Option } from "@/app/types/general";
 import {
@@ -249,6 +252,7 @@ export function CRUD({
           subView={subView}
           setSubView={setSubView}
           revalidateMoments={revalidateMoments}
+          view={view}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
@@ -279,6 +283,7 @@ function ReadMomentsView({
   subView,
   setSubView,
   revalidateMoments,
+  view,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
@@ -287,6 +292,7 @@ function ReadMomentsView({
   subView: SubView;
   setSubView: Dispatch<SetStateAction<SubView>>;
   revalidateMoments: RevalidateMoments;
+  view: string;
 }) {
   let subViewTitles = {
     "all-moments": "Tous",
@@ -376,7 +382,7 @@ function ReadMomentsView({
         subViewSearchParams[subView],
         Math.max(1, currentPage - 1).toString(),
       );
-    if (direction === "right")
+    else
       params.set(
         subViewSearchParams[subView],
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
@@ -387,6 +393,47 @@ function ReadMomentsView({
 
     replace(`${pathname}?${params.toString()}`);
   }
+
+  /* FLASH IDEA
+  Let's try some useKeyPress now.
+  Arrow left and arrow right do handlePagination.
+  With alt, arrow left and arrow right do "reverseSetSubView", setSubView.
+  */ // DONE.
+
+  const rotateSubView = (direction: "left" | "right") => {
+    if (direction === "right")
+      setSubView(subViews.at(subViews.indexOf(subView) + 1)!);
+    else setSubView(subViews.at(subViews.indexOf(subView) - 1)!);
+  };
+
+  useKeypress("ArrowLeft", (event: KeyboardEvent) => {
+    if (view === "read-moments") {
+      event.preventDefault();
+
+      if (event.altKey) {
+        // console.log("alt+left");
+        rotateSubView("left"); // does not update the time because it speaks exclusively to the client
+      } else {
+        // console.log("left");
+        if (currentPage !== 1) handlePagination("left", subView); // updates the time because it speaks to the server (and the database)
+      }
+    }
+  });
+
+  useKeypress("ArrowRight", (event: KeyboardEvent) => {
+    if (view === "read-moments") {
+      event.preventDefault();
+
+      if (event.altKey) {
+        // console.log("alt+right");
+        rotateSubView("right"); // does not update the time because it speaks exclusively to the client
+      } else {
+        // console.log("right");
+        if (currentPage !== subViewMaxPages[subView])
+          handlePagination("right", subView); // updates the time because it speaks to the server (and the database)
+      }
+    }
+  });
 
   // revalidateMomentsAction
 
@@ -1449,9 +1496,8 @@ No longer in use since submitting on Enter is not prevented all around:
 Required supercedes display none. After all required is HTML, while display-none is CSS.
 */
 
-/* Obsolete endeavors */
+/* Obsolete endeavors
 
-/*
 // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
 let createOrUpdateMomentInitialState: {
   errors?: {
@@ -1469,18 +1515,15 @@ let [
 ] = useActionState(
   createOrUpdateMomentBound,
   createOrUpdateMomentInitialState,
-);
-*/ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
+); // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
 
-/*
 // !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
 let deleteMomentInitialState: {
   message: string;
 } | null = null;
 
 let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
-  useActionState(deleteMomentBound, deleteMomentInitialState);
-*/ // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
+  useActionState(deleteMomentBound, deleteMomentInitialState); // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
 
 // action={async (formData) => {
 //   await createOrUpdateMomentBound(formData);
@@ -1533,8 +1576,8 @@ let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
 //     setView("read-moments");
 //   }
 // }}
-
-/* onClick before useTransition */
+ 
+onClick before useTransition
 // // this, is looking like an action to make on Friday
 // onClick={async (event) => {
 //   const button = event.currentTarget;
@@ -1544,3 +1587,43 @@ let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
 //   button.form!.reset(); // EXACTLY.
 //   button.disabled = false;
 // }}
+
+// // I'm sure there's a way to optimize this with an array or an object for scale.
+// const rotatingSubView = () => {
+//   switch (subView) {
+//     case "all-moments":
+//       setSubView("past-moments");
+//       break;
+//     case "past-moments":
+//       setSubView("current-moments");
+//       break;
+//     case "current-moments":
+//       setSubView("future-moments");
+//       break;
+//     case "future-moments":
+//       setSubView("all-moments");
+//       break;
+//     default:
+//       break;
+//   }
+// };
+
+// const reverseRotatingSubView = () => {
+//   switch (subView) {
+//     case "all-moments":
+//       setSubView("future-moments");
+//       break;
+//     case "future-moments":
+//       setSubView("current-moments");
+//       break;
+//     case "current-moments":
+//       setSubView("past-moments");
+//       break;
+//     case "past-moments":
+//       setSubView("all-moments");
+//       break;
+//     default:
+//       break;
+//   }
+// };
+*/
