@@ -11,7 +11,13 @@ import {
   MouseEvent,
 } from "react";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  ReadonlyURLSearchParams,
+  redirect,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
@@ -182,7 +188,7 @@ export function CRUD({
   const [_, realPastMoments, realCurrentMoments, realFutureMoments] =
     allUserMomentsToCRUD;
 
-  let initialSubView: SubView =
+  let initialSubView: SubView = // "all-moments";
     realCurrentMoments.dates.length > 0
       ? "current-moments"
       : realFutureMoments.dates.length > 0
@@ -283,21 +289,21 @@ export function CRUD({
 function ReadMomentsView({
   allUserMomentsToCRUD,
   maxPages,
-  setMoment,
-  setView,
-  subView,
-  setSubView,
   revalidateMoments,
   view,
+  subView,
+  setMoment,
+  setView,
+  setSubView,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
-  setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
-  setView: Dispatch<SetStateAction<View>>;
-  subView: SubView;
-  setSubView: Dispatch<SetStateAction<SubView>>;
   revalidateMoments: RevalidateMoments;
   view: string;
+  subView: SubView;
+  setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
+  setView: Dispatch<SetStateAction<View>>;
+  setSubView: Dispatch<SetStateAction<SubView>>;
 }) {
   let subViewTitles = {
     "all-moments": "Tous",
@@ -378,10 +384,17 @@ function ReadMomentsView({
     "future-moments": maxPageFutureMoments,
   };
 
-  const params = new URLSearchParams(searchParams);
-  let currentPage = +(params.get(subViewSearchParams[subView]) || "1");
+  let currentPage = 1;
+  const trueValue = Number(searchParams.get(subViewSearchParams[subView]));
+  if (trueValue > 1) currentPage = Math.floor(trueValue);
+  const trueMax = subViewMaxPages[subView];
+  if (trueValue > trueMax) currentPage = trueMax;
+  // console.log({ currentPage, trueMax }); // ...The issue is on the server.
+
+  // currentPage could need that clientParamSafeting I feel
 
   function handlePagination(direction: "left" | "right", subView: SubView) {
+    const params = new URLSearchParams(searchParams);
     if (direction === "left")
       params.set(
         subViewSearchParams[subView],
@@ -739,14 +752,14 @@ function ReadMomentsView({
 
 // Maybe now I should be able to setSubView again.
 function MomentForms({
-  setView,
   variant,
+  now,
   moment,
   destinationOptions,
   createOrUpdateMoment,
   deleteMoment,
+  setView,
   setSubView,
-  now,
 }: {
   setView: Dispatch<SetStateAction<View>>;
   variant: "creating" | "updating";
@@ -816,6 +829,8 @@ function MomentForms({
   let [destinationSelect, setDestinationSelect] = useState(false);
   let [activitySelect, setActivitySelect] = useState(false);
 
+  // createOrUpdateMomentAction
+
   const createOrUpdateMomentBound = createOrUpdateMoment.bind(
     null,
     variant,
@@ -824,8 +839,6 @@ function MomentForms({
     steps,
     moment,
   );
-
-  // createOrUpdateMomentAction
 
   // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
   const [_, startCreateOrUpdateMomentTransition] = useTransition();
@@ -866,10 +879,10 @@ function MomentForms({
     });
   };
 
+  // deleteMomentAction
+
   let deleteMomentBound: any;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
-
-  // deleteMomentAction
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 

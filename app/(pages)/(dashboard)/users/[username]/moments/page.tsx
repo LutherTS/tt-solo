@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { notFound } from "next/navigation";
 import { Moment } from "@prisma/client";
 import { add } from "date-fns";
 
@@ -56,12 +57,14 @@ export default async function MomentsPage({
   const username = params.username;
 
   const contains = searchParams?.contains || "";
-  const userMomentsPage = Number(searchParams?.usermomentspage) || 1;
-  const pastUserMomentsPage = Number(searchParams?.pastusermomentspage) || 1;
+  const userMomentsPage =
+    Math.floor(Number(searchParams?.usermomentspage)) || 1;
+  const pastUserMomentsPage =
+    Math.floor(Number(searchParams?.pastusermomentspage)) || 1;
   const currentUserMomentsPage =
-    Number(searchParams?.currentusermomentspage) || 1;
+    Math.floor(Number(searchParams?.currentusermomentspage)) || 1;
   const futureUserMomentsPage =
-    Number(searchParams?.futureusermomentspage) || 1;
+    Math.floor(Number(searchParams?.futureusermomentspage)) || 1;
 
   const pages = [
     userMomentsPage,
@@ -70,12 +73,14 @@ export default async function MomentsPage({
     futureUserMomentsPage,
   ];
 
+  // PART READ
+
   const user = await prisma.user.findUnique({
     where: { username },
   });
   // console.log(user);
 
-  if (!user) return console.error("Somehow a user was not found.");
+  if (!user) return notFound();
 
   // take and skip randomly implemented below for scalable defaults.
   // All of these will be optimized and organized in their own folders.
@@ -157,6 +162,44 @@ export default async function MomentsPage({
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log(maxPages);
 
+  let [
+    trueUserMomentsPage,
+    truePastUserMomentsPage,
+    trueCurrentUserMomentsPage,
+    trueFutureUserMomentsPage,
+  ] = [1, 1, 1, 1];
+
+  let truePages = [
+    trueUserMomentsPage,
+    truePastUserMomentsPage,
+    trueCurrentUserMomentsPage,
+    trueFutureUserMomentsPage,
+  ];
+
+  // Maintenant d'abord à la main.
+  const helper = (x: string) => {
+    const trueValue = Number(searchParams ? ["usermomentspage"] : "1");
+    if (trueValue > 1) trueUserMomentsPage = Math.floor(trueValue);
+    const trueMax = userMomentsTotal;
+    if (trueValue > trueMax) trueUserMomentsPage = trueMax;
+  };
+
+  const trueUMValue = Number(searchParams?.usermomentspage);
+  if (trueUMValue > 1) trueUserMomentsPage = Math.floor(trueUMValue);
+  if (trueUMValue > maxPages[0]) trueUserMomentsPage = maxPages[0];
+
+  const truePMValue = Number(searchParams?.pastusermomentspage);
+  if (truePMValue > 1) truePastUserMomentsPage = Math.floor(truePMValue);
+  if (truePMValue > maxPages[1]) truePastUserMomentsPage = maxPages[1];
+
+  const trueCMPage = Number(searchParams?.currentusermomentspage);
+  if (trueCMPage > 1) trueCurrentUserMomentsPage = Math.floor(trueCMPage);
+  if (trueCMPage > maxPages[2]) trueCurrentUserMomentsPage = maxPages[2];
+
+  const trueFMPage = Number(searchParams?.futureusermomentspage);
+  if (trueFMPage > 1) trueFutureUserMomentsPage = Math.floor(trueFMPage);
+  if (trueFMPage > maxPages[3]) trueFutureUserMomentsPage = maxPages[3];
+
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
       prisma.moment.findMany({
@@ -180,7 +223,7 @@ export default async function MomentsPage({
           startDateAndTime: "desc",
         },
         take: TAKE,
-        skip: (userMomentsPage - 1) * TAKE,
+        skip: (trueUserMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
@@ -343,10 +386,10 @@ export default async function MomentsPage({
                 };
               }),
             momentsTotal: a[i].length,
-            momentFirstIndex: (pages[i] - 1) * TAKE + 1,
-            momentLastIndex: (pages[i] - 1) * TAKE + a[i].length,
+            momentFirstIndex: (truePages[i] - 1) * TAKE + 1,
+            momentLastIndex: (truePages[i] - 1) * TAKE + a[i].length,
             allMomentsTotal: totals[i],
-            currentPage: pages[i],
+            currentPage: truePages[i],
             totalPage: maxPages[i],
           };
         }),
@@ -379,7 +422,10 @@ export default async function MomentsPage({
       };
     });
 
+  // PART WRITE
+
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
+  // (Typage dorénavant transposer à la main.)
   async function createOrUpdateMoment(
     variant: "creating" | "updating",
     indispensable: boolean,
