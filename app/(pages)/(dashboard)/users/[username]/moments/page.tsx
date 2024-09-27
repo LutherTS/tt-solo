@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Moment } from "@prisma/client";
 import { add } from "date-fns";
 
-import prisma from "@/prisma/db";
+// import prisma from "@/prisma/db"; // proudly commented out
 import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
@@ -15,7 +15,7 @@ import {
 import {
   dateToInputDatetime,
   defineCurrentPage,
-  endDateAndTime,
+  // endDateAndTime, // now closer to compute
 } from "@/app/utilities/moments";
 import { CRUD } from "./crud";
 import {
@@ -55,12 +55,11 @@ import {
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 
-/*
-// IMPORTANT
-// Just that weird thing about time not being current correctly now.
-// Either something to do with cache or the need for a useEffect.
-// (Which I'm now trying to address above with export const dynamic.)
-// (I'll need to test more but I think "force-dynamic" got things done.)
+/* IMPORTANT
+Just that weird thing about time not being current correctly now.
+Either something to do with cache or the need for a useEffect.
+(Which I'm now trying to address above with export const dynamic.)
+(I'll need to test more but I think "force-dynamic" got things done.)
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -70,8 +69,7 @@ console.log(nowString);
 // There's a problem with cache when it comes to time here
 // It's only when the page recompiles that the correct time is taken into account. Probably something with noStore, I don't know.
 
-// FLASH NOTE
-// I don't know though why I did not include now in the MomentsPage function. (Actually it wasn't supposed to be this way.)
+I don't know though why I did not include now in the MomentsPage function. (Actually it wasn't supposed to be this way.)
 */
 
 export default async function MomentsPage({
@@ -97,6 +95,7 @@ export default async function MomentsPage({
 
   // PART READ
 
+  // error handling needed eventually
   const user = await findUserIdByUsername(username);
   // console.log({ user });
 
@@ -107,6 +106,7 @@ export default async function MomentsPage({
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
 
+  // error handling needed eventually
   const [
     userMomentsTotal,
     pastUserMomentsTotal,
@@ -167,6 +167,7 @@ export default async function MomentsPage({
     futureUserMomentsPage,
   ] = pages;
 
+  // error handling needed eventually
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
       findUserMomentsTotalWithContains(userId, contains, userMomentsPage, TAKE),
@@ -207,6 +208,7 @@ export default async function MomentsPage({
   ];
   // console.log({ allUserMoments });
 
+  // treating data for the client...
   const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map(
     (e, i, a) => {
       return {
@@ -287,9 +289,11 @@ export default async function MomentsPage({
   );
   // console.logs on demand...
 
+  // error handling needed eventually
   const userDestinations = await findDestinationsByUserId(userId);
   // console.log({ userDestinations });
 
+  // treating data for the client...
   const destinationOptions: Option[] = userDestinations
     .sort((a, b) => {
       const nameA = a.name.toLowerCase();
@@ -309,7 +313,7 @@ export default async function MomentsPage({
 
   // PART WRITE
 
-  // Making progress on shared types.
+  // Progress made on shared types.
 
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
   // (Typage dorénavant transposer à la main. ...Et plus encore.)
@@ -481,7 +485,7 @@ export default async function MomentsPage({
       let i = 1;
 
       for (let j = 0; j < steps.length; j++) {
-        // exact same code as create
+        // exact same code as create, best to be shipped inside a common function
         const step = steps[j];
 
         const startDateAndTime =
