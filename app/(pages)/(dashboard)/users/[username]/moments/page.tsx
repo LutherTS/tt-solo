@@ -36,7 +36,21 @@ import {
   findPastUserMomentsTotalWithContains,
   findUserMomentsTotalWithContains,
 } from "@/app/reads/moments";
-import { findDestinationsByUserId } from "@/app/reads/destinations";
+import {
+  findDestinationByNameAndUserId,
+  findDestinationsByUserId,
+} from "@/app/reads/destinations";
+import {
+  createMomentAndDestination,
+  createMomentFromFormData,
+  deleteMomentByMomentId,
+  updateMomentAndDestination,
+  updateMomentFromFormData,
+} from "@/app/writes/moments";
+import {
+  createStepFromSteps,
+  deleteMomentStepsByMomentId,
+} from "@/app/writes/steps";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -348,72 +362,69 @@ export default async function MomentsPage({
     }
 
     if (variant === "creating") {
-      const destinationEntry = await prisma.destination.findUnique({
-        where: {
-          name_userId: {
-            name: destination,
-            userId,
-          },
-        },
-      });
+      // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their single if statements.
+      // error handling needed eventually
+      const destinationEntry = await findDestinationByNameAndUserId(
+        destination,
+        userId,
+      );
 
       let moment: Moment;
 
       if (destinationEntry) {
-        moment = await prisma.moment.create({
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destinationId: destinationEntry.id,
-          },
-        });
+        const destinationId = destinationEntry.id;
+
+        // error handling needed eventually
+        moment = await createMomentFromFormData(
+          activite,
+          objectif,
+          indispensable,
+          contexte,
+          momentDate,
+          duration,
+          destinationId,
+        );
       } else {
-        moment = await prisma.moment.create({
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destination: {
-              create: {
-                name: destination,
-                userId,
-              },
-            },
-          },
-        });
+        // error handling needed eventually
+        moment = await createMomentAndDestination(
+          activite,
+          objectif,
+          indispensable,
+          contexte,
+          momentDate,
+          duration,
+          destination,
+          userId,
+        );
       }
 
+      const momentId = moment.id;
+
       let i = 1;
+
       for (let j = 0; j < steps.length; j++) {
         const step = steps[j];
 
-        await prisma.step.create({
-          data: {
-            orderId: i,
-            name: step.intitule,
-            description: step.details,
-            startDateAndTime:
-              j === 0
-                ? momentDate
-                : dateToInputDatetime(
-                    add(momentDate, { minutes: map.get(j - 1) }),
-                  ),
-            duration: step.duree,
-            endDateAndTime: dateToInputDatetime(
-              add(momentDate, { minutes: map.get(j) }),
-            ),
-            momentId: moment.id,
-          },
-        });
+        const startDateAndTime =
+          j === 0
+            ? momentDate
+            : dateToInputDatetime(add(momentDate, { minutes: map.get(j - 1) }));
+
+        const endDateAndTime = dateToInputDatetime(
+          add(momentDate, { minutes: map.get(j) }),
+        );
+
+        // error handling needed eventually
+        await createStepFromSteps(
+          i,
+          step.intitule,
+          step.details,
+          startDateAndTime,
+          step.duree,
+          endDateAndTime,
+          momentId,
+        );
+
         i++;
       }
     }
@@ -423,84 +434,76 @@ export default async function MomentsPage({
         // return console.error("Surprenamment un moment n'a pas été réceptionné.");
         return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
-      const destinationEntry = await prisma.destination.findUnique({
-        where: {
-          name_userId: {
-            name: destination,
-            userId,
-          },
-        },
-      });
+      let momentId = momentFromCRUD.id;
+
+      // error handling needed eventually
+      const destinationEntry = await findDestinationByNameAndUserId(
+        destination,
+        userId,
+      );
 
       let moment: Moment;
 
       if (destinationEntry) {
-        moment = await prisma.moment.update({
-          where: {
-            id: momentFromCRUD.id,
-          },
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destinationId: destinationEntry.id,
-          },
-        });
+        const destinationId = destinationEntry.id;
+
+        // error handling needed eventually
+        moment = await updateMomentFromFormData(
+          activite,
+          objectif,
+          indispensable,
+          contexte,
+          momentDate,
+          duration,
+          destinationId,
+          momentId,
+        );
       } else {
-        moment = await prisma.moment.update({
-          where: {
-            id: momentFromCRUD.id,
-          },
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destination: {
-              create: {
-                name: destination,
-                userId,
-              },
-            },
-          },
-        });
+        // error handling needed eventually
+        moment = await updateMomentAndDestination(
+          activite,
+          objectif,
+          indispensable,
+          contexte,
+          momentDate,
+          duration,
+          destination,
+          userId,
+          momentId,
+        );
       }
 
-      await prisma.step.deleteMany({
-        where: {
-          momentId: moment.id,
-        },
-      });
+      momentId = moment.id;
+
+      // error handling needed eventually
+      await deleteMomentStepsByMomentId(momentId);
 
       let i = 1;
+
       for (let j = 0; j < steps.length; j++) {
+        // exact same code as create
         const step = steps[j];
 
-        await prisma.step.create({
-          data: {
-            orderId: i,
-            name: step.intitule,
-            description: step.details,
-            startDateAndTime:
-              j === 0
-                ? momentDate
-                : dateToInputDatetime(
-                    add(momentDate, { minutes: map.get(j - 1) }),
-                  ),
-            duration: step.duree,
-            endDateAndTime: dateToInputDatetime(
-              add(momentDate, { minutes: map.get(j) }),
-            ),
-            momentId: moment.id,
-          },
-        });
+        const startDateAndTime =
+          j === 0
+            ? momentDate
+            : dateToInputDatetime(add(momentDate, { minutes: map.get(j - 1) }));
+
+        const endDateAndTime = dateToInputDatetime(
+          add(momentDate, { minutes: map.get(j) }),
+        );
+
+        // error handling needed eventually
+        await createStepFromSteps(
+          i,
+          step.intitule,
+          step.details,
+          startDateAndTime,
+          step.duree,
+          endDateAndTime,
+          momentId,
+        );
+
         i++;
       }
     }
@@ -517,11 +520,10 @@ export default async function MomentsPage({
       // return console.error("Surprenamment un moment n'a pas été réceptionné.");
       return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
-    await prisma.moment.delete({
-      where: {
-        id: momentFromCRUD.id,
-      },
-    });
+    const momentId = momentFromCRUD.id;
+
+    // error handling needed eventually
+    await deleteMomentByMomentId(momentId);
 
     revalidatePath(`/users/${username}/moments`);
   }
