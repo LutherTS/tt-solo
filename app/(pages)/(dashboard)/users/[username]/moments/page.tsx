@@ -25,6 +25,18 @@ import {
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
 } from "@/app/variables/moments";
+import { findUserIdByUsername } from "@/app/reads/users";
+import {
+  countCurrentUserMomentsTotalWithContains,
+  countFutureUserMomentsTotalWithContains,
+  countPastUserMomentsTotalWithContains,
+  countUserMomentsTotalWithContains,
+  findCurrentUserMomentsTotalWithContains,
+  findFutureUserMomentsTotalWithContains,
+  findPastUserMomentsTotalWithContains,
+  findUserMomentsTotalWithContains,
+} from "@/app/reads/moments";
+import { findDestinationsByUserId } from "@/app/reads/destinations";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -71,12 +83,12 @@ export default async function MomentsPage({
 
   // PART READ
 
-  const user = await prisma.user.findUnique({
-    where: { username },
-  });
-  // console.log(user);
+  const user = await findUserIdByUsername(username);
+  // console.log({ user });
 
   if (!user) return notFound();
+
+  const userId = user.id;
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
@@ -87,56 +99,10 @@ export default async function MomentsPage({
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ] = await Promise.all([
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-      },
-    }),
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-        endDateAndTime: {
-          lt: nowString,
-        },
-      },
-    }),
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-        AND: [
-          { startDateAndTime: { lte: nowString } },
-          { endDateAndTime: { gte: nowString } },
-        ],
-      },
-    }),
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-        startDateAndTime: {
-          gt: nowString,
-        },
-      },
-    }),
+    countUserMomentsTotalWithContains(userId, contains),
+    countPastUserMomentsTotalWithContains(userId, contains, nowString),
+    countCurrentUserMomentsTotalWithContains(userId, contains, nowString),
+    countFutureUserMomentsTotalWithContains(userId, contains, nowString),
   ]);
   // console.log({
   //   userMomentsTotal,
@@ -150,56 +116,35 @@ export default async function MomentsPage({
     pastUserMomentsTotal,
     currentUserMomentsTotal,
     futureUserMomentsTotal,
-  ];
-  // console.log(totals)
+  ] as const;
+  // console.log({ totals })
 
   // take and skip randomly implemented below for scalable defaults.
   // All of these will be optimized and organized in their own folders.
 
+  // In fact, TAKE is page-dependent here. So the page is where it could remain, so that the maintainer of the page can decide how many moments they want without needing to access the read method.
   const TAKE = 2;
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
-  // console.log(maxPages);
+  // console.log({ maxPages });
 
-  let [
-    initialUserMomentsPage,
-    initialPastUserMomentsPage,
-    initialCurrentUserMomentsPage,
-    initialFutureUserMomentsPage,
-  ] = [1, 1, 1, 1];
+  const searchParamsPageKeys = [
+    USERMOMENTSPAGE,
+    PASTUSERMOMENTSPAGE,
+    CURRENTUSERMOMENTSPAGE,
+    FUTUREUSERMOMENTSPAGE,
+  ] as const;
 
-  // it's a solution but I guess tomorrow I could optimize
-  // I could also start (finally?) making them actions folder and files
-  // ...and maybe even them data folder and files, too
-  // though I really like having both read and write here on the same file...
-  // ...so I could instead make their helpers in a brand-new folder
-  // like reads and writes
-  // the actions and the full read flows will stay here but deconstructed.
-  // ...
-  // I think does make sense that the reads are on the server and the writes are on the client. That can justifying placing server actions in the own folders which, to be honest, is exactly how I would work with a team.
-  let pages = [
-    initialUserMomentsPage,
-    initialPastUserMomentsPage,
-    initialCurrentUserMomentsPage,
-    initialFutureUserMomentsPage,
-  ];
-
-  let pagesViaObjects = [
-    { key: USERMOMENTSPAGE, value: initialUserMomentsPage },
-    { key: PASTUSERMOMENTSPAGE, value: initialPastUserMomentsPage },
-    { key: CURRENTUSERMOMENTSPAGE, value: initialCurrentUserMomentsPage },
-    { key: FUTUREUSERMOMENTSPAGE, value: initialFutureUserMomentsPage },
-  ];
-
-  pages = pages.map((e, i) => {
-    return defineCurrentPage(
-      e,
+  const pages = searchParamsPageKeys.map((e, i) =>
+    defineCurrentPage(
+      1,
       // I had never seen that TypeScript syntax before.
       // And it is not valid JavaScript.
-      Number(searchParams?.[pagesViaObjects[i].key]),
+      Number(searchParams?.[e]),
       maxPages[i],
-    );
-  });
+    ),
+  );
+  // console.log({ pages });
 
   const [
     userMomentsPage,
@@ -207,117 +152,38 @@ export default async function MomentsPage({
     currentUserMomentsPage,
     futureUserMomentsPage,
   ] = pages;
-  // console.log({ pages });
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "desc",
-        },
-        take: TAKE,
-        skip: (userMomentsPage - 1) * TAKE,
-      }),
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-          endDateAndTime: {
-            lt: nowString,
-          },
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "desc",
-        },
-        take: TAKE,
-        skip: (pastUserMomentsPage - 1) * TAKE,
-      }),
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-          AND: [
-            { startDateAndTime: { lte: nowString } },
-            { endDateAndTime: { gte: nowString } },
-          ],
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "asc",
-        },
-        take: TAKE,
-        skip: (currentUserMomentsPage - 1) * TAKE,
-      }),
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-          startDateAndTime: {
-            gt: nowString,
-          },
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "asc",
-        },
-        take: TAKE,
-        skip: (futureUserMomentsPage - 1) * TAKE,
-      }),
+      findUserMomentsTotalWithContains(userId, contains, userMomentsPage, TAKE),
+      findPastUserMomentsTotalWithContains(
+        userId,
+        contains,
+        nowString,
+        pastUserMomentsPage,
+        TAKE,
+      ),
+      findCurrentUserMomentsTotalWithContains(
+        userId,
+        contains,
+        nowString,
+        currentUserMomentsPage,
+        TAKE,
+      ),
+      findFutureUserMomentsTotalWithContains(
+        userId,
+        contains,
+        nowString,
+        futureUserMomentsPage,
+        TAKE,
+      ),
     ]);
-  // console.log(userMoments);
-  // console.log(pastUserMoments);
-  // console.log(currentUserMoments);
-  // console.log(futureUserMoments);
+  // console.log({
+  //   userMoments,
+  //   pastUserMoments,
+  //   currentUserMoments,
+  //   futureUserMoments,
+  // });
 
   const allUserMoments = [
     userMoments,
@@ -325,7 +191,7 @@ export default async function MomentsPage({
     currentUserMoments,
     futureUserMoments,
   ];
-  // console.log(allUserMoments);
+  // console.log({ allUserMoments });
 
   const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map(
     (e, i, a) => {
@@ -405,15 +271,10 @@ export default async function MomentsPage({
       };
     },
   );
+  // console.logs on demand...
 
-  const userDestinations = await prisma.destination.findMany({
-    where: {
-      userId: user.id,
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+  const userDestinations = await findDestinationsByUserId(userId);
+  // console.log({ userDestinations });
 
   const destinationOptions: Option[] = userDestinations
     .sort((a, b) => {
@@ -430,6 +291,7 @@ export default async function MomentsPage({
         value: e.name,
       };
     });
+  // console.logs on demand...
 
   // PART WRITE
 
@@ -490,7 +352,7 @@ export default async function MomentsPage({
         where: {
           name_userId: {
             name: destination,
-            userId: user.id,
+            userId,
           },
         },
       });
@@ -523,7 +385,7 @@ export default async function MomentsPage({
             destination: {
               create: {
                 name: destination,
-                userId: user.id,
+                userId,
               },
             },
           },
@@ -565,7 +427,7 @@ export default async function MomentsPage({
         where: {
           name_userId: {
             name: destination,
-            userId: user.id,
+            userId,
           },
         },
       });
@@ -604,7 +466,7 @@ export default async function MomentsPage({
             destination: {
               create: {
                 name: destination,
-                userId: user.id,
+                userId,
               },
             },
           },
@@ -714,4 +576,14 @@ Now aside from validations the only thing I'm missing from my server actions is 
 //   currentUserMomentsPage,
 //   futureUserMomentsPage,
 // ] = truePages;
+...
+// it's a solution but I guess tomorrow I could optimize
+// I could also start (finally?) making them actions folder and files
+// ...and maybe even them data folder and files, too
+// though I really like having both read and write here on the same file...
+// ...so I could instead make their helpers in a brand-new folder
+// like reads and writes
+// the actions and the full read flows will stay here but deconstructed.
+// ...
+// I think does make sense that the reads are on the server and the writes are on the client. That can justifying placing server actions in the own folders which, to be honest, is exactly how I would work with a team.
 */
