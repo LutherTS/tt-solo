@@ -43,3 +43,15 @@ export const numStringToTimeString = (string: string) => {
 
   return timeString;
 }; // sometimes actual numbers have to be turned into strings for this
+
+// adapts and secures the current page searchParam on both the client and the server with the same code
+export const defineCurrentPage = (
+  initialPage: number,
+  rawPage: number,
+  maxPage: number,
+) => {
+  let currentPage = initialPage;
+  if (rawPage > initialPage) currentPage = Math.floor(rawPage);
+  if (rawPage > maxPage) currentPage = maxPage;
+  return currentPage;
+};

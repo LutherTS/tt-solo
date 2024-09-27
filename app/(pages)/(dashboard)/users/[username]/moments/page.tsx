@@ -4,14 +4,27 @@ import { Moment } from "@prisma/client";
 import { add } from "date-fns";
 
 import prisma from "@/prisma/db";
-import { Option } from "@/app/types/general";
+import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
   StepFromCRUD,
   MomentToCRUD,
+  CreateOrUpdateMomentState,
+  DeleteMomentState,
 } from "@/app/types/moments";
-import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
+import {
+  dateToInputDatetime,
+  defineCurrentPage,
+  endDateAndTime,
+} from "@/app/utilities/moments";
 import { CRUD } from "./crud";
+import {
+  CONTAINS,
+  CURRENTUSERMOMENTSPAGE,
+  FUTUREUSERMOMENTSPAGE,
+  PASTUSERMOMENTSPAGE,
+  USERMOMENTSPAGE,
+} from "@/app/variables/moments";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -43,11 +56,11 @@ export default async function MomentsPage({
     username: string;
   };
   searchParams?: {
-    contains?: string;
-    usermomentspage?: string;
-    pastusermomentspage?: string;
-    currentusermomentspage?: string;
-    futureusermomentspage?: string;
+    [CONTAINS]?: string;
+    [USERMOMENTSPAGE]?: string;
+    [PASTUSERMOMENTSPAGE]?: string;
+    [CURRENTUSERMOMENTSPAGE]?: string;
+    [FUTUREUSERMOMENTSPAGE]?: string;
   };
 }) {
   let now = new Date();
@@ -55,23 +68,6 @@ export default async function MomentsPage({
   console.log(nowString);
 
   const username = params.username;
-
-  const contains = searchParams?.contains || "";
-  const userMomentsPage =
-    Math.floor(Number(searchParams?.usermomentspage)) || 1;
-  const pastUserMomentsPage =
-    Math.floor(Number(searchParams?.pastusermomentspage)) || 1;
-  const currentUserMomentsPage =
-    Math.floor(Number(searchParams?.currentusermomentspage)) || 1;
-  const futureUserMomentsPage =
-    Math.floor(Number(searchParams?.futureusermomentspage)) || 1;
-
-  const pages = [
-    userMomentsPage,
-    pastUserMomentsPage,
-    currentUserMomentsPage,
-    futureUserMomentsPage,
-  ];
 
   // PART READ
 
@@ -82,10 +78,8 @@ export default async function MomentsPage({
 
   if (!user) return notFound();
 
-  // take and skip randomly implemented below for scalable defaults.
-  // All of these will be optimized and organized in their own folders.
-
-  const TAKE = 2;
+  // that is one chill searchParam right here
+  const contains = searchParams?.[CONTAINS] || "";
 
   const [
     userMomentsTotal,
@@ -159,46 +153,61 @@ export default async function MomentsPage({
   ];
   // console.log(totals)
 
+  // take and skip randomly implemented below for scalable defaults.
+  // All of these will be optimized and organized in their own folders.
+
+  const TAKE = 2;
+
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log(maxPages);
 
   let [
-    trueUserMomentsPage,
-    truePastUserMomentsPage,
-    trueCurrentUserMomentsPage,
-    trueFutureUserMomentsPage,
+    initialUserMomentsPage,
+    initialPastUserMomentsPage,
+    initialCurrentUserMomentsPage,
+    initialFutureUserMomentsPage,
   ] = [1, 1, 1, 1];
 
-  let truePages = [
-    trueUserMomentsPage,
-    truePastUserMomentsPage,
-    trueCurrentUserMomentsPage,
-    trueFutureUserMomentsPage,
+  // it's a solution but I guess tomorrow I could optimize
+  // I could also start (finally?) making them actions folder and files
+  // ...and maybe even them data folder and files, too
+  // though I really like having both read and write here on the same file...
+  // ...so I could instead make their helpers in a brand-new folder
+  // like reads and writes
+  // the actions and the full read flows will stay here but deconstructed.
+  // ...
+  // I think does make sense that the reads are on the server and the writes are on the client. That can justifying placing server actions in the own folders which, to be honest, is exactly how I would work with a team.
+  let pages = [
+    initialUserMomentsPage,
+    initialPastUserMomentsPage,
+    initialCurrentUserMomentsPage,
+    initialFutureUserMomentsPage,
   ];
 
-  // Maintenant d'abord à la main.
-  const helper = (x: string) => {
-    const trueValue = Number(searchParams ? ["usermomentspage"] : "1");
-    if (trueValue > 1) trueUserMomentsPage = Math.floor(trueValue);
-    const trueMax = userMomentsTotal;
-    if (trueValue > trueMax) trueUserMomentsPage = trueMax;
-  };
+  let pagesViaObjects = [
+    { key: USERMOMENTSPAGE, value: initialUserMomentsPage },
+    { key: PASTUSERMOMENTSPAGE, value: initialPastUserMomentsPage },
+    { key: CURRENTUSERMOMENTSPAGE, value: initialCurrentUserMomentsPage },
+    { key: FUTUREUSERMOMENTSPAGE, value: initialFutureUserMomentsPage },
+  ];
 
-  const trueUMValue = Number(searchParams?.usermomentspage);
-  if (trueUMValue > 1) trueUserMomentsPage = Math.floor(trueUMValue);
-  if (trueUMValue > maxPages[0]) trueUserMomentsPage = maxPages[0];
+  pages = pages.map((e, i) => {
+    return defineCurrentPage(
+      e,
+      // I had never seen that TypeScript syntax before.
+      // And it is not valid JavaScript.
+      Number(searchParams?.[pagesViaObjects[i].key]),
+      maxPages[i],
+    );
+  });
 
-  const truePMValue = Number(searchParams?.pastusermomentspage);
-  if (truePMValue > 1) truePastUserMomentsPage = Math.floor(truePMValue);
-  if (truePMValue > maxPages[1]) truePastUserMomentsPage = maxPages[1];
-
-  const trueCMPage = Number(searchParams?.currentusermomentspage);
-  if (trueCMPage > 1) trueCurrentUserMomentsPage = Math.floor(trueCMPage);
-  if (trueCMPage > maxPages[2]) trueCurrentUserMomentsPage = maxPages[2];
-
-  const trueFMPage = Number(searchParams?.futureusermomentspage);
-  if (trueFMPage > 1) trueFutureUserMomentsPage = Math.floor(trueFMPage);
-  if (trueFMPage > maxPages[3]) trueFutureUserMomentsPage = maxPages[3];
+  const [
+    userMomentsPage,
+    pastUserMomentsPage,
+    currentUserMomentsPage,
+    futureUserMomentsPage,
+  ] = pages;
+  // console.log({ pages });
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
@@ -223,7 +232,7 @@ export default async function MomentsPage({
           startDateAndTime: "desc",
         },
         take: TAKE,
-        skip: (trueUserMomentsPage - 1) * TAKE,
+        skip: (userMomentsPage - 1) * TAKE,
       }),
       prisma.moment.findMany({
         where: {
@@ -386,10 +395,10 @@ export default async function MomentsPage({
                 };
               }),
             momentsTotal: a[i].length,
-            momentFirstIndex: (truePages[i] - 1) * TAKE + 1,
-            momentLastIndex: (truePages[i] - 1) * TAKE + a[i].length,
+            momentFirstIndex: (pages[i] - 1) * TAKE + 1,
+            momentLastIndex: (pages[i] - 1) * TAKE + a[i].length,
             allMomentsTotal: totals[i],
-            currentPage: truePages[i],
+            currentPage: pages[i],
             totalPage: maxPages[i],
           };
         }),
@@ -424,8 +433,10 @@ export default async function MomentsPage({
 
   // PART WRITE
 
+  // Making progress on shared types.
+
   // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
-  // (Typage dorénavant transposer à la main.)
+  // (Typage dorénavant transposer à la main. ...Et plus encore.)
   async function createOrUpdateMoment(
     variant: "creating" | "updating",
     indispensable: boolean,
@@ -433,7 +444,7 @@ export default async function MomentsPage({
     steps: StepFromCRUD[],
     momentFromCRUD: MomentToCRUD | undefined,
     formData: FormData,
-  ) {
+  ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
     // test
@@ -457,6 +468,9 @@ export default async function MomentsPage({
       return {
         message: "Le formulaire du moment n'a pas été correctement renseigné.",
       };
+
+    // For this reason below alone I thing actions should be nested and passed as props instead of housed inside dedicated files. Here, this means data from the user literally never makes it to the client. Sensitive data from a user database entry (and even insensitive data) never even reaches any outside computer. Not even the user's id.
+    // So what should be in separated files are not the actions, but rather the methods that make the action, which therefore can be used in any action. The methods should be the commonalities, not the actions themselves.
 
     if (!user)
       // return console.error("Surprenamment un utilisateur n'a pas été retrouvé.");
@@ -632,7 +646,9 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
-  async function deleteMoment(momentFromCRUD?: MomentToCRUD) {
+  async function deleteMoment(
+    momentFromCRUD?: MomentToCRUD,
+  ): Promise<DeleteMomentState> {
     "use server";
 
     if (!momentFromCRUD)
@@ -649,12 +665,15 @@ export default async function MomentsPage({
   }
 
   // still bugging with time, at this time... not anymore?
+  // there no return in any case here so there's no need in typing : Promise<void>
   async function revalidateMoments() {
     "use server";
 
     revalidatePath(`/users/${username}/moments`);
   }
 
+  // The magic here is that no data directly from the User model ever leaves the server, since the actions reuse the verified User data obtained at the top of the function.
+  // However, if the actions were obtained via import in a client component such as the one below, user data would have to be bound directly on the client component itself (which is insecure) or via a separate child server component (perhaps secure, but an exact step for that data) which would also have to pass these actions as props, doing the exact same thing.
   return (
     <CRUD
       allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -687,4 +706,12 @@ Previous inline notes:
 In the end... It's better my code stays the same when it comes to durations, startDateAndTimes and endDateAndTimes. I know these are essentially computed fields. But if they have be computed every time I access the data, it's immensely slower if they're only computed on every insert and every update. 
 ...
 Now aside from validations the only thing I'm missing from my server actions is a good old try...catch for the unexpected errors I simply could not be held responsible for. (Those I'm unlikely to encounter locally.)
+...
+// There is no way that code is a thing.
+// truePages = [
+//   userMomentsPage,
+//   pastUserMomentsPage,
+//   currentUserMomentsPage,
+//   futureUserMomentsPage,
+// ] = truePages;
 */

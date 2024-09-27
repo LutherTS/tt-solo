@@ -11,13 +11,7 @@ import {
   MouseEvent,
 } from "react";
 
-import {
-  ReadonlyURLSearchParams,
-  redirect,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import {
@@ -41,14 +35,20 @@ import { useTimer } from "react-use-precision-timer";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
-import { Option } from "@/app/types/general";
+import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
   MomentToCRUD,
   StepFromCRUD,
+  CreateOrUpdateMomentState,
+  CreateOrUpdateMoment,
+  DeleteMoment,
+  RevalidateMoments,
+  DeleteMomentState,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
+  defineCurrentPage,
   numStringToTimeString,
   toWordsing,
 } from "@/app/utilities/moments";
@@ -67,6 +67,13 @@ import {
   Textarea,
 } from "../../../components";
 import * as Icons from "../icons";
+import {
+  CONTAINS,
+  CURRENTUSERMOMENTSPAGE,
+  FUTUREUSERMOMENTSPAGE,
+  PASTUSERMOMENTSPAGE,
+  USERMOMENTSPAGE,
+} from "@/app/variables/moments";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -90,6 +97,7 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 
 // Main Data
 
+// These types below are helpers for the file more than anything else. No need to have them imported for a type file at this time.
 type View = "update-moment" | "create-moment" | "read-moments";
 
 type SubView =
@@ -118,29 +126,6 @@ const exchangeOptions: Option[] = [
   { key: 15, label: "Suivi de projet", value: "Suivi de projet" },
   { key: 16, label: "Séminaire", value: "Séminaire" },
 ];
-
-type CreateOrUpdateMoment = (
-  variant: "creating" | "updating",
-  indispensable: boolean,
-  momentDate: string,
-  steps: StepFromCRUD[],
-  momentFromCRUD: MomentToCRUD | undefined,
-  formData: FormData,
-) => Promise<
-  | {
-      message: string;
-    }
-  | undefined
->;
-
-type DeleteMoment = (momentFromCRUD?: MomentToCRUD) => Promise<
-  | {
-      message: string;
-    }
-  | undefined
->;
-
-type RevalidateMoments = () => Promise<void>;
 
 // Main Component
 
@@ -188,7 +173,7 @@ export function CRUD({
   const [_, realPastMoments, realCurrentMoments, realFutureMoments] =
     allUserMomentsToCRUD;
 
-  let initialSubView: SubView = // "all-moments";
+  let initialSubView: SubView =
     realCurrentMoments.dates.length > 0
       ? "current-moments"
       : realFutureMoments.dates.length > 0
@@ -351,13 +336,13 @@ function ReadMomentsView({
   function handleSearch(term: string) {
     const params = new URLSearchParams(searchParams);
 
-    if (term) params.set("contains", term);
-    else params.delete("contains");
+    if (term) params.set(CONTAINS, term);
+    else params.delete(CONTAINS);
 
-    params.delete("usermomentspage");
-    params.delete("pastusermomentspage");
-    params.delete("currentusermomentspage");
-    params.delete("futureusermomentspage");
+    params.delete(USERMOMENTSPAGE);
+    params.delete(PASTUSERMOMENTSPAGE);
+    params.delete(CURRENTUSERMOMENTSPAGE);
+    params.delete(FUTUREUSERMOMENTSPAGE);
 
     replace(`${pathname}?${params.toString()}`);
   } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
@@ -365,10 +350,10 @@ function ReadMomentsView({
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
   const subViewSearchParams = {
-    "all-moments": "usermomentspage",
-    "past-moments": "pastusermomentspage",
-    "current-moments": "currentusermomentspage",
-    "future-moments": "futureusermomentspage",
+    "all-moments": USERMOMENTSPAGE,
+    "past-moments": PASTUSERMOMENTSPAGE,
+    "current-moments": CURRENTUSERMOMENTSPAGE,
+    "future-moments": FUTUREUSERMOMENTSPAGE,
   };
   const [
     maxPageAllMoments,
@@ -384,12 +369,19 @@ function ReadMomentsView({
     "future-moments": maxPageFutureMoments,
   };
 
-  let currentPage = 1;
-  const trueValue = Number(searchParams.get(subViewSearchParams[subView]));
-  if (trueValue > 1) currentPage = Math.floor(trueValue);
-  const trueMax = subViewMaxPages[subView];
-  if (trueValue > trueMax) currentPage = trueMax;
-  // console.log({ currentPage, trueMax }); // ...The issue is on the server.
+  // let currentPage = 1;
+  // const rawValue = Number(searchParams.get(subViewSearchParams[subView]));
+  // if (rawValue > 1) currentPage = Math.floor(rawValue);
+  // const subViewMaxPage = subViewMaxPages[subView];
+  // if (rawValue > subViewMaxPage) currentPage = subViewMaxPage;
+  // // console.log({ currentPage, subViewMaxPage }); // ...The issue is on the server.
+
+  let initialPage = 1;
+  const currentPage = defineCurrentPage(
+    initialPage,
+    Number(searchParams.get(subViewSearchParams[subView])),
+    subViewMaxPages[subView],
+  );
 
   // currentPage could need that clientParamSafeting I feel
 
@@ -599,10 +591,11 @@ function ReadMomentsView({
       {/* to place the input into a form so it can be reset */}
       <form id="form">
         <InputText
+          // keeping the "contains" out of variable for since unsure if its the definitive id and name
           id="contains"
           name="contains"
           placeholder="Cherchez parmi vos moments..."
-          defaultValue={searchParams.get("contains")?.toString()}
+          defaultValue={searchParams.get(CONTAINS)?.toString()}
           onChange={(e) => {
             debouncedHandleSearch(e.currentTarget.value);
           }}
@@ -843,14 +836,12 @@ function MomentForms({
   // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
   const [_, startCreateOrUpdateMomentTransition] = useTransition();
 
-  type CreateOrUpdateMomentState = { message: string };
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-    useState<CreateOrUpdateMomentState | null>(null);
+    useState<CreateOrUpdateMomentState>();
 
   // Let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async (formData: FormData) => {
     startCreateOrUpdateMomentTransition(async () => {
-      // I don't have type safety. Which I will with an actions.ts file
       const state = await createOrUpdateMomentBound(formData);
 
       // trying return void
@@ -881,21 +872,21 @@ function MomentForms({
 
   // deleteMomentAction
 
-  let deleteMomentBound: any;
+  let deleteMomentBound: DeleteMoment;
   if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
-  type DeleteMomentState = { message: string };
   const [deleteMomentState, setDeleteMomentState] =
-    useState<DeleteMomentState | null>(null);
+    useState<DeleteMomentState>();
 
   // I'll just have to replace my console.error by some state2 in the sense that for example, even though moment is from the client, I'll have to handle it from the server.
+  // Not sure this line is necessary if no default argument is to be provided.
+  // It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
         if (deleteMomentBound) {
-          // Again I don't have type safety.
           const state = await deleteMomentBound();
 
           // actually setState already returns void
@@ -905,7 +896,7 @@ function MomentForms({
           setView("read-moments");
         } else
           return setDeleteMomentState({
-            message: "Somehow deleteMomentBound was not a thing.",
+            message: "Apparemment deleteMomentBound n'existe pas.",
           }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
       }
     });
@@ -1680,4 +1671,28 @@ onClick before useTransition
 //       break;
 //   }
 // };
+
+// This below is the wrong approach. I think... I should accept having to manually change the type of my action's typing so that as the action changes, I'm constantly reminded that everything should fall together.
+type TrueCreateOrUpdateMoment<T extends unknown[]> = (
+  ...args: T[]
+) => Promise<CreateOrUpdateMomentState>;
+
+// In case – which is likely – the components using the server actions are in other files, these types should be in their respective type file
+type CreateOrUpdateMoment = (
+  variant: "creating" | "updating",
+  indispensable: boolean,
+  momentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentToCRUD | undefined,
+  formData: FormData,
+) => Promise<CreateOrUpdateMomentState>;
+
+type DeleteMoment = (momentFromCRUD?: MomentToCRUD) => Promise<
+  | {
+      message: string;
+    }
+  | undefined
+>;
+
+type RevalidateMoments = () => Promise<void>;
 */
