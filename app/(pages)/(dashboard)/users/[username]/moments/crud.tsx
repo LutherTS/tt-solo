@@ -905,8 +905,10 @@ function MomentForms({
   return (
     <>
       {/* temporary debugging */}
-      {/* {createOrUpdateMomentState?.message && <>{createOrUpdateMomentState.message}</>}
-      {deleteMomentState?.message && <>deleteMomentState</>} */}
+      {createOrUpdateMomentState?.message && (
+        <>{createOrUpdateMomentState.message}</>
+      )}
+      {/* {deleteMomentState?.message && <>deleteMomentState</>} */}
       {/* The connection to the server has been established. */}
       <StepForm
         currentStepId={currentStepId}

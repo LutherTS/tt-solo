@@ -357,6 +357,10 @@ export default async function MomentsPage({
       // return console.error("Surprenamment un utilisateur n'a pas été retrouvé.");
       return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
 
+    // findDestination
+    // findMoment
+    // if (moment) return { message: "Vous avez déjà un moment de ce même nom. "}
+
     let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
     const map: Map<number, number> = new Map();
