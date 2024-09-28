@@ -27,14 +27,14 @@ import {
 } from "@/app/variables/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
-  countCurrentUserMomentsTotalWithContains,
-  countFutureUserMomentsTotalWithContains,
-  countPastUserMomentsTotalWithContains,
-  countUserMomentsTotalWithContains,
-  findCurrentUserMomentsTotalWithContains,
-  findFutureUserMomentsTotalWithContains,
-  findPastUserMomentsTotalWithContains,
-  findUserMomentsTotalWithContains,
+  countCurrentUserMomentsWithContains,
+  countFutureUserMomentsWithContains,
+  countPastUserMomentsWithContains,
+  countUserMomentsWithContains,
+  findCurrentUserMomentsWithContains,
+  findFutureUserMomentsWithContains,
+  findPastUserMomentsWithContains,
+  findUserMomentsWithContains,
 } from "@/app/reads/moments";
 import {
   findDestinationByNameAndUserId,
@@ -113,10 +113,10 @@ export default async function MomentsPage({
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ] = await Promise.all([
-    countUserMomentsTotalWithContains(userId, contains),
-    countPastUserMomentsTotalWithContains(userId, contains, nowString),
-    countCurrentUserMomentsTotalWithContains(userId, contains, nowString),
-    countFutureUserMomentsTotalWithContains(userId, contains, nowString),
+    countUserMomentsWithContains(userId, contains),
+    countPastUserMomentsWithContains(userId, contains, nowString),
+    countCurrentUserMomentsWithContains(userId, contains, nowString),
+    countFutureUserMomentsWithContains(userId, contains, nowString),
   ]);
   // console.log({
   //   userMomentsTotal,
@@ -170,22 +170,22 @@ export default async function MomentsPage({
   // error handling needed eventually
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      findUserMomentsTotalWithContains(userId, contains, userMomentsPage, TAKE),
-      findPastUserMomentsTotalWithContains(
+      findUserMomentsWithContains(userId, contains, userMomentsPage, TAKE),
+      findPastUserMomentsWithContains(
         userId,
         contains,
         nowString,
         pastUserMomentsPage,
         TAKE,
       ),
-      findCurrentUserMomentsTotalWithContains(
+      findCurrentUserMomentsWithContains(
         userId,
         contains,
         nowString,
         currentUserMomentsPage,
         TAKE,
       ),
-      findFutureUserMomentsTotalWithContains(
+      findFutureUserMomentsWithContains(
         userId,
         contains,
         nowString,

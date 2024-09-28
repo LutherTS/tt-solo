@@ -1,233 +1,161 @@
 import prisma from "@/prisma/db";
 
+import {
+  includeMomentDestinationAndSteps,
+  momentsOrderByStartAsc,
+  momentsOrderByStartDesc,
+  whereCurrentMoments,
+  whereFutureMoments,
+  wherePastMoments,
+  whereUserMomentsWithContains,
+} from "./subreads/moments";
+
 // Let's start by doing a 1:1 of all database calls, and then they'll be subdivided in subreads (subwrites).
 
-export async function countUserMomentsTotalWithContains(
+// Counts
+
+export async function countUserMomentsWithContains(
   userId: string,
   contains: string,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const where = whereUserMomentsWithContains(userId, contains);
 
-  return await prisma.moment.count({
-    where: {
-      destination: {
-        userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-    },
-  });
+  return await prisma.moment.count({ where });
 }
 
-export async function countPastUserMomentsTotalWithContains(
+export async function countPastUserMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const where = Object.assign(
+    whereUserMomentsWithContains(userId, contains),
+    wherePastMoments(nowString),
+  );
 
-  return await prisma.moment.count({
-    where: {
-      destination: {
-        userId: userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-      endDateAndTime: {
-        lt: nowString,
-      },
-    },
-  });
+  return await prisma.moment.count({ where });
 }
 
-export async function countCurrentUserMomentsTotalWithContains(
+export async function countCurrentUserMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const where = Object.assign(
+    whereUserMomentsWithContains(userId, contains),
+    whereCurrentMoments(nowString),
+  );
 
-  return await prisma.moment.count({
-    where: {
-      destination: {
-        userId: userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-      AND: [
-        { startDateAndTime: { lte: nowString } },
-        { endDateAndTime: { gte: nowString } },
-      ],
-    },
-  });
+  return await prisma.moment.count({ where });
 }
 
-export async function countFutureUserMomentsTotalWithContains(
+export async function countFutureUserMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const where = Object.assign(
+    whereUserMomentsWithContains(userId, contains),
+    whereFutureMoments(nowString),
+  );
 
-  return await prisma.moment.count({
-    where: {
-      destination: {
-        userId: userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-      startDateAndTime: {
-        gt: nowString,
-      },
-    },
-  });
+  return await prisma.moment.count({ where });
 }
 
-export async function findUserMomentsTotalWithContains(
+// FindManys
+
+export async function findUserMomentsWithContains(
   userId: string,
   contains: string,
   userMomentsPage: number,
   TAKE: number,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const include = includeMomentDestinationAndSteps;
+  const where = whereUserMomentsWithContains(userId, contains);
+  const orderBy = momentsOrderByStartDesc;
+  const take = TAKE;
+  const skip = (userMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "desc",
-    },
-    take: TAKE,
-    skip: (userMomentsPage - 1) * TAKE,
+    include,
+    where,
+    orderBy,
+    take,
+    skip,
   });
 }
 
-export async function findPastUserMomentsTotalWithContains(
+export async function findPastUserMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
   pastUserMomentsPage: number,
   TAKE: number,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const include = includeMomentDestinationAndSteps;
+  const where = Object.assign(
+    whereUserMomentsWithContains(userId, contains),
+    wherePastMoments(nowString),
+  );
+  const orderBy = momentsOrderByStartDesc;
+  const take = TAKE;
+  const skip = (pastUserMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-      endDateAndTime: {
-        lt: nowString,
-      },
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "desc",
-    },
-    take: TAKE,
-    skip: (pastUserMomentsPage - 1) * TAKE,
+    include,
+    where,
+    orderBy,
+    take,
+    skip,
   });
 }
 
-export async function findCurrentUserMomentsTotalWithContains(
+export async function findCurrentUserMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
   currentUserMomentsPage: number,
   TAKE: number,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const include = includeMomentDestinationAndSteps;
+  const where = Object.assign(
+    whereUserMomentsWithContains(userId, contains),
+    whereCurrentMoments(nowString),
+  );
+  const orderBy = momentsOrderByStartAsc;
+  const take = TAKE;
+  const skip = (currentUserMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-      AND: [
-        { startDateAndTime: { lte: nowString } },
-        { endDateAndTime: { gte: nowString } },
-      ],
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "asc",
-    },
-    take: TAKE,
-    skip: (currentUserMomentsPage - 1) * TAKE,
+    include,
+    where,
+    orderBy,
+    take,
+    skip,
   });
 }
 
-export async function findFutureUserMomentsTotalWithContains(
+export async function findFutureUserMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
   futureUserMomentsPage: number,
   TAKE: number,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const include = includeMomentDestinationAndSteps;
+  const where = Object.assign(
+    whereUserMomentsWithContains(userId, contains),
+    whereFutureMoments(nowString),
+  );
+  const orderBy = momentsOrderByStartAsc;
+  const take = TAKE;
+  const skip = (futureUserMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
-    where: {
-      destination: {
-        userId,
-      },
-      name: {
-        contains: contains !== "" ? contains : undefined,
-      },
-      startDateAndTime: {
-        gt: nowString,
-      },
-    },
-    include: {
-      destination: true,
-      steps: {
-        orderBy: {
-          orderId: "asc",
-        },
-      },
-    },
-    orderBy: {
-      startDateAndTime: "asc",
-    },
-    take: TAKE,
-    skip: (futureUserMomentsPage - 1) * TAKE,
+    include,
+    where,
+    orderBy,
+    take,
+    skip,
   });
 }
