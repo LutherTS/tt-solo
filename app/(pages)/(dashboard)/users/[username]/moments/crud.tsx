@@ -60,11 +60,14 @@ import {
   InputNumber,
   InputSwitchControlled,
   InputText,
+  InputTextControlled,
   PageTitle,
   Section,
   SectionWrapper,
   SelectWithOptions,
+  SelectWithOptionsControlled,
   Textarea,
+  TextareaControlled,
 } from "../../../components";
 import * as Icons from "../icons";
 import {
@@ -822,6 +825,27 @@ function MomentForms({
   let [destinationSelect, setDestinationSelect] = useState(false);
   let [activitySelect, setActivitySelect] = useState(false);
 
+  // https://github.com/facebook/react/issues/29034
+
+  let [destinationTextControlled, setDestinationTextControlled] = useState(
+    moment ? moment.destinationIdeal : "",
+  );
+  let [destinationOptionControlled, setDestinationOptionControlled] = useState(
+    moment ? moment.destinationIdeal : "",
+  );
+  let [activiteTextControlled, setActiviteTextControlled] = useState(
+    moment ? moment.activity : "",
+  );
+  let [activiteOptionControlled, setActiviteOptionControlled] = useState(
+    moment ? moment.activity : "",
+  );
+  let [objectifControlled, setObjectifControlled] = useState(
+    moment ? moment.objective : "",
+  );
+  let [contexteControlled, setContexteControlled] = useState(
+    moment ? moment.context : "",
+  );
+
   // createOrUpdateMomentAction
 
   const createOrUpdateMomentBound = createOrUpdateMoment.bind(
@@ -830,6 +854,10 @@ function MomentForms({
     indispensable,
     startMomentDate,
     steps,
+    // destinationSelect ? destinationOptionControlled : destinationTextControlled,
+    // activitySelect ? activiteOptionControlled : activiteTextControlled,
+    // objectifControlled,
+    // contexteControlled,
     moment,
   );
 
@@ -947,11 +975,36 @@ function MomentForms({
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
         >
           {!destinationSelect ? (
-            <InputText
+            // <InputText
+            //   label="Destination"
+            //   name="destination"
+            //   // controlling the value for SelectWithOptions crossover is something to keep in mind, but for now, default values from preceding moment will only be on InputText components
+            //   defaultValue={moment ? moment.destinationIdeal : undefined}
+            //   description="Votre projet vise à atteindre quel idéal ?"
+            //   addendum={
+            //     destinationOptions.length > 0
+            //       ? "Ou choissisez parmi vos destinations précédemment instanciées."
+            //       : undefined
+            //   }
+            //   fieldFlexIsNotLabel
+            //   tekTime
+            // >
+            //   {destinationOptions.length > 0 && (
+            //     <Button
+            //       type="button"
+            //       variant="destroy"
+            //       onClick={() => setDestinationSelect(true)}
+            //     >
+            //       Choisir la destination
+            //     </Button>
+            //   )}
+            // </InputText>
+            <InputTextControlled
               label="Destination"
               name="destination"
               // controlling the value for SelectWithOptions crossover is something to keep in mind, but for now, default values from preceding moment will only be on InputText components
-              defaultValue={moment ? moment.destinationIdeal : undefined}
+              definedValue={destinationTextControlled}
+              definedOnValueChange={setDestinationTextControlled}
               description="Votre projet vise à atteindre quel idéal ?"
               addendum={
                 destinationOptions.length > 0
@@ -960,6 +1013,7 @@ function MomentForms({
               }
               fieldFlexIsNotLabel
               tekTime
+              required={!destinationSelect}
             >
               {destinationOptions.length > 0 && (
                 <Button
@@ -970,17 +1024,38 @@ function MomentForms({
                   Choisir la destination
                 </Button>
               )}
-            </InputText>
+            </InputTextControlled>
           ) : (
-            <SelectWithOptions
+            // <SelectWithOptions
+            //   label="Destination"
+            //   description="Choisissez la destination que cherche à atteindre ce moment."
+            //   addendum="Ou définissez la vous-même via le bouton ci-dessus."
+            //   name="destination"
+            //   placeholder="Choisissez..."
+            //   options={destinationOptions}
+            //   fieldFlexIsNotLabel
+            //   tekTime
+            // >
+            //   <Button
+            //     type="button"
+            //     variant="destroy"
+            //     onClick={() => setDestinationSelect(false)}
+            //   >
+            //     Définir la destination
+            //   </Button>
+            // </SelectWithOptions>
+            <SelectWithOptionsControlled
               label="Destination"
               description="Choisissez la destination que cherche à atteindre ce moment."
               addendum="Ou définissez la vous-même via le bouton ci-dessus."
               name="destination"
               placeholder="Choisissez..."
+              definedValue={destinationOptionControlled}
+              definedOnValueChange={setDestinationOptionControlled}
               options={destinationOptions}
               fieldFlexIsNotLabel
               tekTime
+              required={destinationSelect}
             >
               <Button
                 type="button"
@@ -989,15 +1064,33 @@ function MomentForms({
               >
                 Définir la destination
               </Button>
-            </SelectWithOptions>
+            </SelectWithOptionsControlled>
           )}
           {!activitySelect ? (
-            <InputText
+            // <InputText
+            //   label="Activité"
+            //   description="Définissez le type d'activité qui va correspondre à votre problématique."
+            //   addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
+            //   name="activite"
+            //   defaultValue={moment ? moment.activity : undefined}
+            //   fieldFlexIsNotLabel
+            //   required={!activitySelect}
+            // >
+            //   <Button
+            //     type="button"
+            //     variant="destroy"
+            //     onClick={() => setActivitySelect(true)}
+            //   >
+            //     Choisir l&apos;activité
+            //   </Button>
+            // </InputText>
+            <InputTextControlled
               label="Activité"
               description="Définissez le type d'activité qui va correspondre à votre problématique."
               addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
               name="activite"
-              defaultValue={moment ? moment.activity : undefined}
+              definedValue={activiteTextControlled}
+              definedOnValueChange={setActiviteTextControlled}
               fieldFlexIsNotLabel
               required={!activitySelect}
             >
@@ -1008,13 +1101,33 @@ function MomentForms({
               >
                 Choisir l&apos;activité
               </Button>
-            </InputText>
+            </InputTextControlled>
           ) : (
-            <SelectWithOptions
+            // <SelectWithOptions
+            //   label="Activité"
+            //   description="Choisissez le type d'activité qui va correspondre à votre problématique."
+            //   addendum="Ou définissez le vous-même via le bouton ci-dessus."
+            //   name="activite"
+            //   placeholder="Choisissez..."
+            //   options={exchangeOptions}
+            //   fieldFlexIsNotLabel
+            //   required={activitySelect}
+            // >
+            //   <Button
+            //     type="button"
+            //     variant="destroy"
+            //     onClick={() => setActivitySelect(false)}
+            //   >
+            //     Définir l&apos;activité
+            //   </Button>
+            // </SelectWithOptions>
+            <SelectWithOptionsControlled
               label="Activité"
               description="Choisissez le type d'activité qui va correspondre à votre problématique."
               addendum="Ou définissez le vous-même via le bouton ci-dessus."
               name="activite"
+              definedValue={activiteOptionControlled}
+              definedOnValueChange={setActiviteOptionControlled}
               placeholder="Choisissez..."
               options={exchangeOptions}
               fieldFlexIsNotLabel
@@ -1027,12 +1140,19 @@ function MomentForms({
               >
                 Définir l&apos;activité
               </Button>
-            </SelectWithOptions>
+            </SelectWithOptionsControlled>
           )}
-          <InputText
+          {/* <InputText
             label="Objectif"
             name="objectif"
             defaultValue={moment ? moment.objective : undefined}
+            description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
+          /> */}
+          <InputTextControlled
+            label="Objectif"
+            name="objectif"
+            definedValue={objectifControlled}
+            definedOnValueChange={setObjectifControlled}
             description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
           />
           <InputSwitchControlled
@@ -1042,10 +1162,18 @@ function MomentForms({
             definedValue={indispensable}
             definedOnValueChange={setIndispensable}
           />
-          <Textarea
+          {/* <Textarea
             label="Contexte"
             name="contexte"
             defaultValue={moment ? moment.context : undefined}
+            description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
+            rows={6}
+          /> */}
+          <TextareaControlled
+            label="Contexte"
+            name="contexte"
+            definedValue={contexteControlled}
+            definedOnValueChange={setContexteControlled}
             description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
             rows={6}
           />

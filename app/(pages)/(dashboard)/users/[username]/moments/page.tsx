@@ -321,6 +321,10 @@ export default async function MomentsPage({
     indispensable: boolean,
     momentDate: string,
     steps: StepFromCRUD[],
+    // destination: string,
+    // activite: string,
+    // objectif: string,
+    // contexte: string,
     momentFromCRUD: MomentToCRUD | undefined,
     formData: FormData,
   ): Promise<CreateOrUpdateMomentState> {
@@ -330,14 +334,17 @@ export default async function MomentsPage({
     // return { message: "I'm testing things here." };
     // It works and with that, I now know my way around useTransition.
 
+    // /*
     let destination = formData.get("destination");
     let activite = formData.get("activite");
     let objectif = formData.get("objectif");
     let contexte = formData.get("contexte");
+    // */
 
     // !!
     // What's next if I feel like it is to start testing my useTransitions with proper zod validations.
 
+    // destination, activite, objectif and contexte are now controlled. And since it's not from the form data, I can make the names English if needed.
     if (
       typeof destination !== "string" ||
       typeof activite !== "string" ||

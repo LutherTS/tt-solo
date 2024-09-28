@@ -54,6 +54,10 @@ export type CreateOrUpdateMoment = (
   indispensable: boolean,
   momentDate: string,
   steps: StepFromCRUD[],
+  // destination: string,
+  // activite: string,
+  // objectif: string,
+  // contexte: string,
   momentFromCRUD: MomentToCRUD | undefined,
   formData: FormData,
 ) => Promise<CreateOrUpdateMomentState>;

@@ -180,6 +180,100 @@ export function InputText({
   );
 }
 
+// Had to get everything controlled. In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by if (definedValue) controlled else uncontrolled.
+export function InputTextControlled({
+  label,
+  description,
+  addendum,
+  name,
+  definedValue,
+  definedOnValueChange = () => {},
+  tekTime,
+  children,
+  fieldFlexIsNotLabel,
+  required = true,
+  ...rest
+}: {
+  label?: string;
+  description?: string;
+  addendum?: string;
+  name: string;
+  definedValue?: string;
+  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  tekTime?: boolean;
+  children?: React.ReactNode;
+  fieldFlexIsNotLabel?: boolean;
+  required?: boolean;
+} & ComponentProps<"input">) {
+  return (
+    <FieldFlex isLabel={!fieldFlexIsNotLabel}>
+      <div className="flex justify-between">
+        {label && <FieldTitle title={label} />}
+        {children}
+      </div>
+      {description && (
+        <div className="flex flex-col gap-1">
+          <p className="select-none text-sm text-neutral-500">{description}</p>
+          {addendum && (
+            <p className="select-none text-sm text-neutral-500">({addendum})</p>
+          )}
+        </div>
+      )}
+      {!tekTime ? (
+        <input
+          {...rest}
+          type="text"
+          name={name}
+          value={definedValue}
+          onChange={(event) => definedOnValueChange(event.currentTarget.value)}
+          required={required}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.preventDefault();
+          }}
+          className={clsx(
+            baseInputTexts,
+            notDatetimeLocalPadding,
+            focusVisibleTexts,
+          )}
+        />
+      ) : (
+        <div className="relative">
+          <input
+            {...rest}
+            type="text"
+            name={name}
+            value={definedValue}
+            onChange={(event) =>
+              definedOnValueChange(event.currentTarget.value)
+            }
+            required={required}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") event.preventDefault();
+            }}
+            className={clsx(
+              "peer relative z-30 w-full rounded border-2 border-transparent bg-white bg-clip-padding",
+              notDatetimeLocalPadding,
+              "outline-none",
+            )}
+          />
+          {/* gradient border */}
+          {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
+          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          {/* background merging foundation */}
+          {/* [calc(100%+4px)] adds the original outline-offset-2 */}
+          {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
+          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          {/* gradient focus-visible */}
+          {/* [calc(100%+8px)] adds the original outline-2 */}
+          {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
+          {/* outline's rounded is more pronounced, lg is the exact fit */}
+          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
+        </div>
+      )}
+    </FieldFlex>
+  );
+}
+
 type Option = {
   key: number;
   label: string;
@@ -301,6 +395,129 @@ export function SelectWithOptions({
   );
 }
 
+export function SelectWithOptionsControlled({
+  id,
+  label,
+  description,
+  addendum,
+  name,
+  definedValue,
+  definedOnValueChange = () => {},
+  placeholder = "Choose...",
+  options,
+  children,
+  fieldFlexIsNotLabel,
+  required = true,
+  tekTime,
+}: {
+  id?: string;
+  label: string;
+  description?: string;
+  addendum?: string;
+  definedValue?: string;
+  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  name: string;
+  placeholder?: string;
+  options: Option[];
+  children?: React.ReactNode;
+  fieldFlexIsNotLabel?: boolean;
+  required?: boolean;
+  tekTime?: boolean;
+}) {
+  return (
+    <FieldFlex isLabel={!fieldFlexIsNotLabel}>
+      <div className="flex justify-between">
+        <FieldTitle title={label} />
+        {children}
+      </div>
+      {description && (
+        <div className="flex flex-col gap-1">
+          <p className="select-none text-sm text-neutral-500">{description}</p>
+          {addendum && (
+            <p className="select-none text-sm text-neutral-500">({addendum})</p>
+          )}
+        </div>
+      )}
+      {!tekTime ? (
+        <div className="relative grid">
+          <select
+            className={clsx(
+              "col-start-1 row-start-1 appearance-none",
+              baseInputTexts,
+              notDatetimeLocalPadding,
+              focusVisibleTexts,
+            )}
+            id={id}
+            name={name}
+            value={definedValue}
+            onChange={(event) =>
+              definedOnValueChange(event.currentTarget.value)
+            }
+            required={required}
+          >
+            <option value="" disabled>
+              {placeholder}
+            </option>
+            {options.map((option) => (
+              <option key={option.key} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
+            <ChevronDownIcon className="size-5" />
+          </div>
+        </div>
+      ) : (
+        <div className="relative">
+          <div className="peer relative z-30 grid">
+            <select
+              className={clsx(
+                "col-start-1 row-start-1 appearance-none",
+                // baseInputTexts,
+                notDatetimeLocalPadding,
+                // focusVisibleTexts,
+                "w-full rounded border-2 border-transparent bg-white bg-clip-padding outline-none",
+              )}
+              id={id}
+              name={name}
+              value={definedValue}
+              onChange={(event) =>
+                definedOnValueChange(event.currentTarget.value)
+              }
+              required={required}
+            >
+              <option value="" disabled>
+                {placeholder}
+              </option>
+              {options.map((option) => (
+                <option key={option.key} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
+              <ChevronDownIcon className="size-5" />
+            </div>
+          </div>
+          {/* gradient border */}
+          {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
+          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          {/* background merging foundation */}
+          {/* [calc(100%+4px)] adds the original outline-offset-2 */}
+          {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
+          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          {/* gradient focus-visible */}
+          {/* [calc(100%+8px)] adds the original outline-2 */}
+          {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
+          {/* outline's rounded is more pronounced, lg is the exact fit */}
+          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
+        </div>
+      )}
+    </FieldFlex>
+  );
+}
+
 export function Textarea({
   form,
   label,
@@ -328,6 +545,53 @@ export function Textarea({
         form={form}
         name={name}
         defaultValue={defaultValue}
+        required={required}
+        // No line breaks.
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.preventDefault();
+        }}
+        rows={rows}
+        className={clsx(
+          "resize-none",
+          baseInputTexts,
+          textareaPadding,
+          focusVisibleTexts,
+        )}
+      />
+    </FieldFlex>
+  );
+}
+
+export function TextareaControlled({
+  form,
+  label,
+  description,
+  name,
+  definedValue,
+  definedOnValueChange = () => {},
+  rows = 4,
+  required = true,
+}: {
+  form?: string;
+  label: string;
+  description?: string;
+  name: string;
+  definedValue?: string;
+  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  rows?: number;
+  required?: boolean;
+}) {
+  return (
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      {description && (
+        <p className="select-none text-sm text-neutral-500">{description}</p>
+      )}
+      <textarea
+        form={form}
+        name={name}
+        value={definedValue}
+        onChange={(event) => definedOnValueChange(event.currentTarget.value)}
         required={required}
         // No line breaks.
         onKeyDown={(event) => {
