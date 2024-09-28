@@ -344,9 +344,6 @@ export default async function MomentsPage({
       typeof objectif !== "string" ||
       typeof contexte !== "string"
     )
-      // return console.error(
-      //   "Le formulaire du moment n'a pas été correctement renseigné.",
-      // );
       return {
         message: "Le formulaire du moment n'a pas été correctement renseigné.",
       };
@@ -355,7 +352,6 @@ export default async function MomentsPage({
     // So what should be in separated files are not the actions, but rather the methods that make the action, which therefore can be used in any action. The methods should be the commonalities, not the actions themselves.
 
     if (!user)
-      // return console.error("Surprenamment un utilisateur n'a pas été retrouvé.");
       return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
 
     const preexistingMoment = await findMomentByNameAndUserId(objectif, userId);
@@ -419,7 +415,6 @@ export default async function MomentsPage({
 
     if (variant === "updating") {
       if (!momentFromCRUD)
-        // return console.error("Surprenamment un moment n'a pas été réceptionné.");
         return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
       let momentId = momentFromCRUD.id;
@@ -481,7 +476,6 @@ export default async function MomentsPage({
     "use server";
 
     if (!momentFromCRUD)
-      // return console.error("Surprenamment un moment n'a pas été réceptionné.");
       return { message: "Surprenamment un moment n'a pas été réceptionné." };
 
     const momentId = momentFromCRUD.id;
