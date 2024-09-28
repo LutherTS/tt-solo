@@ -54,6 +54,14 @@ export function whereFutureMoments(nowString: string): Prisma.MomentWhereInput {
   };
 }
 
+// WhereUniques
+
+export function whereMomentId(id: string): Prisma.MomentWhereUniqueInput {
+  return {
+    id,
+  };
+}
+
 // OrderBys
 
 export const momentsOrderByStartDesc = {

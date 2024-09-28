@@ -1,30 +1,27 @@
 import prisma from "@/prisma/db";
 
-export async function findDestinationsByUserId(userId: string) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+import {
+  destinationsOrderByDefault,
+  whereByNameAndUserId,
+  whereByUserId,
+} from "./subreads/destinations";
 
-  return await prisma.destination.findMany({
-    where: {
-      userId,
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+// FindManys
+
+export async function findDestinationsByUserId(userId: string) {
+  const where = whereByUserId(userId);
+  const orderBy = destinationsOrderByDefault;
+
+  return await prisma.destination.findMany({ where, orderBy });
 }
+
+// FindUniques
 
 export async function findDestinationByNameAndUserId(
   name: string,
   userId: string,
 ) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const where = whereByNameAndUserId(name, userId);
 
-  return await prisma.destination.findUnique({
-    where: {
-      name_userId: {
-        name,
-        userId,
-      },
-    },
-  });
+  return await prisma.destination.findUnique({ where });
 }
