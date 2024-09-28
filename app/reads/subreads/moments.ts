@@ -30,6 +30,7 @@ export function whereUserMomentsWithContains(
     name: {
       contains: contains !== "" ? contains : undefined,
     },
+    userId,
   };
 }
 
@@ -65,6 +66,18 @@ export function whereFutureMoments(nowString: string): Prisma.MomentWhereInput {
 export function whereMomentId(id: string): Prisma.MomentWhereUniqueInput {
   return {
     id,
+  };
+}
+
+export function whereByNameAndUserId(
+  name: string,
+  userId: string,
+): Prisma.MomentWhereUniqueInput {
+  return {
+    name_userId: {
+      name,
+      userId,
+    },
   };
 }
 

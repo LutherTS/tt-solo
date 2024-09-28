@@ -161,32 +161,35 @@ async function seed() {
 
   console.log(`Seeding all Moments...`);
 
-  for (const destination of destinations) {
-    const destinationMoments = await Promise.all(
-      momentsData.map(async (momentData) => {
-        return await prisma.moment.upsert({
-          where: {
-            name_destinationId: {
-              name: momentData.objective,
-              destinationId: destination.id,
+  for (const user of users) {
+    for (const destination of destinations) {
+      const destinationMoments = await Promise.all(
+        momentsData.map(async (momentData) => {
+          return await prisma.moment.upsert({
+            where: {
+              name_userId: {
+                name: momentData.objective,
+                userId: user.id,
+              },
             },
-          },
-          update: {},
-          create: {
-            activity: momentData.activity,
-            name: momentData.objective,
-            isIndispensable: momentData.isIndispensable,
-            description: momentData.context,
-            startDateAndTime: momentData.startDateAndTime,
-            duration: momentDuration.toString(),
-            endDateAndTime: momentData.endDateAndTime,
-            destinationId: destination.id,
-          },
-        });
-      }),
-    );
+            update: {},
+            create: {
+              activity: momentData.activity,
+              name: momentData.objective,
+              isIndispensable: momentData.isIndispensable,
+              description: momentData.context,
+              startDateAndTime: momentData.startDateAndTime,
+              duration: momentDuration.toString(),
+              endDateAndTime: momentData.endDateAndTime,
+              destinationId: destination.id,
+              userId: user.id,
+            },
+          });
+        }),
+      );
 
-    moments = moments.concat(destinationMoments);
+      moments = moments.concat(destinationMoments);
+    }
   }
 
   console.log(`...All Moments seeded.`);

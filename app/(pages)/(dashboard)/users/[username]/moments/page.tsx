@@ -32,6 +32,7 @@ import {
   countUserMomentsWithContains,
   findCurrentUserMomentsWithContains,
   findFutureUserMomentsWithContains,
+  findMomentByNameAndUserId,
   findPastUserMomentsWithContains,
   findUserMomentsWithContains,
 } from "@/app/reads/moments";
@@ -357,9 +358,10 @@ export default async function MomentsPage({
       // return console.error("Surprenamment un utilisateur n'a pas été retrouvé.");
       return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
 
-    // findDestination
-    // findMoment
-    // if (moment) return { message: "Vous avez déjà un moment de ce même nom. "}
+    const preexistingMoment = await findMomentByNameAndUserId(objectif, userId);
+
+    if (preexistingMoment)
+      return { message: "Vous avez déjà un moment de ce même nom." };
 
     let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
@@ -394,6 +396,7 @@ export default async function MomentsPage({
           momentDate,
           duration,
           destinationId,
+          userId,
         );
       } else {
         // error handling needed eventually
@@ -444,6 +447,7 @@ export default async function MomentsPage({
           duration,
           destinationId,
           momentId,
+          userId,
         );
       } else {
         // error handling needed eventually

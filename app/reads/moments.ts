@@ -4,6 +4,7 @@ import {
   includeMomentDestinationAndSteps,
   momentsOrderByStartAsc,
   momentsOrderByStartDesc,
+  whereByNameAndUserId,
   whereCurrentMoments,
   whereFutureMoments,
   wherePastMoments,
@@ -161,3 +162,11 @@ export async function findFutureUserMomentsWithContains(
 }
 
 // FindUniques
+
+export async function findMomentByNameAndUserId(name: string, userId: string) {
+  const where = whereByNameAndUserId(name, userId);
+
+  return await prisma.moment.findUnique({
+    where,
+  });
+}

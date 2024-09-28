@@ -1,6 +1,10 @@
 import prisma from "@/prisma/db";
 
-import { dataCreateMomentWithoutDestination } from "./subwrites/moments";
+import {
+  dataConnectMomentDestination,
+  dataCreateMomentDestination,
+  dataCreateMomentWithoutDestination,
+} from "./subwrites/moments";
 import { selectMomentId, whereMomentId } from "../reads/subreads/moments";
 
 // The additions to dataCreateMomentWithoutDestination are sufficiently minuscule to be handled right here in Object.assign instead of finding nonexistant Prisma types that would satisfy them.
@@ -19,6 +23,7 @@ export async function createMomentFromFormData(
   startDateAndTime: string,
   duration: string,
   destinationId: string,
+  userId: string,
 ) {
   const data = Object.assign(
     dataCreateMomentWithoutDestination(
@@ -28,8 +33,9 @@ export async function createMomentFromFormData(
       description,
       startDateAndTime,
       duration,
+      userId,
     ),
-    { destinationId },
+    { destination: dataConnectMomentDestination(destinationId) },
   );
 
   return await prisma.moment.create({ select, data });
@@ -54,15 +60,9 @@ export async function createMomentAndDestination(
       description,
       startDateAndTime,
       duration,
+      userId,
     ),
-    {
-      destination: {
-        create: {
-          name: destinationName, // destination
-          userId,
-        },
-      },
-    },
+    { destination: dataCreateMomentDestination(destinationName, userId) },
   );
 
   return await prisma.moment.create({ select, data });
@@ -79,6 +79,7 @@ export async function updateMomentFromFormData(
   duration: string,
   destinationId: string,
   momentId: string,
+  userId: string,
 ) {
   const where = whereMomentId(momentId);
   const data = Object.assign(
@@ -89,8 +90,9 @@ export async function updateMomentFromFormData(
       description,
       startDateAndTime,
       duration,
+      userId,
     ),
-    { destinationId },
+    { destination: dataConnectMomentDestination(destinationId) },
   );
 
   return await prisma.moment.update({ select, where, data });
@@ -116,15 +118,9 @@ export async function updateMomentAndDestination(
       description,
       startDateAndTime,
       duration,
+      userId,
     ),
-    {
-      destination: {
-        create: {
-          name: destinationName, // destination
-          userId,
-        },
-      },
-    },
+    { destination: dataCreateMomentDestination(destinationName, userId) },
   );
 
   return await prisma.moment.update({ select, where, data });

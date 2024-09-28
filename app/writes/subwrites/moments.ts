@@ -12,6 +12,7 @@ export function dataCreateMomentWithoutDestination(
   description: string,
   startDateAndTime: string,
   duration: string,
+  userId: string,
 ): Prisma.MomentCreateWithoutDestinationInput {
   return {
     activity, // activite
@@ -21,5 +22,30 @@ export function dataCreateMomentWithoutDestination(
     startDateAndTime, // momentDate
     duration,
     endDateAndTime: endDateAndTime(startDateAndTime, duration),
+    user: {
+      connect: {
+        id: userId,
+      },
+    },
+  };
+}
+
+export function dataConnectMomentDestination(
+  destinationId: string,
+): Prisma.DestinationCreateNestedOneWithoutMomentsInput {
+  return {
+    connect: { id: destinationId },
+  };
+}
+
+export function dataCreateMomentDestination(
+  destinationName: string,
+  userId: string,
+): Prisma.DestinationCreateNestedOneWithoutMomentsInput {
+  return {
+    create: {
+      name: destinationName, // destination
+      userId,
+    },
   };
 }
