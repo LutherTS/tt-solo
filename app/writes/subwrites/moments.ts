@@ -1,5 +1,7 @@
-import { endDateAndTime } from "@/app/utilities/moments";
 import { Prisma } from "@prisma/client";
+
+// in the end I decided this compute should indeed be done the closest from the call as possible
+import { endDateAndTime } from "@/app/utilities/moments";
 
 // Datas
 

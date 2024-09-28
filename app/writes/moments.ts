@@ -1,10 +1,15 @@
 import prisma from "@/prisma/db";
-// in the end I think this compute should indeed be done the closest from the call as possible
-import { endDateAndTime } from "../utilities/moments";
-import { dataCreateMomentWithoutDestination } from "./subwrites/moments";
-import { whereMomentId } from "../reads/subreads/moments";
 
-// The additions to dataCreateMomentWithoutDestination are sufficiently minuscule to be handled right here instead of finding nonexistant Prisma types that would satisfy them.
+import { dataCreateMomentWithoutDestination } from "./subwrites/moments";
+import { selectMomentId, whereMomentId } from "../reads/subreads/moments";
+
+// The additions to dataCreateMomentWithoutDestination are sufficiently minuscule to be handled right here in Object.assign instead of finding nonexistant Prisma types that would satisfy them.
+
+// Defaults
+
+const select = selectMomentId;
+
+// Creates
 
 export async function createMomentFromFormData(
   activity: string,
@@ -27,20 +32,7 @@ export async function createMomentFromFormData(
     { destinationId },
   );
 
-  return await prisma.moment.create({
-    data,
-    // previous
-    // data: {
-    //   activity, // activite
-    //   name, // objectif
-    //   isIndispensable, // indispensable
-    //   description, // contexte
-    //   startDateAndTime, // momentDate
-    //   duration,
-    //   endDateAndTime: endDateAndTime(startDateAndTime, duration),
-    //   destinationId, // destinationEntry.id
-    // },
-  });
+  return await prisma.moment.create({ select, data });
 }
 
 export async function createMomentAndDestination(
@@ -53,6 +45,7 @@ export async function createMomentAndDestination(
   destinationName: string,
   userId: string,
 ) {
+  const select = selectMomentId;
   const data = Object.assign(
     dataCreateMomentWithoutDestination(
       activity,
@@ -72,26 +65,10 @@ export async function createMomentAndDestination(
     },
   );
 
-  return await prisma.moment.create({
-    data,
-    // previous
-    // data: {
-    //   activity, // activite
-    //   name, // objectif
-    //   isIndispensable, // indispensable
-    //   description, // contexte
-    //   startDateAndTime, // momentDate
-    //   duration,
-    //   endDateAndTime: endDateAndTime(startDateAndTime, duration),
-    //   destination: {
-    //     create: {
-    //       name: destinationName, // destination
-    //       userId,
-    //     },
-    //   },
-    // },
-  });
+  return await prisma.moment.create({ select, data });
 }
+
+// Updates
 
 export async function updateMomentFromFormData(
   activity: string,
@@ -116,23 +93,7 @@ export async function updateMomentFromFormData(
     { destinationId },
   );
 
-  return await prisma.moment.update({
-    where,
-    data,
-    // where: {
-    //   id: momentId,
-    // },
-    // data: {
-    //   activity, // activite
-    //   name, // objectif
-    //   isIndispensable, // indispensable
-    //   description, // contexte
-    //   startDateAndTime, // momentDate
-    //   duration,
-    //   endDateAndTime: endDateAndTime(startDateAndTime, duration),
-    //   destinationId, // destinationEntry.id
-    // },
-  });
+  return await prisma.moment.update({ select, where, data });
 }
 
 export async function updateMomentAndDestination(
@@ -166,34 +127,13 @@ export async function updateMomentAndDestination(
     },
   );
 
-  return await prisma.moment.update({
-    where,
-    data,
-    // where: {
-    //   id: momentId,
-    // },
-    // data: {
-    //   activity, // activite
-    //   name, // objectif
-    //   isIndispensable, // indispensable
-    //   description, // contexte
-    //   startDateAndTime, // momentDate
-    //   duration,
-    //   endDateAndTime: endDateAndTime(startDateAndTime, duration),
-    //   destination: {
-    //     create: {
-    //       name: destinationName, // destination
-    //       userId,
-    //     },
-    //   },
-    // },
-  });
+  return await prisma.moment.update({ select, where, data });
 }
+
+// Deletes
 
 export async function deleteMomentByMomentId(momentId: string) {
   const where = whereMomentId(momentId);
 
-  return await prisma.moment.delete({
-    where,
-  });
+  return await prisma.moment.delete({ where });
 }

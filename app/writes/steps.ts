@@ -1,5 +1,10 @@
 import prisma from "@/prisma/db";
 
+import { dataCreateStep } from "./subwrites/steps";
+import { whereByMomentId } from "../reads/subreads/steps";
+
+// Creates
+
 export async function createStepFromSteps(
   orderId: number,
   name: string,
@@ -9,27 +14,25 @@ export async function createStepFromSteps(
   endDateAndTime: string,
   momentId: string,
 ) {
-  // const data = whereUserPinnedForSelfAnswersByUserId(id);
+  const data = dataCreateStep(
+    orderId,
+    name,
+    description,
+    startDateAndTime,
+    duration,
+    endDateAndTime,
+    momentId,
+  );
 
-  return await prisma.step.create({
-    data: {
-      orderId, // i
-      name, // step.intitule
-      description, // step.details
-      startDateAndTime,
-      duration, // step.duree
-      endDateAndTime,
-      momentId,
-    },
-  });
+  return await prisma.step.create({ data });
 }
 
+// Deletes
+
 export async function deleteMomentStepsByMomentId(momentId: string) {
-  // const where = whereUserPinnedForSelfAnswersByUserId(id);
+  const where = whereByMomentId(momentId);
 
   return await prisma.step.deleteMany({
-    where: {
-      momentId,
-    },
+    where,
   });
 }

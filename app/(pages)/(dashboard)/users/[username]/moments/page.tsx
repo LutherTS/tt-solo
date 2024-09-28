@@ -1,7 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
-import { Moment } from "@prisma/client";
-import { add } from "date-fns";
+import { Prisma } from "@prisma/client";
 
 // import prisma from "@/prisma/db"; // proudly commented out
 import { Option } from "@/app/types/globals";
@@ -37,7 +36,7 @@ import {
   findUserMomentsWithContains,
 } from "@/app/reads/moments";
 import {
-  findDestinationByNameAndUserId,
+  findDestinationIdByNameAndUserId,
   findDestinationsByUserId,
 } from "@/app/reads/destinations";
 import {
@@ -47,10 +46,9 @@ import {
   updateMomentAndDestination,
   updateMomentFromFormData,
 } from "@/app/writes/moments";
-import {
-  createStepFromSteps,
-  deleteMomentStepsByMomentId,
-} from "@/app/writes/steps";
+import { deleteMomentStepsByMomentId } from "@/app/writes/steps";
+import { selectMomentId } from "@/app/reads/subreads/moments";
+import { createStepsFromStepsFlow } from "@/app/utilities/steps";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -336,6 +334,9 @@ export default async function MomentsPage({
     let objectif = formData.get("objectif");
     let contexte = formData.get("contexte");
 
+    // !!
+    // What's next if I feel like it is to start testing my useTransitions with proper zod validations.
+
     if (
       typeof destination !== "string" ||
       typeof activite !== "string" ||
@@ -368,12 +369,14 @@ export default async function MomentsPage({
     if (variant === "creating") {
       // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their single if statements.
       // error handling needed eventually
-      const destinationEntry = await findDestinationByNameAndUserId(
+      const destinationEntry = await findDestinationIdByNameAndUserId(
         destination,
         userId,
       );
 
-      let moment: Moment;
+      let moment: Prisma.MomentGetPayload<{
+        select: typeof selectMomentId;
+      }>;
 
       if (destinationEntry) {
         const destinationId = destinationEntry.id;
@@ -404,33 +407,7 @@ export default async function MomentsPage({
 
       const momentId = moment.id;
 
-      let i = 1;
-
-      for (let j = 0; j < steps.length; j++) {
-        const step = steps[j];
-
-        const startDateAndTime =
-          j === 0
-            ? momentDate
-            : dateToInputDatetime(add(momentDate, { minutes: map.get(j - 1) }));
-
-        const endDateAndTime = dateToInputDatetime(
-          add(momentDate, { minutes: map.get(j) }),
-        );
-
-        // error handling needed eventually
-        await createStepFromSteps(
-          i,
-          step.intitule,
-          step.details,
-          startDateAndTime,
-          step.duree,
-          endDateAndTime,
-          momentId,
-        );
-
-        i++;
-      }
+      await createStepsFromStepsFlow(steps, momentDate, map, momentId);
     }
 
     if (variant === "updating") {
@@ -441,12 +418,14 @@ export default async function MomentsPage({
       let momentId = momentFromCRUD.id;
 
       // error handling needed eventually
-      const destinationEntry = await findDestinationByNameAndUserId(
+      const destinationEntry = await findDestinationIdByNameAndUserId(
         destination,
         userId,
       );
 
-      let moment: Moment;
+      let moment: Prisma.MomentGetPayload<{
+        select: typeof selectMomentId;
+      }>;
 
       if (destinationEntry) {
         const destinationId = destinationEntry.id;
@@ -482,34 +461,7 @@ export default async function MomentsPage({
       // error handling needed eventually
       await deleteMomentStepsByMomentId(momentId);
 
-      let i = 1;
-
-      for (let j = 0; j < steps.length; j++) {
-        // exact same code as create, best to be shipped inside a common function
-        const step = steps[j];
-
-        const startDateAndTime =
-          j === 0
-            ? momentDate
-            : dateToInputDatetime(add(momentDate, { minutes: map.get(j - 1) }));
-
-        const endDateAndTime = dateToInputDatetime(
-          add(momentDate, { minutes: map.get(j) }),
-        );
-
-        // error handling needed eventually
-        await createStepFromSteps(
-          i,
-          step.intitule,
-          step.details,
-          startDateAndTime,
-          step.duree,
-          endDateAndTime,
-          momentId,
-        );
-
-        i++;
-      }
+      await createStepsFromStepsFlow(steps, momentDate, map, momentId);
     }
 
     revalidatePath(`/users/${username}/moments`);

@@ -1,5 +1,11 @@
 import { Prisma } from "@prisma/client";
 
+// Selects
+
+export const selectDestinationId = {
+  id: true,
+} satisfies Prisma.DestinationSelect;
+
 // Wheres
 
 export function whereByUserId(userId: string): Prisma.DestinationWhereInput {
@@ -7,6 +13,8 @@ export function whereByUserId(userId: string): Prisma.DestinationWhereInput {
     userId,
   };
 }
+
+// WhereUniques
 
 export function whereByNameAndUserId(
   name: string,

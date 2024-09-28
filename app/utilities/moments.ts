@@ -18,7 +18,7 @@ export const toWordsing = (number: number) => {
   return words;
 }; // if could have just been words = words + "e"
 
-// transform number strings from InputNumber into French hours and minutes
+// transforms number strings from InputNumber into French hours and minutes
 export const numStringToTimeString = (string: string) => {
   const num = +string;
   let timeString = "";

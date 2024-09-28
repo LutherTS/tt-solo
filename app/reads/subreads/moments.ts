@@ -2,6 +2,12 @@ import { Prisma } from "@prisma/client";
 
 import { stepsOrderByDefault } from "./steps";
 
+// Selects
+
+export const selectMomentId = {
+  id: true,
+} satisfies Prisma.MomentSelect;
+
 // Includes
 
 export const includeMomentDestinationAndSteps = {

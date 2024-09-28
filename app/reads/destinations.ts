@@ -2,6 +2,7 @@ import prisma from "@/prisma/db";
 
 import {
   destinationsOrderByDefault,
+  selectDestinationId,
   whereByNameAndUserId,
   whereByUserId,
 } from "./subreads/destinations";
@@ -17,11 +18,12 @@ export async function findDestinationsByUserId(userId: string) {
 
 // FindUniques
 
-export async function findDestinationByNameAndUserId(
+export async function findDestinationIdByNameAndUserId(
   name: string,
   userId: string,
 ) {
+  const select = selectDestinationId;
   const where = whereByNameAndUserId(name, userId);
 
-  return await prisma.destination.findUnique({ where });
+  return await prisma.destination.findUnique({ select, where });
 }

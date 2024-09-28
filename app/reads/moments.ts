@@ -10,7 +10,7 @@ import {
   whereUserMomentsWithContains,
 } from "./subreads/moments";
 
-// Let's start by doing a 1:1 of all database calls, and then they'll be subdivided in subreads (subwrites).
+// Let's start by doing a 1:1 of all database calls, and then they'll be subdivided in subreads (subwrites). // Done.
 
 // Counts
 
