@@ -1,4 +1,4 @@
-import { add, format } from "date-fns";
+import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
 // changes a Date object into a input datetime-local string
@@ -55,3 +55,29 @@ export const defineCurrentPage = (
   if (rawPage > maxPage) currentPage = maxPage;
   return currentPage;
 };
+
+// rounds the current time to the next minimum 10 or maximum 20 round minutes
+// (e.g. if it's 11:00, 11:10 will be shown)
+// roundToNearestMinutes are nested to create a clamp method, meaning:
+// - the time shown will always be a minimum of 10 minutes later
+// (e.g. if it's 10:59, 11:10 will be shown)
+// - the time shown will always be a maximum of 20 minutes later
+// (e.g. if it's 11:01, 11:20 will be shown)
+// This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
+export const roundTimeUpTenMinutes = (time: string) =>
+  format(
+    roundToNearestMinutes(
+      add(
+        roundToNearestMinutes(time, {
+          roundingMethod: "ceil",
+          nearestTo: 10,
+        }),
+        { seconds: 1 },
+      ),
+      {
+        roundingMethod: "ceil",
+        nearestTo: 10,
+      },
+    ),
+    "yyyy-MM-dd'T'HH:mm",
+  );

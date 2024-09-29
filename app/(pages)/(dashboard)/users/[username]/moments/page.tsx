@@ -69,9 +69,9 @@ export default async function MomentsPage({
     [FUTUREUSERMOMENTSPAGE]?: string;
   };
 }) {
-  let now = new Date();
-  let nowString = dateToInputDatetime(now);
-  console.log({ nowString });
+  // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.
+  let now = dateToInputDatetime(new Date());
+  console.log({ now });
 
   const username = params.username;
 
@@ -96,9 +96,9 @@ export default async function MomentsPage({
     futureUserMomentsTotal,
   ] = await Promise.all([
     countUserMomentsWithContains(userId, contains),
-    countPastUserMomentsWithContains(userId, contains, nowString),
-    countCurrentUserMomentsWithContains(userId, contains, nowString),
-    countFutureUserMomentsWithContains(userId, contains, nowString),
+    countPastUserMomentsWithContains(userId, contains, now),
+    countCurrentUserMomentsWithContains(userId, contains, now),
+    countFutureUserMomentsWithContains(userId, contains, now),
   ]);
   // console.log({
   //   userMomentsTotal,
@@ -153,21 +153,21 @@ export default async function MomentsPage({
       findPastUserMomentsWithContains(
         userId,
         contains,
-        nowString,
+        now,
         pastUserMomentsPage,
         TAKE,
       ),
       findCurrentUserMomentsWithContains(
         userId,
         contains,
-        nowString,
+        now,
         currentUserMomentsPage,
         TAKE,
       ),
       findFutureUserMomentsWithContains(
         userId,
         contains,
-        nowString,
+        now,
         futureUserMomentsPage,
         TAKE,
       ),
@@ -488,7 +488,7 @@ export default async function MomentsPage({
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
       revalidateMoments={revalidateMoments}
-      now={nowString}
+      now={now}
     />
   );
 }

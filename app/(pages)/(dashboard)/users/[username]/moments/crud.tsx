@@ -4,11 +4,12 @@ import {
   Dispatch,
   SetStateAction,
   // useActionState, // proudly commented out
-  useCallback,
+  // useCallback,
   useEffect,
   useState,
   useTransition,
   MouseEvent,
+  FormEvent,
 } from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -20,7 +21,6 @@ import {
   compareDesc,
   format,
   roundToNearestHours,
-  roundToNearestMinutes,
   sub,
 } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -31,7 +31,8 @@ import {
   useScroll,
 } from "framer-motion";
 import debounce from "debounce";
-import { useTimer } from "react-use-precision-timer";
+// import { useTimer } from "react-use-precision-timer";
+
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
@@ -50,6 +51,7 @@ import {
   dateToInputDatetime,
   defineCurrentPage,
   numStringToTimeString,
+  roundTimeUpTenMinutes,
   toWordsing,
 } from "@/app/utilities/moments";
 import {
@@ -151,32 +153,6 @@ export function CRUD({
 }) {
   console.log({ now });
 
-  // To be fair, everything that is directly relative to now should be right next to where it is first received from the server.
-
-  // roundToNearestMinutes are nested to create a clamp method, meaning:
-  // - the time shown will always be a minimum of 10 minutes later
-  // (e.g. if it's 10:59, 11:10 will be shown)
-  // - the time shown will always be a maximum of 20 minutes later
-  // (e.g. if it's 11:01, 11:20 will be shown)
-  // This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
-  const nowRoundedUpTenMinutes = format(
-    roundToNearestMinutes(
-      add(
-        roundToNearestMinutes(now, {
-          roundingMethod: "ceil",
-          nearestTo: 10,
-        }),
-        { seconds: 1 },
-      ),
-      {
-        roundingMethod: "ceil",
-        nearestTo: 10,
-      },
-    ),
-    "yyyy-MM-dd'T'HH:mm",
-  );
-  console.log({ nowRoundedUpTenMinutes });
-
   /* Functioning timer logic, with useTimer
   // The callback function to fire every step of the timer.
   const callback = useCallback(
@@ -261,15 +237,14 @@ export function CRUD({
         {view === "update-moment" && (
           // UpdateMomentView
           <MomentForms
-            setView={setView}
-            destinationOptions={destinationOptions}
             variant="updating"
             moment={moment}
+            destinationOptions={destinationOptions}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
-            now={now}
-            nowRoundedUpTenMinutes={nowRoundedUpTenMinutes}
+            setView={setView}
             setSubView={setSubView}
+            now={now}
           />
         )}
       </div>
@@ -277,12 +252,12 @@ export function CRUD({
         <ReadMomentsView
           allUserMomentsToCRUD={allUserMomentsToCRUD}
           maxPages={maxPages}
-          setMoment={setMoment}
-          setView={setView}
-          subView={subView}
-          setSubView={setSubView}
           revalidateMoments={revalidateMoments}
+          setMoment={setMoment}
           view={view}
+          subView={subView}
+          setView={setView}
+          setSubView={setSubView}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
@@ -290,13 +265,12 @@ export function CRUD({
         {view !== "update-moment" && (
           // CreateMomentView
           <MomentForms
-            setView={setView}
-            destinationOptions={destinationOptions}
             variant="creating"
+            destinationOptions={destinationOptions}
             createOrUpdateMoment={createOrUpdateMoment}
-            now={now}
-            nowRoundedUpTenMinutes={nowRoundedUpTenMinutes}
+            setView={setView}
             setSubView={setSubView}
+            now={now}
           />
         )}
       </div>
@@ -769,28 +743,27 @@ function ReadMomentsView({
   );
 }
 
-// Maybe now I should be able to setSubView again.
 function MomentForms({
   variant,
-  now,
   moment,
   destinationOptions,
   createOrUpdateMoment,
   deleteMoment,
   setView,
   setSubView,
-  nowRoundedUpTenMinutes,
+  now,
 }: {
-  setView: Dispatch<SetStateAction<View>>;
   variant: "creating" | "updating";
   moment?: MomentToCRUD;
   destinationOptions: Option[];
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
+  setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
-  nowRoundedUpTenMinutes: string;
 }) {
+  const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
+
   // InputSwitch unfortunately has to be controlled for resetting
   let [indispensable, setIndispensable] = useState(
     moment ? moment.isIndispensable : false,
@@ -932,6 +905,45 @@ function MomentForms({
     });
   };
 
+  // resetMomentFormAction
+
+  const [isResetMomentFormPending, startResetMomentFormTransition] =
+    useTransition();
+
+  // action is (now) completely client, so no need for async
+  const resetMomentFormAction = (event: FormEvent<HTMLFormElement>) => {
+    startResetMomentFormTransition(() => {
+      if (
+        confirm("Êtes-vous sûr que vous voulez réinitialiser le formulaire ?")
+      ) {
+        // if (revalidateMoments) await revalidateMoments();
+        // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
+
+        setIndispensable(false);
+        // setStartMomentDate(nowRoundedUpTenMinutes);
+        // the easy solution
+        setStartMomentDate(
+          roundTimeUpTenMinutes(dateToInputDatetime(new Date())),
+        ); // the harder solution would returning that information a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case
+        roundTimeUpTenMinutes;
+        setSteps([]);
+        setStepVisible("creating");
+
+        setDestinationTextControlled("");
+        setDestinationOptionControlled("");
+        setActiviteTextControlled("");
+        setActiviteOptionControlled("");
+        setObjectifControlled("");
+        setContexteControlled("");
+
+        // @ts-ignore because it's an HTMLFormElement
+        document.getElementById("step-form-creating").reset();
+        // https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/reset
+        // ...I hear there's a thing about ref but why use React features where JavaScript features are easier to use?
+      } else event.preventDefault();
+    });
+  };
+
   return (
     <>
       {/* temporary debugging */}
@@ -956,30 +968,7 @@ function MomentForms({
       />
       <form
         action={createOrUpdateMomentAction}
-        onReset={(event) => {
-          if (
-            confirm(
-              "Êtes-vous sûr que vous voulez réinitialiser le formulaire ?",
-            )
-          ) {
-            setIndispensable(false);
-            setStartMomentDate(nowRoundedUpTenMinutes);
-            setSteps([]);
-            setStepVisible("creating");
-
-            setDestinationTextControlled("");
-            setDestinationOptionControlled("");
-            setActiviteTextControlled("");
-            setActiviteOptionControlled("");
-            setObjectifControlled("");
-            setContexteControlled("");
-
-            // @ts-ignore because it's an HTMLFormElement
-            document.getElementById("step-form-creating").reset();
-            // https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/reset
-            // ...I hear there's a thing about ref but why use React features where JavaScript features are easier to use?
-          } else event.preventDefault();
-        }}
+        onReset={resetMomentFormAction}
         className="space-y-8"
       >
         <Section
@@ -1278,13 +1267,21 @@ function MomentForms({
               <Button
                 type="submit"
                 variant="confirm"
-                disabled={steps.length === 0}
+                disabled={
+                  steps.length === 0 ||
+                  isResetMomentFormPending ||
+                  isDeleteMomentPending
+                }
               >
                 Confirmer le moment
               </Button>
               {/* this could eventually be a component too */}
               {variant === "creating" && (
-                <Button type="reset" variant="cancel">
+                <Button
+                  type="reset"
+                  variant="cancel"
+                  disabled={isResetMomentFormPending}
+                >
                   Réinitialiser le moment
                 </Button>
               )}
@@ -1302,7 +1299,11 @@ function MomentForms({
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
               {variant === "creating" && (
-                <Button type="reset" variant="cancel">
+                <Button
+                  type="reset"
+                  variant="cancel"
+                  disabled={isResetMomentFormPending}
+                >
                   Réinitialiser le moment
                 </Button>
               )}
@@ -1319,7 +1320,11 @@ function MomentForms({
               <Button
                 type="submit"
                 variant="confirm"
-                disabled={steps.length === 0}
+                disabled={
+                  steps.length === 0 ||
+                  isResetMomentFormPending ||
+                  isDeleteMomentPending
+                }
               >
                 Confirmer le moment
               </Button>
