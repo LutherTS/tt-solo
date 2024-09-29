@@ -361,15 +361,6 @@ export default async function MomentsPage({
     if (!user)
       return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
 
-    const preexistingMoment = await findMomentByNameAndUserId(objectif, userId);
-
-    if (preexistingMoment)
-      return { message: "Vous avez déjà un moment de ce même nom." };
-    // It worked... But the form reset.
-    // https://github.com/facebook/react/issues/29034
-    // That's where we're considering going back to Remix.
-    // Or I'm basically going to have to control every single field (they're only four so it's okayish), and send they're data from the controlled output. This is so dumb but hey, that's what you get from living dangerously. Anyhoo, consequently my work here is done until Next.js 15 is stable.
-
     let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
     const map: Map<number, number> = new Map();
@@ -380,6 +371,19 @@ export default async function MomentsPage({
     }
 
     if (variant === "creating") {
+      const preexistingMoment = await findMomentByNameAndUserId(
+        objectif,
+        userId,
+      );
+
+      if (preexistingMoment)
+        return { message: "Vous avez déjà un moment de ce même nom." };
+      // It worked... But the form reset.
+      // https://github.com/facebook/react/issues/29034
+      // That's where we're considering going back to Remix.
+      // Or I'm basically going to have to control every single field (they're only four so it's okayish), and send they're data from the controlled output. This is so dumb but hey, that's what you get from living dangerously. Anyhoo, consequently my work here is done until Next.js 15 is stable.
+      // Done. I've just controlled every single field.
+
       // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their single if statements.
       // error handling needed eventually
       const destinationEntry = await findDestinationIdByNameAndUserId(
