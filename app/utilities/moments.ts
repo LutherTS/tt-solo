@@ -13,10 +13,11 @@ export const endDateAndTime = (dateAndTime: string, duration: string) =>
 const toWords = new ToWords({ localeCode: "fr-FR" });
 export const toWordsing = (number: number) => {
   let words = toWords.convert(number);
+  // it could have just been words = words + "e"
   if (words.endsWith("Un")) words = words.slice(0, -2).concat("Une");
   words = words.toLocaleLowerCase();
   return words;
-}; // if could have just been words = words + "e"
+};
 
 // transforms number strings from InputNumber into French hours and minutes
 export const numStringToTimeString = (string: string) => {
