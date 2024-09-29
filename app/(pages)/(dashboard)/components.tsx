@@ -180,7 +180,7 @@ export function InputText({
   );
 }
 
-// Had to get everything controlled. In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by if (definedValue) controlled else uncontrolled.
+// Had to get everything controlled. In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by if (definedValue) controlled else uncontrolled, which in fact is exactly how React behaves natively.
 export function InputTextControlled({
   label,
   description,

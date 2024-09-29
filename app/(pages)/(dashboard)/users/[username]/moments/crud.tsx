@@ -151,7 +151,14 @@ export function CRUD({
 }) {
   console.log({ now });
 
-  // To be fair, everything that directly has to do with now should be right next to where it is received.
+  // To be fair, everything that is directly relative to now should be right next to where it is first received from the server.
+
+  // roundToNearestMinutes are nested to create a clamp method, meaning:
+  // - the time shown will always be a minimum of 10 minutes later
+  // (e.g. if it's 10:59, 11:10 will be shown)
+  // - the time shown will always be a maximum of 20 minutes later
+  // (e.g. if it's 11:01, 11:20 will be shown)
+  // This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
   const nowRoundedUpTenMinutes = format(
     roundToNearestMinutes(
       add(
@@ -169,17 +176,6 @@ export function CRUD({
     "yyyy-MM-dd'T'HH:mm",
   );
   console.log({ nowRoundedUpTenMinutes });
-
-  // I'm not using trueStartMomentDate because it's always going to be trueNowRoundedUpTenMinutes... which means I don't need a state, I just need the variable.
-  // My bad, it needs to be a state... Wait. ...I does.
-  let [trueStartMomentDate, setTrueStartMomentDate] = useState(
-    nowRoundedUpTenMinutes,
-  ); // No reaction. It's because the state of startMomentDate should be here and not in MomentForms.
-  if (trueStartMomentDate !== nowRoundedUpTenMinutes)
-    setTrueStartMomentDate(nowRoundedUpTenMinutes);
-  console.log({ trueStartMomentDate });
-  // It's a small feature but in truth it tells of a bigger story that I want to see solved.
-  // Basically I want startMomentDate to be linked to the whole page if it's creating, and link to to itself if its updating.
 
   /* Functioning timer logic, with useTimer
   // The callback function to fire every step of the timer.
@@ -272,7 +268,7 @@ export function CRUD({
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
             now={now}
-            nowRoundedUpTenMinutes={trueStartMomentDate}
+            nowRoundedUpTenMinutes={nowRoundedUpTenMinutes}
             setSubView={setSubView}
           />
         )}
@@ -287,8 +283,6 @@ export function CRUD({
           setSubView={setSubView}
           revalidateMoments={revalidateMoments}
           view={view}
-          nowRoundedUpTenMinutes={nowRoundedUpTenMinutes}
-          setTrueStartMomentDate={setTrueStartMomentDate}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
@@ -301,7 +295,7 @@ export function CRUD({
             variant="creating"
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
-            nowRoundedUpTenMinutes={trueStartMomentDate}
+            nowRoundedUpTenMinutes={nowRoundedUpTenMinutes}
             setSubView={setSubView}
           />
         )}
@@ -321,8 +315,6 @@ function ReadMomentsView({
   setMoment,
   setView,
   setSubView,
-  nowRoundedUpTenMinutes,
-  setTrueStartMomentDate,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
@@ -332,8 +324,6 @@ function ReadMomentsView({
   setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
-  nowRoundedUpTenMinutes: string;
-  setTrueStartMomentDate: Dispatch<SetStateAction<string>>;
 }) {
   let subViewTitles = {
     "all-moments": "Tous",
@@ -414,21 +404,12 @@ function ReadMomentsView({
     "future-moments": maxPageFutureMoments,
   };
 
-  // let currentPage = 1;
-  // const rawValue = Number(searchParams.get(subViewSearchParams[subView]));
-  // if (rawValue > 1) currentPage = Math.floor(rawValue);
-  // const subViewMaxPage = subViewMaxPages[subView];
-  // if (rawValue > subViewMaxPage) currentPage = subViewMaxPage;
-  // // console.log({ currentPage, subViewMaxPage }); // ...The issue is on the server.
-
   let initialPage = 1;
   const currentPage = defineCurrentPage(
     initialPage,
     Number(searchParams.get(subViewSearchParams[subView])),
     subViewMaxPages[subView],
   );
-
-  // currentPage could need that clientParamSafeting I feel
 
   function handlePagination(direction: "left" | "right", subView: SubView) {
     const params = new URLSearchParams(searchParams);
@@ -542,9 +523,6 @@ function ReadMomentsView({
     startRevalidateMomentsTransition(async () => {
       const button = event.currentTarget;
       await revalidateMoments();
-      // I want to reset startMomentDate here.
-      // No. I'm I pass it from the top it's going to reset on its own.
-      setTrueStartMomentDate(nowRoundedUpTenMinutes);
       replace(`${pathname}`);
       button.form!.reset(); // EXACTLY.
     });
@@ -639,7 +617,7 @@ function ReadMomentsView({
       {/* to place the input into a form so it can be reset */}
       <form id="form">
         <InputText
-          // keeping the "contains" out of variable for since unsure if its the definitive id and name
+          // keeping the "contains" out of variable for this because unsure if "contains" the definitive id and name
           id="contains"
           name="contains"
           placeholder="Cherchez parmi vos moments..."
@@ -813,26 +791,6 @@ function MomentForms({
   now: string;
   nowRoundedUpTenMinutes: string;
 }) {
-  // roundToNearestMinutes are nested to create a clamp method, meaning:
-  // - the time shown will always be a minimum of 10 minutes later
-  // (e.g. if it's 10:59, 11:10 will be shown)
-  // - the time shown will always be a maximum of 20 minutes later
-  // (e.g. if it's 11:01, 11:20 will be shown)
-  // This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
-  // const nowRoundedUpTenMinutes = roundToNearestMinutes(
-  //   add(
-  //     roundToNearestMinutes(now, {
-  //       roundingMethod: "ceil",
-  //       nearestTo: 10,
-  //     }),
-  //     { seconds: 1 },
-  //   ),
-  //   {
-  //     roundingMethod: "ceil",
-  //     nearestTo: 10,
-  //   },
-  // );
-
   // InputSwitch unfortunately has to be controlled for resetting
   let [indispensable, setIndispensable] = useState(
     moment ? moment.isIndispensable : false,
@@ -840,11 +798,8 @@ function MomentForms({
 
   // datetime-local input is now controlled.
   let [startMomentDate, setStartMomentDate] = useState(
-    moment
-      ? moment.startDateAndTime
-      : // : format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
-        nowRoundedUpTenMinutes,
-  ); // considering putting this about to share between MomentForms and ReadMomentsView
+    moment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
+  );
 
   const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
     return {
@@ -917,46 +872,36 @@ function MomentForms({
     useState<CreateOrUpdateMomentState>();
 
   // Let's just try first without the error and see if it simply works with startTransition.
-  const createOrUpdateMomentAction = async () =>
-    // formData: FormData
-    {
-      startCreateOrUpdateMomentTransition(async () => {
-        // const state = await createOrUpdateMomentBound(formData);
-        const state = await createOrUpdateMomentBound();
+  const createOrUpdateMomentAction = async () => {
+    startCreateOrUpdateMomentTransition(async () => {
+      const state = await createOrUpdateMomentBound();
+      if (state) return setCreateOrUpdateMomentState(state);
 
-        // trying return void
-        // https://github.com/immerjs/use-immer?tab=readme-ov-file#useimmerreducer
-        if (state) return setCreateOrUpdateMomentState(state);
+      if (variant === "creating") {
+        setIndispensable(false);
+        setStartMomentDate(nowRoundedUpTenMinutes);
+        setSteps([]);
+        setStepVisible("creating");
 
-        if (variant === "creating") {
-          setIndispensable(false);
-          setStartMomentDate(
-            // format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
-            nowRoundedUpTenMinutes,
-          );
-          setSteps([]);
-          setStepVisible("creating");
+        setDestinationTextControlled("");
+        setDestinationOptionControlled("");
+        setActiviteTextControlled("");
+        setActiviteOptionControlled("");
+        setObjectifControlled("");
+        setContexteControlled("");
+      }
 
-          setDestinationTextControlled("");
-          setDestinationOptionControlled("");
-          setActiviteTextControlled("");
-          setActiviteOptionControlled("");
-          setObjectifControlled("");
-          setContexteControlled("");
-        }
+      // this now works thanks to export const dynamic = "force-dynamic";
+      if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
+      else if (compareAsc(startMomentDate, now) === 1)
+        setSubView("future-moments");
+      // therefore present by default
+      else setSubView("current-moments");
 
-        // this now works thanks to export const dynamic = "force-dynamic";
-        // console.log({ startMomentDate, endMomentDate, now });
-        if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
-        else if (compareAsc(startMomentDate, now) === 1)
-          setSubView("future-moments");
-        // therefore present by default
-        else setSubView("current-moments");
-
-        setView("read-moments");
-        // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-      });
-    };
+      setView("read-moments");
+      // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+    });
+  };
 
   // deleteMomentAction
 
@@ -965,20 +910,17 @@ function MomentForms({
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
+  // not really using deleteMomentState current but it can return an error
   const [deleteMomentState, setDeleteMomentState] =
     useState<DeleteMomentState>();
 
-  // I'll just have to replace my console.error by some state2 in the sense that for example, even though moment is from the client, I'll have to handle it from the server.
   // Not sure this line is necessary if no default argument is to be provided.
-  // It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
+  // Edit: It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
         if (deleteMomentBound) {
           const state = await deleteMomentBound();
-
-          // actually setState already returns void
-          // https://react.dev/reference/react/useState#setstate
           if (state) return setDeleteMomentState(state);
 
           setView("read-moments");
@@ -996,6 +938,7 @@ function MomentForms({
       {createOrUpdateMomentState?.message && (
         <>{createOrUpdateMomentState.message}</>
       )}
+      {deleteMomentState?.message && <>{deleteMomentState.message}</>}
       {/* The connection to the server has been established. */}
       <StepForm
         currentStepId={currentStepId}
@@ -1020,12 +963,16 @@ function MomentForms({
             )
           ) {
             setIndispensable(false);
-            setStartMomentDate(
-              // format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
-              nowRoundedUpTenMinutes,
-            );
+            setStartMomentDate(nowRoundedUpTenMinutes);
             setSteps([]);
             setStepVisible("creating");
+
+            setDestinationTextControlled("");
+            setDestinationOptionControlled("");
+            setActiviteTextControlled("");
+            setActiviteOptionControlled("");
+            setObjectifControlled("");
+            setContexteControlled("");
           } else event.preventDefault();
         }}
         className="space-y-8"
@@ -1035,34 +982,9 @@ function MomentForms({
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
         >
           {!destinationSelect ? (
-            // <InputText
-            //   label="Destination"
-            //   name="destination"
-            //   // controlling the value for SelectWithOptions crossover is something to keep in mind, but for now, default values from preceding moment will only be on InputText components
-            //   defaultValue={moment ? moment.destinationIdeal : undefined}
-            //   description="Votre projet vise à atteindre quel idéal ?"
-            //   addendum={
-            //     destinationOptions.length > 0
-            //       ? "Ou choissisez parmi vos destinations précédemment instanciées."
-            //       : undefined
-            //   }
-            //   fieldFlexIsNotLabel
-            //   tekTime
-            // >
-            //   {destinationOptions.length > 0 && (
-            //     <Button
-            //       type="button"
-            //       variant="destroy"
-            //       onClick={() => setDestinationSelect(true)}
-            //     >
-            //       Choisir la destination
-            //     </Button>
-            //   )}
-            // </InputText>
             <InputTextControlled
               label="Destination"
               name="destination"
-              // controlling the value for SelectWithOptions crossover is something to keep in mind, but for now, default values from preceding moment will only be on InputText components
               definedValue={destinationTextControlled}
               definedOnValueChange={setDestinationTextControlled}
               description="Votre projet vise à atteindre quel idéal ?"
@@ -1086,24 +1008,6 @@ function MomentForms({
               )}
             </InputTextControlled>
           ) : (
-            // <SelectWithOptions
-            //   label="Destination"
-            //   description="Choisissez la destination que cherche à atteindre ce moment."
-            //   addendum="Ou définissez la vous-même via le bouton ci-dessus."
-            //   name="destination"
-            //   placeholder="Choisissez..."
-            //   options={destinationOptions}
-            //   fieldFlexIsNotLabel
-            //   tekTime
-            // >
-            //   <Button
-            //     type="button"
-            //     variant="destroy"
-            //     onClick={() => setDestinationSelect(false)}
-            //   >
-            //     Définir la destination
-            //   </Button>
-            // </SelectWithOptions>
             <SelectWithOptionsControlled
               label="Destination"
               description="Choisissez la destination que cherche à atteindre ce moment."
@@ -1127,23 +1031,6 @@ function MomentForms({
             </SelectWithOptionsControlled>
           )}
           {!activitySelect ? (
-            // <InputText
-            //   label="Activité"
-            //   description="Définissez le type d'activité qui va correspondre à votre problématique."
-            //   addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
-            //   name="activite"
-            //   defaultValue={moment ? moment.activity : undefined}
-            //   fieldFlexIsNotLabel
-            //   required={!activitySelect}
-            // >
-            //   <Button
-            //     type="button"
-            //     variant="destroy"
-            //     onClick={() => setActivitySelect(true)}
-            //   >
-            //     Choisir l&apos;activité
-            //   </Button>
-            // </InputText>
             <InputTextControlled
               label="Activité"
               description="Définissez le type d'activité qui va correspondre à votre problématique."
@@ -1163,24 +1050,6 @@ function MomentForms({
               </Button>
             </InputTextControlled>
           ) : (
-            // <SelectWithOptions
-            //   label="Activité"
-            //   description="Choisissez le type d'activité qui va correspondre à votre problématique."
-            //   addendum="Ou définissez le vous-même via le bouton ci-dessus."
-            //   name="activite"
-            //   placeholder="Choisissez..."
-            //   options={exchangeOptions}
-            //   fieldFlexIsNotLabel
-            //   required={activitySelect}
-            // >
-            //   <Button
-            //     type="button"
-            //     variant="destroy"
-            //     onClick={() => setActivitySelect(false)}
-            //   >
-            //     Définir l&apos;activité
-            //   </Button>
-            // </SelectWithOptions>
             <SelectWithOptionsControlled
               label="Activité"
               description="Choisissez le type d'activité qui va correspondre à votre problématique."
@@ -1202,12 +1071,6 @@ function MomentForms({
               </Button>
             </SelectWithOptionsControlled>
           )}
-          {/* <InputText
-            label="Objectif"
-            name="objectif"
-            defaultValue={moment ? moment.objective : undefined}
-            description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
-          /> */}
           <InputTextControlled
             label="Objectif"
             name="objectif"
@@ -1222,13 +1085,6 @@ function MomentForms({
             definedValue={indispensable}
             definedOnValueChange={setIndispensable}
           />
-          {/* <Textarea
-            label="Contexte"
-            name="contexte"
-            defaultValue={moment ? moment.context : undefined}
-            description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
-            rows={6}
-          /> */}
           <TextareaControlled
             label="Contexte"
             name="contexte"

@@ -54,23 +54,6 @@ import { createStepsFromStepsFlow } from "@/app/utilities/steps";
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 
-/* IMPORTANT
-Just that weird thing about time not being current correctly now.
-Either something to do with cache or the need for a useEffect.
-(Which I'm now trying to address above with export const dynamic.)
-(I'll need to test more but I think "force-dynamic" got things done.)
-
-// the time at rendering as a stable foundation for all time operations
-let now = new Date();
-// sharing time as string to bypass timezone adaptations
-let nowString = dateToInputDatetime(now);
-console.log(nowString);
-// There's a problem with cache when it comes to time here
-// It's only when the page recompiles that the correct time is taken into account. Probably something with noStore, I don't know.
-
-I don't know though why I did not include now in the MomentsPage function. (Actually it wasn't supposed to be this way.)
-*/
-
 export default async function MomentsPage({
   params,
   searchParams,
@@ -132,10 +115,7 @@ export default async function MomentsPage({
   ] as const;
   // console.log({ totals })
 
-  // take and skip randomly implemented below for scalable defaults.
-  // All of these will be optimized and organized in their own folders.
-
-  // In fact, TAKE is page-dependent here. So the page is where it could remain, so that the maintainer of the page can decide how many moments they want without needing to access the read method.
+  // TAKE is page-dependent here. So the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
   const TAKE = 2;
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
@@ -326,25 +306,14 @@ export default async function MomentsPage({
     objectif: string,
     contexte: string,
     momentFromCRUD: MomentToCRUD | undefined,
-    // formData: FormData,
   ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
-    // test
+    // testing...
     // return { message: "I'm testing things here." };
     // It works and with that, I now know my way around useTransition.
 
-    /*
-    let destination = formData.get("destination");
-    let activite = formData.get("activite");
-    let objectif = formData.get("objectif");
-    let contexte = formData.get("contexte");
-    */
-
-    // !!
-    // What's next if I feel like it is to start testing my useTransitions with proper zod validations.
-
-    // destination, activite, objectif and contexte are now controlled. And since it's not from the form data, I can make the names English if needed.
+    // destination, activite, objectif and contexte are now controlled
     if (
       typeof destination !== "string" ||
       typeof activite !== "string" ||
@@ -355,8 +324,8 @@ export default async function MomentsPage({
         message: "Le formulaire du moment n'a pas été correctement renseigné.",
       };
 
-    // For this reason below alone I thing actions should be nested and passed as props instead of housed inside dedicated files. Here, this means data from the user literally never makes it to the client. Sensitive data from a user database entry (and even insensitive data) never even reaches any outside computer. Not even the user's id.
-    // So what should be in separated files are not the actions, but rather the methods that make the action, which therefore can be used in any action. The methods should be the commonalities, not the actions themselves.
+    // For this reason below alone I thing actions should be inline and passed as props instead of housed inside dedicated files. Here, this means data from the user literally never makes it to the client. Sensitive data from a user database entry (and even insensitive data) never even reaches any outside computer. Not even the user's id.
+    // So what should be in separated files are not the actions, but rather the methods that make the action, which therefore can be used in any action. The methods should be the commonalities, not the actions themselves. Actions can and I believe should be directly link to the actual pages where they're meant to be triggered, like temporary APIs only available within their own contexts.
 
     if (!user)
       return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
@@ -378,10 +347,10 @@ export default async function MomentsPage({
 
       if (preexistingMoment)
         return { message: "Vous avez déjà un moment de ce même nom." };
-      // It worked... But the form reset.
+      // It worked... But then the form reset.
       // https://github.com/facebook/react/issues/29034
       // That's where we're considering going back to Remix.
-      // Or I'm basically going to have to control every single field (they're only four so it's okayish), and send they're data from the controlled output. This is so dumb but hey, that's what you get from living dangerously. Anyhoo, consequently my work here is done until Next.js 15 is stable.
+      // Or I'm basically going to have to control every single field (they're only four so it's okayish), and send their data from the controlled output. This is so dumb but hey, that's what you get from living dangerously.
       // Done. I've just controlled every single field.
 
       // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their single if statements.
