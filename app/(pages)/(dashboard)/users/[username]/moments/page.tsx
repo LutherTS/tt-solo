@@ -88,7 +88,7 @@ export default async function MomentsPage({
 }) {
   let now = new Date();
   let nowString = dateToInputDatetime(now);
-  console.log(nowString);
+  console.log({ nowString });
 
   const username = params.username;
 

@@ -64,7 +64,7 @@ import {
   PageTitle,
   Section,
   SectionWrapper,
-  SelectWithOptions,
+  // SelectWithOptions, // now only controlled
   SelectWithOptionsControlled,
   Textarea,
   TextareaControlled,
@@ -149,7 +149,37 @@ export function CRUD({
   revalidateMoments: RevalidateMoments;
   now: string;
 }) {
-  console.log(now);
+  console.log({ now });
+
+  // To be fair, everything that directly has to do with now should be right next to where it is received.
+  const nowRoundedUpTenMinutes = format(
+    roundToNearestMinutes(
+      add(
+        roundToNearestMinutes(now, {
+          roundingMethod: "ceil",
+          nearestTo: 10,
+        }),
+        { seconds: 1 },
+      ),
+      {
+        roundingMethod: "ceil",
+        nearestTo: 10,
+      },
+    ),
+    "yyyy-MM-dd'T'HH:mm",
+  );
+  console.log({ nowRoundedUpTenMinutes });
+
+  // I'm not using trueStartMomentDate because it's always going to be trueNowRoundedUpTenMinutes... which means I don't need a state, I just need the variable.
+  // My bad, it needs to be a state... Wait. ...I does.
+  let [trueStartMomentDate, setTrueStartMomentDate] = useState(
+    nowRoundedUpTenMinutes,
+  ); // No reaction. It's because the state of startMomentDate should be here and not in MomentForms.
+  if (trueStartMomentDate !== nowRoundedUpTenMinutes)
+    setTrueStartMomentDate(nowRoundedUpTenMinutes);
+  console.log({ trueStartMomentDate });
+  // It's a small feature but in truth it tells of a bigger story that I want to see solved.
+  // Basically I want startMomentDate to be linked to the whole page if it's creating, and link to to itself if its updating.
 
   /* Functioning timer logic, with useTimer
   // The callback function to fire every step of the timer.
@@ -173,8 +203,12 @@ export function CRUD({
     "create-moment": "Créez",
   };
 
-  const [_, realPastMoments, realCurrentMoments, realFutureMoments] =
-    allUserMomentsToCRUD;
+  const [
+    _realUserMoments,
+    realPastMoments,
+    realCurrentMoments,
+    realFutureMoments,
+  ] = allUserMomentsToCRUD;
 
   let initialSubView: SubView =
     realCurrentMoments.dates.length > 0
@@ -237,8 +271,9 @@ export function CRUD({
             moment={moment}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
-            setSubView={setSubView}
             now={now}
+            nowRoundedUpTenMinutes={trueStartMomentDate}
+            setSubView={setSubView}
           />
         )}
       </div>
@@ -252,6 +287,8 @@ export function CRUD({
           setSubView={setSubView}
           revalidateMoments={revalidateMoments}
           view={view}
+          nowRoundedUpTenMinutes={nowRoundedUpTenMinutes}
+          setTrueStartMomentDate={setTrueStartMomentDate}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
@@ -264,6 +301,7 @@ export function CRUD({
             variant="creating"
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
+            nowRoundedUpTenMinutes={trueStartMomentDate}
             setSubView={setSubView}
           />
         )}
@@ -283,6 +321,8 @@ function ReadMomentsView({
   setMoment,
   setView,
   setSubView,
+  nowRoundedUpTenMinutes,
+  setTrueStartMomentDate,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
@@ -292,6 +332,8 @@ function ReadMomentsView({
   setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
+  nowRoundedUpTenMinutes: string;
+  setTrueStartMomentDate: Dispatch<SetStateAction<string>>;
 }) {
   let subViewTitles = {
     "all-moments": "Tous",
@@ -500,6 +542,9 @@ function ReadMomentsView({
     startRevalidateMomentsTransition(async () => {
       const button = event.currentTarget;
       await revalidateMoments();
+      // I want to reset startMomentDate here.
+      // No. I'm I pass it from the top it's going to reset on its own.
+      setTrueStartMomentDate(nowRoundedUpTenMinutes);
       replace(`${pathname}`);
       button.form!.reset(); // EXACTLY.
     });
@@ -756,6 +801,7 @@ function MomentForms({
   deleteMoment,
   setView,
   setSubView,
+  nowRoundedUpTenMinutes,
 }: {
   setView: Dispatch<SetStateAction<View>>;
   variant: "creating" | "updating";
@@ -765,6 +811,7 @@ function MomentForms({
   deleteMoment?: DeleteMoment;
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
+  nowRoundedUpTenMinutes: string;
 }) {
   // roundToNearestMinutes are nested to create a clamp method, meaning:
   // - the time shown will always be a minimum of 10 minutes later
@@ -772,19 +819,19 @@ function MomentForms({
   // - the time shown will always be a maximum of 20 minutes later
   // (e.g. if it's 11:01, 11:20 will be shown)
   // This is to account for the time it will take to fill the form, especially to fill all the steps of the moment at hand.
-  const nowRoundedUpTenMinutes = roundToNearestMinutes(
-    add(
-      roundToNearestMinutes(now, {
-        roundingMethod: "ceil",
-        nearestTo: 10,
-      }),
-      { seconds: 1 },
-    ),
-    {
-      roundingMethod: "ceil",
-      nearestTo: 10,
-    },
-  );
+  // const nowRoundedUpTenMinutes = roundToNearestMinutes(
+  //   add(
+  //     roundToNearestMinutes(now, {
+  //       roundingMethod: "ceil",
+  //       nearestTo: 10,
+  //     }),
+  //     { seconds: 1 },
+  //   ),
+  //   {
+  //     roundingMethod: "ceil",
+  //     nearestTo: 10,
+  //   },
+  // );
 
   // InputSwitch unfortunately has to be controlled for resetting
   let [indispensable, setIndispensable] = useState(
@@ -795,8 +842,9 @@ function MomentForms({
   let [startMomentDate, setStartMomentDate] = useState(
     moment
       ? moment.startDateAndTime
-      : format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
-  );
+      : // : format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+        nowRoundedUpTenMinutes,
+  ); // considering putting this about to share between MomentForms and ReadMomentsView
 
   const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
     return {
@@ -862,7 +910,8 @@ function MomentForms({
   );
 
   // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
-  const [_, startCreateOrUpdateMomentTransition] = useTransition();
+  const [_isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
+    useTransition();
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
     useState<CreateOrUpdateMomentState>();
@@ -882,7 +931,8 @@ function MomentForms({
         if (variant === "creating") {
           setIndispensable(false);
           setStartMomentDate(
-            format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+            // format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+            nowRoundedUpTenMinutes,
           );
           setSteps([]);
           setStepVisible("creating");
@@ -971,7 +1021,8 @@ function MomentForms({
           ) {
             setIndispensable(false);
             setStartMomentDate(
-              format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+              // format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+              nowRoundedUpTenMinutes,
             );
             setSteps([]);
             setStepVisible("creating");
