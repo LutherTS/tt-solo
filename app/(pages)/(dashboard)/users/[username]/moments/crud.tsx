@@ -973,6 +973,11 @@ function MomentForms({
             setActiviteOptionControlled("");
             setObjectifControlled("");
             setContexteControlled("");
+
+            // @ts-ignore because it's an HTMLFormElement
+            document.getElementById("step-form-creating").reset();
+            // https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/reset
+            // ...I hear there's a thing about ref but why use React features where JavaScript features are easier to use?
           } else event.preventDefault();
         }}
         className="space-y-8"
