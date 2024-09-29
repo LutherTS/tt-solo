@@ -854,10 +854,10 @@ function MomentForms({
     indispensable,
     startMomentDate,
     steps,
-    // destinationSelect ? destinationOptionControlled : destinationTextControlled,
-    // activitySelect ? activiteOptionControlled : activiteTextControlled,
-    // objectifControlled,
-    // contexteControlled,
+    destinationSelect ? destinationOptionControlled : destinationTextControlled,
+    activitySelect ? activiteOptionControlled : activiteTextControlled,
+    objectifControlled,
+    contexteControlled,
     moment,
   );
 
@@ -868,35 +868,45 @@ function MomentForms({
     useState<CreateOrUpdateMomentState>();
 
   // Let's just try first without the error and see if it simply works with startTransition.
-  const createOrUpdateMomentAction = async (formData: FormData) => {
-    startCreateOrUpdateMomentTransition(async () => {
-      const state = await createOrUpdateMomentBound(formData);
+  const createOrUpdateMomentAction = async () =>
+    // formData: FormData
+    {
+      startCreateOrUpdateMomentTransition(async () => {
+        // const state = await createOrUpdateMomentBound(formData);
+        const state = await createOrUpdateMomentBound();
 
-      // trying return void
-      // https://github.com/immerjs/use-immer?tab=readme-ov-file#useimmerreducer
-      if (state) return setCreateOrUpdateMomentState(state);
+        // trying return void
+        // https://github.com/immerjs/use-immer?tab=readme-ov-file#useimmerreducer
+        if (state) return setCreateOrUpdateMomentState(state);
 
-      if (variant === "creating") {
-        setIndispensable(false);
-        setStartMomentDate(
-          format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
-        );
-        setSteps([]);
-        setStepVisible("creating");
-      }
+        if (variant === "creating") {
+          setIndispensable(false);
+          setStartMomentDate(
+            format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"),
+          );
+          setSteps([]);
+          setStepVisible("creating");
 
-      // this now works thanks to export const dynamic = "force-dynamic";
-      // console.log({ startMomentDate, endMomentDate, now });
-      if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
-      else if (compareAsc(startMomentDate, now) === 1)
-        setSubView("future-moments");
-      // therefore present by default
-      else setSubView("current-moments");
+          setDestinationTextControlled("");
+          setDestinationOptionControlled("");
+          setActiviteTextControlled("");
+          setActiviteOptionControlled("");
+          setObjectifControlled("");
+          setContexteControlled("");
+        }
 
-      setView("read-moments");
-      // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-    });
-  };
+        // this now works thanks to export const dynamic = "force-dynamic";
+        // console.log({ startMomentDate, endMomentDate, now });
+        if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
+        else if (compareAsc(startMomentDate, now) === 1)
+          setSubView("future-moments");
+        // therefore present by default
+        else setSubView("current-moments");
+
+        setView("read-moments");
+        // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+      });
+    };
 
   // deleteMomentAction
 

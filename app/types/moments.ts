@@ -54,12 +54,12 @@ export type CreateOrUpdateMoment = (
   indispensable: boolean,
   momentDate: string,
   steps: StepFromCRUD[],
-  // destination: string,
-  // activite: string,
-  // objectif: string,
-  // contexte: string,
+  destination: string,
+  activite: string,
+  objectif: string,
+  contexte: string,
   momentFromCRUD: MomentToCRUD | undefined,
-  formData: FormData,
+  // formData: FormData,
 ) => Promise<CreateOrUpdateMomentState>;
 
 // The type of the return of createOrUpdateMoment as it is being shared between the server and the client.
