@@ -1355,47 +1355,53 @@ function StepForm({
     updating: "step-form-updating",
   };
 
-  return (
-    <form
-      id={ids[variant]}
-      action={(formData: FormData) => {
-        let intitule = formData.get("intituledeleetape");
-        let details = formData.get("detailsdeleetape");
-        let duree = formData.get("dureedeletape");
+  // createStepAction
 
-        if (
-          typeof intitule !== "string" ||
-          typeof details !== "string" ||
-          typeof duree !== "string"
-        )
-          return console.error(
-            "Le formulaire de l'étape n'a pas été correctement renseigné.",
-          );
+  const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
-        let id = "";
-        if (variant === "creating") id = window.crypto.randomUUID();
-        if (variant === "updating") id = currentStepId;
+  // It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here.
+  // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction.
+  // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error.
+  const createStepAction = (formData: FormData) => {
+    startCreateStepTransition(() => {
+      let intitule = formData.get("intituledeleetape");
+      let details = formData.get("detailsdeleetape");
+      let duree = formData.get("dureedeletape");
 
-        const step = {
-          id,
-          intitule,
-          details,
-          duree,
-        };
+      if (
+        typeof intitule !== "string" ||
+        typeof details !== "string" ||
+        typeof duree !== "string"
+      )
+        return console.error(
+          "Le formulaire de l'étape n'a pas été correctement renseigné.",
+        );
 
-        let newSteps: StepFromCRUD[] = [];
-        if (variant === "creating") newSteps = [...steps, step];
-        if (variant === "updating")
-          newSteps = steps.map((e) => {
-            if (e.id === currentStepId) return step;
-            else return e;
-          });
+      let id = "";
+      if (variant === "creating") id = window.crypto.randomUUID();
+      if (variant === "updating") id = currentStepId;
 
-        setSteps(newSteps);
-        setStepVisible("create");
-      }}
-    ></form>
-  );
+      const step = {
+        id,
+        intitule,
+        details,
+        duree,
+      };
+
+      let newSteps: StepFromCRUD[] = [];
+      if (variant === "creating") newSteps = [...steps, step];
+      if (variant === "updating")
+        newSteps = steps.map((e) => {
+          if (e.id === currentStepId) return step;
+          else return e;
+        });
+
+      setSteps(newSteps);
+      setStepVisible("create");
+    });
+  };
+
+  return <form id={ids[variant]} action={createStepAction}></form>;
 }
 
 function ReorderItem({
