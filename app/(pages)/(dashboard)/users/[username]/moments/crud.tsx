@@ -132,6 +132,24 @@ const exchangeOptions: Option[] = [
   { key: 16, label: "Séminaire", value: "Séminaire" },
 ];
 
+const rotateStates = <T,>(
+  // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
+  direction: "left" | "right",
+  setState: Dispatch<SetStateAction<T>>,
+  statesArray: readonly T[],
+  state: T,
+) => {
+  if (direction === "right") {
+    setState(
+      statesArray.at(
+        statesArray.indexOf(state) + 1 > statesArray.length - 1
+          ? 0
+          : statesArray.indexOf(state) + 1,
+      )!,
+    );
+  } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
+};
+
 // Main Component
 
 export function CRUD({
@@ -410,24 +428,6 @@ function ReadMomentsView({
   With alt, arrow left and arrow right do "reverseSetSubView", setSubView.
   */ // DONE.
 
-  const rotateStates = <T,>(
-    // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
-    direction: "left" | "right",
-    setState: Dispatch<SetStateAction<T>>,
-    statesArray: readonly T[],
-    state: T,
-  ) => {
-    if (direction === "right") {
-      setState(
-        statesArray.at(
-          statesArray.indexOf(state) + 1 > statesArray.length - 1
-            ? 0
-            : statesArray.indexOf(state) + 1,
-        )!,
-      );
-    } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
-  };
-
   const rotateSubView = (direction: "left" | "right") =>
     rotateStates(direction, setSubView, subViews, subView);
 
@@ -487,9 +487,9 @@ function ReadMomentsView({
     useTransition();
 
   // no need for RevalidateMomentsState, revalidateMomentsState and setRevalidateMomentsState for now since no error message is planned for this
-  // type RevalidateMomentsState = { message: string };
+  // type RevalidateMomentsState = { message: string } | void;
   // const [revalidateMomentsState, setRevalidateMomentsState] =
-  //   useState<RevalidateMomentsState | null>(null);
+  //   useState<RevalidateMomentsState>();
 
   const revalidateMomentsAction = async (
     event: MouseEvent<HTMLButtonElement>,
@@ -802,6 +802,7 @@ function MomentForms({
   let [activitySelect, setActivitySelect] = useState(false);
 
   // https://github.com/facebook/react/issues/29034
+  // which is real sad because React 19 promise to never again need useState
 
   let [destinationTextControlled, setDestinationTextControlled] = useState(
     moment ? moment.destinationIdeal : "",
@@ -844,7 +845,6 @@ function MomentForms({
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
     useState<CreateOrUpdateMomentState>();
 
-  // Let's just try first without the error and see if it simply works with startTransition.
   const createOrUpdateMomentAction = async () => {
     startCreateOrUpdateMomentTransition(async () => {
       const state = await createOrUpdateMomentBound();
@@ -924,8 +924,7 @@ function MomentForms({
         // the easy solution
         setStartMomentDate(
           roundTimeUpTenMinutes(dateToInputDatetime(new Date())),
-        ); // the harder solution would returning that information a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case
-        roundTimeUpTenMinutes;
+        ); // the harder solution would be returning that information a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case
         setSteps([]);
         setStepVisible("creating");
 

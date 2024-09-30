@@ -73,9 +73,9 @@ export default async function MomentsPage({
   let now = dateToInputDatetime(new Date());
   console.log({ now });
 
-  const username = params.username;
-
   // PART READ
+
+  const username = params.username;
 
   // error handling needed eventually
   const user = await findUserIdByUsername(username);
@@ -292,10 +292,7 @@ export default async function MomentsPage({
 
   // PART WRITE
 
-  // Progress made on shared types.
-
-  // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
-  // (Typage dorénavant transposer à la main. ...Et plus encore.)
+  // Types are shared between this server file, the type file and the client file, manually verified both for the arguments and for the promise.
   async function createOrUpdateMoment(
     variant: "creating" | "updating",
     indispensable: boolean,
@@ -470,8 +467,7 @@ export default async function MomentsPage({
     revalidatePath(`/users/${username}/moments`);
   }
 
-  // still bugging with time, at this time... not anymore?
-  // there no return in any case here so there's no need in typing : Promise<void>
+  // there's no return in any case so no need in typing ": Promise<void>"
   async function revalidateMoments() {
     "use server";
 
@@ -480,6 +476,7 @@ export default async function MomentsPage({
 
   // The magic here is that no data directly from the User model ever leaves the server, since the actions reuse the verified User data obtained at the top of the function.
   // However, if the actions were obtained via import in a client component such as the one below, user data would have to be bound directly on the client component itself (which is insecure) or via a separate child server component (perhaps secure, but an exact step for that data) which would also have to pass these actions as props, doing the exact same thing.
+  // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
     <CRUD
       allUserMomentsToCRUD={allUserMomentsToCRUD}
