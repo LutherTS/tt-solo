@@ -1361,7 +1361,8 @@ function StepForm({
 
   // It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here.
   // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction.
-  // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error.
+  // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below.
+  // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below.
   const createStepAction = (formData: FormData) => {
     startCreateStepTransition(() => {
       let intitule = formData.get("intituledeleetape");
