@@ -505,13 +505,7 @@ function ReadMomentsView({
 
   return (
     <div className="space-y-8">
-      {/* -mt-4 to resolve padding from Vos moments */}
-      <div
-        className={clsx(
-          "flex flex-wrap gap-4",
-          // "-mt-4",
-        )}
-      >
+      <div className={clsx("flex flex-wrap gap-4")}>
         {subViews.map((e) => {
           const className = "px-4 py-2 h-9 flex items-center justify-center";
           return (
@@ -889,7 +883,7 @@ function MomentForms({
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
-  // not really using deleteMomentState current but it can return an error
+  // not really using deleteMomentState currently but it can return an error
   const [deleteMomentState, setDeleteMomentState] =
     useState<DeleteMomentState>();
 
@@ -981,14 +975,14 @@ function MomentForms({
 
   return (
     <>
-      {/* temporary debugging */}
+      {/* surfacing server-side and client-side errors */}
       {createOrUpdateMomentState?.message && (
         <>{createOrUpdateMomentState.message}</>
       )}
       {deleteMomentState?.message && <>{deleteMomentState.message}</>}
       {createStepState?.message && <>{createStepState.message}</>}
       {updateStepState?.message && <>{updateStepState.message}</>}
-      {/* The connection to the server has been established. */}
+      {/* The connection to the server (and client!) has been established. */}
       <StepForm
         variant="creating"
         currentStepId={currentStepId}
