@@ -950,6 +950,8 @@ function MomentForms({
   // Here we go again to control the StepForm fields...
   // And there's two variant, so I need to duplicate the states...
   // ...Eventually. Only one variant is in the DOM at ont time. So for now I can... No. Two states. Even for startTransitions.
+  // ...
+  // I'm laughing but it's not funny.
 
   let [intituleCreateControlled, setIntituleCreateControlled] = useState("");
   let [detailsCreateControlled, setDetailsCreateControlled] = useState("");
@@ -1180,7 +1182,7 @@ function MomentForms({
                     setStepVisible={setStepVisible}
                     startMomentDate={startMomentDate}
                     addingTime={addingTime}
-                    // currentStep={currentStep}
+                    currentStep={currentStep}
                     setSteps={setSteps}
                     key={step.id}
                     isUpdateStepPending={isUpdateStepPending}
@@ -1525,7 +1527,7 @@ function ReorderItem({
   setStepVisible,
   startMomentDate,
   addingTime,
-  // currentStep,
+  currentStep,
   setSteps,
   isUpdateStepPending,
   intitule,
@@ -1544,7 +1546,7 @@ function ReorderItem({
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
   startMomentDate: string;
   addingTime: number;
-  // currentStep: StepFromCRUD | undefined;
+  currentStep: StepFromCRUD | undefined;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   isUpdateStepPending: boolean;
   intitule: string;
@@ -1601,6 +1603,11 @@ function ReorderItem({
               type="button"
               onClick={() => {
                 setCurrentStepId(step.id);
+
+                setIntitule(step.intitule);
+                setDetails(step.details);
+                setDuree(step.duree);
+
                 setStepVisible("updating");
               }}
             >
@@ -1676,6 +1683,8 @@ function ReorderItem({
                 <Button
                   form="step-form-updating"
                   type="submit"
+                  // This needs to be an action.
+                  // And this needs a confirm.
                   formAction={() => {
                     let newSteps = steps.filter(
                       (step) => step.id !== currentStepId,
