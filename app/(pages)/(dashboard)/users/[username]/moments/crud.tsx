@@ -63,6 +63,7 @@ import {
   FieldTitle,
   InputDatetimeLocalControlled,
   InputNumber,
+  InputNumberControlled,
   InputSwitchControlled,
   InputText,
   InputTextControlled,
@@ -952,11 +953,17 @@ function MomentForms({
 
   let [intituleCreateControlled, setIntituleCreateControlled] = useState("");
   let [detailsCreateControlled, setDetailsCreateControlled] = useState("");
-  let [dureeCreateControlled, setDureeCreateControlled] = useState("");
+  let [dureeCreateControlled, setDureeCreateControlled] = useState("10");
 
-  let [intituleUpdateControlled, setIntituleUpdateControlled] = useState("");
-  let [detailsUpdateControlled, setDetailsUpdateControlled] = useState("");
-  let [dureeUpdateControlled, setDureeUpdateControlled] = useState("");
+  let [intituleUpdateControlled, setIntituleUpdateControlled] = useState(
+    currentStep ? currentStep.intitule : "",
+  );
+  let [detailsUpdateControlled, setDetailsUpdateControlled] = useState(
+    currentStep ? currentStep.details : "",
+  );
+  let [dureeUpdateControlled, setDureeUpdateControlled] = useState(
+    currentStep ? currentStep.duree : "",
+  );
 
   // CreateStepAction // it's createOrUpdateStep
 
@@ -984,6 +991,12 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
+        intitule={intituleCreateControlled}
+        details={detailsCreateControlled}
+        duree={dureeCreateControlled}
+        setIntitule={setIntituleCreateControlled}
+        setDetails={setDetailsCreateControlled}
+        setDuree={setDureeCreateControlled}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
         setCreateOrUpdateStepState={setCreateStepState}
       />
@@ -993,6 +1006,12 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
+        intitule={intituleUpdateControlled}
+        details={detailsUpdateControlled}
+        duree={dureeUpdateControlled}
+        setIntitule={setIntituleUpdateControlled}
+        setDetails={setDetailsUpdateControlled}
+        setDuree={setDureeUpdateControlled}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         setCreateOrUpdateStepState={setUpdateStepState}
       />
@@ -1161,10 +1180,16 @@ function MomentForms({
                     setStepVisible={setStepVisible}
                     startMomentDate={startMomentDate}
                     addingTime={addingTime}
-                    currentStep={currentStep}
+                    // currentStep={currentStep}
                     setSteps={setSteps}
                     key={step.id}
                     isUpdateStepPending={isUpdateStepPending}
+                    intitule={intituleUpdateControlled}
+                    details={detailsUpdateControlled}
+                    duree={dureeUpdateControlled}
+                    setIntitule={setIntituleUpdateControlled}
+                    setDetails={setDetailsUpdateControlled}
+                    setDuree={setDureeUpdateControlled}
                   />
                 );
               })}
@@ -1212,26 +1237,52 @@ function MomentForms({
               </div>
               {/* manually fixing that padding... */}
               <div className="-mt-1.5">
-                <InputText
+                {/* <InputText
                   form="step-form-creating"
                   label="Intitulé de l'étape"
                   name="intituledeleetape"
                   description="Définissez simplement le sujet de l'étape."
+                /> */}
+                <InputTextControlled
+                  form="step-form-creating"
+                  label="Intitulé de l'étape"
+                  name="intituledeleetape"
+                  definedValue={intituleCreateControlled}
+                  definedOnValueChange={setIntituleCreateControlled}
+                  description="Définissez simplement le sujet de l'étape."
                 />
               </div>
-              <Textarea
+              {/* <Textarea
                 form="step-form-creating"
                 label="Détails de l'étape"
                 name="detailsdeleetape"
                 description="Expliquez en détails le déroulé de l'étape."
                 rows={4}
+              /> */}
+              <TextareaControlled
+                form="step-form-creating"
+                label="Détails de l'étape"
+                name="detailsdeleetape"
+                definedValue={detailsCreateControlled}
+                definedOnValueChange={setDetailsCreateControlled}
+                description="Expliquez en détails le déroulé de l'étape."
+                rows={4}
               />
-              <InputNumber
+              {/* <InputNumber
                 form="step-form-creating"
                 label="Durée de l'étape"
                 name="dureedeletape"
                 description="Renseignez en minutes la longueur de l'étape."
                 defaultValue="10"
+                min="5"
+              /> */}
+              <InputNumberControlled
+                form="step-form-creating"
+                label="Durée de l'étape"
+                name="dureedeletape"
+                description="Renseignez en minutes la longueur de l'étape."
+                definedValue={dureeCreateControlled}
+                definedOnValueChange={setDureeCreateControlled}
                 min="5"
               />
               <div className="flex">
@@ -1377,6 +1428,12 @@ function StepForm({
   steps,
   setSteps,
   setStepVisible,
+  intitule,
+  details,
+  duree,
+  setIntitule,
+  setDetails,
+  setDuree,
   startCreateOrUpdateStepTransition,
   setCreateOrUpdateStepState,
 }: {
@@ -1385,6 +1442,12 @@ function StepForm({
   steps: StepFromCRUD[];
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
+  intitule: string;
+  details: string;
+  duree: string;
+  setIntitule: Dispatch<SetStateAction<string>>;
+  setDetails: Dispatch<SetStateAction<string>>;
+  setDuree: Dispatch<SetStateAction<string>>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   setCreateOrUpdateStepState: Dispatch<
     SetStateAction<CreateStepState | UpdateStepState | undefined>
@@ -1403,13 +1466,14 @@ function StepForm({
   // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
   const createOrUpdateStepAction = (formData: FormData) => {
     startCreateOrUpdateStepTransition(() => {
-      let intitule = formData.get("intituledeleetape");
-      let details = formData.get("detailsdeleetape");
-      let duree = formData.get("dureedeletape");
+      // let intitule = formData.get("intituledeleetape");
+      // let details = formData.get("detailsdeleetape");
+      // let duree = formData.get("dureedeletape");
 
       // test
       // return setCreateOrUpdateStepState({ message: "It works though." });
       // It does. But the formData goes away again. :')
+      // Works both for create and update separately.
 
       if (
         typeof intitule !== "string" ||
@@ -1441,6 +1505,10 @@ function StepForm({
 
       setSteps(newSteps);
       setStepVisible("create");
+
+      setIntitule("");
+      setDetails("");
+      setDuree("10");
     });
   };
 
@@ -1457,9 +1525,15 @@ function ReorderItem({
   setStepVisible,
   startMomentDate,
   addingTime,
-  currentStep,
+  // currentStep,
   setSteps,
   isUpdateStepPending,
+  intitule,
+  details,
+  duree,
+  setIntitule,
+  setDetails,
+  setDuree,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1470,9 +1544,15 @@ function ReorderItem({
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
   startMomentDate: string;
   addingTime: number;
-  currentStep: StepFromCRUD | undefined;
+  // currentStep: StepFromCRUD | undefined;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   isUpdateStepPending: boolean;
+  intitule: string;
+  details: string;
+  duree: string;
+  setIntitule: Dispatch<SetStateAction<string>>;
+  setDetails: Dispatch<SetStateAction<string>>;
+  setDuree: Dispatch<SetStateAction<string>>;
 }) {
   const controls = useDragControls();
 
@@ -1532,27 +1612,53 @@ function ReorderItem({
           <div className="flex flex-col gap-y-8">
             {/* manually fixing that padding... */}
             <div className="-mt-1.5">
-              <InputText
+              {/* <InputText
                 form="step-form-updating"
                 label="Intitulé de l'étape"
                 name="intituledeleetape"
                 defaultValue={currentStep?.intitule}
                 description="Définissez simplement le sujet de l'étape."
+              /> */}
+              <InputTextControlled
+                form="step-form-updating"
+                label="Intitulé de l'étape"
+                name="intituledeleetape"
+                definedValue={intitule}
+                definedOnValueChange={setIntitule}
+                description="Définissez simplement le sujet de l'étape."
               />
             </div>
-            <Textarea
+            {/* <Textarea
               form="step-form-updating"
               label="Détails de l'étape"
               name="detailsdeleetape"
               defaultValue={currentStep?.details}
               description="Expliquez en détails le déroulé de l'étape."
               rows={4}
+            /> */}
+            <TextareaControlled
+              form="step-form-updating"
+              label="Détails de l'étape"
+              name="detailsdeleetape"
+              definedValue={details}
+              definedOnValueChange={setDetails}
+              description="Expliquez en détails le déroulé de l'étape."
+              rows={4}
             />
-            <InputNumber
+            {/* <InputNumber
               form="step-form-updating"
               label="Durée de l'étape"
               name="dureedeletape"
               defaultValue={currentStep?.duree}
+              description="Renseignez en minutes la longueur de l'étape."
+              min="5"
+            /> */}
+            <InputNumberControlled
+              form="step-form-updating"
+              label="Durée de l'étape"
+              name="dureedeletape"
+              definedValue={duree}
+              definedOnValueChange={setDuree}
               description="Renseignez en minutes la longueur de l'étape."
               min="5"
             />
