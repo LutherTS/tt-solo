@@ -62,7 +62,6 @@ import {
   Divider,
   FieldTitle,
   InputDatetimeLocalControlled,
-  InputNumber,
   InputNumberControlled,
   InputSwitchControlled,
   InputText,
@@ -70,9 +69,7 @@ import {
   PageTitle,
   Section,
   SectionWrapper,
-  // SelectWithOptions, // now only controlled
   SelectWithOptionsControlled,
-  Textarea,
   TextareaControlled,
 } from "../../../components";
 import * as Icons from "../icons";
@@ -117,7 +114,7 @@ type SubView =
 
 type StepVisible = "create" | "creating" | "updating";
 
-const exchangeOptions: Option[] = [
+const activityOptions: Option[] = [
   { key: 1, label: "Atelier", value: "Atelier" },
   { key: 2, label: "Comité", value: "Comité" },
   { key: 3, label: "Conférence", value: "Conférence" },
@@ -814,12 +811,17 @@ function MomentForms({
   let [destinationOptionControlled, setDestinationOptionControlled] = useState(
     moment ? moment.destinationIdeal : "",
   );
+
   let [activiteTextControlled, setActiviteTextControlled] = useState(
     moment ? moment.activity : "",
   );
+
+  const activityValues = activityOptions.map((e) => e.value);
+
   let [activiteOptionControlled, setActiviteOptionControlled] = useState(
-    moment ? moment.activity : "",
+    moment && activityValues.includes(moment.activity) ? moment.activity : "",
   );
+
   let [objectifControlled, setObjectifControlled] = useState(
     moment ? moment.objective : "",
   );
@@ -967,7 +969,7 @@ function MomentForms({
     currentStep ? currentStep.duree : "",
   );
 
-  // CreateStepAction // it's createOrUpdateStep
+  // CreateOrUpdateStepAction
 
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
@@ -1103,7 +1105,7 @@ function MomentForms({
               definedValue={activiteOptionControlled}
               definedOnValueChange={setActiviteOptionControlled}
               placeholder="Choisissez..."
-              options={exchangeOptions}
+              options={activityOptions}
               fieldFlexIsNotLabel
               required={activitySelect}
             >
@@ -1155,8 +1157,6 @@ function MomentForms({
         <Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          // addendum={`(Vous pouvez réorganiser les étapes par cliquer-déposer en sélectionnant Étape Une, Étape Deux...)`}
-          // showAddendum={steps.length >= 1}
         >
           {steps.length > 0 && (
             <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
@@ -1182,7 +1182,6 @@ function MomentForms({
                     setStepVisible={setStepVisible}
                     startMomentDate={startMomentDate}
                     addingTime={addingTime}
-                    currentStep={currentStep}
                     setSteps={setSteps}
                     key={step.id}
                     isUpdateStepPending={isUpdateStepPending}
@@ -1239,12 +1238,6 @@ function MomentForms({
               </div>
               {/* manually fixing that padding... */}
               <div className="-mt-1.5">
-                {/* <InputText
-                  form="step-form-creating"
-                  label="Intitulé de l'étape"
-                  name="intituledeleetape"
-                  description="Définissez simplement le sujet de l'étape."
-                /> */}
                 <InputTextControlled
                   form="step-form-creating"
                   label="Intitulé de l'étape"
@@ -1254,13 +1247,6 @@ function MomentForms({
                   description="Définissez simplement le sujet de l'étape."
                 />
               </div>
-              {/* <Textarea
-                form="step-form-creating"
-                label="Détails de l'étape"
-                name="detailsdeleetape"
-                description="Expliquez en détails le déroulé de l'étape."
-                rows={4}
-              /> */}
               <TextareaControlled
                 form="step-form-creating"
                 label="Détails de l'étape"
@@ -1270,14 +1256,6 @@ function MomentForms({
                 description="Expliquez en détails le déroulé de l'étape."
                 rows={4}
               />
-              {/* <InputNumber
-                form="step-form-creating"
-                label="Durée de l'étape"
-                name="dureedeletape"
-                description="Renseignez en minutes la longueur de l'étape."
-                defaultValue="10"
-                min="5"
-              /> */}
               <InputNumberControlled
                 form="step-form-creating"
                 label="Durée de l'étape"
@@ -1464,14 +1442,10 @@ function StepForm({
 
   // It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here. // (Actually... No.) :')
   // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
-  // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below.
+  // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below. // DONE.
   // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
-  const createOrUpdateStepAction = (formData: FormData) => {
+  const createOrUpdateStepAction = () => {
     startCreateOrUpdateStepTransition(() => {
-      // let intitule = formData.get("intituledeleetape");
-      // let details = formData.get("detailsdeleetape");
-      // let duree = formData.get("dureedeletape");
-
       // test
       // return setCreateOrUpdateStepState({ message: "It works though." });
       // It does. But the formData goes away again. :')
@@ -1480,11 +1454,12 @@ function StepForm({
       if (
         typeof intitule !== "string" ||
         typeof details !== "string" ||
-        typeof duree !== "string"
+        typeof +duree !== "number"
       )
-        return console.error(
-          "Le formulaire de l'étape n'a pas été correctement renseigné.",
-        );
+        return setCreateOrUpdateStepState({
+          message:
+            "Le formulaire de l'étape n'a pas été correctement renseigné.",
+        });
 
       let id = "";
       if (variant === "creating") id = window.crypto.randomUUID();
@@ -1527,7 +1502,6 @@ function ReorderItem({
   setStepVisible,
   startMomentDate,
   addingTime,
-  currentStep,
   setSteps,
   isUpdateStepPending,
   intitule,
@@ -1546,7 +1520,6 @@ function ReorderItem({
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
   startMomentDate: string;
   addingTime: number;
-  currentStep: StepFromCRUD | undefined;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   isUpdateStepPending: boolean;
   intitule: string;
@@ -1557,6 +1530,25 @@ function ReorderItem({
   setDuree: Dispatch<SetStateAction<string>>;
 }) {
   const controls = useDragControls();
+
+  // deleteStepAction
+
+  const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
+
+  const deleteStepAction = () => {
+    if (
+      confirm(
+        "Êtes-vous sûr que vous voulez effacer cette étape ? (Cela ne sera véritablement pris en compte qui si vous confirmez ce moment. Retourner au préalable sur Vos moments ignorera cette effacement.)",
+      )
+    ) {
+      startDeleteStepTransition(() => {
+        let newSteps = steps.filter((step) => step.id !== currentStepId);
+        setSteps(newSteps);
+        if (newSteps.length === 0) setStepVisible("creating");
+        else setStepVisible("create");
+      });
+    }
+  };
 
   return (
     <Reorder.Item
@@ -1601,6 +1593,9 @@ function ReorderItem({
             <Button
               variant="destroy-step"
               type="button"
+              // since this is a selection of setStates and as a would-be action it would only be used once, there's no imperative need to make an action here
+              // ...but, if I want to "secure" ever single one of my buttons with isPending, I'd need all of them to be actions
+              // ...which is overkill, and would require so many action names, and would confuse people reading the code.
               onClick={() => {
                 setCurrentStepId(step.id);
 
@@ -1619,13 +1614,6 @@ function ReorderItem({
           <div className="flex flex-col gap-y-8">
             {/* manually fixing that padding... */}
             <div className="-mt-1.5">
-              {/* <InputText
-                form="step-form-updating"
-                label="Intitulé de l'étape"
-                name="intituledeleetape"
-                defaultValue={currentStep?.intitule}
-                description="Définissez simplement le sujet de l'étape."
-              /> */}
               <InputTextControlled
                 form="step-form-updating"
                 label="Intitulé de l'étape"
@@ -1635,14 +1623,6 @@ function ReorderItem({
                 description="Définissez simplement le sujet de l'étape."
               />
             </div>
-            {/* <Textarea
-              form="step-form-updating"
-              label="Détails de l'étape"
-              name="detailsdeleetape"
-              defaultValue={currentStep?.details}
-              description="Expliquez en détails le déroulé de l'étape."
-              rows={4}
-            /> */}
             <TextareaControlled
               form="step-form-updating"
               label="Détails de l'étape"
@@ -1652,14 +1632,6 @@ function ReorderItem({
               description="Expliquez en détails le déroulé de l'étape."
               rows={4}
             />
-            {/* <InputNumber
-              form="step-form-updating"
-              label="Durée de l'étape"
-              name="dureedeletape"
-              defaultValue={currentStep?.duree}
-              description="Renseignez en minutes la longueur de l'étape."
-              min="5"
-            /> */}
             <InputNumberControlled
               form="step-form-updating"
               label="Durée de l'étape"
@@ -1682,18 +1654,10 @@ function ReorderItem({
                 </Button>
                 <Button
                   form="step-form-updating"
-                  type="submit"
-                  // This needs to be an action.
-                  // And this needs a confirm.
-                  formAction={() => {
-                    let newSteps = steps.filter(
-                      (step) => step.id !== currentStepId,
-                    );
-                    setSteps(newSteps);
-                    if (newSteps.length === 0) setStepVisible("creating");
-                    else setStepVisible("create");
-                  }}
+                  type="button"
+                  onClick={deleteStepAction}
                   variant="cancel-step"
+                  disabled={isDeleteStepPending}
                 >
                   Effacer l&apos;étape
                 </Button>
@@ -1703,16 +1667,10 @@ function ReorderItem({
               <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
                 <Button
                   form="step-form-updating"
-                  type="submit"
-                  formAction={() => {
-                    let newSteps = steps.filter(
-                      (step) => step.id !== currentStepId,
-                    );
-                    setSteps(newSteps);
-                    if (newSteps.length === 0) setStepVisible("creating");
-                    else setStepVisible("create");
-                  }}
+                  type="button"
+                  onClick={deleteStepAction}
                   variant="cancel-step"
+                  disabled={isDeleteStepPending}
                 >
                   Effacer l&apos;étape
                 </Button>
@@ -1918,4 +1876,8 @@ type DeleteMoment = (momentFromCRUD?: MomentToCRUD) => Promise<
 >;
 
 type RevalidateMoments = () => Promise<void>;
+
+// This needs to be an action. // DONE.
+// And this needs a confirm. // DONE.
+// I didn't know at the time that action could be use on pretty much anything. // DONE.
 */
