@@ -78,3 +78,5 @@ export type DeleteMoment = (
 export type DeleteMomentState = { message: string } | void;
 
 export type RevalidateMoments = () => Promise<void>;
+
+export type CreateStepState = { message: string } | void;

@@ -10,6 +10,7 @@ import {
   useTransition,
   MouseEvent,
   FormEvent,
+  TransitionStartFunction,
 } from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -46,6 +47,7 @@ import {
   DeleteMoment,
   RevalidateMoments,
   DeleteMomentState,
+  CreateStepState,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -943,6 +945,12 @@ function MomentForms({
     });
   };
 
+  // CreateStepAction
+
+  const [isCreateStepPending, startCreateStepTransition] = useTransition();
+
+  const [createStepState, setCreateStepState] = useState<CreateStepState>();
+
   return (
     <>
       {/* temporary debugging */}
@@ -950,20 +958,25 @@ function MomentForms({
         <>{createOrUpdateMomentState.message}</>
       )}
       {deleteMomentState?.message && <>{deleteMomentState.message}</>}
+      {createStepState?.message && <>{createStepState.message}</>}
       {/* The connection to the server has been established. */}
       <StepForm
+        variant="creating"
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        variant="creating"
+        startCreateStepTransition={startCreateStepTransition}
+        setCreateStepState={setCreateStepState}
       />
       <StepForm
+        variant="updating"
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        variant="updating"
+        startCreateStepTransition={startCreateStepTransition}
+        setCreateStepState={setCreateStepState}
       />
       <form
         action={createOrUpdateMomentAction}
@@ -1206,18 +1219,19 @@ function MomentForms({
                 {/* Mobile */}
                 <div className="flex w-full flex-col gap-4 md:hidden">
                   <Button
+                    variant="confirm-step"
                     form="step-form-creating"
                     type="submit"
-                    variant="confirm-step"
+                    disabled={isCreateStepPending}
                   >
                     Confirmer l&apos;étape
                   </Button>
                   <Button
+                    variant="cancel-step"
                     form="step-form-creating"
                     type="button"
                     onClick={() => setStepVisible("create")}
                     disabled={steps.length === 0}
-                    variant="cancel-step"
                   >
                     Annuler l&apos;étape
                   </Button>
@@ -1226,18 +1240,19 @@ function MomentForms({
                 {/* There's a slight py issue here handled by hand */}
                 <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
                   <Button
+                    variant="cancel-step"
                     form="step-form-creating"
                     type="button"
                     onClick={() => setStepVisible("create")}
                     disabled={steps.length === 0}
-                    variant="cancel-step"
                   >
                     Annuler l&apos;étape
                   </Button>
                   <Button
+                    variant="confirm-step"
                     form="step-form-creating"
                     type="submit"
-                    variant="confirm-step"
+                    disabled={isCreateStepPending}
                   >
                     Confirmer l&apos;étape
                   </Button>
@@ -1338,17 +1353,21 @@ function MomentForms({
 // Main Supporting Components
 
 function StepForm({
+  variant,
   currentStepId,
   steps,
   setSteps,
   setStepVisible,
-  variant,
+  startCreateStepTransition,
+  setCreateStepState,
 }: {
+  variant: "creating" | "updating";
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
-  variant: "creating" | "updating";
+  startCreateStepTransition: TransitionStartFunction;
+  setCreateStepState: Dispatch<SetStateAction<CreateStepState | undefined>>;
 }) {
   let ids = {
     creating: "step-form-creating",
@@ -1357,17 +1376,21 @@ function StepForm({
 
   // createStepAction
 
-  const [isCreateStepPending, startCreateStepTransition] = useTransition();
+  // const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
-  // It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here.
-  // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction.
+  // It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here. // (Actually... No.) :')
+  // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
   // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below.
-  // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below.
+  // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
   const createStepAction = (formData: FormData) => {
     startCreateStepTransition(() => {
       let intitule = formData.get("intituledeleetape");
       let details = formData.get("detailsdeleetape");
       let duree = formData.get("dureedeletape");
+
+      // test
+      // return setCreateStepState({ message: "It works though." });
+      // It does. But the formData goes away again. :')
 
       if (
         typeof intitule !== "string" ||
