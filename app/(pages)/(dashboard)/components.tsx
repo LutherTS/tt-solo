@@ -10,6 +10,7 @@ import { useFormStatus } from "react-dom";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Switch from "@radix-ui/react-switch";
+import { isValid } from "date-fns";
 
 // Variables
 
@@ -805,7 +806,11 @@ export function InputDatetimeLocalControlled({
         type="datetime-local"
         name={name}
         value={definedValue}
-        onChange={(event) => definedOnValueChange(event.currentTarget.value)}
+        onChange={(event) => {
+          const value = event.currentTarget.value;
+          // ...incredible stuff
+          if (isValid(new Date(value))) definedOnValueChange(value);
+        }}
         min={min}
         max={max}
         onKeyDown={(event) => {

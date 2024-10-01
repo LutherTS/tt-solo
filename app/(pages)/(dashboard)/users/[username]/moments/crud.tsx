@@ -668,17 +668,17 @@ function ReadMomentsView({
                                   </>
                                 )}
                               </p>
-                              <ol>
+                              <ol className="">
                                 {e3.steps.map((e4) => (
                                   <li
-                                    className="list-inside list-disc font-serif font-light leading-loose text-neutral-500"
+                                    className="text-sm font-light leading-loose text-neutral-500"
                                     key={e4.id}
                                   >
-                                    <span>
-                                      {e4.startDateAndTime.split("T")[1]}
-                                    </span>{" "}
-                                    - {e4.endDateAndTime.split("T")[1]} :{" "}
-                                    {e4.title}
+                                    <p className="">
+                                      {e4.startDateAndTime.split("T")[1]} -{" "}
+                                      {e4.endDateAndTime.split("T")[1]} :{" "}
+                                      {e4.title}
+                                    </p>
                                   </li>
                                 ))}
                               </ol>
