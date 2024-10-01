@@ -499,7 +499,7 @@ function ReadMomentsView({
       const button = event.currentTarget;
       await revalidateMoments();
       replace(`${pathname}`);
-      button.form!.reset(); // EXACTLY.
+      button.form?.reset(); // Indeed.
     });
   };
 
@@ -839,7 +839,9 @@ function MomentForms({
   );
 
   // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
-  const [_isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
+  // ...but to make the action autonomous I'll add it nonetheless
+  // a cool thought could be to have disabled styles specific to the reason that disables the button, like making them only visible if the action of the button itself is pending, and not if it's due to anything else.
+  const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
     useTransition();
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
@@ -1230,8 +1232,7 @@ function MomentForms({
                   Réinitialiser l&apos;étape
                 </Button>
               </div>
-              {/* manually fixing that padding... */}
-              <div className="-mt-1.5">
+              <div>
                 <InputTextControlled
                   form="step-form-creating"
                   label="Intitulé de l'étape"
@@ -1281,8 +1282,7 @@ function MomentForms({
                   </Button>
                 </div>
                 {/* Desktop */}
-                {/* There's a slight py issue here handled by hand */}
-                <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+                <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
                   <Button
                     variant="cancel-step"
                     form="step-form-creating"
@@ -1328,12 +1328,12 @@ function MomentForms({
                 disabled={
                   steps.length === 0 ||
                   isResetMomentFormPending ||
-                  isDeleteMomentPending
+                  isDeleteMomentPending ||
+                  isCreateOrUpdateMomentPending
                 }
               >
                 Confirmer le moment
               </Button>
-              {/* this could eventually be a component too */}
               {variant === "creating" && (
                 <Button
                   type="reset"
@@ -1381,7 +1381,8 @@ function MomentForms({
                 disabled={
                   steps.length === 0 ||
                   isResetMomentFormPending ||
-                  isDeleteMomentPending
+                  isDeleteMomentPending ||
+                  isCreateOrUpdateMomentPending
                 }
               >
                 Confirmer le moment
@@ -1553,9 +1554,9 @@ function ReorderItem({
       // layout="position" // or ""preserve-aspect""
       dragTransition={{
         bounceStiffness: 900,
-        bounceDamping: 30,
+        bounceDamping: 50,
       }}
-      // whileDrag={{ opacity: 0.5 }}
+      // whileDrag={{ opacity: 0.5 }} // buggy though
     >
       <div
         className={clsx(
@@ -1606,8 +1607,7 @@ function ReorderItem({
         </div>
         {stepVisible === "updating" && currentStepId === step.id ? (
           <div className="flex flex-col gap-y-8">
-            {/* manually fixing that padding... */}
-            <div className="-mt-1.5">
+            <div>
               <InputTextControlled
                 form="step-form-updating"
                 label="Intitulé de l'étape"
@@ -1657,8 +1657,7 @@ function ReorderItem({
                 </Button>
               </div>
               {/* Desktop */}
-              {/* There's a slight py issue here handled by hand */}
-              <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+              <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
                 <Button
                   form="step-form-updating"
                   type="button"
@@ -1681,8 +1680,7 @@ function ReorderItem({
           </div>
         ) : (
           <>
-            {/* manually fixing that padding... */}
-            <div className="-mt-1.5 space-y-2">
+            <div className="space-y-2">
               <p className="font-medium text-blue-950">{step.intitule}</p>
               <p>
                 <span
