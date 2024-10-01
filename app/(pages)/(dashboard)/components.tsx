@@ -614,7 +614,7 @@ export function InputSwitchControlled({
   label,
   name,
   description,
-  definedValue = false,
+  definedValue,
   definedOnValueChange = () => {},
 }: {
   label: string;
@@ -650,7 +650,7 @@ export function InputSwitchControlled({
   );
 }
 
-// IMPORTANT: input type number as a browser default does not show an error when the form fails to submit on mobile, so do remember the importance of server-side validations.
+// IMPORTANT: input type number as a browser default does not show an error when the form fails to submit on mobile, so do remember the importance of server-side validations. (In this use case it's client-side validations.)
 // (Same for input datetime-local.)
 export function InputNumber({
   form,
@@ -683,6 +683,63 @@ export function InputNumber({
           type="number"
           name={name}
           defaultValue={defaultValue}
+          step={step}
+          min={min}
+          max={max}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") event.preventDefault();
+          }}
+          className={clsx(
+            baseInputTexts,
+            notDatetimeLocalPadding,
+            focusVisibleTexts,
+          )}
+        />
+        <div className="flex items-center">
+          <p>minutes</p>
+        </div>
+      </div>
+    </FieldFlex>
+  );
+}
+
+export function InputNumberControlled({
+  form,
+  label,
+  description,
+  name,
+  // defaultValue = "0",
+  definedValue,
+  definedOnValueChange = () => {},
+  step,
+  min = "0",
+  max,
+}: {
+  form?: string;
+  label: string;
+  name: string;
+  description?: string;
+  // defaultValue?: string;
+  definedValue?: string;
+  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  step?: string;
+  min?: string;
+  max?: string;
+}) {
+  return (
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      {description && (
+        <p className="select-none text-sm text-neutral-500">{description}</p>
+      )}
+      <div className="grid grid-cols-2 gap-4">
+        <input
+          form={form}
+          type="number"
+          name={name}
+          // defaultValue={defaultValue}
+          value={definedValue}
+          onChange={(event) => definedOnValueChange(event.currentTarget.value)}
           step={step}
           min={min}
           max={max}

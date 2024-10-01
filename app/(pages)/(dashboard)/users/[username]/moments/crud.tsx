@@ -48,6 +48,7 @@ import {
   RevalidateMoments,
   DeleteMomentState,
   CreateStepState,
+  UpdateStepState,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -945,11 +946,27 @@ function MomentForms({
     });
   };
 
-  // CreateStepAction
+  // Here we go again to control the StepForm fields...
+  // And there's two variant, so I need to duplicate the states...
+  // ...Eventually. Only one variant is in the DOM at ont time. So for now I can... No. Two states. Even for startTransitions.
+
+  let [intituleCreateControlled, setIntituleCreateControlled] = useState("");
+  let [detailsCreateControlled, setDetailsCreateControlled] = useState("");
+  let [dureeCreateControlled, setDureeCreateControlled] = useState("");
+
+  let [intituleUpdateControlled, setIntituleUpdateControlled] = useState("");
+  let [detailsUpdateControlled, setDetailsUpdateControlled] = useState("");
+  let [dureeUpdateControlled, setDureeUpdateControlled] = useState("");
+
+  // CreateStepAction // it's createOrUpdateStep
 
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
   const [createStepState, setCreateStepState] = useState<CreateStepState>();
+
+  const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
+
+  const [updateStepState, setUpdateStepState] = useState<CreateStepState>();
 
   return (
     <>
@@ -959,6 +976,7 @@ function MomentForms({
       )}
       {deleteMomentState?.message && <>{deleteMomentState.message}</>}
       {createStepState?.message && <>{createStepState.message}</>}
+      {updateStepState?.message && <>{updateStepState.message}</>}
       {/* The connection to the server has been established. */}
       <StepForm
         variant="creating"
@@ -966,8 +984,8 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        startCreateStepTransition={startCreateStepTransition}
-        setCreateStepState={setCreateStepState}
+        startCreateOrUpdateStepTransition={startCreateStepTransition}
+        setCreateOrUpdateStepState={setCreateStepState}
       />
       <StepForm
         variant="updating"
@@ -975,8 +993,8 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        startCreateStepTransition={startCreateStepTransition}
-        setCreateStepState={setCreateStepState}
+        startCreateOrUpdateStepTransition={startUpdateStepTransition}
+        setCreateOrUpdateStepState={setUpdateStepState}
       />
       <form
         action={createOrUpdateMomentAction}
@@ -1146,6 +1164,7 @@ function MomentForms({
                     currentStep={currentStep}
                     setSteps={setSteps}
                     key={step.id}
+                    isUpdateStepPending={isUpdateStepPending}
                   />
                 );
               })}
@@ -1358,16 +1377,18 @@ function StepForm({
   steps,
   setSteps,
   setStepVisible,
-  startCreateStepTransition,
-  setCreateStepState,
+  startCreateOrUpdateStepTransition,
+  setCreateOrUpdateStepState,
 }: {
   variant: "creating" | "updating";
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
-  startCreateStepTransition: TransitionStartFunction;
-  setCreateStepState: Dispatch<SetStateAction<CreateStepState | undefined>>;
+  startCreateOrUpdateStepTransition: TransitionStartFunction;
+  setCreateOrUpdateStepState: Dispatch<
+    SetStateAction<CreateStepState | UpdateStepState | undefined>
+  >;
 }) {
   let ids = {
     creating: "step-form-creating",
@@ -1376,20 +1397,18 @@ function StepForm({
 
   // createStepAction
 
-  // const [isCreateStepPending, startCreateStepTransition] = useTransition();
-
   // It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here. // (Actually... No.) :')
   // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
   // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below.
   // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
-  const createStepAction = (formData: FormData) => {
-    startCreateStepTransition(() => {
+  const createOrUpdateStepAction = (formData: FormData) => {
+    startCreateOrUpdateStepTransition(() => {
       let intitule = formData.get("intituledeleetape");
       let details = formData.get("detailsdeleetape");
       let duree = formData.get("dureedeletape");
 
       // test
-      // return setCreateStepState({ message: "It works though." });
+      // return setCreateOrUpdateStepState({ message: "It works though." });
       // It does. But the formData goes away again. :')
 
       if (
@@ -1425,7 +1444,7 @@ function StepForm({
     });
   };
 
-  return <form id={ids[variant]} action={createStepAction}></form>;
+  return <form id={ids[variant]} action={createOrUpdateStepAction}></form>;
 }
 
 function ReorderItem({
@@ -1440,6 +1459,7 @@ function ReorderItem({
   addingTime,
   currentStep,
   setSteps,
+  isUpdateStepPending,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1452,6 +1472,7 @@ function ReorderItem({
   addingTime: number;
   currentStep: StepFromCRUD | undefined;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
+  isUpdateStepPending: boolean;
 }) {
   const controls = useDragControls();
 
@@ -1542,6 +1563,7 @@ function ReorderItem({
                   form="step-form-updating"
                   type="submit"
                   variant="confirm-step"
+                  disabled={isUpdateStepPending}
                 >
                   Actualiser l&apos;étape
                 </Button>
@@ -1583,6 +1605,7 @@ function ReorderItem({
                   form="step-form-updating"
                   type="submit"
                   variant="confirm-step"
+                  disabled={isUpdateStepPending}
                 >
                   Actualiser l&apos;étape
                 </Button>

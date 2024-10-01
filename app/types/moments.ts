@@ -62,21 +62,25 @@ export type CreateOrUpdateMoment = (
   // formData: FormData,
 ) => Promise<CreateOrUpdateMomentState>;
 
+type DefaultFormState = { message: string } | void;
+
 // The type of the return of createOrUpdateMoment as it is being shared between the server and the client.
 // It is then reused between createOrUpdateMoment on the server and the type CreateOrUpdateMoment made on the client.
 // Then, MANUALLY I do insist, I need to make sure that the arguments on createOrUpdateMoment and CreateOrUpdateMoment are exactly the same. (In fact, they're meant to be directly copypastable between one another.)
 // This type allows to manually define beforehand exactly what the return should be between the server and the client so that whoever works with the action knows exactly they could output.
 // For example, changing null to void, I went back to createOrUpdateMoment and removed the last return, then went the useState of createOrUpdateMomentState, and initiated it with literally no argument.
 // Then if for some reason I learn that it is imperative that a null should be returned, then I can change void to null here and to the relevant changes across the server and the client.
-export type CreateOrUpdateMomentState = { message: string } | void;
+export type CreateOrUpdateMomentState = DefaultFormState;
 
 export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<DeleteMomentState>;
 
 // same as CreateOrUpdateMomentState for now but differentiated nonetheless because subject to change.
-export type DeleteMomentState = { message: string } | void;
+export type DeleteMomentState = DefaultFormState;
 
 export type RevalidateMoments = () => Promise<void>;
 
-export type CreateStepState = { message: string } | void;
+export type CreateStepState = DefaultFormState;
+
+export type UpdateStepState = DefaultFormState;
