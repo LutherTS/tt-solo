@@ -324,7 +324,7 @@ function ReadMomentsView({
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
   revalidateMoments: RevalidateMoments;
-  view: string;
+  view: View;
   subView: SubView;
   setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
@@ -492,7 +492,8 @@ function ReadMomentsView({
   const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    debouncedSettingScrollPosition(latest);
+    if (view === "read-moments") debouncedSettingScrollPosition(latest);
+    else debouncedSettingScrollPosition(0);
   });
 
   useEffect(() => {
