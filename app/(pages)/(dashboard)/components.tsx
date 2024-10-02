@@ -97,6 +97,8 @@ export function Section({
   );
 }
 
+const testErrors = ["That's an error.", "That's another error."];
+
 // IMPORTANT: inputs and all will have to be upgraded to ComponentProps
 export function InputText({
   label,
@@ -271,6 +273,11 @@ export function InputTextControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
+      {/* copypasted for now but I'll optimize in some way eventually */}
+      {testErrors &&
+        testErrors.map((error) => (
+          <p className="select-none text-sm text-pink-500">{error}</p>
+        ))}
     </FieldFlex>
   );
 }
@@ -396,6 +403,23 @@ export function SelectWithOptions({
   );
 }
 
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      className={className || "size-5"}
+    >
+      <path
+        fillRule="evenodd"
+        d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
 export function SelectWithOptionsControlled({
   id,
   label,
@@ -515,6 +539,10 @@ export function SelectWithOptionsControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
+      {testErrors &&
+        testErrors.map((error) => (
+          <p className="select-none text-sm text-pink-500">{error}</p>
+        ))}
     </FieldFlex>
   );
 }
@@ -606,6 +634,10 @@ export function TextareaControlled({
           focusVisibleTexts,
         )}
       />
+      {testErrors &&
+        testErrors.map((error) => (
+          <p className="select-none text-sm text-pink-500">{error}</p>
+        ))}
     </FieldFlex>
   );
 }
@@ -647,6 +679,10 @@ export function InputSwitchControlled({
       {description && (
         <p className="select-none text-sm text-neutral-500">{description}</p>
       )}
+      {testErrors &&
+        testErrors.map((error) => (
+          <p className="select-none text-sm text-pink-500">{error}</p>
+        ))}
     </FieldFlex>
   );
 }
@@ -757,24 +793,11 @@ export function InputNumberControlled({
           <p>minutes</p>
         </div>
       </div>
+      {testErrors &&
+        testErrors.map((error) => (
+          <p className="select-none text-sm text-pink-500">{error}</p>
+        ))}
     </FieldFlex>
-  );
-}
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className || "size-5"}
-    >
-      <path
-        fillRule="evenodd"
-        d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-        clipRule="evenodd"
-      />
-    </svg>
   );
 }
 
@@ -818,6 +841,10 @@ export function InputDatetimeLocalControlled({
         }}
         className={clsx("p-2", baseInputTexts, focusVisibleTexts)}
       />
+      {testErrors &&
+        testErrors.map((error) => (
+          <p className="select-none text-sm text-pink-500">{error}</p>
+        ))}
     </FieldFlex>
   );
 }

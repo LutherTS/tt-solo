@@ -188,6 +188,12 @@ export function CRUD({
 
   let [view, setView] = useState<View>("read-moments");
 
+  // For now I'll just instantiate this in every component that needs it. An utility would be more versatile, but I don't want to use the setters as arguments.
+  const setViewToTop = (view: View) => {
+    setView(view);
+    scrollTo({ top: 0 });
+  };
+
   let viewTitles = {
     "update-moment": "Éditez",
     "read-moments": "Vos moments",
@@ -224,7 +230,9 @@ export function CRUD({
             <Button
               type="button"
               variant="destroy-step"
-              onClick={() => setView("read-moments")}
+              onClick={() => {
+                setViewToTop("read-moments");
+              }}
             >
               Vos moments
             </Button>
@@ -233,7 +241,7 @@ export function CRUD({
             <Button
               type="button"
               variant="destroy-step"
-              onClick={() => setView("create-moment")}
+              onClick={() => setViewToTop("create-moment")}
             >
               Créez un moment
             </Button>
@@ -242,7 +250,7 @@ export function CRUD({
             <Button
               type="button"
               variant="destroy-step"
-              onClick={() => setView("read-moments")}
+              onClick={() => setViewToTop("read-moments")}
             >
               Vos moments
             </Button>
@@ -318,6 +326,11 @@ function ReadMomentsView({
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
 }) {
+  const setViewToTop = (view: View) => {
+    setView(view);
+    scrollTo({ top: 0 });
+  };
+
   let subViewTitles = {
     "all-moments": "Tous",
     "past-moments": "Passés",
@@ -644,7 +657,7 @@ function ReadMomentsView({
                                           (e4) => e4.id === e3.id,
                                         ),
                                       );
-                                      setView("update-moment");
+                                      setViewToTop("update-moment");
                                     }}
                                   >
                                     <Icons.PencilSquareSolid className="size-5" />
@@ -757,6 +770,11 @@ function MomentForms({
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
 }) {
+  const setViewToTop = (view: View) => {
+    setView(view);
+    scrollTo({ top: 0 });
+  };
+
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
   // InputSwitch unfortunately has to be controlled for resetting
@@ -873,7 +891,7 @@ function MomentForms({
       // therefore present by default
       else setSubView("current-moments");
 
-      setView("read-moments");
+      setViewToTop("read-moments");
       // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
     });
   };
@@ -898,7 +916,7 @@ function MomentForms({
           const state = await deleteMomentBound();
           if (state) return setDeleteMomentState(state);
 
-          setView("read-moments");
+          setViewToTop("read-moments");
         } else
           return setDeleteMomentState({
             message: "Apparemment deleteMomentBound n'existe pas.",

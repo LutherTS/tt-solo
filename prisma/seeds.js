@@ -29,11 +29,21 @@ async function seed() {
       // LePapier / “me”
       signInEmailAddress: "l@l.me",
       hashedPassword:
-        "$2a$12$7IgXH7ORHd4x5O7.VC5LROJJFMq620II9ESleuMIYs.6KNDAsEYAe", // LePapier
-      username: "demo", // shifted from "LePapier" to "demo"
+        "$2a$12$7IgXH7ORHd4x5O7.VC5LROJJFMq620II9ESleuMIYs.6KNDAsEYAe", // LePapier // https://bcrypt-generator.com/
+      username: "LePapier",
       pseudoname: "“me”",
       firstName: "Luther",
       lastName: "Tchofo Safo",
+    },
+    {
+      // demo / Demo
+      signInEmailAddress: "demo@demo.com",
+      hashedPassword:
+        "$2a$12$ufrbXeZYSZYAtNAw4L.T0epcTcG5rEUDW6Vxf/hZBoycpM2FCIOcC", // demo
+      username: "demo",
+      pseudoname: "Demo",
+      firstName: "Demetrius",
+      lastName: "Moses",
     },
   ];
   console.log({ usersData });
