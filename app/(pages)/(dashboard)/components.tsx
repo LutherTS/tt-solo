@@ -112,6 +112,9 @@ function ValidationError({ errors }: { errors: string[] }) {
           return (
             <p key={i} className="select-none text-sm text-pink-500">
               {error}
+              {errors.length > 1 && (
+                <span className="text-pink-300"> (+{errors.length - 1})</span>
+              )}
             </p>
           );
       })}
