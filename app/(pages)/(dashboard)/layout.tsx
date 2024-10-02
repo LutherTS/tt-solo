@@ -22,7 +22,8 @@ export default function Layout({
             // this could be thrown back to the children for headers
             className={clsx(
               // container can coexist with max-w-4xl
-              "container min-h-screen w-full space-y-8 overflow-clip px-8 pt-8",
+              // !! space-y-8 muss go
+              "container min-h-screen w-full overflow-clip px-8 pt-8",
               "pb-12",
               "md:pb-24",
               "lg:max-w-4xl",

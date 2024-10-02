@@ -223,8 +223,10 @@ export function CRUD({
 
   return (
     <>
-      <div className="space-y-8">
-        <div className="flex justify-between align-baseline">
+      <div
+      // className="space-y-8"
+      >
+        <div className="flex justify-between pb-8 align-baseline">
           <PageTitle title={viewTitles[view]} />
           {view === "update-moment" && (
             <Button
@@ -269,6 +271,7 @@ export function CRUD({
             destinationOptions={destinationOptions}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
+            view={view}
             setView={setView}
             setSubView={setSubView}
             now={now}
@@ -295,6 +298,7 @@ export function CRUD({
             variant="creating"
             destinationOptions={destinationOptions}
             createOrUpdateMoment={createOrUpdateMoment}
+            view={view}
             setView={setView}
             setSubView={setSubView}
             now={now}
@@ -757,6 +761,7 @@ function MomentForms({
   destinationOptions,
   createOrUpdateMoment,
   deleteMoment,
+  view,
   setView,
   setSubView,
   now,
@@ -766,6 +771,7 @@ function MomentForms({
   destinationOptions: Option[];
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
+  view: View;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
@@ -896,6 +902,20 @@ function MomentForms({
     });
   };
 
+  // now to see if I can do all this in the action without the useEffect...
+  // it can't work in the action, probably again due to the way they're batched
+  // this means the scrolling information will have to be inferred from createOrUpdateMomentState inside the useEffect, making the useEffect an extension of the action (until actions are hopefully improved)
+  useEffect(() => {
+    console.log("changed");
+    if (view === "create-moment" && createOrUpdateMomentState) {
+      console.log("activated");
+      const votreMoment = document.getElementById("votre-moment");
+      votreMoment?.scrollIntoView({ behavior: "smooth" });
+    }
+    // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8
+  }, [createOrUpdateMomentState]);
+  // Avec ça je vais impressionner Mohamed et renégocier avec lui. Je pense que les client ET server validations sont le différenciateur clair d'un usage indispensable entre l'ancien et le nouveau React.
+
   // deleteMomentAction
 
   let deleteMomentBound: DeleteMoment;
@@ -955,10 +975,16 @@ function MomentForms({
         setObjectifControlled("");
         setContexteControlled("");
 
-        // @ts-ignore because it's an HTMLFormElement
-        document.getElementById("step-form-creating").reset();
-        // https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/reset
-        // ...I hear there's a thing about ref but why use React features where JavaScript features are easier to use?
+        setIntituleCreateControlled("");
+        setDetailsCreateControlled("");
+        setDureeCreateControlled("10");
+
+        // reset action states as well
+        // !! Penser à faire que le bouton Confirmer le moment soit disponible et indique de faire des étapes si on le clique.
+        setCreateOrUpdateMomentState(null); // the jumping culprit, even will null, but in the end a different solution below ignores the issue
+
+        const votreMoment = document.getElementById("votre-moment");
+        votreMoment?.scrollIntoView({ behavior: "smooth" });
       } else event.preventDefault();
     });
   };
@@ -987,11 +1013,11 @@ function MomentForms({
 
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
-  const [createStepState, setCreateStepState] = useState<CreateStepState>();
+  const [createStepState, setCreateStepState] = useState<CreateStepState>(null);
 
   const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
 
-  const [updateStepState, setUpdateStepState] = useState<CreateStepState>();
+  const [updateStepState, setUpdateStepState] = useState<CreateStepState>(null);
 
   // error testing
 
@@ -999,10 +1025,11 @@ function MomentForms({
 
   return (
     <>
+      {/* resetting forms will also require resetting action states */}
       {/* surfacing server-side and client-side errors */}
-      {createOrUpdateMomentState?.message && (
+      {/* {createOrUpdateMomentState?.message && (
         <>{createOrUpdateMomentState.message}</>
-      )}
+      )} */}
       {deleteMomentState?.message && <>{deleteMomentState.message}</>}
       {createStepState?.message && <>{createStepState.message}</>}
       {updateStepState?.message && <>{updateStepState.message}</>}
@@ -1040,11 +1067,12 @@ function MomentForms({
       <form
         action={createOrUpdateMomentAction}
         onReset={resetMomentFormAction}
-        className="space-y-8"
+        // className="space-y-8"
       >
         <Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
+          id="votre-moment"
         >
           {!destinationSelect ? (
             <InputTextControlled
@@ -1144,6 +1172,11 @@ function MomentForms({
             definedValue={objectifControlled}
             definedOnValueChange={setObjectifControlled}
             description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
+            errors={
+              createOrUpdateMomentState
+                ? [createOrUpdateMomentState?.message]
+                : undefined
+            }
           />
           <InputSwitchControlled
             label="Indispensable"
@@ -1449,7 +1482,7 @@ function StepForm({
   setDuree: Dispatch<SetStateAction<string>>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   setCreateOrUpdateStepState: Dispatch<
-    SetStateAction<CreateStepState | UpdateStepState | undefined>
+    SetStateAction<CreateStepState | UpdateStepState>
   >;
 }) {
   let ids = {

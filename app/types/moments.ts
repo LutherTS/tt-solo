@@ -62,7 +62,7 @@ export type CreateOrUpdateMoment = (
   // formData: FormData,
 ) => Promise<CreateOrUpdateMomentState>;
 
-type DefaultFormState = { message: string } | void;
+type DefaultFormState = { message: string } | null;
 
 // The type of the return of createOrUpdateMoment as it is being shared between the server and the client.
 // It is then reused between createOrUpdateMoment on the server and the type CreateOrUpdateMoment made on the client.

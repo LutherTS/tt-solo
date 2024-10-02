@@ -56,6 +56,7 @@ export function Section({
   showDescription = true,
   addendum,
   showAddendum = true,
+  id,
   children,
 }: {
   title?: string;
@@ -63,12 +64,16 @@ export function Section({
   showDescription?: boolean;
   addendum?: string;
   showAddendum?: boolean;
+  id?: string;
   children: React.ReactNode;
 }) {
   return (
     // IMPORTANT: padding fixes will have to be handled in the true version
-    // pb-1 making up for input padding inconsistencies
-    <section className="grid items-baseline gap-8 pb-1 md:grid-cols-[1fr_2fr]">
+    // pb-1 (or +1) making up for input padding inconsistencies
+    <section
+      className="grid items-baseline gap-8 pb-9 pt-8 md:grid-cols-[1fr_2fr]"
+      id={id}
+    >
       <div
         className={clsx(
           !title && "hidden md:block",
@@ -104,7 +109,11 @@ function ValidationError({ errors }: { errors: string[] }) {
     <>
       {errors.map((error, i) => {
         if (i === 0)
-          return <p className="select-none text-sm text-pink-500">{error}</p>;
+          return (
+            <p key={i} className="select-none text-sm text-pink-500">
+              {error}
+            </p>
+          );
       })}
     </>
   );

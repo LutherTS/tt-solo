@@ -321,6 +321,8 @@ export default async function MomentsPage({
         message: "Le formulaire du moment n'a pas été correctement renseigné.",
       };
 
+    // trim, the check with zod
+
     // For this reason below alone I thing actions should be inline and passed as props instead of housed inside dedicated files. Here, this means data from the user literally never makes it to the client. Sensitive data from a user database entry (and even insensitive data) never even reaches any outside computer. Not even the user's id.
     // So what should be in separated files are not the actions, but rather the methods that make the action, which therefore can be used in any action. The methods should be the commonalities, not the actions themselves. Actions can and I believe should be directly link to the actual pages where they're meant to be triggered, like temporary APIs only available within their own contexts.
 
@@ -449,6 +451,8 @@ export default async function MomentsPage({
     }
 
     revalidatePath(`/users/${username}/moments`);
+
+    return null;
   }
 
   async function deleteMoment(
@@ -465,6 +469,8 @@ export default async function MomentsPage({
     await deleteMomentByMomentId(momentId);
 
     revalidatePath(`/users/${username}/moments`);
+
+    return null;
   }
 
   // there's no return in any case so no need in typing ": Promise<void>"
