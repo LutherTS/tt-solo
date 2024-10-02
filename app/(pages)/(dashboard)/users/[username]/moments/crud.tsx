@@ -821,7 +821,7 @@ function MomentForms({
   let [activitySelect, setActivitySelect] = useState(false);
 
   // https://github.com/facebook/react/issues/29034
-  // which is real sad because React 19 promise to never again need useState
+  // which is sad because React 19 kinda promise to never again need useState
 
   let [destinationTextControlled, setDestinationTextControlled] = useState(
     moment ? moment.destinationIdeal : "",
@@ -874,7 +874,20 @@ function MomentForms({
   const createOrUpdateMomentAction = async () => {
     startCreateOrUpdateMomentTransition(async () => {
       const state = await createOrUpdateMomentBound();
-      if (state) return setCreateOrUpdateMomentState(state);
+      if (state) {
+        // watch this
+        // aligning the text of controlled with the option or whatever value was provided (trimmed)
+        if (state.bs?.destinationName)
+          setDestinationTextControlled(state.bs.destinationName);
+        if (state.bs?.momentActivity)
+          setActiviteTextControlled(state.bs.momentActivity);
+        // returning to the text version, so that shifting back to the select version will automatically set back to the proper value
+        setDestinationSelect(false);
+        setActivitySelect(false);
+        // but what solving this specifically means is... you can never use selects on their own with the current state of React 19
+
+        return setCreateOrUpdateMomentState(state);
+      }
 
       if (variant === "creating") {
         setIndispensable(false);
@@ -1021,15 +1034,12 @@ function MomentForms({
 
   // error testing
 
-  const testErrors = ["That's an error.", "That's another error."];
+  // const testErrors = ["That's an error.", "That's another error."];
 
   return (
     <>
       {/* resetting forms will also require resetting action states */}
       {/* surfacing server-side and client-side errors */}
-      {/* {createOrUpdateMomentState?.message && (
-        <>{createOrUpdateMomentState.message}</>
-      )} */}
       {deleteMomentState?.message && <>{deleteMomentState.message}</>}
       {createStepState?.message && <>{createStepState.message}</>}
       {updateStepState?.message && <>{updateStepState.message}</>}
@@ -1064,15 +1074,12 @@ function MomentForms({
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         setCreateOrUpdateStepState={setUpdateStepState}
       />
-      <form
-        action={createOrUpdateMomentAction}
-        onReset={resetMomentFormAction}
-        // className="space-y-8"
-      >
+      <form action={createOrUpdateMomentAction} onReset={resetMomentFormAction}>
         <Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
           id="votre-moment"
+          error={createOrUpdateMomentState?.momentMessage}
         >
           {!destinationSelect ? (
             <InputTextControlled
@@ -1089,7 +1096,8 @@ function MomentForms({
               fieldFlexIsNotLabel
               tekTime
               required={!destinationSelect}
-              errors={testErrors}
+              // errors={testErrors}
+              errors={createOrUpdateMomentState?.errors?.destinationName}
             >
               {destinationOptions.length > 0 && (
                 <Button
@@ -1114,7 +1122,8 @@ function MomentForms({
               fieldFlexIsNotLabel
               tekTime
               required={destinationSelect}
-              errors={testErrors}
+              // errors={testErrors}
+              errors={createOrUpdateMomentState?.errors?.destinationName}
             >
               <Button
                 type="button"
@@ -1135,6 +1144,7 @@ function MomentForms({
               definedOnValueChange={setActiviteTextControlled}
               fieldFlexIsNotLabel
               required={!activitySelect}
+              errors={createOrUpdateMomentState?.errors?.momentActivity}
             >
               <Button
                 type="button"
@@ -1156,6 +1166,7 @@ function MomentForms({
               options={activityOptions}
               fieldFlexIsNotLabel
               required={activitySelect}
+              errors={createOrUpdateMomentState?.errors?.momentActivity}
             >
               <Button
                 type="button"
@@ -1172,11 +1183,7 @@ function MomentForms({
             definedValue={objectifControlled}
             definedOnValueChange={setObjectifControlled}
             description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
-            errors={
-              createOrUpdateMomentState
-                ? [createOrUpdateMomentState?.message]
-                : undefined
-            }
+            errors={createOrUpdateMomentState?.errors?.momentName}
           />
           <InputSwitchControlled
             label="Indispensable"
@@ -1184,6 +1191,7 @@ function MomentForms({
             description="Activez l'interrupteur si ce moment est d'une importance incontournable."
             definedValue={indispensable}
             definedOnValueChange={setIndispensable}
+            errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
           />
           <TextareaControlled
             label="Contexte"
@@ -1192,6 +1200,7 @@ function MomentForms({
             definedOnValueChange={setContexteControlled}
             description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
             rows={6}
+            errors={createOrUpdateMomentState?.errors?.momentDescription}
           />
           <InputDatetimeLocalControlled
             label="Date et heure"
@@ -1204,6 +1213,7 @@ function MomentForms({
                 roundingMethod: "floor",
               }),
             )}
+            errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
           />
         </Section>
         <Divider />

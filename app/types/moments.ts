@@ -70,7 +70,23 @@ type DefaultFormState = { message: string } | null;
 // This type allows to manually define beforehand exactly what the return should be between the server and the client so that whoever works with the action knows exactly they could output.
 // For example, changing null to void, I went back to createOrUpdateMoment and removed the last return, then went the useState of createOrUpdateMomentState, and initiated it with literally no argument.
 // Then if for some reason I learn that it is imperative that a null should be returned, then I can change void to null here and to the relevant changes across the server and the client.
-export type CreateOrUpdateMomentState = DefaultFormState;
+export type CreateOrUpdateMomentState = {
+  momentMessage?: string;
+  stepsMessage?: string;
+  errors?: {
+    destinationName?: string[];
+    momentActivity?: string[];
+    momentName?: string[];
+    momentIsIndispensable?: string[];
+    momentDescription?: string[];
+    momentStartDateAndTime?: string[];
+  };
+  // no choice but to implement this work around yet, if I'm honest, it's something I can see myself using in the future
+  bs?: {
+    destinationName?: string;
+    momentActivity?: string;
+  };
+} | null;
 
 export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,

@@ -50,6 +50,28 @@ export function SectionWrapper({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
 }
 
+function FormValidationError({ error }: { error: string }) {
+  return <p className="max-w-prose text-sm text-pink-500">{error}</p>;
+}
+
+function FormDescriptionOrError({
+  error,
+  description,
+}: {
+  error?: string;
+  description: string;
+}) {
+  return (
+    <>
+      {error ? (
+        <FormValidationError error={error} />
+      ) : (
+        <p className="max-w-prose text-sm text-neutral-500">{description}</p>
+      )}
+    </>
+  );
+}
+
 export function Section({
   title,
   description,
@@ -57,6 +79,7 @@ export function Section({
   addendum,
   showAddendum = true,
   id,
+  error,
   children,
 }: {
   title?: string;
@@ -65,10 +88,10 @@ export function Section({
   addendum?: string;
   showAddendum?: boolean;
   id?: string;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
-    // IMPORTANT: padding fixes will have to be handled in the true version
     // pb-1 (or +1) making up for input padding inconsistencies
     <section
       className="grid items-baseline gap-8 pb-9 pt-8 md:grid-cols-[1fr_2fr]"
@@ -84,15 +107,10 @@ export function Section({
           <>
             <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
             {description && showDescription && (
-              // Last handmade padding fix...
-              <p className="-mt-1 max-w-prose text-sm text-neutral-500">
-                {description}
-              </p>
+              <FormDescriptionOrError error={error} description={description} />
             )}
             {addendum && showAddendum && (
-              <p className="-mt-1 max-w-prose text-sm text-neutral-500">
-                {addendum}
-              </p>
+              <p className="max-w-prose text-sm text-neutral-500">{addendum}</p>
             )}
           </>
         )}
@@ -102,9 +120,7 @@ export function Section({
   );
 }
 
-const testErrors = ["That's an error.", "That's another error."];
-
-function ValidationError({ errors }: { errors: string[] }) {
+function InputValidationError({ errors }: { errors: string[] }) {
   return (
     <>
       {errors.map((error, i) => {
@@ -122,7 +138,7 @@ function ValidationError({ errors }: { errors: string[] }) {
   );
 }
 
-function DescriptionOrError({
+function InputDescriptionOrError({
   errors,
   description,
   addendum,
@@ -134,7 +150,7 @@ function DescriptionOrError({
   return (
     <div className="flex flex-col gap-1">
       {errors ? (
-        <ValidationError errors={errors} />
+        <InputValidationError errors={errors} />
       ) : (
         <p className="select-none text-sm text-neutral-500">{description}</p>
       )}
@@ -263,7 +279,7 @@ export function InputTextControlled({
         {label && <FieldTitle title={label} />}
         {children}
       </div>
-      <DescriptionOrError
+      <InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -500,7 +516,7 @@ export function SelectWithOptionsControlled({
         <FieldTitle title={label} />
         {children}
       </div>
-      <DescriptionOrError
+      <InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -653,7 +669,7 @@ export function TextareaControlled({
   return (
     <FieldFlex isLabel>
       <FieldTitle title={label} />
-      <DescriptionOrError errors={errors} description={description} />
+      <InputDescriptionOrError errors={errors} description={description} />
       <textarea
         form={form}
         name={name}
@@ -712,7 +728,7 @@ export function InputSwitchControlled({
           />
         </Switch.Root>
       </div>
-      <DescriptionOrError errors={errors} description={description} />
+      <InputDescriptionOrError errors={errors} description={description} />
     </FieldFlex>
   );
 }
@@ -775,7 +791,6 @@ export function InputNumberControlled({
   label,
   description,
   name,
-  // defaultValue = "0",
   definedValue,
   definedOnValueChange = () => {},
   step,
@@ -787,7 +802,6 @@ export function InputNumberControlled({
   label: string;
   name: string;
   description: string;
-  // defaultValue?: string;
   definedValue?: string;
   definedOnValueChange?: Dispatch<SetStateAction<string>>;
   step?: string;
@@ -798,7 +812,7 @@ export function InputNumberControlled({
   return (
     <FieldFlex isLabel>
       <FieldTitle title={label} />
-      <DescriptionOrError errors={errors} description={description} />
+      <InputDescriptionOrError errors={errors} description={description} />
       <div className="grid grid-cols-2 gap-4">
         <input
           form={form}
@@ -849,7 +863,7 @@ export function InputDatetimeLocalControlled({
   return (
     <FieldFlex isLabel>
       <FieldTitle title={label} />
-      <DescriptionOrError errors={errors} description={description} />
+      <InputDescriptionOrError errors={errors} description={description} />
       <input
         // because it is so impossible to deeply modify the input datetime-local defaults, I'm forced to adapt all of my other inputs to some of its defaults (like their padding)
         type="datetime-local"

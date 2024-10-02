@@ -50,6 +50,7 @@ import {
 import { deleteMomentStepsByMomentId } from "@/app/writes/steps";
 import { selectMomentId } from "@/app/reads/subreads/moments";
 import { createStepsFromStepsFlow } from "@/app/utilities/steps";
+import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -318,16 +319,66 @@ export default async function MomentsPage({
       typeof contexte !== "string"
     )
       return {
-        message: "Le formulaire du moment n'a pas été correctement renseigné.",
+        momentMessage:
+          "Erreur sur le renseignement du formulaire. (Si vous voyez ce message, cela signifie que c'est sûrement hors de votre contrôle.)",
       };
 
-    // trim, the check with zod
+    const [
+      trimmedDestination,
+      trimmedActivite,
+      trimmedObjectif,
+      trimmedContexte,
+    ] = [destination, activite, objectif, contexte].map((e) => e.trim());
+
+    const validatedFields = CreateOrUpdateMomentSchema.safeParse({
+      destinationName: trimmedDestination,
+      momentActivity: trimmedActivite,
+      momentName: trimmedObjectif,
+      momentIsIndispensable: indispensable,
+      momentDescription: trimmedContexte,
+      momentStartDateAndTime: momentDate,
+    });
+
+    if (!validatedFields.success) {
+      return {
+        momentMessage: "Erreur(s) sur le renseignement moment du formulaire.",
+        errors: validatedFields.error.flatten().fieldErrors,
+        bs: {
+          destinationName: trimmedDestination,
+          momentActivity: trimmedActivite,
+        },
+      };
+    }
+
+    const {
+      destinationName,
+      momentActivity,
+      momentName,
+      momentIsIndispensable,
+      momentDescription,
+      momentStartDateAndTime,
+    } = validatedFields.data;
+
+    destination = destinationName;
+    activite = momentActivity;
+    objectif = momentName;
+    indispensable = momentIsIndispensable;
+    contexte = momentDescription;
+    momentDate = momentStartDateAndTime;
 
     // For this reason below alone I thing actions should be inline and passed as props instead of housed inside dedicated files. Here, this means data from the user literally never makes it to the client. Sensitive data from a user database entry (and even insensitive data) never even reaches any outside computer. Not even the user's id.
     // So what should be in separated files are not the actions, but rather the methods that make the action, which therefore can be used in any action. The methods should be the commonalities, not the actions themselves. Actions can and I believe should be directly link to the actual pages where they're meant to be triggered, like temporary APIs only available within their own contexts.
 
     if (!user)
-      return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
+      return {
+        momentMessage:
+          "Erreur. L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
+        bs: {
+          // sticking to the trimmed version for now because hopefully, very hopefully, this workaround will no longer be needed by October 24
+          destinationName: trimmedDestination,
+          momentActivity: trimmedActivite,
+        },
+      };
 
     let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
@@ -345,7 +396,16 @@ export default async function MomentsPage({
       );
 
       if (preexistingMoment)
-        return { message: "Vous avez déjà un moment de ce même nom." };
+        return {
+          momentMessage: "Erreur(s) sur le renseignement moment du formulaire.",
+          errors: {
+            momentName: ["Vous avez déjà un moment de ce même nom."],
+          },
+          bs: {
+            destinationName: trimmedDestination,
+            momentActivity: trimmedActivite,
+          },
+        };
       // It worked... But then the form reset.
       // https://github.com/facebook/react/issues/29034
       // That's where we're considering going back to Remix.
@@ -398,7 +458,14 @@ export default async function MomentsPage({
 
     if (variant === "updating") {
       if (!momentFromCRUD)
-        return { message: "Surprenamment un moment n'a pas été réceptionné." };
+        return {
+          momentMessage:
+            "Erreur. Le moment n'a pas été réceptionné en interne.",
+          bs: {
+            destinationName: trimmedDestination,
+            momentActivity: trimmedActivite,
+          },
+        };
 
       let momentId = momentFromCRUD.id;
 
@@ -461,7 +528,9 @@ export default async function MomentsPage({
     "use server";
 
     if (!momentFromCRUD)
-      return { message: "Surprenamment un moment n'a pas été réceptionné." };
+      return {
+        message: "Erreur. Le moment n'a pas été réceptionné en interne",
+      };
 
     const momentId = momentFromCRUD.id;
 
@@ -478,6 +547,7 @@ export default async function MomentsPage({
     "use server";
 
     revalidatePath(`/users/${username}/moments`);
+    // guess I'm keeping void for actions that really return nothing
   }
 
   // The magic here is that no data directly from the User model ever leaves the server, since the actions reuse the verified User data obtained at the top of the function.
