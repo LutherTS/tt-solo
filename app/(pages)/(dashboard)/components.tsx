@@ -99,6 +99,40 @@ export function Section({
 
 const testErrors = ["That's an error.", "That's another error."];
 
+function ValidationError({ errors }: { errors: string[] }) {
+  return (
+    <>
+      {errors.map((error, i) => {
+        if (i === 0)
+          return <p className="select-none text-sm text-pink-500">{error}</p>;
+      })}
+    </>
+  );
+}
+
+function DescriptionOrError({
+  errors,
+  description,
+  addendum,
+}: {
+  errors?: string[];
+  description: string;
+  addendum?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      {errors ? (
+        <ValidationError errors={errors} />
+      ) : (
+        <p className="select-none text-sm text-neutral-500">{description}</p>
+      )}
+      {addendum && (
+        <p className="select-none text-sm text-neutral-500">({addendum})</p>
+      )}
+    </div>
+  );
+}
+
 // IMPORTANT: inputs and all will have to be upgraded to ComponentProps
 export function InputText({
   label,
@@ -184,6 +218,7 @@ export function InputText({
 }
 
 // Had to get everything controlled. In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by if (definedValue) controlled else uncontrolled, which in fact is exactly how React behaves natively.
+// Also, description are now obliged because they now transform into errors.
 export function InputTextControlled({
   label,
   description,
@@ -195,10 +230,11 @@ export function InputTextControlled({
   children,
   fieldFlexIsNotLabel,
   required = true,
+  errors,
   ...rest
 }: {
   label?: string;
-  description?: string;
+  description: string;
   addendum?: string;
   name: string;
   definedValue?: string;
@@ -207,6 +243,7 @@ export function InputTextControlled({
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
   required?: boolean;
+  errors?: string[];
 } & ComponentProps<"input">) {
   return (
     <FieldFlex isLabel={!fieldFlexIsNotLabel}>
@@ -214,14 +251,11 @@ export function InputTextControlled({
         {label && <FieldTitle title={label} />}
         {children}
       </div>
-      {description && (
-        <div className="flex flex-col gap-1">
-          <p className="select-none text-sm text-neutral-500">{description}</p>
-          {addendum && (
-            <p className="select-none text-sm text-neutral-500">({addendum})</p>
-          )}
-        </div>
-      )}
+      <DescriptionOrError
+        errors={errors}
+        description={description}
+        addendum={addendum}
+      />
       {!tekTime ? (
         <input
           {...rest}
@@ -274,10 +308,7 @@ export function InputTextControlled({
         </div>
       )}
       {/* copypasted for now but I'll optimize in some way eventually */}
-      {testErrors &&
-        testErrors.map((error) => (
-          <p className="select-none text-sm text-pink-500">{error}</p>
-        ))}
+      {/* <ValidationError errors={testErrors} /> */}
     </FieldFlex>
   );
 }
@@ -433,11 +464,12 @@ export function SelectWithOptionsControlled({
   children,
   fieldFlexIsNotLabel,
   required = true,
+  errors,
   tekTime,
 }: {
   id?: string;
   label: string;
-  description?: string;
+  description: string;
   addendum?: string;
   definedValue?: string;
   definedOnValueChange?: Dispatch<SetStateAction<string>>;
@@ -447,6 +479,7 @@ export function SelectWithOptionsControlled({
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
   required?: boolean;
+  errors?: string[];
   tekTime?: boolean;
 }) {
   return (
@@ -455,14 +488,11 @@ export function SelectWithOptionsControlled({
         <FieldTitle title={label} />
         {children}
       </div>
-      {description && (
-        <div className="flex flex-col gap-1">
-          <p className="select-none text-sm text-neutral-500">{description}</p>
-          {addendum && (
-            <p className="select-none text-sm text-neutral-500">({addendum})</p>
-          )}
-        </div>
-      )}
+      <DescriptionOrError
+        errors={errors}
+        description={description}
+        addendum={addendum}
+      />
       {!tekTime ? (
         <div className="relative grid">
           <select
@@ -539,10 +569,6 @@ export function SelectWithOptionsControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
-      {testErrors &&
-        testErrors.map((error) => (
-          <p className="select-none text-sm text-pink-500">{error}</p>
-        ))}
     </FieldFlex>
   );
 }
@@ -600,22 +626,22 @@ export function TextareaControlled({
   definedOnValueChange = () => {},
   rows = 4,
   required = true,
+  errors,
 }: {
   form?: string;
   label: string;
-  description?: string;
+  description: string;
   name: string;
   definedValue?: string;
   definedOnValueChange?: Dispatch<SetStateAction<string>>;
   rows?: number;
   required?: boolean;
+  errors?: string[];
 }) {
   return (
     <FieldFlex isLabel>
       <FieldTitle title={label} />
-      {description && (
-        <p className="select-none text-sm text-neutral-500">{description}</p>
-      )}
+      <DescriptionOrError errors={errors} description={description} />
       <textarea
         form={form}
         name={name}
@@ -634,10 +660,6 @@ export function TextareaControlled({
           focusVisibleTexts,
         )}
       />
-      {testErrors &&
-        testErrors.map((error) => (
-          <p className="select-none text-sm text-pink-500">{error}</p>
-        ))}
     </FieldFlex>
   );
 }
@@ -649,12 +671,14 @@ export function InputSwitchControlled({
   description,
   definedValue,
   definedOnValueChange = () => {},
+  errors,
 }: {
   label: string;
   name: string;
-  description?: string;
+  description: string;
   definedValue?: boolean;
   definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
+  errors?: string[];
 }) {
   return (
     <FieldFlex isLabel>
@@ -676,13 +700,7 @@ export function InputSwitchControlled({
           />
         </Switch.Root>
       </div>
-      {description && (
-        <p className="select-none text-sm text-neutral-500">{description}</p>
-      )}
-      {testErrors &&
-        testErrors.map((error) => (
-          <p className="select-none text-sm text-pink-500">{error}</p>
-        ))}
+      <DescriptionOrError errors={errors} description={description} />
     </FieldFlex>
   );
 }
@@ -751,24 +769,24 @@ export function InputNumberControlled({
   step,
   min = "0",
   max,
+  errors,
 }: {
   form?: string;
   label: string;
   name: string;
-  description?: string;
+  description: string;
   // defaultValue?: string;
   definedValue?: string;
   definedOnValueChange?: Dispatch<SetStateAction<string>>;
   step?: string;
   min?: string;
   max?: string;
+  errors?: string[];
 }) {
   return (
     <FieldFlex isLabel>
       <FieldTitle title={label} />
-      {description && (
-        <p className="select-none text-sm text-neutral-500">{description}</p>
-      )}
+      <DescriptionOrError errors={errors} description={description} />
       <div className="grid grid-cols-2 gap-4">
         <input
           form={form}
@@ -793,10 +811,6 @@ export function InputNumberControlled({
           <p>minutes</p>
         </div>
       </div>
-      {testErrors &&
-        testErrors.map((error) => (
-          <p className="select-none text-sm text-pink-500">{error}</p>
-        ))}
     </FieldFlex>
   );
 }
@@ -809,21 +823,21 @@ export function InputDatetimeLocalControlled({
   definedOnValueChange = () => {},
   min,
   max,
+  errors,
 }: {
   label: string;
   name: string;
-  description?: string;
+  description: string;
   definedValue: string;
   definedOnValueChange: Dispatch<SetStateAction<string>>;
   min?: string;
   max?: string;
+  errors?: string[];
 }) {
   return (
     <FieldFlex isLabel>
       <FieldTitle title={label} />
-      {description && (
-        <p className="select-none text-sm text-neutral-500">{description}</p>
-      )}
+      <DescriptionOrError errors={errors} description={description} />
       <input
         // because it is so impossible to deeply modify the input datetime-local defaults, I'm forced to adapt all of my other inputs to some of its defaults (like their padding)
         type="datetime-local"
@@ -841,10 +855,6 @@ export function InputDatetimeLocalControlled({
         }}
         className={clsx("p-2", baseInputTexts, focusVisibleTexts)}
       />
-      {testErrors &&
-        testErrors.map((error) => (
-          <p className="select-none text-sm text-pink-500">{error}</p>
-        ))}
     </FieldFlex>
   );
 }

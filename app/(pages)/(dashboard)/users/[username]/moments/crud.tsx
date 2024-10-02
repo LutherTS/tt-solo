@@ -993,6 +993,10 @@ function MomentForms({
 
   const [updateStepState, setUpdateStepState] = useState<CreateStepState>();
 
+  // error testing
+
+  const testErrors = ["That's an error.", "That's another error."];
+
   return (
     <>
       {/* surfacing server-side and client-side errors */}
@@ -1057,6 +1061,7 @@ function MomentForms({
               fieldFlexIsNotLabel
               tekTime
               required={!destinationSelect}
+              errors={testErrors}
             >
               {destinationOptions.length > 0 && (
                 <Button
@@ -1081,6 +1086,7 @@ function MomentForms({
               fieldFlexIsNotLabel
               tekTime
               required={destinationSelect}
+              errors={testErrors}
             >
               <Button
                 type="button"
