@@ -21,6 +21,7 @@ import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
+  NO_STEPS_ERROR_MESSAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
 } from "@/app/variables/moments";
@@ -51,10 +52,14 @@ import { deleteMomentStepsByMomentId } from "@/app/writes/steps";
 import { selectMomentId } from "@/app/reads/subreads/moments";
 import { createStepsFromStepsFlow } from "@/app/utilities/steps";
 import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
-import { compareAsc, compareDesc, roundToNearestHours, sub } from "date-fns";
+import { compareDesc, roundToNearestHours, sub } from "date-fns";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
+
+const DEFAULT_MOMENT_MESSAGE =
+  "Erreurs sur le renseignement moment du formulaire.";
+const DEFAULT_MOMENT_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
 
 export default async function MomentsPage({
   params,
@@ -320,10 +325,11 @@ export default async function MomentsPage({
 
     if (isMomentDateBeforeMinFromCurrentNow === 1)
       return {
-        momentMessage: "Erreur(s) sur le renseignement moment du formulaire.",
+        momentMessage: DEFAULT_MOMENT_MESSAGE,
+        momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
         errors: {
           momentStartDateAndTime: [
-            "Votre moment ne peux pas commencer environ plus d'une heure avant que vous ne l'ayez créé.",
+            "Vous ne pouvez pas créer un moment qui commence environ plus d'une heure avant sa création.",
           ],
         },
         bs: {
@@ -344,8 +350,9 @@ export default async function MomentsPage({
       typeof contexte !== "string"
     )
       return {
-        momentMessage:
-          "Erreur sur le renseignement du formulaire. (Si vous voyez ce message, cela signifie que c'est sûrement hors de votre contrôle.)",
+        momentMessage: "Erreur sur le renseignement du formulaire.",
+        momentSubMessage:
+          "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
         bs: {
           destinationName: destination,
           momentActivity: activite,
@@ -370,7 +377,8 @@ export default async function MomentsPage({
 
     if (!validatedFields.success) {
       return {
-        momentMessage: "Erreur(s) sur le renseignement moment du formulaire.",
+        momentMessage: DEFAULT_MOMENT_MESSAGE,
+        momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
         errors: validatedFields.error.flatten().fieldErrors,
         bs: {
           destinationName: trimmedDestination,
@@ -379,10 +387,12 @@ export default async function MomentsPage({
       };
     }
 
+    // it'd be awesome to have a way to erase this once a step is securely made (steps are validate on the client)
+    // if (stepsSubMessage = "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape." in a variable, setState(...state, stepsSubMessage: undefined)) // done
     if (steps.length === 0) {
       return {
-        stepsMessage:
-          "Erreur sur le renseignement étapes du formulaire. Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
+        stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
+        stepsSubMessage: NO_STEPS_ERROR_MESSAGE,
         bs: {
           destinationName: trimmedDestination,
           momentActivity: trimmedActivite,
@@ -411,8 +421,9 @@ export default async function MomentsPage({
 
     if (!user)
       return {
-        momentMessage:
-          "Erreur. L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
+        momentMessage: "Erreur.",
+        momentSubMessage:
+          "L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
         bs: {
           // sticking to the trimmed version for now because hopefully, very hopefully, this workaround will no longer be needed by October 24
           destinationName: trimmedDestination,
@@ -437,7 +448,8 @@ export default async function MomentsPage({
 
       if (preexistingMoment)
         return {
-          momentMessage: "Erreur(s) sur le renseignement moment du formulaire.",
+          momentMessage: DEFAULT_MOMENT_MESSAGE,
+          momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
           errors: {
             momentName: ["Vous avez déjà un moment de ce même nom."],
           },
@@ -499,8 +511,8 @@ export default async function MomentsPage({
     if (variant === "updating") {
       if (!momentFromCRUD)
         return {
-          momentMessage:
-            "Erreur. Le moment n'a pas été réceptionné en interne.",
+          momentMessage: "Erreur.",
+          momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
           bs: {
             destinationName: trimmedDestination,
             momentActivity: trimmedActivite,

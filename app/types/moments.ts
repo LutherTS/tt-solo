@@ -72,7 +72,9 @@ type DefaultFormState = { message: string } | null;
 // Then if for some reason I learn that it is imperative that a null should be returned, then I can change void to null here and to the relevant changes across the server and the client.
 export type CreateOrUpdateMomentState = {
   momentMessage?: string;
+  momentSubMessage?: string;
   stepsMessage?: string;
+  stepsSubMessage?: string;
   errors?: {
     destinationName?: string[];
     momentActivity?: string[];

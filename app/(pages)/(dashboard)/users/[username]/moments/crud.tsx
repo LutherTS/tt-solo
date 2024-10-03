@@ -21,8 +21,8 @@ import {
   compareAsc,
   compareDesc,
   format,
-  roundToNearestHours,
-  sub,
+  // roundToNearestHours,
+  // sub,
 } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -77,6 +77,7 @@ import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
+  NO_STEPS_ERROR_MESSAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
 } from "@/app/variables/moments";
@@ -1010,23 +1011,22 @@ function MomentForms({
         setCreateOrUpdateMomentState(null); // the jumping culprit, even will null, but in the end a different solution below ignores the issue (irregular defaults)
 
         // for the useEffect
-        setResetMomentFormActionState(true);
+        setIsResetMomentDone(true);
       } else event.preventDefault();
     });
   };
 
   // and another state for that useEffect
-  // ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormActionState at this time
-  const [resetMomentFormActionState, setResetMomentFormActionState] =
-    useState(false);
+  // ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormState at this time... no, they're not that related so isResetMomentDone it is
+  const [isResetMomentDone, setIsResetMomentDone] = useState(false);
 
   useEffect(() => {
-    if (resetMomentFormActionState) {
+    if (isResetMomentDone) {
       const votreMoment = document.getElementById("votre-moment");
       votreMoment?.scrollIntoView({ behavior: "smooth" });
-      setResetMomentFormActionState(false);
+      setIsResetMomentDone(false);
     }
-  }, [resetMomentFormActionState]);
+  }, [isResetMomentDone]);
 
   // Here we go again to control the StepForm fields...
   // And there's two variant, so I need to duplicate the states...
@@ -1084,6 +1084,8 @@ function MomentForms({
         setDuree={setDureeCreateControlled}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
         setCreateOrUpdateStepState={setCreateStepState}
+        createOrUpdateMomentState={createOrUpdateMomentState}
+        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <StepForm
         variant="updating"
@@ -1099,6 +1101,8 @@ function MomentForms({
         setDuree={setDureeUpdateControlled}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         setCreateOrUpdateStepState={setUpdateStepState}
+        createOrUpdateMomentState={createOrUpdateMomentState}
+        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <form action={createOrUpdateMomentAction} onReset={resetMomentFormAction}>
         <Section
@@ -1106,6 +1110,7 @@ function MomentForms({
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
           id="votre-moment"
           error={createOrUpdateMomentState?.momentMessage}
+          subError={createOrUpdateMomentState?.momentSubMessage}
         >
           {!destinationSelect ? (
             <InputTextControlled
@@ -1254,6 +1259,7 @@ function MomentForms({
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
           id="ses-etapes"
           error={createOrUpdateMomentState?.stepsMessage}
+          subError={createOrUpdateMomentState?.stepsSubMessage}
         >
           {steps.length > 0 && (
             <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
@@ -1512,6 +1518,8 @@ function StepForm({
   setDuree,
   startCreateOrUpdateStepTransition,
   setCreateOrUpdateStepState,
+  createOrUpdateMomentState,
+  setCreateOrUpdateMomentState,
 }: {
   variant: "creating" | "updating";
   currentStepId: string;
@@ -1527,6 +1535,10 @@ function StepForm({
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   setCreateOrUpdateStepState: Dispatch<
     SetStateAction<CreateStepState | UpdateStepState>
+  >;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  setCreateOrUpdateMomentState: Dispatch<
+    SetStateAction<CreateOrUpdateMomentState>
   >;
 }) {
   let ids = {
@@ -1582,8 +1594,31 @@ function StepForm({
       setIntitule("");
       setDetails("");
       setDuree("10");
+
+      setIsCreateOrUpdateStepDone(true);
     });
   };
+
+  // I might have to return to my isActionDone state naming then.
+  const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
+    useState(false);
+
+  useEffect(() => {
+    if (isCreateOrUpdateStepDone) {
+      // Objectively this will be rendered superflous, because in all fairness, if a step will be made, it will mean that it will have passed all validations, and that therefore the stuff about no steps will always need to be removed.
+      if (
+        createOrUpdateMomentState?.stepsSubMessage === NO_STEPS_ERROR_MESSAGE
+      ) {
+        const newState = {
+          ...createOrUpdateMomentState,
+          stepsMessage: undefined,
+          stepsSubMessage: undefined,
+        };
+        setCreateOrUpdateMomentState(newState);
+      }
+      setIsCreateOrUpdateStepDone(false);
+    }
+  }, [isCreateOrUpdateStepDone]); // Imagine now doing all is with animations.
 
   return <form id={ids[variant]} action={createOrUpdateStepAction}></form>;
 }

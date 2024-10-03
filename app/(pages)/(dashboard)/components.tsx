@@ -80,6 +80,7 @@ export function Section({
   showAddendum = true,
   id,
   error,
+  subError,
   children,
 }: {
   title?: string;
@@ -89,6 +90,7 @@ export function Section({
   showAddendum?: boolean;
   id?: string;
   error?: string;
+  subError?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -106,12 +108,25 @@ export function Section({
         {title && (
           <>
             <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
-            {description && showDescription && (
-              <FormDescriptionOrError error={error} description={description} />
-            )}
-            {addendum && showAddendum && (
-              <p className="max-w-prose text-sm text-neutral-500">{addendum}</p>
-            )}
+            <div className="flex flex-col gap-y-2">
+              {description && showDescription && (
+                <FormDescriptionOrError
+                  error={error}
+                  description={description}
+                />
+              )}
+              {subError ? (
+                <FormValidationError error={subError} />
+              ) : (
+                <>
+                  {addendum && showAddendum && (
+                    <p className="max-w-prose text-sm text-neutral-500">
+                      {addendum}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
           </>
         )}
       </div>
