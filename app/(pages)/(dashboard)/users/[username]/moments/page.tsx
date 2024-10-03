@@ -51,6 +51,7 @@ import { deleteMomentStepsByMomentId } from "@/app/writes/steps";
 import { selectMomentId } from "@/app/reads/subreads/moments";
 import { createStepsFromStepsFlow } from "@/app/utilities/steps";
 import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
+import { compareAsc, compareDesc, roundToNearestHours, sub } from "date-fns";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -306,6 +307,30 @@ export default async function MomentsPage({
     momentFromCRUD: MomentToCRUD | undefined,
   ): Promise<CreateOrUpdateMomentState> {
     "use server";
+    const currentNow = dateToInputDatetime(new Date());
+    const minFromCurrentNow = dateToInputDatetime(
+      roundToNearestHours(sub(currentNow, { hours: 1 }), {
+        roundingMethod: "floor",
+      }),
+    );
+    const isMomentDateBeforeMinFromCurrentNow = compareDesc(
+      momentDate,
+      minFromCurrentNow,
+    );
+
+    if (isMomentDateBeforeMinFromCurrentNow === 1)
+      return {
+        momentMessage: "Erreur(s) sur le renseignement moment du formulaire.",
+        errors: {
+          momentStartDateAndTime: [
+            "Votre moment ne peux pas commencer environ plus d'une heure avant que vous ne l'ayez créé.",
+          ],
+        },
+        bs: {
+          destinationName: destination,
+          momentActivity: activite,
+        },
+      };
 
     // testing...
     // return { message: "I'm testing things here." };
@@ -321,6 +346,10 @@ export default async function MomentsPage({
       return {
         momentMessage:
           "Erreur sur le renseignement du formulaire. (Si vous voyez ce message, cela signifie que c'est sûrement hors de votre contrôle.)",
+        bs: {
+          destinationName: destination,
+          momentActivity: activite,
+        },
       };
 
     const [
@@ -343,6 +372,17 @@ export default async function MomentsPage({
       return {
         momentMessage: "Erreur(s) sur le renseignement moment du formulaire.",
         errors: validatedFields.error.flatten().fieldErrors,
+        bs: {
+          destinationName: trimmedDestination,
+          momentActivity: trimmedActivite,
+        },
+      };
+    }
+
+    if (steps.length === 0) {
+      return {
+        stepsMessage:
+          "Erreur sur le renseignement étapes du formulaire. Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
         bs: {
           destinationName: trimmedDestination,
           momentActivity: trimmedActivite,

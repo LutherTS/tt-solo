@@ -872,22 +872,6 @@ function MomentForms({
 
   const createOrUpdateMomentAction = async () => {
     startCreateOrUpdateMomentTransition(async () => {
-      // masking the React 19 bug...
-      if (steps.length === 0) {
-        if (destinationSelect) {
-          setDestinationTextControlled(destinationOptionControlled);
-          setDestinationSelect(false);
-        }
-        if (activitySelect) {
-          setActiviteTextControlled(activiteOptionControlled);
-          setActivitySelect(false);
-        }
-        return setCreateOrUpdateMomentState({
-          stepsMessage:
-            "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
-        });
-      }
-
       const state = await createOrUpdateMomentBound();
       if (state) {
         // watch this
@@ -1137,7 +1121,8 @@ function MomentForms({
               }
               fieldFlexIsNotLabel
               tekTime
-              required={!destinationSelect}
+              // required={!destinationSelect}
+              required={false}
               // errors={testErrors}
               errors={createOrUpdateMomentState?.errors?.destinationName}
             >
@@ -1163,7 +1148,8 @@ function MomentForms({
               options={destinationOptions}
               fieldFlexIsNotLabel
               tekTime
-              required={destinationSelect}
+              // required={destinationSelect}
+              required={false}
               // errors={testErrors}
               errors={createOrUpdateMomentState?.errors?.destinationName}
             >
@@ -1185,7 +1171,8 @@ function MomentForms({
               definedValue={activiteTextControlled}
               definedOnValueChange={setActiviteTextControlled}
               fieldFlexIsNotLabel
-              required={!activitySelect}
+              // required={!activitySelect}
+              required={false}
               errors={createOrUpdateMomentState?.errors?.momentActivity}
             >
               <Button
@@ -1207,7 +1194,8 @@ function MomentForms({
               placeholder="Choisissez..."
               options={activityOptions}
               fieldFlexIsNotLabel
-              required={activitySelect}
+              // required={activitySelect}
+              required={false}
               errors={createOrUpdateMomentState?.errors?.momentActivity}
             >
               <Button
@@ -1225,6 +1213,7 @@ function MomentForms({
             definedValue={objectifControlled}
             definedOnValueChange={setObjectifControlled}
             description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
+            required={false}
             errors={createOrUpdateMomentState?.errors?.momentName}
           />
           <InputSwitchControlled
@@ -1242,6 +1231,7 @@ function MomentForms({
             definedOnValueChange={setContexteControlled}
             description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
             rows={6}
+            required={false}
             errors={createOrUpdateMomentState?.errors?.momentDescription}
           />
           <InputDatetimeLocalControlled
@@ -1250,11 +1240,11 @@ function MomentForms({
             description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
             definedValue={startMomentDate}
             definedOnValueChange={setStartMomentDate}
-            min={dateToInputDatetime(
-              roundToNearestHours(sub(now, { hours: 1 }), {
-                roundingMethod: "floor",
-              }),
-            )}
+            // min={dateToInputDatetime(
+            //   roundToNearestHours(sub(now, { hours: 1 }), {
+            //     roundingMethod: "floor",
+            //   }),
+            // )}
             errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
           />
         </Section>
@@ -1983,4 +1973,21 @@ type RevalidateMoments = () => Promise<void>;
 // This needs to be an action. // DONE.
 // And this needs a confirm. // DONE.
 // I didn't know at the time that action could be use on pretty much anything. // DONE.
+
+// masking the React 19 bug...
+// OR, this should be on the server after validating fields from Votre moment
+// if (steps.length === 0) {
+//   if (destinationSelect) {
+//     setDestinationTextControlled(destinationOptionControlled);
+//     setDestinationSelect(false);
+//   }
+//   if (activitySelect) {
+//     setActiviteTextControlled(activiteOptionControlled);
+//     setActivitySelect(false);
+//   }
+//   return setCreateOrUpdateMomentState({
+//     stepsMessage:
+//       "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
+//   });
+// }
 */
