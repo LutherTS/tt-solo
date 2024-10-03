@@ -223,9 +223,7 @@ export function CRUD({
 
   return (
     <>
-      <div
-      // className="space-y-8"
-      >
+      <div>
         <div className="flex justify-between pb-8 align-baseline">
           <PageTitle title={viewTitles[view]} />
           {view === "update-moment" && (
@@ -920,13 +918,15 @@ function MomentForms({
   // it can't work in the action, probably again due to the way they're batched
   // this means the scrolling information will have to be inferred from createOrUpdateMomentState inside the useEffect, making the useEffect an extension of the action (until actions are hopefully improved)
   useEffect(() => {
-    console.log("changed");
+    // console.log("changed");
+    // This is going to need its own stateful boolean or rather enum once I'll know exactly what I want to do here.
     if (view === "create-moment" && createOrUpdateMomentState) {
-      console.log("activated");
+      // console.log("activated");
+      // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setting of createOrUpdateMomentState.
       const votreMoment = document.getElementById("votre-moment");
       votreMoment?.scrollIntoView({ behavior: "smooth" });
     }
-    // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8
+    // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8 // done but keeping the comment as a reminder to never rely on Tailwind's space- in the long run, it's a kickstarting feature
   }, [createOrUpdateMomentState]);
   // Avec ça je vais impressionner Mohamed et renégocier avec lui. Je pense que les client ET server validations sont le différenciateur clair d'un usage indispensable entre l'ancien et le nouveau React.
 
@@ -974,11 +974,16 @@ function MomentForms({
         // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
 
         setIndispensable(false);
+
         // setStartMomentDate(nowRoundedUpTenMinutes);
         // the easy solution
         setStartMomentDate(
           roundTimeUpTenMinutes(dateToInputDatetime(new Date())),
         ); // the harder solution would be returning that information a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case
+        // Actually now the flow that I preconize now is to do what's next to be done after the action from the action ending, all inside a subsequent useEffect. Here it had only to do with time so I could guess it manually, but for anything more complex, that's where useEffect currently comes in until the React defeat it as the "final boss."
+        // https://x.com/acdlite/status/1758231913314091267
+        // https://x.com/acdlite/status/1758233493408973104
+
         setSteps([]);
         setStepVisible("creating");
 
@@ -994,14 +999,27 @@ function MomentForms({
         setDureeCreateControlled("10");
 
         // reset action states as well
-        // !! Penser à faire que le bouton Confirmer le moment soit disponible et indique de faire des étapes si on le clique.
+        // !! Penser à faire en sorte que le bouton Confirmer le moment soit disponible et indique de faire des étapes si on le clique.
         setCreateOrUpdateMomentState(null); // the jumping culprit, even will null, but in the end a different solution below ignores the issue
 
-        const votreMoment = document.getElementById("votre-moment");
-        votreMoment?.scrollIntoView({ behavior: "smooth" });
+        // for the useEffect
+        setResetMomentFormActionState(true);
       } else event.preventDefault();
     });
   };
+
+  // and another state for that useEffect
+  // ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormActionState
+  const [resetMomentFormActionState, setResetMomentFormActionState] =
+    useState(false);
+
+  useEffect(() => {
+    if (resetMomentFormActionState) {
+      const votreMoment = document.getElementById("votre-moment");
+      votreMoment?.scrollIntoView({ behavior: "smooth" });
+      setResetMomentFormActionState(false);
+    }
+  }, [resetMomentFormActionState]);
 
   // Here we go again to control the StepForm fields...
   // And there's two variant, so I need to duplicate the states...
