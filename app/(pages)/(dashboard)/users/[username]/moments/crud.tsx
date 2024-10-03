@@ -868,10 +868,26 @@ function MomentForms({
     useTransition();
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-    useState<CreateOrUpdateMomentState>();
+    useState<CreateOrUpdateMomentState>(null);
 
   const createOrUpdateMomentAction = async () => {
     startCreateOrUpdateMomentTransition(async () => {
+      // masking the React 19 bug...
+      if (steps.length === 0) {
+        if (destinationSelect) {
+          setDestinationTextControlled(destinationOptionControlled);
+          setDestinationSelect(false);
+        }
+        if (activitySelect) {
+          setActiviteTextControlled(activiteOptionControlled);
+          setActivitySelect(false);
+        }
+        return setCreateOrUpdateMomentState({
+          stepsMessage:
+            "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
+        });
+      }
+
       const state = await createOrUpdateMomentBound();
       if (state) {
         // watch this
@@ -924,8 +940,14 @@ function MomentForms({
     if (view === "create-moment" && createOrUpdateMomentState) {
       // console.log("activated");
       // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setCreateOrUpdateMomentState.
-      const votreMoment = document.getElementById("votre-moment");
-      votreMoment?.scrollIntoView({ behavior: "smooth" });
+      if (createOrUpdateMomentState.momentMessage) {
+        const votreMoment = document.getElementById("votre-moment");
+        return votreMoment?.scrollIntoView({ behavior: "smooth" });
+      }
+      if (createOrUpdateMomentState.stepsMessage) {
+        const sesEtapes = document.getElementById("ses-etapes");
+        return sesEtapes?.scrollIntoView({ behavior: "smooth" });
+      }
     }
     // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8 // done but keeping the comment as a reminder to never rely on Tailwind's space- in the long run, it's a kickstarting feature
   }, [createOrUpdateMomentState]);
@@ -1240,6 +1262,8 @@ function MomentForms({
         <Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
+          id="ses-etapes"
+          error={createOrUpdateMomentState?.stepsMessage}
         >
           {steps.length > 0 && (
             <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
@@ -1413,7 +1437,7 @@ function MomentForms({
                 type="submit"
                 variant="confirm"
                 disabled={
-                  steps.length === 0 ||
+                  // steps.length === 0 ||
                   isResetMomentFormPending ||
                   isDeleteMomentPending ||
                   isCreateOrUpdateMomentPending
@@ -1466,7 +1490,7 @@ function MomentForms({
                 type="submit"
                 variant="confirm"
                 disabled={
-                  steps.length === 0 ||
+                  // steps.length === 0 ||
                   isResetMomentFormPending ||
                   isDeleteMomentPending ||
                   isCreateOrUpdateMomentPending
