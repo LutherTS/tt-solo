@@ -188,7 +188,7 @@ export function CRUD({
 
   let [view, setView] = useState<View>("read-moments");
 
-  // For now I'll just instantiate this in every component that needs it. An utility would be more versatile, but I don't want to use the setters as arguments.
+  // For now I'll just instantiate this in every component that needs it. A utility would be more versatile, but I don't want to use the setters as arguments.
   const setViewToTop = (view: View) => {
     setView(view);
     scrollTo({ top: 0 });
@@ -564,7 +564,7 @@ function ReadMomentsView({
           );
         })}
         <button
-          // to target the input in form that needs to be reset
+          // to target the input in the form that needs to be reset
           form="form"
           onClick={revalidateMomentsAction}
           disabled={isRevalidateMomentsPending}
@@ -903,6 +903,7 @@ function MomentForms({
       }
 
       // this now works thanks to export const dynamic = "force-dynamic";
+      // ...I think
       if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
       else if (compareAsc(startMomentDate, now) === 1)
         setSubView("future-moments");
@@ -922,7 +923,7 @@ function MomentForms({
     // This is going to need its own stateful boolean or rather enum once I'll know exactly what I want to do here.
     if (view === "create-moment" && createOrUpdateMomentState) {
       // console.log("activated");
-      // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setting of createOrUpdateMomentState.
+      // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setCreateOrUpdateMomentState.
       const votreMoment = document.getElementById("votre-moment");
       votreMoment?.scrollIntoView({ behavior: "smooth" });
     }
@@ -979,8 +980,8 @@ function MomentForms({
         // the easy solution
         setStartMomentDate(
           roundTimeUpTenMinutes(dateToInputDatetime(new Date())),
-        ); // the harder solution would be returning that information a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case
-        // Actually now the flow that I preconize now is to do what's next to be done after the action from the action ending, all inside a subsequent useEffect. Here it had only to do with time so I could guess it manually, but for anything more complex, that's where useEffect currently comes in until the React defeat it as the "final boss."
+        ); // the harder solution would be returning that information a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case (it's an escape hatch I've then used to solve a bug from React 19 above)
+        // Or actually the flow that I preconize now is to do what's next to be done inside a subsequent useEffect (but I don't think that would have worked). Here it had only to do with time so I could guess it manually, but for anything more complex, that's where useEffect currently comes in until the React team defeat it as the "final boss."
         // https://x.com/acdlite/status/1758231913314091267
         // https://x.com/acdlite/status/1758233493408973104
 
@@ -999,8 +1000,8 @@ function MomentForms({
         setDureeCreateControlled("10");
 
         // reset action states as well
-        // !! Penser à faire en sorte que le bouton Confirmer le moment soit disponible et indique de faire des étapes si on le clique.
-        setCreateOrUpdateMomentState(null); // the jumping culprit, even will null, but in the end a different solution below ignores the issue
+        // !! Par la suite penser à faire en sorte que le bouton Confirmer le moment soit disponible et indique de faire des étapes si on le clique. (stepsMessage, vosEtapes?.scrollIntoView({ behavior: "smooth" }))
+        setCreateOrUpdateMomentState(null); // the jumping culprit, even will null, but in the end a different solution below ignores the issue (irregular defaults)
 
         // for the useEffect
         setResetMomentFormActionState(true);
@@ -1009,7 +1010,7 @@ function MomentForms({
   };
 
   // and another state for that useEffect
-  // ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormActionState
+  // ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormActionState at this time
   const [resetMomentFormActionState, setResetMomentFormActionState] =
     useState(false);
 
@@ -1057,7 +1058,7 @@ function MomentForms({
 
   return (
     <>
-      {/* resetting forms will also require resetting action states */}
+      {/* resetting forms also requires resetting relevant action states */}
       {/* surfacing server-side and client-side errors */}
       {deleteMomentState?.message && <>{deleteMomentState.message}</>}
       {createStepState?.message && <>{createStepState.message}</>}
