@@ -1,11 +1,11 @@
 import prisma from "@/prisma/db";
 
-import { selectUserId, whereByUsername } from "./subreads/users";
+import { selectUserIdAndUsername, whereByUsername } from "./subreads/users";
 
 // FindUniques
 
 export async function findUserIdByUsername(username: string) {
-  const select = selectUserId;
+  const select = selectUserIdAndUsername;
   const where = whereByUsername(username);
 
   return await prisma.user.findUnique({

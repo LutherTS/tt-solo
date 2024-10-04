@@ -2,8 +2,9 @@ import { Prisma } from "@prisma/client";
 
 // Selects
 
-export const selectUserId = {
+export const selectUserIdAndUsername = {
   id: true,
+  username: true,
 } satisfies Prisma.UserSelect;
 
 // WhereUniques
