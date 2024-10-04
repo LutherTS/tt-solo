@@ -59,6 +59,7 @@ import {
 } from "@/app/utilities/moments";
 import {
   Button,
+  DateCard,
   Divider,
   FieldTitle,
   InputDatetimeLocalControlled,
@@ -68,7 +69,7 @@ import {
   InputTextControlled,
   PageTitle,
   Section,
-  SectionWrapper,
+  NoDateCard,
   SelectWithOptionsControlled,
   TextareaControlled,
 } from "../../../components";
@@ -619,94 +620,90 @@ function ReadMomentsView({
           {realDisplayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <div className="space-y-8">
-                <SectionWrapper>
-                  <Section
-                    title={format(new Date(e.date), "eeee d MMMM", {
-                      locale: fr,
-                    })}
-                  >
-                    {e.destinations.map((e2) => {
-                      return (
-                        <div
-                          className="flex flex-col gap-y-8"
-                          key={e2.destinationIdeal}
-                        >
-                          <div className="flex select-none items-baseline justify-between">
-                            <p
-                              className={clsx(
-                                "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-                              )}
-                            >
-                              {e2.destinationIdeal}
-                            </p>
-                          </div>
-                          {e2.moments.map((e3, i3) => (
-                            <div
-                              className={clsx(
-                                "group space-y-2",
-                                i3 === 0 && "-mt-5",
-                              )}
-                              key={e3.id}
-                            >
-                              <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
-                                <p className="font-medium text-blue-950">
-                                  {e3.objective}
-                                </p>
-                                <div className="invisible flex justify-end group-hover:visible">
-                                  <Button
-                                    type="button"
-                                    variant="destroy-step"
-                                    onClick={() => {
-                                      setMoment(
-                                        realMoments.find(
-                                          (e4) => e4.id === e3.id,
-                                        ),
-                                      );
-                                      setViewToTop("update-moment");
-                                    }}
-                                  >
-                                    <Icons.PencilSquareSolid className="size-5" />
-                                  </Button>
-                                </div>
-                              </div>
-                              <p>
-                                <span
-                                  className={"font-semibold text-neutral-800"}
-                                >
-                                  {e3.startDateAndTime.split("T")[1]}
-                                </span>{" "}
-                                • {numStringToTimeString(e3.duration)}
-                                {e3.isIndispensable && (
-                                  <>
-                                    {" "}
-                                    •{" "}
-                                    <span className="text-sm font-semibold uppercase">
-                                      indispensable
-                                    </span>
-                                  </>
-                                )}
-                              </p>
-                              <ol className="">
-                                {e3.steps.map((e4) => (
-                                  <li
-                                    className="text-sm font-light leading-loose text-neutral-500"
-                                    key={e4.id}
-                                  >
-                                    <p className="">
-                                      {e4.startDateAndTime.split("T")[1]} -{" "}
-                                      {e4.endDateAndTime.split("T")[1]} :{" "}
-                                      {e4.title}
-                                    </p>
-                                  </li>
-                                ))}
-                              </ol>
-                            </div>
-                          ))}
+                <DateCard
+                  title={format(new Date(e.date), "eeee d MMMM", {
+                    locale: fr,
+                  })}
+                >
+                  {e.destinations.map((e2) => {
+                    return (
+                      <div
+                        className="flex flex-col gap-y-8"
+                        key={e2.destinationIdeal}
+                      >
+                        <div className="flex select-none items-baseline justify-between">
+                          <p
+                            className={clsx(
+                              "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
+                            )}
+                          >
+                            {e2.destinationIdeal}
+                          </p>
                         </div>
-                      );
-                    })}
-                  </Section>
-                </SectionWrapper>
+                        {e2.moments.map((e3, i3) => (
+                          <div
+                            className={clsx(
+                              "group space-y-2",
+                              i3 === 0 && "-mt-5",
+                            )}
+                            key={e3.id}
+                          >
+                            <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+                              <p className="font-medium text-blue-950">
+                                {e3.objective}
+                              </p>
+                              <div className="invisible flex justify-end group-hover:visible">
+                                <Button
+                                  type="button"
+                                  variant="destroy-step"
+                                  onClick={() => {
+                                    setMoment(
+                                      realMoments.find((e4) => e4.id === e3.id),
+                                    );
+                                    setViewToTop("update-moment");
+                                  }}
+                                >
+                                  <Icons.PencilSquareSolid className="size-5" />
+                                </Button>
+                              </div>
+                            </div>
+                            <p>
+                              <span
+                                className={"font-semibold text-neutral-800"}
+                              >
+                                {e3.startDateAndTime.split("T")[1]}
+                              </span>{" "}
+                              • {numStringToTimeString(e3.duration)}
+                              {e3.isIndispensable && (
+                                <>
+                                  {" "}
+                                  •{" "}
+                                  <span className="text-sm font-semibold uppercase">
+                                    indispensable
+                                  </span>
+                                </>
+                              )}
+                            </p>
+                            <ol className="">
+                              {e3.steps.map((e4) => (
+                                <li
+                                  className="text-sm font-light leading-loose text-neutral-500"
+                                  key={e4.id}
+                                >
+                                  <p className="">
+                                    {e4.startDateAndTime.split("T")[1]} -{" "}
+                                    {e4.endDateAndTime.split("T")[1]} :{" "}
+                                    {e4.title}
+                                  </p>
+                                </li>
+                              ))}
+                            </ol>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </DateCard>
               </div>
               {i === a.length - 1 && (
                 <p className="font-extralight text-neutral-800">
@@ -748,9 +745,9 @@ function ReadMomentsView({
           </div>
         </>
       ) : (
-        <SectionWrapper>
+        <NoDateCard>
           <FieldTitle title={"Pas de moment... pour le moment. 😅"} />
-        </SectionWrapper>
+        </NoDateCard>
       )}
     </div>
   );
@@ -1053,11 +1050,7 @@ function MomentForms({
 
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
-  const [createStepState, setCreateStepState] = useState<CreateStepState>(null);
-
   const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
-
-  const [updateStepState, setUpdateStepState] = useState<CreateStepState>(null);
 
   // error testing
 
@@ -1068,8 +1061,6 @@ function MomentForms({
       {/* resetting forms also requires resetting relevant action states */}
       {/* surfacing server-side and client-side errors */}
       {deleteMomentState?.message && <>{deleteMomentState.message}</>}
-      {createStepState?.message && <>{createStepState.message}</>}
-      {updateStepState?.message && <>{updateStepState.message}</>}
       {/* The connection to the server (and client!) has been established. */}
       <StepForm
         variant="creating"
@@ -1084,7 +1075,6 @@ function MomentForms({
         setDetails={setDetailsCreateControlled}
         setDuree={setDureeCreateControlled}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
-        setCreateOrUpdateStepState={setCreateStepState}
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
         // for the React 19 bug
@@ -1108,7 +1098,6 @@ function MomentForms({
         setDetails={setDetailsUpdateControlled}
         setDuree={setDureeUpdateControlled}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
-        setCreateOrUpdateStepState={setUpdateStepState}
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
         // for the React 19 bug
@@ -1534,7 +1523,6 @@ function StepForm({
   setDetails,
   setDuree,
   startCreateOrUpdateStepTransition,
-  setCreateOrUpdateStepState,
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
   destinationSelect,
@@ -1556,9 +1544,6 @@ function StepForm({
   setDetails: Dispatch<SetStateAction<string>>;
   setDuree: Dispatch<SetStateAction<string>>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
-  setCreateOrUpdateStepState: Dispatch<
-    SetStateAction<CreateStepState | UpdateStepState>
-  >;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
@@ -1635,6 +1620,34 @@ function StepForm({
       const { stepName, stepDescription, trueStepDuration } =
         validatedFields.data;
 
+      const stepsIntitules = steps.map((e) => e.intitule);
+      const stepsDetails = steps.map((e) => e.details);
+
+      if (stepsIntitules.includes(stepName)) {
+        return setCreateOrUpdateMomentState({
+          stepsMessage: "Erreurs sur le renseignement étapes du formulaire.",
+          stepsSubMessage: "Veuillez vérifier les champs concernés.",
+          errors: {
+            stepName: [
+              "Vous ne pouvez pas créer deux étapes du même nom sur le même moment.",
+            ],
+          },
+          bs,
+        });
+      }
+      if (stepsDetails.includes(stepDescription)) {
+        return setCreateOrUpdateMomentState({
+          stepsMessage: "Erreurs sur le renseignement étapes du formulaire.",
+          stepsSubMessage: "Veuillez vérifier les champs concernés.",
+          errors: {
+            stepDescription: [
+              "Vous ne pouvez pas vraiment créer deux étapes avec les mêmes détails sur le même moment.",
+            ],
+          },
+          bs,
+        });
+      }
+
       intitule = stepName;
       details = stepDescription;
       duree = trueStepDuration.toString();
@@ -1673,23 +1686,39 @@ function StepForm({
   const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
     useState(false);
 
-  // I think/hope the useEffect from createOrUpdateMoment will do the scrolling on its own.
   useEffect(() => {
     if (isCreateOrUpdateStepDone) {
+      const bs = {
+        destinationName: destinationSelect
+          ? destinationOptionControlled
+          : destinationTextControlled,
+        momentActivity: activitySelect
+          ? activiteOptionControlled
+          : activiteTextControlled,
+      };
       // Objectively this will be rendered superflous, because in all fairness, if a step will be made, it will mean that it will have passed all validations, and that therefore the stuff about no steps will always need to be removed.
-      if (
-        createOrUpdateMomentState?.stepsSubMessage === NO_STEPS_ERROR_MESSAGE
-      ) {
-        const newState = {
-          ...createOrUpdateMomentState,
-          stepsMessage: undefined,
-          stepsSubMessage: undefined,
-        };
-        setCreateOrUpdateMomentState(newState);
-      }
-      setIsCreateOrUpdateStepDone(false);
+      // if (
+      //   createOrUpdateMomentState?.stepsSubMessage === NO_STEPS_ERROR_MESSAGE
+      // ) {
+      const newState = {
+        ...createOrUpdateMomentState,
+        stepsMessage: undefined,
+        stepsSubMessage: undefined,
+        errors: {
+          stepName: undefined,
+          stepDescription: undefined,
+          trueStepDuration: undefined,
+        },
+        bs,
+      };
+      setCreateOrUpdateMomentState(newState);
     }
-  }, [isCreateOrUpdateStepDone]); // Imagine now doing all is with animations.
+    setIsCreateOrUpdateStepDone(false);
+
+    const sesEtapes = document.getElementById("ses-etapes");
+    return sesEtapes?.scrollIntoView({ behavior: "smooth" });
+    // }
+  }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
 
   return <form id={ids[variant]} action={createOrUpdateStepAction}></form>;
 }

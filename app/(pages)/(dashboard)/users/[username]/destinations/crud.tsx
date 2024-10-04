@@ -14,7 +14,7 @@ import {
   InputText,
   PageTitle,
   Section,
-  SectionWrapper,
+  NoDateCard,
   Textarea,
 } from "../../../components";
 import * as Icons from "../icons";
@@ -177,7 +177,7 @@ function ReadDestinationsView({
               "inline-block font-serif font-light text-neutral-500";
             return (
               <div key={e.id} className="group space-y-8">
-                <SectionWrapper>
+                <NoDateCard>
                   <Section title={e.ideal}>
                     <div className="space-y-2">
                       <div className="grid select-none grid-cols-[4fr_1fr] items-center gap-4">
@@ -245,17 +245,17 @@ function ReadDestinationsView({
                       </ul>
                     </div>
                   </Section>
-                </SectionWrapper>
+                </NoDateCard>
               </div>
             );
           })}
         </>
       ) : (
-        <SectionWrapper>
+        <NoDateCard>
           <FieldTitle
             title={"Pas de destination... pour la destination ? 🤔"}
           />
-        </SectionWrapper>
+        </NoDateCard>
       )}
     </div>
   );

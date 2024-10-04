@@ -46,7 +46,31 @@ export function Divider() {
   );
 }
 
-export function SectionWrapper({ children }: { children: React.ReactNode }) {
+export function DateCard({
+  title,
+  id,
+  children,
+}: {
+  title: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+      <section
+        className="grid items-baseline gap-8 md:grid-cols-[1fr_2fr]"
+        id={id}
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
+        </div>
+        <div className="flex flex-col gap-y-8">{children}</div>
+      </section>
+    </div>
+  );
+}
+
+export function NoDateCard({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
 }
 
