@@ -62,8 +62,6 @@ export type CreateOrUpdateMoment = (
   // formData: FormData,
 ) => Promise<CreateOrUpdateMomentState>;
 
-type DefaultFormState = { message: string } | null;
-
 // The type of the return of createOrUpdateMoment as it is being shared between the server and the client.
 // It is then reused between createOrUpdateMoment on the server and the type CreateOrUpdateMoment made on the client.
 // Then, MANUALLY I do insist, I need to make sure that the arguments on createOrUpdateMoment and CreateOrUpdateMoment are exactly the same. (In fact, they're meant to be directly copypastable between one another.)
@@ -97,16 +95,6 @@ export type CreateOrUpdateMomentState = {
 
 export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
-) => Promise<DeleteMomentState>;
-
-// same as CreateOrUpdateMomentState for now but differentiated nonetheless because subject to change.
-export type DeleteMomentState = DefaultFormState;
+) => Promise<CreateOrUpdateMomentState>;
 
 export type RevalidateMoments = () => Promise<void>;
-
-// this has to unite with CreateOrUpdateMomentState
-type CreateStepOrUpdateState = { message: string } | null;
-
-export type CreateStepState = DefaultFormState;
-
-export type UpdateStepState = DefaultFormState;

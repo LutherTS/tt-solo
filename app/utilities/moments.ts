@@ -1,4 +1,5 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
+import { Dispatch, SetStateAction } from "react";
 import { ToWords } from "to-words";
 
 // changes a Date object into a input datetime-local string
@@ -82,3 +83,32 @@ export const roundTimeUpTenMinutes = (time: string) =>
     ),
     "yyyy-MM-dd'T'HH:mm",
   );
+
+// rotates by setting state any state array enum to the right or to the left
+export const rotateStates = <T>(
+  // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
+  direction: "left" | "right",
+  setState: Dispatch<SetStateAction<T>>,
+  statesArray: readonly T[],
+  state: T,
+) => {
+  if (direction === "right") {
+    setState(
+      statesArray.at(
+        statesArray.indexOf(state) + 1 > statesArray.length - 1
+          ? 0
+          : statesArray.indexOf(state) + 1,
+      )!,
+    );
+  } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
+};
+
+// scroll back to top when changing a view
+export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
+  // https://www.bajorunas.tech/blog/typescript-generics-inheritance
+  desiredView: DesiredView,
+  setDesiredView: Dispatch<SetStateAction<DesiredViews>>,
+) => {
+  setDesiredView(desiredView);
+  scrollTo({ top: 0 });
+};

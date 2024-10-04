@@ -46,15 +46,14 @@ import {
   CreateOrUpdateMoment,
   DeleteMoment,
   RevalidateMoments,
-  DeleteMomentState,
-  CreateStepState,
-  UpdateStepState,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
   defineCurrentPage,
   numStringToTimeString,
+  rotateStates,
   roundTimeUpTenMinutes,
+  setScrollToTop,
   toWordsing,
 } from "@/app/utilities/moments";
 import {
@@ -78,10 +77,9 @@ import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
-  NO_STEPS_ERROR_MESSAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
-} from "@/app/variables/moments";
+} from "@/app/searches/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 
 /* Dummy Form Presenting Data 
@@ -104,9 +102,10 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 30 minutes
 */
 
-// Main Data
+// Main Types
 
-// These types below are helpers for the file more than anything else. No need to have them imported for a type file at this time.
+// The types below are helpers for the file more than anything else. No need to have them imported for a type file at this time.
+
 type View = "update-moment" | "create-moment" | "read-moments";
 
 type SubView =
@@ -116,6 +115,8 @@ type SubView =
   | "future-moments";
 
 type StepVisible = "create" | "creating" | "updating";
+
+// Main Data
 
 const activityOptions: Option[] = [
   { key: 1, label: "Atelier", value: "Atelier" },
@@ -136,23 +137,9 @@ const activityOptions: Option[] = [
   { key: 16, label: "Séminaire", value: "Séminaire" },
 ];
 
-const rotateStates = <T,>(
-  // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
-  direction: "left" | "right",
-  setState: Dispatch<SetStateAction<T>>,
-  statesArray: readonly T[],
-  state: T,
-) => {
-  if (direction === "right") {
-    setState(
-      statesArray.at(
-        statesArray.indexOf(state) + 1 > statesArray.length - 1
-          ? 0
-          : statesArray.indexOf(state) + 1,
-      )!,
-    );
-  } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
-};
+const DEFAULT_STEP_MESSAGE =
+  "Erreurs sur le renseignement étapes du formulaire.";
+const DEFAULT_STEP_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
 
 // Main Component
 
@@ -191,12 +178,6 @@ export function CRUD({
 
   let [view, setView] = useState<View>("read-moments");
 
-  // For now I'll just instantiate this in every component that needs it. A utility would be more versatile, but I don't want to use the setters as arguments.
-  const setViewToTop = (view: View) => {
-    setView(view);
-    scrollTo({ top: 0 });
-  };
-
   let viewTitles = {
     "update-moment": "Éditez",
     "read-moments": "Vos moments",
@@ -233,9 +214,7 @@ export function CRUD({
             <Button
               type="button"
               variant="destroy-step"
-              onClick={() => {
-                setViewToTop("read-moments");
-              }}
+              onClick={() => setScrollToTop("read-moments", setView)}
             >
               Vos moments
             </Button>
@@ -244,7 +223,7 @@ export function CRUD({
             <Button
               type="button"
               variant="destroy-step"
-              onClick={() => setViewToTop("create-moment")}
+              onClick={() => setScrollToTop("create-moment", setView)}
             >
               Créez un moment
             </Button>
@@ -253,7 +232,7 @@ export function CRUD({
             <Button
               type="button"
               variant="destroy-step"
-              onClick={() => setViewToTop("read-moments")}
+              onClick={() => setScrollToTop("read-moments", setView)}
             >
               Vos moments
             </Button>
@@ -331,11 +310,6 @@ function ReadMomentsView({
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
 }) {
-  const setViewToTop = (view: View) => {
-    setView(view);
-    scrollTo({ top: 0 });
-  };
-
   let subViewTitles = {
     "all-moments": "Tous",
     "past-moments": "Passés",
@@ -660,7 +634,7 @@ function ReadMomentsView({
                                     setMoment(
                                       realMoments.find((e4) => e4.id === e3.id),
                                     );
-                                    setViewToTop("update-moment");
+                                    setScrollToTop("update-moment", setView);
                                   }}
                                 >
                                   <Icons.PencilSquareSolid className="size-5" />
@@ -774,11 +748,6 @@ function MomentForms({
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
 }) {
-  const setViewToTop = (view: View) => {
-    setView(view);
-    scrollTo({ top: 0 });
-  };
-
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
   // InputSwitch unfortunately has to be controlled for resetting
@@ -909,7 +878,7 @@ function MomentForms({
       // therefore present by default
       else setSubView("current-moments");
 
-      setViewToTop("read-moments");
+      setScrollToTop("read-moments", setView);
       // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
     });
   };
@@ -943,10 +912,6 @@ function MomentForms({
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
-  // not really using deleteMomentState currently but it can return an error
-  const [deleteMomentState, setDeleteMomentState] =
-    useState<DeleteMomentState>();
-
   // Not sure this line is necessary if no default argument is to be provided.
   // Edit: It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
   const deleteMomentAction = async () => {
@@ -954,12 +919,14 @@ function MomentForms({
       if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
         if (deleteMomentBound) {
           const state = await deleteMomentBound();
-          if (state) return setDeleteMomentState(state);
+          if (state) return setCreateOrUpdateMomentState(state);
 
-          setViewToTop("read-moments");
+          setScrollToTop("read-moments", setView);
         } else
-          return setDeleteMomentState({
-            message: "Apparemment deleteMomentBound n'existe pas.",
+          return setCreateOrUpdateMomentState({
+            momentMessage: "Erreur.",
+            momentSubMessage:
+              "Il semble que deleteMomentBound est inexistant en interne.",
           }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
       }
     });
@@ -1052,16 +1019,8 @@ function MomentForms({
 
   const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
 
-  // error testing
-
-  // const testErrors = ["That's an error.", "That's another error."];
-
   return (
     <>
-      {/* resetting forms also requires resetting relevant action states */}
-      {/* surfacing server-side and client-side errors */}
-      {deleteMomentState?.message && <>{deleteMomentState.message}</>}
-      {/* The connection to the server (and client!) has been established. */}
       <StepForm
         variant="creating"
         currentStepId={currentStepId}
@@ -1077,13 +1036,6 @@ function MomentForms({
         startCreateOrUpdateStepTransition={startCreateStepTransition}
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-        // for the React 19 bug
-        destinationSelect={destinationSelect}
-        destinationOptionControlled={destinationOptionControlled}
-        destinationTextControlled={destinationTextControlled}
-        activitySelect={activitySelect}
-        activiteOptionControlled={activiteOptionControlled}
-        activiteTextControlled={activiteTextControlled}
       />
       <StepForm
         variant="updating"
@@ -1100,13 +1052,6 @@ function MomentForms({
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-        // for the React 19 bug
-        destinationSelect={destinationSelect}
-        destinationOptionControlled={destinationOptionControlled}
-        destinationTextControlled={destinationTextControlled}
-        activitySelect={activitySelect}
-        activiteOptionControlled={activiteOptionControlled}
-        activiteTextControlled={activiteTextControlled}
       />
       <form action={createOrUpdateMomentAction} onReset={resetMomentFormAction}>
         <Section
@@ -1439,7 +1384,6 @@ function MomentForms({
                 type="submit"
                 variant="confirm"
                 disabled={
-                  // steps.length === 0 ||
                   isResetMomentFormPending ||
                   isDeleteMomentPending ||
                   isCreateOrUpdateMomentPending
@@ -1492,7 +1436,6 @@ function MomentForms({
                 type="submit"
                 variant="confirm"
                 disabled={
-                  // steps.length === 0 ||
                   isResetMomentFormPending ||
                   isDeleteMomentPending ||
                   isCreateOrUpdateMomentPending
@@ -1525,12 +1468,6 @@ function StepForm({
   startCreateOrUpdateStepTransition,
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
-  destinationSelect,
-  destinationOptionControlled,
-  destinationTextControlled,
-  activitySelect,
-  activiteOptionControlled,
-  activiteTextControlled,
 }: {
   variant: "creating" | "updating";
   currentStepId: string;
@@ -1548,12 +1485,6 @@ function StepForm({
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
   >;
-  destinationSelect: boolean;
-  destinationOptionControlled: string;
-  destinationTextControlled: string;
-  activitySelect: boolean;
-  activiteOptionControlled: string;
-  activiteTextControlled: string;
 }) {
   let ids = {
     creating: "step-form-creating",
@@ -1568,15 +1499,6 @@ function StepForm({
   // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
   const createOrUpdateStepAction = () => {
     startCreateOrUpdateStepTransition(() => {
-      const bs = {
-        destinationName: destinationSelect
-          ? destinationOptionControlled
-          : destinationTextControlled,
-        momentActivity: activitySelect
-          ? activiteOptionControlled
-          : activiteTextControlled,
-      };
-
       // test
       // return setCreateOrUpdateStepState({ message: "It works though." });
       // It does. But the formData goes away again. :')
@@ -1588,12 +1510,9 @@ function StepForm({
         // typeof +duree !== "number" // number verified in zod
       )
         return setCreateOrUpdateMomentState({
-          // don't forget the React 19 bug...
-          // and I need to get the destination and activite in there...
           stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
           stepsSubMessage:
             "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
-          bs,
         });
 
       const [trimmedIntitule, trimmedDetails] = [intitule, details].map((e) =>
@@ -1610,10 +1529,9 @@ function StepForm({
 
       if (!validatedFields.success) {
         return setCreateOrUpdateMomentState({
-          stepsMessage: "Erreurs sur le renseignement étapes du formulaire.",
-          stepsSubMessage: "Veuillez vérifier les champs concernés.",
+          stepsMessage: DEFAULT_STEP_MESSAGE,
+          stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
           errors: validatedFields.error.flatten().fieldErrors,
-          bs,
         });
       }
 
@@ -1625,26 +1543,24 @@ function StepForm({
 
       if (stepsIntitules.includes(stepName)) {
         return setCreateOrUpdateMomentState({
-          stepsMessage: "Erreurs sur le renseignement étapes du formulaire.",
-          stepsSubMessage: "Veuillez vérifier les champs concernés.",
+          stepsMessage: DEFAULT_STEP_MESSAGE,
+          stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
           errors: {
             stepName: [
               "Vous ne pouvez pas créer deux étapes du même nom sur le même moment.",
             ],
           },
-          bs,
         });
       }
       if (stepsDetails.includes(stepDescription)) {
         return setCreateOrUpdateMomentState({
-          stepsMessage: "Erreurs sur le renseignement étapes du formulaire.",
-          stepsSubMessage: "Veuillez vérifier les champs concernés.",
+          stepsMessage: DEFAULT_STEP_MESSAGE,
+          stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
           errors: {
             stepDescription: [
               "Vous ne pouvez pas vraiment créer deux étapes avec les mêmes détails sur le même moment.",
             ],
           },
-          bs,
         });
       }
 
@@ -1682,24 +1598,11 @@ function StepForm({
     });
   };
 
-  // I might have to return to my isActionDone state naming then.
   const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
     useState(false);
 
   useEffect(() => {
     if (isCreateOrUpdateStepDone) {
-      const bs = {
-        destinationName: destinationSelect
-          ? destinationOptionControlled
-          : destinationTextControlled,
-        momentActivity: activitySelect
-          ? activiteOptionControlled
-          : activiteTextControlled,
-      };
-      // Objectively this will be rendered superflous, because in all fairness, if a step will be made, it will mean that it will have passed all validations, and that therefore the stuff about no steps will always need to be removed.
-      // if (
-      //   createOrUpdateMomentState?.stepsSubMessage === NO_STEPS_ERROR_MESSAGE
-      // ) {
       const newState = {
         ...createOrUpdateMomentState,
         stepsMessage: undefined,
@@ -1709,7 +1612,6 @@ function StepForm({
           stepDescription: undefined,
           trueStepDuration: undefined,
         },
-        bs,
       };
       setCreateOrUpdateMomentState(newState);
     }
@@ -2130,4 +2032,7 @@ type RevalidateMoments = () => Promise<void>;
 //       "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
 //   });
 // }
+
+Test in surfacing server-side and client-side errors.
+The connection to the server (and client!) has been established.
 */

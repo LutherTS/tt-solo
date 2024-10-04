@@ -9,22 +9,19 @@ import {
   StepFromCRUD,
   MomentToCRUD,
   CreateOrUpdateMomentState,
-  DeleteMomentState,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
   defineCurrentPage,
-  // endDateAndTime, // now closer to compute
 } from "@/app/utilities/moments";
 import { CRUD } from "./crud";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
-  NO_STEPS_ERROR_MESSAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
-} from "@/app/variables/moments";
+} from "@/app/searches/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
   countCurrentUserMomentsWithContains,
@@ -60,6 +57,9 @@ export const dynamic = "force-dynamic";
 const DEFAULT_MOMENT_MESSAGE =
   "Erreurs sur le renseignement moment du formulaire.";
 const DEFAULT_MOMENT_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
+
+const NO_STEPS_ERROR_MESSAGE =
+  "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.";
 
 export default async function MomentsPage({
   params,
@@ -387,8 +387,6 @@ export default async function MomentsPage({
       };
     }
 
-    // it'd be awesome to have a way to erase this once a step is securely made (steps are validate on the client)
-    // if (stepsSubMessage = "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape." in a variable, setState(...state, stepsSubMessage: undefined)) // done
     if (steps.length === 0) {
       return {
         stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
@@ -465,6 +463,7 @@ export default async function MomentsPage({
       // Done. I've just controlled every single field.
 
       // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their single if statements.
+
       // error handling needed eventually
       const destinationEntry = await findDestinationIdByNameAndUserId(
         destination,
@@ -576,12 +575,14 @@ export default async function MomentsPage({
 
   async function deleteMoment(
     momentFromCRUD?: MomentToCRUD,
-  ): Promise<DeleteMomentState> {
+    // actually using the same return state as createOrUpdate
+  ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
     if (!momentFromCRUD)
       return {
-        message: "Erreur. Le moment n'a pas été réceptionné en interne",
+        momentMessage: "Erreur.",
+        momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
       };
 
     const momentId = momentFromCRUD.id;

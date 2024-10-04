@@ -374,8 +374,6 @@ export function InputTextControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-      {/* copypasted for now but I'll optimize in some way eventually */}
-      {/* <ValidationError errors={testErrors} /> */}
     </FieldFlex>
   );
 }
@@ -857,7 +855,6 @@ export function InputNumberControlled({
           form={form}
           type="number"
           name={name}
-          // defaultValue={defaultValue}
           value={definedValue}
           onChange={(event) => definedOnValueChange(event.currentTarget.value)}
           step={step}
