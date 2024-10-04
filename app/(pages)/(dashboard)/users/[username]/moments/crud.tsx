@@ -16,14 +16,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
-import {
-  add,
-  compareAsc,
-  compareDesc,
-  format,
-  // roundToNearestHours,
-  // sub,
-} from "date-fns";
+import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   Reorder,
@@ -46,9 +39,13 @@ import {
   CreateOrUpdateMoment,
   DeleteMoment,
   RevalidateMoments,
+  MomentFormVariant,
+  StepFormVariant,
+  StepVisible,
+  View,
+  SubView,
 } from "@/app/types/moments";
 import {
-  dateToInputDatetime,
   defineCurrentPage,
   numStringToTimeString,
   rotateStates,
@@ -80,9 +77,20 @@ import {
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
 } from "@/app/searches/moments";
-import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
-
-// !! Now I could bringing the flows to the client too. !!
+import {
+  createOrUpdateMomentActionFlow,
+  createOrUpdateStepActionFlow,
+  deleteMomentActionFlow,
+  deleteStepActionFlow,
+  resetMomentFormActionFlow,
+  revalidateMomentsActionFlow,
+} from "@/app/flows/client/moments";
+import {
+  activityOptions,
+  ITS_STEPS_ID,
+  STEP_FORM_ID,
+  YOUR_MOMENT_ID,
+} from "@/app/data/moments";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -103,47 +111,6 @@ Finir de vérifier le formulaire
 S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.
 30 minutes
 */
-
-// Main Types
-
-// The types below are helpers for the file more than anything else. No need to have them imported for a type file at this time.
-
-type View = "update-moment" | "create-moment" | "read-moments";
-
-type SubView =
-  | "all-moments"
-  | "past-moments"
-  | "current-moments"
-  | "future-moments";
-
-type StepVisible = "create" | "creating" | "updating";
-
-// Main Data
-
-const activityOptions: Option[] = [
-  { key: 1, label: "Atelier", value: "Atelier" },
-  { key: 2, label: "Comité", value: "Comité" },
-  { key: 3, label: "Conférence", value: "Conférence" },
-  { key: 4, label: "Entretien individuel", value: "Entretien individuel" },
-  { key: 5, label: "Embauche", value: "Embauche" },
-  { key: 6, label: "Pomodoro", value: "Pomodoro" },
-  { key: 7, label: "Intégration", value: "Intégration" },
-  { key: 8, label: "Partage d'informations", value: "Partage d'informations" },
-  { key: 9, label: "Présentation", value: "Présentation" },
-  { key: 10, label: "Réseautage", value: "Réseautage" },
-  { key: 11, label: "Rituel agile", value: "Rituel agile" },
-  { key: 12, label: "Résolution de problème", value: "Résolution de problème" },
-  { key: 13, label: "Rendez-vous client", value: "Rendez-vous client" },
-  { key: 14, label: "Réunion commerciale", value: "Réunion commerciale" },
-  { key: 15, label: "Suivi de projet", value: "Suivi de projet" },
-  { key: 16, label: "Séminaire", value: "Séminaire" },
-];
-
-// And this tonight will shift to the client flows.
-
-const DEFAULT_STEP_MESSAGE =
-  "Erreurs sur le renseignement étapes du formulaire.";
-const DEFAULT_STEP_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
 
 // Main Component
 
@@ -210,7 +177,7 @@ export function CRUD({
   let [moment, setMoment] = useState<MomentToCRUD>();
 
   return (
-    <>
+    <main>
       <div>
         <div className="flex justify-between pb-8 align-baseline">
           <PageTitle title={viewTitles[view]} />
@@ -289,7 +256,7 @@ export function CRUD({
           />
         )}
       </div>
-    </>
+    </main>
   );
 }
 
@@ -419,12 +386,6 @@ function ReadMomentsView({
     replace(`${pathname}?${params.toString()}`);
   }
 
-  /* FLASH IDEA
-  Let's try some useKeyPress now.
-  Arrow left and arrow right do handlePagination.
-  With alt, arrow left and arrow right do "reverseSetSubView", setSubView.
-  */ // DONE.
-
   const rotateSubView = (direction: "left" | "right") =>
     rotateStates(direction, setSubView, subViews, subView);
 
@@ -433,10 +394,8 @@ function ReadMomentsView({
       event.preventDefault();
 
       if (event.altKey) {
-        // console.log("alt+left");
         rotateSubView("left"); // does not update the time because it speaks exclusively to the client
       } else {
-        // console.log("left");
         if (currentPage !== 1) handlePagination("left", subView); // updates the time because it speaks to the server (and the database)
       }
     }
@@ -447,20 +406,13 @@ function ReadMomentsView({
       event.preventDefault();
 
       if (event.altKey) {
-        // console.log("alt+right");
         rotateSubView("right"); // does not update the time because it speaks exclusively to the client
       } else {
-        // console.log("right");
         if (currentPage !== subViewMaxPages[subView])
           handlePagination("right", subView); // updates the time because it speaks to the server (and the database)
       }
     }
   });
-
-  /* FLASH IDEA
-  One "last" thing I could do is save the scroll position in a state so that hopefully the scrollTo is fast enough that we don't notice the correct position being brought back on searchParms changes when switching pages inside a subView.
-  */ // DONE.
-  // Also, no need to lift subView to the URL. Since the page is time dependent, making someone land on a specific subView is inherently inconsistent. The current model of landing first on Actuels, then Futurs, then Passés, then Tous as a fallback makes the most sense.
 
   const [scrollPosition, setScrollPosition] = useState(0);
 
@@ -484,20 +436,16 @@ function ReadMomentsView({
   const [isRevalidateMomentsPending, startRevalidateMomentsTransition] =
     useTransition();
 
-  // no need for RevalidateMomentsState, revalidateMomentsState and setRevalidateMomentsState for now since no error message is planned for this
-  // type RevalidateMomentsState = { message: string } | void;
-  // const [revalidateMomentsState, setRevalidateMomentsState] =
-  //   useState<RevalidateMomentsState>();
-
   const revalidateMomentsAction = async (
     event: MouseEvent<HTMLButtonElement>,
   ) => {
-    startRevalidateMomentsTransition(async () => {
-      const button = event.currentTarget;
-      await revalidateMoments();
-      replace(`${pathname}`);
-      button.form?.reset(); // Indeed.
-    });
+    return await revalidateMomentsActionFlow(
+      event,
+      startRevalidateMomentsTransition,
+      revalidateMoments,
+      replace,
+      pathname,
+    );
   };
 
   return (
@@ -742,7 +690,7 @@ function MomentForms({
   setSubView,
   now,
 }: {
-  variant: "creating" | "updating";
+  variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
   createOrUpdateMoment: CreateOrUpdateMoment;
@@ -754,12 +702,12 @@ function MomentForms({
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
-  // InputSwitch unfortunately has to be controlled for resetting
+  // InputSwitch unfortunately has to be controlled for resetting (courtesy of the current React 19) :/
   let [indispensable, setIndispensable] = useState(
     moment ? moment.isIndispensable : false,
   );
 
-  // datetime-local input is now controlled.
+  // datetime-local input is now controlled for dynamic moment and steps times
   let [startMomentDate, setStartMomentDate] = useState(
     moment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
@@ -843,71 +791,44 @@ function MomentForms({
     useState<CreateOrUpdateMomentState>(null);
 
   const createOrUpdateMomentAction = async () => {
-    startCreateOrUpdateMomentTransition(async () => {
-      const state = await createOrUpdateMomentBound();
-      if (state) {
-        // watch this
-        // aligning the text of controlled with the option or whatever value was provided (trimmed)
-        if (state.bs?.destinationName)
-          setDestinationTextControlled(state.bs.destinationName);
-        if (state.bs?.momentActivity)
-          setActiviteTextControlled(state.bs.momentActivity);
-        // returning to the text version, so that shifting back to the select version will automatically set back to the proper value
-        setDestinationSelect(false);
-        setActivitySelect(false);
-        // but what solving this specifically means is... you can never use selects on their own with the current state of React 19
-
-        return setCreateOrUpdateMomentState(state);
-      }
-
-      if (variant === "creating") {
-        setIndispensable(false);
-        setStartMomentDate(nowRoundedUpTenMinutes);
-        setSteps([]);
-        setStepVisible("creating");
-
-        setDestinationTextControlled("");
-        setDestinationOptionControlled("");
-        setActiviteTextControlled("");
-        setActiviteOptionControlled("");
-        setObjectifControlled("");
-        setContexteControlled("");
-      }
-
-      // this now works thanks to export const dynamic = "force-dynamic";
-      // ...I think
-      if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
-      else if (compareAsc(startMomentDate, now) === 1)
-        setSubView("future-moments");
-      // therefore present by default
-      else setSubView("current-moments");
-
-      setScrollToTop("read-moments", setView);
-      // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-    });
+    return await createOrUpdateMomentActionFlow(
+      startCreateOrUpdateMomentTransition,
+      createOrUpdateMomentBound,
+      setDestinationTextControlled,
+      setActiviteTextControlled,
+      setDestinationSelect,
+      setActivitySelect,
+      setCreateOrUpdateMomentState,
+      variant,
+      setIndispensable,
+      setStartMomentDate,
+      nowRoundedUpTenMinutes,
+      setSteps,
+      setStepVisible,
+      setDestinationOptionControlled,
+      setActiviteOptionControlled,
+      setObjectifControlled,
+      setContexteControlled,
+      endMomentDate,
+      now,
+      setSubView,
+      startMomentDate,
+      setView,
+    );
   };
 
-  // now to see if I can do all this in the action without the useEffect...
-  // it can't work in the action, probably again due to the way they're batched
-  // this means the scrolling information will have to be inferred from createOrUpdateMomentState inside the useEffect, making the useEffect an extension of the action (until actions are hopefully improved)
   useEffect(() => {
-    // console.log("changed");
-    // This is going to need its own stateful boolean or rather enum once I'll know exactly what I want to do here.
     if (view === "create-moment" && createOrUpdateMomentState) {
-      // console.log("activated");
-      // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setCreateOrUpdateMomentState.
       if (createOrUpdateMomentState.momentMessage) {
-        const votreMoment = document.getElementById("votre-moment");
-        return votreMoment?.scrollIntoView({ behavior: "smooth" });
+        const yourMoment = document.getElementById(YOUR_MOMENT_ID);
+        return yourMoment?.scrollIntoView({ behavior: "smooth" });
       }
       if (createOrUpdateMomentState.stepsMessage) {
-        const sesEtapes = document.getElementById("ses-etapes");
-        return sesEtapes?.scrollIntoView({ behavior: "smooth" });
+        const itsSteps = document.getElementById(ITS_STEPS_ID);
+        return itsSteps?.scrollIntoView({ behavior: "smooth" });
       }
     }
-    // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8 // done but keeping the comment as a reminder to never rely on Tailwind's space- in the long run, it's a kickstarting feature
   }, [createOrUpdateMomentState]);
-  // Avec ça je vais impressionner Mohamed et renégocier avec lui. Je pense que les client ET server validations sont le différenciateur clair d'un usage indispensable entre l'ancien et le nouveau React.
 
   // deleteMomentAction
 
@@ -916,24 +837,13 @@ function MomentForms({
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
-  // Not sure this line is necessary if no default argument is to be provided.
-  // Edit: It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
   const deleteMomentAction = async () => {
-    startDeleteMomentTransition(async () => {
-      if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
-        if (deleteMomentBound) {
-          const state = await deleteMomentBound();
-          if (state) return setCreateOrUpdateMomentState(state);
-
-          setScrollToTop("read-moments", setView);
-        } else
-          return setCreateOrUpdateMomentState({
-            momentMessage: "Erreur.",
-            momentSubMessage:
-              "Il semble que deleteMomentBound est inexistant en interne.",
-          }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
-      }
-    });
+    return await deleteMomentActionFlow(
+      startDeleteMomentTransition,
+      deleteMomentBound,
+      setCreateOrUpdateMomentState,
+      setView,
+    );
   };
 
   // resetMomentFormAction
@@ -941,61 +851,38 @@ function MomentForms({
   const [isResetMomentFormPending, startResetMomentFormTransition] =
     useTransition();
 
+  const [isResetMomentFormDone, setIsResetMomentFormDone] = useState(false);
+
   // action is (now) completely client, so no need for async
   const resetMomentFormAction = (event: FormEvent<HTMLFormElement>) => {
-    startResetMomentFormTransition(() => {
-      if (
-        confirm("Êtes-vous sûr que vous voulez réinitialiser le formulaire ?")
-      ) {
-        // if (revalidateMoments) await revalidateMoments();
-        // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
-
-        setIndispensable(false);
-
-        // setStartMomentDate(nowRoundedUpTenMinutes);
-        // the easy solution
-        setStartMomentDate(
-          roundTimeUpTenMinutes(dateToInputDatetime(new Date())),
-        ); // the harder solution would be returning that information a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case (it's an escape hatch I've then used to solve a bug from React 19 above)
-        // Or actually the flow that I preconize now is to do what's next to be done inside a subsequent useEffect (but I don't think that would have worked). Here it had only to do with time so I could guess it manually, but for anything more complex, that's where useEffect currently comes in until the React team defeat it as the "final boss."
-        // https://x.com/acdlite/status/1758231913314091267
-        // https://x.com/acdlite/status/1758233493408973104
-
-        setSteps([]);
-        setStepVisible("creating");
-
-        setDestinationTextControlled("");
-        setDestinationOptionControlled("");
-        setActiviteTextControlled("");
-        setActiviteOptionControlled("");
-        setObjectifControlled("");
-        setContexteControlled("");
-
-        setIntituleCreateControlled("");
-        setDetailsCreateControlled("");
-        setDureeCreateControlled("10");
-
-        // reset action states as well
-        // !! Par la suite penser à faire en sorte que le bouton Confirmer le moment soit disponible et indique de faire des étapes si on le clique. (stepsMessage, vosEtapes?.scrollIntoView({ behavior: "smooth" }))
-        setCreateOrUpdateMomentState(null); // the jumping culprit, even will null, but in the end a different solution below ignores the issue (irregular defaults)
-
-        // for the useEffect
-        setIsResetMomentDone(true);
-      } else event.preventDefault();
-    });
+    return resetMomentFormActionFlow(
+      event,
+      startResetMomentFormTransition,
+      setIndispensable,
+      setStartMomentDate,
+      setSteps,
+      setStepVisible,
+      setDestinationTextControlled,
+      setDestinationOptionControlled,
+      setActiviteTextControlled,
+      setActiviteOptionControlled,
+      setObjectifControlled,
+      setContexteControlled,
+      setIntituleCreateControlled,
+      setDetailsCreateControlled,
+      setDureeCreateControlled,
+      setCreateOrUpdateMomentState,
+      setIsResetMomentFormDone,
+    );
   };
 
-  // and another state for that useEffect
-  // ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormState at this time... no, they're not that related so isResetMomentDone it is
-  const [isResetMomentDone, setIsResetMomentDone] = useState(false);
-
   useEffect(() => {
-    if (isResetMomentDone) {
-      const votreMoment = document.getElementById("votre-moment");
-      votreMoment?.scrollIntoView({ behavior: "smooth" });
-      setIsResetMomentDone(false);
+    if (isResetMomentFormDone) {
+      const yourMoment = document.getElementById(YOUR_MOMENT_ID);
+      yourMoment?.scrollIntoView({ behavior: "smooth" });
+      setIsResetMomentFormDone(false);
     }
-  }, [isResetMomentDone]);
+  }, [isResetMomentFormDone]);
 
   // Here we go again to control the StepForm fields...
   // And there's two variant, so I need to duplicate the states...
@@ -1017,11 +904,14 @@ function MomentForms({
     currentStep ? currentStep.duree : "",
   );
 
-  // CreateOrUpdateStepAction
+  // createOrUpdateStepAction
 
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
   const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
+
+  // VERY IMPORTANT
+  // Reset the fields when switching step form between creating and updating.
 
   return (
     <>
@@ -1061,7 +951,7 @@ function MomentForms({
         <Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
-          id="votre-moment"
+          id={YOUR_MOMENT_ID}
           error={createOrUpdateMomentState?.momentMessage}
           subError={createOrUpdateMomentState?.momentSubMessage}
         >
@@ -1081,7 +971,6 @@ function MomentForms({
               tekTime
               // required={!destinationSelect}
               required={false}
-              // errors={testErrors}
               errors={createOrUpdateMomentState?.errors?.destinationName}
             >
               {destinationOptions.length > 0 && (
@@ -1108,7 +997,6 @@ function MomentForms({
               tekTime
               // required={destinationSelect}
               required={false}
-              // errors={testErrors}
               errors={createOrUpdateMomentState?.errors?.destinationName}
             >
               <Button
@@ -1198,11 +1086,6 @@ function MomentForms({
             description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
             definedValue={startMomentDate}
             definedOnValueChange={setStartMomentDate}
-            // min={dateToInputDatetime(
-            //   roundToNearestHours(sub(now, { hours: 1 }), {
-            //     roundingMethod: "floor",
-            //   }),
-            // )}
             errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
           />
         </Section>
@@ -1210,7 +1093,7 @@ function MomentForms({
         <Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          id="ses-etapes"
+          id={ITS_STEPS_ID}
           error={createOrUpdateMomentState?.stepsMessage}
           subError={createOrUpdateMomentState?.stepsSubMessage}
         >
@@ -1286,7 +1169,7 @@ function MomentForms({
                   Ajouter une étape
                 </p>{" "}
                 <Button
-                  form="step-form-creating"
+                  form={STEP_FORM_ID.creating}
                   type="reset"
                   variant="destroy-step"
                 >
@@ -1294,7 +1177,7 @@ function MomentForms({
                 </Button>
               </div>
               <InputTextControlled
-                form="step-form-creating"
+                form={STEP_FORM_ID.creating}
                 label="Intitulé de l'étape"
                 name="intituledeleetape"
                 definedValue={intituleCreateControlled}
@@ -1303,7 +1186,7 @@ function MomentForms({
                 errors={createOrUpdateMomentState?.errors?.stepName}
               />
               <TextareaControlled
-                form="step-form-creating"
+                form={STEP_FORM_ID.creating}
                 label="Détails de l'étape"
                 name="detailsdeleetape"
                 definedValue={detailsCreateControlled}
@@ -1313,7 +1196,7 @@ function MomentForms({
                 errors={createOrUpdateMomentState?.errors?.stepDescription}
               />
               <InputNumberControlled
-                form="step-form-creating"
+                form={STEP_FORM_ID.creating}
                 label="Durée de l'étape"
                 name="dureedeletape"
                 description="Renseignez en minutes la longueur de l'étape."
@@ -1327,7 +1210,7 @@ function MomentForms({
                 <div className="flex w-full flex-col gap-4 md:hidden">
                   <Button
                     variant="confirm-step"
-                    form="step-form-creating"
+                    form={STEP_FORM_ID.creating}
                     type="submit"
                     disabled={isCreateStepPending}
                   >
@@ -1335,7 +1218,7 @@ function MomentForms({
                   </Button>
                   <Button
                     variant="cancel-step"
-                    form="step-form-creating"
+                    form={STEP_FORM_ID.creating}
                     type="button"
                     onClick={() => setStepVisible("create")}
                     disabled={steps.length === 0}
@@ -1347,7 +1230,7 @@ function MomentForms({
                 <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
                   <Button
                     variant="cancel-step"
-                    form="step-form-creating"
+                    form={STEP_FORM_ID.creating}
                     type="button"
                     onClick={() => setStepVisible("create")}
                     disabled={steps.length === 0}
@@ -1356,7 +1239,7 @@ function MomentForms({
                   </Button>
                   <Button
                     variant="confirm-step"
-                    form="step-form-creating"
+                    form={STEP_FORM_ID.creating}
                     type="submit"
                     disabled={isCreateStepPending}
                   >
@@ -1457,6 +1340,7 @@ function MomentForms({
 
 // Main Supporting Components
 
+// I'll need to also make the step actual form contents in a variant component
 function StepForm({
   variant,
   currentStepId,
@@ -1473,7 +1357,7 @@ function StepForm({
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
 }: {
-  variant: "creating" | "updating";
+  variant: StepFormVariant;
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
@@ -1490,120 +1374,29 @@ function StepForm({
     SetStateAction<CreateOrUpdateMomentState>
   >;
 }) {
-  let ids = {
-    creating: "step-form-creating",
-    updating: "step-form-updating",
-  };
-
-  // createStepAction
-
-  // It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here. // (Actually... No.) :')
-  // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
-  // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below. // DONE.
-  // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
-  const createOrUpdateStepAction = () => {
-    startCreateOrUpdateStepTransition(() => {
-      // test
-      // return setCreateOrUpdateStepState({ message: "It works though." });
-      // It does. But the formData goes away again. :')
-      // Works both for create and update separately.
-
-      if (
-        typeof intitule !== "string" ||
-        typeof details !== "string" // ||
-        // typeof +duree !== "number" // number verified in zod
-      )
-        return setCreateOrUpdateMomentState({
-          stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
-          stepsSubMessage:
-            "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
-        });
-
-      const [trimmedIntitule, trimmedDetails] = [intitule, details].map((e) =>
-        e.trim(),
-      );
-
-      const numberedDuree = +duree;
-
-      const validatedFields = CreateOrUpdateStepSchema.safeParse({
-        stepName: trimmedIntitule,
-        stepDescription: trimmedDetails,
-        trueStepDuration: numberedDuree,
-      });
-
-      if (!validatedFields.success) {
-        return setCreateOrUpdateMomentState({
-          stepsMessage: DEFAULT_STEP_MESSAGE,
-          stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
-          errors: validatedFields.error.flatten().fieldErrors,
-        });
-      }
-
-      const { stepName, stepDescription, trueStepDuration } =
-        validatedFields.data;
-
-      const stepsIntitules = steps.map((e) => e.intitule);
-      const stepsDetails = steps.map((e) => e.details);
-
-      if (stepsIntitules.includes(stepName)) {
-        return setCreateOrUpdateMomentState({
-          stepsMessage: DEFAULT_STEP_MESSAGE,
-          stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
-          errors: {
-            stepName: [
-              "Vous ne pouvez pas créer deux étapes du même nom sur le même moment.",
-            ],
-          },
-        });
-      }
-      if (stepsDetails.includes(stepDescription)) {
-        return setCreateOrUpdateMomentState({
-          stepsMessage: DEFAULT_STEP_MESSAGE,
-          stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
-          errors: {
-            stepDescription: [
-              "Vous ne pouvez pas vraiment créer deux étapes avec les mêmes détails sur le même moment.",
-            ],
-          },
-        });
-      }
-
-      intitule = stepName;
-      details = stepDescription;
-      duree = trueStepDuration.toString();
-
-      let id = "";
-      if (variant === "creating") id = window.crypto.randomUUID();
-      if (variant === "updating") id = currentStepId;
-
-      const step = {
-        id,
-        intitule,
-        details,
-        duree,
-      };
-
-      let newSteps: StepFromCRUD[] = [];
-      if (variant === "creating") newSteps = [...steps, step];
-      if (variant === "updating")
-        newSteps = steps.map((e) => {
-          if (e.id === currentStepId) return step;
-          else return e;
-        });
-
-      setSteps(newSteps);
-      setStepVisible("create");
-
-      setIntitule("");
-      setDetails("");
-      setDuree("10");
-
-      setIsCreateOrUpdateStepDone(true);
-    });
-  };
+  // createOrUpdateStepAction
 
   const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
     useState(false);
+
+  const createOrUpdateStepAction = () => {
+    return createOrUpdateStepActionFlow(
+      startCreateOrUpdateStepTransition,
+      intitule,
+      details,
+      setCreateOrUpdateMomentState,
+      duree,
+      steps,
+      variant,
+      currentStepId,
+      setSteps,
+      setStepVisible,
+      setIntitule,
+      setDetails,
+      setDuree,
+      setIsCreateOrUpdateStepDone,
+    );
+  };
 
   useEffect(() => {
     if (isCreateOrUpdateStepDone) {
@@ -1621,12 +1414,13 @@ function StepForm({
     }
     setIsCreateOrUpdateStepDone(false);
 
-    const sesEtapes = document.getElementById("ses-etapes");
-    return sesEtapes?.scrollIntoView({ behavior: "smooth" });
-    // }
+    const itsSteps = document.getElementById(ITS_STEPS_ID);
+    return itsSteps?.scrollIntoView({ behavior: "smooth" });
   }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
 
-  return <form id={ids[variant]} action={createOrUpdateStepAction}></form>;
+  return (
+    <form id={STEP_FORM_ID[variant]} action={createOrUpdateStepAction}></form>
+  );
 }
 
 function ReorderItem({
@@ -1675,18 +1469,13 @@ function ReorderItem({
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
   const deleteStepAction = () => {
-    if (
-      confirm(
-        "Êtes-vous sûr que vous voulez effacer cette étape ? (Cela ne sera véritablement pris en compte qui si vous confirmez ce moment. Retourner au préalable sur Vos moments ignorera cette effacement.)",
-      )
-    ) {
-      startDeleteStepTransition(() => {
-        let newSteps = steps.filter((step) => step.id !== currentStepId);
-        setSteps(newSteps);
-        if (newSteps.length === 0) setStepVisible("creating");
-        else setStepVisible("create");
-      });
-    }
+    return deleteStepActionFlow(
+      startDeleteStepTransition,
+      steps,
+      currentStepId,
+      setSteps,
+      setStepVisible,
+    );
   };
 
   return (
@@ -1721,7 +1510,7 @@ function ReorderItem({
           </p>{" "}
           {stepVisible === "updating" && currentStepId === step.id ? (
             <Button
-              form="step-form-updating"
+              form={STEP_FORM_ID.updating}
               type="button"
               variant="destroy-step"
               onClick={() => setStepVisible("create")}
@@ -1752,7 +1541,7 @@ function ReorderItem({
         {stepVisible === "updating" && currentStepId === step.id ? (
           <div className="flex flex-col gap-y-8">
             <InputTextControlled
-              form="step-form-updating"
+              form={STEP_FORM_ID.updating}
               label="Intitulé de l'étape"
               name="intituledeleetape"
               definedValue={intitule}
@@ -1763,7 +1552,7 @@ function ReorderItem({
               errors={createOrUpdateMomentState?.errors?.stepName}
             />
             <TextareaControlled
-              form="step-form-updating"
+              form={STEP_FORM_ID.updating}
               label="Détails de l'étape"
               name="detailsdeleetape"
               definedValue={details}
@@ -1773,7 +1562,7 @@ function ReorderItem({
               errors={createOrUpdateMomentState?.errors?.stepDescription}
             />
             <InputNumberControlled
-              form="step-form-updating"
+              form={STEP_FORM_ID.updating}
               label="Durée de l'étape"
               name="dureedeletape"
               definedValue={duree}
@@ -1786,7 +1575,7 @@ function ReorderItem({
               {/* Mobile */}
               <div className="flex w-full flex-col gap-4 md:hidden">
                 <Button
-                  form="step-form-updating"
+                  form={STEP_FORM_ID.updating}
                   type="submit"
                   variant="confirm-step"
                   disabled={isUpdateStepPending}
@@ -1794,7 +1583,7 @@ function ReorderItem({
                   Actualiser l&apos;étape
                 </Button>
                 <Button
-                  form="step-form-updating"
+                  form={STEP_FORM_ID.updating}
                   type="button"
                   onClick={deleteStepAction}
                   variant="cancel-step"
@@ -1806,7 +1595,7 @@ function ReorderItem({
               {/* Desktop */}
               <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
                 <Button
-                  form="step-form-updating"
+                  form={STEP_FORM_ID.updating}
                   type="button"
                   onClick={deleteStepAction}
                   variant="cancel-step"
@@ -1815,7 +1604,7 @@ function ReorderItem({
                   Effacer l&apos;étape
                 </Button>
                 <Button
-                  form="step-form-updating"
+                  form={STEP_FORM_ID.updating}
                   type="submit"
                   variant="confirm-step"
                   disabled={isUpdateStepPending}
@@ -2039,4 +1828,57 @@ type RevalidateMoments = () => Promise<void>;
 
 Test in surfacing server-side and client-side errors.
 The connection to the server (and client!) has been established.
+
+OLDEN COMMENTS
+  // now to see if I can do all this in the action without the useEffect...
+  // it can't work in the action, probably again due to the way they're batched
+  // this means the scrolling information will have to be inferred from createOrUpdateMomentState inside the useEffect, making the useEffect an extension of the action (until actions are hopefully improved)
+  useEffect(() => {
+    // console.log("changed");
+    // This is going to need its own stateful boolean or rather enum once I'll know exactly what I want to do here.
+    if (view === "create-moment" && createOrUpdateMomentState) {
+      // console.log("activated");
+      // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setCreateOrUpdateMomentState.
+      if (createOrUpdateMomentState.momentMessage) {
+        const votreMoment = document.getElementById("votre-moment");
+        return votreMoment?.scrollIntoView({ behavior: "smooth" });
+      }
+      if (createOrUpdateMomentState.stepsMessage) {
+        const sesEtapes = document.getElementById("ses-etapes");
+        return sesEtapes?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8 // done but keeping the comment as a reminder to never rely on Tailwind's space- in the long run, it's a kickstarting feature
+  }, [createOrUpdateMomentState]);
+  // Avec ça je vais impressionner Mohamed et renégocier avec lui. Je pense que les client ET server validations sont le différenciateur clair d'un usage indispensable entre l'ancien et le nouveau React.
+
+// no need for RevalidateMomentsState, revalidateMomentsState and setRevalidateMomentsState for now since no error message is planned for this
+// type RevalidateMomentsState = { message: string } | void;
+// const [revalidateMomentsState, setRevalidateMomentsState] =
+//   useState<RevalidateMomentsState>();
+
+NO NEED, deleteMomentAction should only fire if there is deleteMomentBound.
+else
+  return setCreateOrUpdateMomentState({
+    momentMessage: "Erreur.",
+    momentSubMessage:
+      "Il semble que deleteMomentBound est inexistant en interne.",
+  }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
+
+// Is the wrapping necessary if no default argument is to be provided?
+// It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
+
+// and another state for that useEffect
+// ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormState at this time... no, they're not that related so isResetMomentDone it is
+// const [isResetMomentDone, setIsResetMomentDone] = useState(false);
+
+// test
+// return setCreateOrUpdateStepState({ message: "It works though." });
+// It does. But the formData goes away again. :')
+// Works both for create and update separately.
+
+// It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here. // (Actually... No.) :')
+// A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
+// But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below. // DONE.
+// Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
 */

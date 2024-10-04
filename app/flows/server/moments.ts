@@ -17,6 +17,7 @@ import {
   deleteMomentStepsByMomentId,
 } from "../../writes/steps";
 import {
+  MomentFormVariant,
   MomentToCRUD,
   SelectMomentId,
   StepFromCRUD,
@@ -34,7 +35,7 @@ const NO_STEPS_ERROR_MESSAGE =
 
 // return types not needed as long as its careful connected to the action(s)
 export const createOrUpdateMomentFlow = async (
-  variant: "creating" | "updating",
+  variant: MomentFormVariant,
   indispensable: boolean,
   momentDate: string,
   steps: StepFromCRUD[],

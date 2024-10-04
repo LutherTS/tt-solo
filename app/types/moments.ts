@@ -52,9 +52,25 @@ export type UserMomentsToCRUD = {
   dates: MomentsDateToCRUD[];
 };
 
+export type View = "update-moment" | "create-moment" | "read-moments";
+
+export type SubView =
+  | "all-moments"
+  | "past-moments"
+  | "current-moments"
+  | "future-moments";
+
+export type StepVisible = "create" | "creating" | "updating";
+
+type DefaultFormVariant = "creating" | "updating";
+
+export type MomentFormVariant = DefaultFormVariant;
+
+export type StepFormVariant = DefaultFormVariant;
+
 // Now the action types will also be kept here, to be manually shared wherever the actions are to be used.
 export type CreateOrUpdateMoment = (
-  variant: "creating" | "updating",
+  variant: MomentFormVariant,
   indispensable: boolean,
   momentDate: string,
   steps: StepFromCRUD[],

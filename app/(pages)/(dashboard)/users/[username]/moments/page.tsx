@@ -7,6 +7,7 @@ import {
   StepFromCRUD,
   MomentToCRUD,
   CreateOrUpdateMomentState,
+  MomentFormVariant,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -284,7 +285,7 @@ export default async function MomentsPage({
 
   // Types are shared between this server file, the type file and the client file, manually verified both for the arguments and for the promise.
   async function createOrUpdateMoment(
-    variant: "creating" | "updating",
+    variant: MomentFormVariant,
     indispensable: boolean,
     momentDate: string,
     steps: StepFromCRUD[],

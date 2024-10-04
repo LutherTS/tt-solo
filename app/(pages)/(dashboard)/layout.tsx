@@ -16,7 +16,7 @@ export default function Layout({
       <div className="size-full">
         {/* Page Wrapper */}
         {/* w-full replacing w-screen with w-full from CRUD main */}
-        <main className="flex w-full flex-col items-center">
+        <div className="flex w-full flex-col items-center">
           {/* Page Container */}
           <div
             // this could be thrown back to the children for headers
@@ -32,7 +32,7 @@ export default function Layout({
             {/* Page Contents */}
             {children}
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );
