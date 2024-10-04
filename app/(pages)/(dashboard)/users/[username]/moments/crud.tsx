@@ -81,6 +81,7 @@ import {
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
 } from "@/app/variables/moments";
+import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -1086,6 +1087,13 @@ function MomentForms({
         setCreateOrUpdateStepState={setCreateStepState}
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+        // for the React 19 bug
+        destinationSelect={destinationSelect}
+        destinationOptionControlled={destinationOptionControlled}
+        destinationTextControlled={destinationTextControlled}
+        activitySelect={activitySelect}
+        activiteOptionControlled={activiteOptionControlled}
+        activiteTextControlled={activiteTextControlled}
       />
       <StepForm
         variant="updating"
@@ -1103,6 +1111,13 @@ function MomentForms({
         setCreateOrUpdateStepState={setUpdateStepState}
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+        // for the React 19 bug
+        destinationSelect={destinationSelect}
+        destinationOptionControlled={destinationOptionControlled}
+        destinationTextControlled={destinationTextControlled}
+        activitySelect={activitySelect}
+        activiteOptionControlled={activiteOptionControlled}
+        activiteTextControlled={activiteTextControlled}
       />
       <form action={createOrUpdateMomentAction} onReset={resetMomentFormAction}>
         <Section
@@ -1294,6 +1309,7 @@ function MomentForms({
                     setIntitule={setIntituleUpdateControlled}
                     setDetails={setDetailsUpdateControlled}
                     setDuree={setDureeUpdateControlled}
+                    createOrUpdateMomentState={createOrUpdateMomentState}
                   />
                 );
               })}
@@ -1339,16 +1355,15 @@ function MomentForms({
                   Réinitialiser l&apos;étape
                 </Button>
               </div>
-              <div>
-                <InputTextControlled
-                  form="step-form-creating"
-                  label="Intitulé de l'étape"
-                  name="intituledeleetape"
-                  definedValue={intituleCreateControlled}
-                  definedOnValueChange={setIntituleCreateControlled}
-                  description="Définissez simplement le sujet de l'étape."
-                />
-              </div>
+              <InputTextControlled
+                form="step-form-creating"
+                label="Intitulé de l'étape"
+                name="intituledeleetape"
+                definedValue={intituleCreateControlled}
+                definedOnValueChange={setIntituleCreateControlled}
+                description="Définissez simplement le sujet de l'étape."
+                errors={createOrUpdateMomentState?.errors?.stepName}
+              />
               <TextareaControlled
                 form="step-form-creating"
                 label="Détails de l'étape"
@@ -1357,6 +1372,7 @@ function MomentForms({
                 definedOnValueChange={setDetailsCreateControlled}
                 description="Expliquez en détails le déroulé de l'étape."
                 rows={4}
+                errors={createOrUpdateMomentState?.errors?.stepDescription}
               />
               <InputNumberControlled
                 form="step-form-creating"
@@ -1366,6 +1382,7 @@ function MomentForms({
                 definedValue={dureeCreateControlled}
                 definedOnValueChange={setDureeCreateControlled}
                 min="5"
+                errors={createOrUpdateMomentState?.errors?.trueStepDuration}
               />
               <div className="flex">
                 {/* Mobile */}
@@ -1520,6 +1537,12 @@ function StepForm({
   setCreateOrUpdateStepState,
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
+  destinationSelect,
+  destinationOptionControlled,
+  destinationTextControlled,
+  activitySelect,
+  activiteOptionControlled,
+  activiteTextControlled,
 }: {
   variant: "creating" | "updating";
   currentStepId: string;
@@ -1540,6 +1563,12 @@ function StepForm({
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
   >;
+  destinationSelect: boolean;
+  destinationOptionControlled: string;
+  destinationTextControlled: string;
+  activitySelect: boolean;
+  activiteOptionControlled: string;
+  activiteTextControlled: string;
 }) {
   let ids = {
     creating: "step-form-creating",
@@ -1554,6 +1583,15 @@ function StepForm({
   // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
   const createOrUpdateStepAction = () => {
     startCreateOrUpdateStepTransition(() => {
+      const bs = {
+        destinationName: destinationSelect
+          ? destinationOptionControlled
+          : destinationTextControlled,
+        momentActivity: activitySelect
+          ? activiteOptionControlled
+          : activiteTextControlled,
+      };
+
       // test
       // return setCreateOrUpdateStepState({ message: "It works though." });
       // It does. But the formData goes away again. :')
@@ -1561,13 +1599,45 @@ function StepForm({
 
       if (
         typeof intitule !== "string" ||
-        typeof details !== "string" ||
-        typeof +duree !== "number"
+        typeof details !== "string" // ||
+        // typeof +duree !== "number" // number verified in zod
       )
-        return setCreateOrUpdateStepState({
-          message:
-            "Le formulaire de l'étape n'a pas été correctement renseigné.",
+        return setCreateOrUpdateMomentState({
+          // don't forget the React 19 bug...
+          // and I need to get the destination and activite in there...
+          stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
+          stepsSubMessage:
+            "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
+          bs,
         });
+
+      const [trimmedIntitule, trimmedDetails] = [intitule, details].map((e) =>
+        e.trim(),
+      );
+
+      const numberedDuree = +duree;
+
+      const validatedFields = CreateOrUpdateStepSchema.safeParse({
+        stepName: trimmedIntitule,
+        stepDescription: trimmedDetails,
+        trueStepDuration: numberedDuree,
+      });
+
+      if (!validatedFields.success) {
+        return setCreateOrUpdateMomentState({
+          stepsMessage: "Erreurs sur le renseignement étapes du formulaire.",
+          stepsSubMessage: "Veuillez vérifier les champs concernés.",
+          errors: validatedFields.error.flatten().fieldErrors,
+          bs,
+        });
+      }
+
+      const { stepName, stepDescription, trueStepDuration } =
+        validatedFields.data;
+
+      intitule = stepName;
+      details = stepDescription;
+      duree = trueStepDuration.toString();
 
       let id = "";
       if (variant === "creating") id = window.crypto.randomUUID();
@@ -1603,6 +1673,7 @@ function StepForm({
   const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
     useState(false);
 
+  // I think/hope the useEffect from createOrUpdateMoment will do the scrolling on its own.
   useEffect(() => {
     if (isCreateOrUpdateStepDone) {
       // Objectively this will be rendered superflous, because in all fairness, if a step will be made, it will mean that it will have passed all validations, and that therefore the stuff about no steps will always need to be removed.
@@ -1641,6 +1712,7 @@ function ReorderItem({
   setIntitule,
   setDetails,
   setDuree,
+  createOrUpdateMomentState,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1659,6 +1731,7 @@ function ReorderItem({
   setIntitule: Dispatch<SetStateAction<string>>;
   setDetails: Dispatch<SetStateAction<string>>;
   setDuree: Dispatch<SetStateAction<string>>;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
 }) {
   const controls = useDragControls();
 
@@ -1743,16 +1816,17 @@ function ReorderItem({
         </div>
         {stepVisible === "updating" && currentStepId === step.id ? (
           <div className="flex flex-col gap-y-8">
-            <div>
-              <InputTextControlled
-                form="step-form-updating"
-                label="Intitulé de l'étape"
-                name="intituledeleetape"
-                definedValue={intitule}
-                definedOnValueChange={setIntitule}
-                description="Définissez simplement le sujet de l'étape."
-              />
-            </div>
+            <InputTextControlled
+              form="step-form-updating"
+              label="Intitulé de l'étape"
+              name="intituledeleetape"
+              definedValue={intitule}
+              definedOnValueChange={setIntitule}
+              description="Définissez simplement le sujet de l'étape."
+              // only because there is maximum one form open at all times
+              // the buttons that change the forms will also have to reset the step errors on createOrUpdateMomentState
+              errors={createOrUpdateMomentState?.errors?.stepName}
+            />
             <TextareaControlled
               form="step-form-updating"
               label="Détails de l'étape"
@@ -1761,6 +1835,7 @@ function ReorderItem({
               definedOnValueChange={setDetails}
               description="Expliquez en détails le déroulé de l'étape."
               rows={4}
+              errors={createOrUpdateMomentState?.errors?.stepDescription}
             />
             <InputNumberControlled
               form="step-form-updating"
@@ -1770,6 +1845,7 @@ function ReorderItem({
               definedOnValueChange={setDuree}
               description="Renseignez en minutes la longueur de l'étape."
               min="5"
+              errors={createOrUpdateMomentState?.errors?.trueStepDuration}
             />
             <div className="flex">
               {/* Mobile */}

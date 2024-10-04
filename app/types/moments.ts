@@ -76,12 +76,17 @@ export type CreateOrUpdateMomentState = {
   stepsMessage?: string;
   stepsSubMessage?: string;
   errors?: {
+    // moment
     destinationName?: string[];
     momentActivity?: string[];
     momentName?: string[];
     momentIsIndispensable?: string[];
     momentDescription?: string[];
     momentStartDateAndTime?: string[];
+    // step
+    stepName?: string[];
+    stepDescription?: string[];
+    trueStepDuration?: string[];
   };
   // no choice but to implement this work around yet, if I'm honest, it's something I can see myself using in the future
   bs?: {
@@ -98,6 +103,9 @@ export type DeleteMoment = (
 export type DeleteMomentState = DefaultFormState;
 
 export type RevalidateMoments = () => Promise<void>;
+
+// this has to unite with CreateOrUpdateMomentState
+type CreateStepOrUpdateState = { message: string } | null;
 
 export type CreateStepState = DefaultFormState;
 
