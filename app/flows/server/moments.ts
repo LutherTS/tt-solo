@@ -1,25 +1,27 @@
-import { compareDesc, roundToNearestHours, sub } from "date-fns";
-import { dateToInputDatetime } from "../utilities/moments";
-import { CreateOrUpdateMomentSchema } from "../validations/moments";
-import { findMomentByNameAndUserId } from "../reads/moments";
-import { findDestinationIdByNameAndUserId } from "../reads/destinations";
-import { Prisma } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { add, compareDesc, roundToNearestHours, sub } from "date-fns";
+
+import { dateToInputDatetime } from "../../utilities/moments";
+import { CreateOrUpdateMomentSchema } from "../../validations/moments";
+import { findMomentByNameAndUserId } from "../../reads/moments";
+import { findDestinationIdByNameAndUserId } from "../../reads/destinations";
 import {
   createMomentAndDestination,
   createMomentFromFormData,
+  deleteMomentByMomentId,
   updateMomentAndDestination,
   updateMomentFromFormData,
-} from "../writes/moments";
-import { createStepsFromStepsFlow } from "../utilities/steps";
-import { deleteMomentStepsByMomentId } from "../writes/steps";
-import { revalidatePath } from "next/cache";
+} from "../../writes/moments";
 import {
-  CreateOrUpdateMomentState,
+  createStepFromSteps,
+  deleteMomentStepsByMomentId,
+} from "../../writes/steps";
+import {
   MomentToCRUD,
+  SelectMomentId,
   StepFromCRUD,
-} from "../types/moments";
-import { selectMomentId } from "../reads/subreads/moments";
-import { selectUserIdAndUsername } from "../reads/subreads/users";
+} from "../../types/moments";
+import { SelectUserIdAndUsername } from "../../types/users";
 
 const DEFAULT_MOMENT_MESSAGE =
   "Erreurs sur le renseignement moment du formulaire.";
@@ -28,7 +30,9 @@ const DEFAULT_MOMENT_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
 const NO_STEPS_ERROR_MESSAGE =
   "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.";
 
-// I'll fix the flow afterwards, for now I want a 1:1 from the original
+// Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionFlow.
+
+// return types not needed as long as its careful connected to the action(s)
 export const createOrUpdateMomentFlow = async (
   variant: "creating" | "updating",
   indispensable: boolean,
@@ -39,10 +43,8 @@ export const createOrUpdateMomentFlow = async (
   objectif: string,
   contexte: string,
   momentFromCRUD: MomentToCRUD | undefined,
-  user: Prisma.UserGetPayload<{
-    select: typeof selectUserIdAndUsername;
-  }> | null,
-): Promise<CreateOrUpdateMomentState> => {
+  user: SelectUserIdAndUsername,
+) => {
   const currentNow = dateToInputDatetime(new Date());
   const minFromCurrentNow = dateToInputDatetime(
     roundToNearestHours(sub(currentNow, { hours: 1 }), {
@@ -162,6 +164,8 @@ export const createOrUpdateMomentFlow = async (
       },
     };
 
+  // That being said though, once authentication is in place I will still need to check if the user is valid at time of the action, if the action mutates the data. (Which honestly is always a prerequisite.)
+
   const userId = user.id;
 
   let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
@@ -202,9 +206,7 @@ export const createOrUpdateMomentFlow = async (
       userId,
     );
 
-    let moment: Prisma.MomentGetPayload<{
-      select: typeof selectMomentId;
-    }>;
+    let moment: SelectMomentId;
 
     if (destinationEntry) {
       const destinationId = destinationEntry.id;
@@ -236,7 +238,12 @@ export const createOrUpdateMomentFlow = async (
 
     const momentId = moment.id;
 
-    await createStepsFromStepsFlow(steps, momentDate, map, momentId);
+    await createStepsInCreateOrUpdateMomentFlow(
+      steps,
+      momentDate,
+      map,
+      momentId,
+    );
   }
 
   if (variant === "updating") {
@@ -258,9 +265,7 @@ export const createOrUpdateMomentFlow = async (
       userId,
     );
 
-    let moment: Prisma.MomentGetPayload<{
-      select: typeof selectMomentId;
-    }>;
+    let moment: SelectMomentId;
 
     if (destinationEntry) {
       const destinationId = destinationEntry.id;
@@ -297,7 +302,12 @@ export const createOrUpdateMomentFlow = async (
     // error handling needed eventually
     await deleteMomentStepsByMomentId(momentId);
 
-    await createStepsFromStepsFlow(steps, momentDate, map, momentId);
+    await createStepsInCreateOrUpdateMomentFlow(
+      steps,
+      momentDate,
+      map,
+      momentId,
+    );
   }
 
   const username = user.username;
@@ -305,4 +315,68 @@ export const createOrUpdateMomentFlow = async (
   revalidatePath(`/users/${username}/moments`);
 
   return null;
+};
+
+const createStepsInCreateOrUpdateMomentFlow = async (
+  steps: StepFromCRUD[],
+  momentDate: string,
+  map: Map<number, number>,
+  momentId: string,
+) => {
+  let i = 1;
+
+  for (let j = 0; j < steps.length; j++) {
+    const step = steps[j];
+
+    const startDateAndTime =
+      j === 0
+        ? momentDate
+        : dateToInputDatetime(add(momentDate, { minutes: map.get(j - 1) }));
+
+    const endDateAndTime = dateToInputDatetime(
+      add(momentDate, { minutes: map.get(j) }),
+    );
+
+    // error handling needed eventually
+    await createStepFromSteps(
+      i,
+      step.intitule,
+      step.details,
+      startDateAndTime,
+      step.duree,
+      endDateAndTime,
+      momentId,
+    );
+
+    i++;
+  }
+};
+
+export const deleteMomentFlow = async (
+  momentFromCRUD: MomentToCRUD | undefined,
+  user: SelectUserIdAndUsername,
+) => {
+  if (!momentFromCRUD)
+    return {
+      momentMessage: "Erreur.",
+      momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
+    };
+
+  const momentId = momentFromCRUD.id;
+
+  // error handling needed eventually
+  await deleteMomentByMomentId(momentId);
+
+  const username = user.username;
+
+  revalidatePath(`/users/${username}/moments`);
+
+  return null;
+};
+
+export const revalidateMomentsFlow = async (user: SelectUserIdAndUsername) => {
+  const username = user.username;
+
+  revalidatePath(`/users/${username}/moments`);
+  // guess I'm keeping void for actions that really return nothingness
 };

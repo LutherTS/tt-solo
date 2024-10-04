@@ -1,3 +1,7 @@
+import { Prisma } from "@prisma/client";
+
+import { selectMomentId } from "../reads/subreads/moments";
+
 export type StepFromCRUD = {
   id: string;
   intitule: string;
@@ -98,3 +102,7 @@ export type DeleteMoment = (
 ) => Promise<CreateOrUpdateMomentState>;
 
 export type RevalidateMoments = () => Promise<void>;
+
+export type SelectMomentId = Prisma.UserGetPayload<{
+  select: typeof selectMomentId;
+}>;

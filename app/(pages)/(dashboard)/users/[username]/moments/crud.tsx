@@ -82,6 +82,8 @@ import {
 } from "@/app/searches/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 
+// !! Now I could bringing the flows to the client too. !!
+
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
 Développement de feature
@@ -136,6 +138,8 @@ const activityOptions: Option[] = [
   { key: 15, label: "Suivi de projet", value: "Suivi de projet" },
   { key: 16, label: "Séminaire", value: "Séminaire" },
 ];
+
+// And this tonight will shift to the client flows.
 
 const DEFAULT_STEP_MESSAGE =
   "Erreurs sur le renseignement étapes du formulaire.";

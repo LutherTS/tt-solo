@@ -1,6 +1,4 @@
-import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
-import { Prisma } from "@prisma/client";
 
 // import prisma from "@/prisma/db"; // proudly commented out
 import { Option } from "@/app/types/globals";
@@ -30,37 +28,18 @@ import {
   countUserMomentsWithContains,
   findCurrentUserMomentsWithContains,
   findFutureUserMomentsWithContains,
-  findMomentByNameAndUserId,
   findPastUserMomentsWithContains,
   findUserMomentsWithContains,
 } from "@/app/reads/moments";
+import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
-  findDestinationIdByNameAndUserId,
-  findDestinationsByUserId,
-} from "@/app/reads/destinations";
-import {
-  createMomentAndDestination,
-  createMomentFromFormData,
-  deleteMomentByMomentId,
-  updateMomentAndDestination,
-  updateMomentFromFormData,
-} from "@/app/writes/moments";
-import { deleteMomentStepsByMomentId } from "@/app/writes/steps";
-import { selectMomentId } from "@/app/reads/subreads/moments";
-import { createStepsFromStepsFlow } from "@/app/utilities/steps";
-import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
-import { compareDesc, roundToNearestHours, sub } from "date-fns";
-import { createOrUpdateMomentFlow } from "@/app/flows/moments";
+  createOrUpdateMomentFlow,
+  deleteMomentFlow,
+  revalidateMomentsFlow,
+} from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
-
-const DEFAULT_MOMENT_MESSAGE =
-  "Erreurs sur le renseignement moment du formulaire.";
-const DEFAULT_MOMENT_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
-
-const NO_STEPS_ERROR_MESSAGE =
-  "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.";
 
 export default async function MomentsPage({
   params,
@@ -86,10 +65,13 @@ export default async function MomentsPage({
   const username = params.username;
 
   // error handling needed eventually
-  const user = await findUserIdByUsername(username);
-  // console.log({ user });
+  const userFound = await findUserIdByUsername(username);
+  // console.log({ userFound });
 
-  if (!user) return notFound();
+  if (!userFound) return notFound();
+
+  // extremely important to use user in server actions without null
+  const user = userFound;
 
   const userId = user.id;
 
@@ -315,8 +297,8 @@ export default async function MomentsPage({
     "use server";
 
     // Haven't tested it yet, but it should be working.
-    // This is it. The action itself, its barebones, the action itself created with the component and as its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
-    return createOrUpdateMomentFlow(
+    // This is it. The action itself, its barebones, the action itself is created with the component and as its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
+    return await createOrUpdateMomentFlow(
       variant,
       indispensable,
       momentDate,
@@ -329,297 +311,25 @@ export default async function MomentsPage({
       user,
     );
 
-    // const currentNow = dateToInputDatetime(new Date());
-    // const minFromCurrentNow = dateToInputDatetime(
-    //   roundToNearestHours(sub(currentNow, { hours: 1 }), {
-    //     roundingMethod: "floor",
-    //   }),
-    // );
-    // const isMomentDateBeforeMinFromCurrentNow = compareDesc(
-    //   momentDate,
-    //   minFromCurrentNow,
-    // );
-
-    // if (isMomentDateBeforeMinFromCurrentNow === 1)
-    //   return {
-    //     momentMessage: DEFAULT_MOMENT_MESSAGE,
-    //     momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-    //     errors: {
-    //       momentStartDateAndTime: [
-    //         "Vous ne pouvez pas créer un moment qui commence environ plus d'une heure avant sa création.",
-    //       ],
-    //     },
-    //     bs: {
-    //       destinationName: destination,
-    //       momentActivity: activite,
-    //     },
-    //   };
-
-    // // testing...
-    // // return { message: "I'm testing things here." };
-    // // It works and with that, I now know my way around useTransition.
-
-    // // destination, activite, objectif and contexte are now controlled
-    // if (
-    //   typeof destination !== "string" ||
-    //   typeof activite !== "string" ||
-    //   typeof objectif !== "string" ||
-    //   typeof contexte !== "string"
-    // )
-    //   return {
-    //     momentMessage: "Erreur sur le renseignement du formulaire.",
-    //     momentSubMessage:
-    //       "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
-    //     bs: {
-    //       destinationName: destination,
-    //       momentActivity: activite,
-    //     },
-    //   };
-
-    // const [
-    //   trimmedDestination,
-    //   trimmedActivite,
-    //   trimmedObjectif,
-    //   trimmedContexte,
-    // ] = [destination, activite, objectif, contexte].map((e) => e.trim());
-
-    // const validatedFields = CreateOrUpdateMomentSchema.safeParse({
-    //   destinationName: trimmedDestination,
-    //   momentActivity: trimmedActivite,
-    //   momentName: trimmedObjectif,
-    //   momentIsIndispensable: indispensable,
-    //   momentDescription: trimmedContexte,
-    //   momentStartDateAndTime: momentDate,
-    // });
-
-    // if (!validatedFields.success) {
-    //   return {
-    //     momentMessage: DEFAULT_MOMENT_MESSAGE,
-    //     momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-    //     errors: validatedFields.error.flatten().fieldErrors,
-    //     bs: {
-    //       destinationName: trimmedDestination,
-    //       momentActivity: trimmedActivite,
-    //     },
-    //   };
-    // }
-
-    // if (steps.length === 0) {
-    //   return {
-    //     stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
-    //     stepsSubMessage: NO_STEPS_ERROR_MESSAGE,
-    //     bs: {
-    //       destinationName: trimmedDestination,
-    //       momentActivity: trimmedActivite,
-    //     },
-    //   };
-    // }
-
-    // const {
-    //   destinationName,
-    //   momentActivity,
-    //   momentName,
-    //   momentIsIndispensable,
-    //   momentDescription,
-    //   momentStartDateAndTime,
-    // } = validatedFields.data;
-
-    // destination = destinationName;
-    // activite = momentActivity;
-    // objectif = momentName;
-    // indispensable = momentIsIndispensable;
-    // contexte = momentDescription;
-    // momentDate = momentStartDateAndTime;
-
-    // // For this reason below alone I thing actions should be inline and passed as props instead of housed inside dedicated files. Here, this means data from the user literally never makes it to the client. Sensitive data from a user database entry (and even insensitive data) never even reaches any outside computer. Not even the user's id.
-    // // So what should be in separated files are not the actions, but rather the methods that make the action, (! or even the flows of these methods !)which therefore can be used in any action. The methods should be the commonalities, not the actions themselves. Actions can and I believe should be directly link to the actual pages where they're meant to be triggered, like temporary APIs only available within their own contexts.
-
-    // // I insist on the flows because what is currently below could be just be an entire flow that could be plugged in anywhere an action needs it.
-
-    // if (!user)
-    //   return {
-    //     momentMessage: "Erreur.",
-    //     momentSubMessage:
-    //       "L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
-    //     bs: {
-    //       // sticking to the trimmed version for now because hopefully, very hopefully, this workaround will no longer be needed by October 24
-    //       destinationName: trimmedDestination,
-    //       momentActivity: trimmedActivite,
-    //     },
-    //   };
-
-    // let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
-
-    // const map: Map<number, number> = new Map();
-    // let durationTotal = 0;
-    // for (let j = 0; j < steps.length; j++) {
-    //   durationTotal += +steps[j].duree;
-    //   map.set(j, durationTotal);
-    // }
-
-    // if (variant === "creating") {
-    //   const preexistingMoment = await findMomentByNameAndUserId(
-    //     objectif,
-    //     userId,
-    //   );
-
-    //   if (preexistingMoment)
-    //     return {
-    //       momentMessage: DEFAULT_MOMENT_MESSAGE,
-    //       momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-    //       errors: {
-    //         momentName: ["Vous avez déjà un moment de ce même nom."],
-    //       },
-    //       bs: {
-    //         destinationName: trimmedDestination,
-    //         momentActivity: trimmedActivite,
-    //       },
-    //     };
-    //   // It worked... But then the form reset.
-    //   // https://github.com/facebook/react/issues/29034
-    //   // That's where we're considering going back to Remix.
-    //   // Or I'm basically going to have to control every single field (they're only four so it's okayish), and send their data from the controlled output. This is so dumb but hey, that's what you get from living dangerously.
-    //   // Done. I've just controlled every single field.
-
-    //   // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their single if statements.
-
-    //   // error handling needed eventually
-    //   const destinationEntry = await findDestinationIdByNameAndUserId(
-    //     destination,
-    //     userId,
-    //   );
-
-    //   let moment: Prisma.MomentGetPayload<{
-    //     select: typeof selectMomentId;
-    //   }>;
-
-    //   if (destinationEntry) {
-    //     const destinationId = destinationEntry.id;
-
-    //     // error handling needed eventually
-    //     moment = await createMomentFromFormData(
-    //       activite,
-    //       objectif,
-    //       indispensable,
-    //       contexte,
-    //       momentDate,
-    //       duration,
-    //       destinationId,
-    //       userId,
-    //     );
-    //   } else {
-    //     // error handling needed eventually
-    //     moment = await createMomentAndDestination(
-    //       activite,
-    //       objectif,
-    //       indispensable,
-    //       contexte,
-    //       momentDate,
-    //       duration,
-    //       destination,
-    //       userId,
-    //     );
-    //   }
-
-    //   const momentId = moment.id;
-
-    //   await createStepsFromStepsFlow(steps, momentDate, map, momentId);
-    // }
-
-    // if (variant === "updating") {
-    //   if (!momentFromCRUD)
-    //     return {
-    //       momentMessage: "Erreur.",
-    //       momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
-    //       bs: {
-    //         destinationName: trimmedDestination,
-    //         momentActivity: trimmedActivite,
-    //       },
-    //     };
-
-    //   let momentId = momentFromCRUD.id;
-
-    //   // error handling needed eventually
-    //   const destinationEntry = await findDestinationIdByNameAndUserId(
-    //     destination,
-    //     userId,
-    //   );
-
-    //   let moment: Prisma.MomentGetPayload<{
-    //     select: typeof selectMomentId;
-    //   }>;
-
-    //   if (destinationEntry) {
-    //     const destinationId = destinationEntry.id;
-
-    //     // error handling needed eventually
-    //     moment = await updateMomentFromFormData(
-    //       activite,
-    //       objectif,
-    //       indispensable,
-    //       contexte,
-    //       momentDate,
-    //       duration,
-    //       destinationId,
-    //       momentId,
-    //       userId,
-    //     );
-    //   } else {
-    //     // error handling needed eventually
-    //     moment = await updateMomentAndDestination(
-    //       activite,
-    //       objectif,
-    //       indispensable,
-    //       contexte,
-    //       momentDate,
-    //       duration,
-    //       destination,
-    //       userId,
-    //       momentId,
-    //     );
-    //   }
-
-    //   momentId = moment.id;
-
-    //   // error handling needed eventually
-    //   await deleteMomentStepsByMomentId(momentId);
-
-    //   await createStepsFromStepsFlow(steps, momentDate, map, momentId);
-    // }
-
-    // revalidatePath(`/users/${username}/moments`);
-
-    // return null;
+    // I need to emphasize what is magical about this.
+    // I don't need to authenticate the user in the action. Why? Because the action does not exist if the user is not authenticated. :D
+    // And this solve the issue of people cry that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
   }
 
   async function deleteMoment(
-    momentFromCRUD?: MomentToCRUD,
+    momentFromCRUD: MomentToCRUD | undefined,
     // actually using the same return state as createOrUpdate
   ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
-    if (!momentFromCRUD)
-      return {
-        momentMessage: "Erreur.",
-        momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
-      };
-
-    const momentId = momentFromCRUD.id;
-
-    // error handling needed eventually
-    await deleteMomentByMomentId(momentId);
-
-    revalidatePath(`/users/${username}/moments`);
-
-    return null;
+    return await deleteMomentFlow(momentFromCRUD, user);
   }
 
-  // there's no return in any case so no need in typing ": Promise<void>"
-  async function revalidateMoments() {
+  // insisting on : Promise<void> to keep in sync with the flow
+  async function revalidateMoments(): Promise<void> {
     "use server";
 
-    revalidatePath(`/users/${username}/moments`);
-    // guess I'm keeping void for actions that really return nothing
+    return await revalidateMomentsFlow(user);
   }
 
   // The magic here is that no data directly from the User model ever leaves the server, since the actions reuse the verified User data obtained at the top of the function.
@@ -675,4 +385,7 @@ Now aside from validations the only thing I'm missing from my server actions is 
 // the actions and the full read flows will stay here but deconstructed.
 // ...
 // I think does make sense that the reads are on the server and the writes are on the client. That can justifying placing server actions in the own folders which, to be honest, is exactly how I would work with a team.
+...
+SOLVED:
+(I don't understand how inside the action user can be null when I'm returning if it's null in the function. ...Let's have some fun with this for one second. It's because the action can be placed anywhere in the parent function, it doesn't follow the regular flow of creation within the page. I can place it before notFound and the code doesn't break. So do I make it use the argument user created inside parent function, but the action is pretty much created before the user is verified. Maybe if obtaining the user and verify the user was one single action, one flow... That's something I could try.)
 */
