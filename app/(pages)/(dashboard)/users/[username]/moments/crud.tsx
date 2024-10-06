@@ -91,6 +91,11 @@ import {
   STEP_FORM_ID,
   YOUR_MOMENT_ID,
 } from "@/app/data/moments";
+import {
+  createOrUpdateMomentAfterflow,
+  createOrUpdateStepAfterflow,
+  resetMomentFormAfterflow,
+} from "@/app/flows/client/afterflows/moments";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -818,16 +823,7 @@ function MomentForms({
   };
 
   useEffect(() => {
-    if (view === "create-moment" && createOrUpdateMomentState) {
-      if (createOrUpdateMomentState.momentMessage) {
-        const yourMoment = document.getElementById(YOUR_MOMENT_ID);
-        return yourMoment?.scrollIntoView({ behavior: "smooth" });
-      }
-      if (createOrUpdateMomentState.stepsMessage) {
-        const itsSteps = document.getElementById(ITS_STEPS_ID);
-        return itsSteps?.scrollIntoView({ behavior: "smooth" });
-      }
-    }
+    createOrUpdateMomentAfterflow(view, createOrUpdateMomentState);
   }, [createOrUpdateMomentState]);
 
   // deleteMomentAction
@@ -878,9 +874,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isResetMomentFormDone) {
-      const yourMoment = document.getElementById(YOUR_MOMENT_ID);
-      yourMoment?.scrollIntoView({ behavior: "smooth" });
-      setIsResetMomentFormDone(false);
+      resetMomentFormAfterflow(setIsResetMomentFormDone);
     }
   }, [isResetMomentFormDone]);
 
@@ -1399,23 +1393,12 @@ function StepForm({
   };
 
   useEffect(() => {
-    if (isCreateOrUpdateStepDone) {
-      const newState = {
-        ...createOrUpdateMomentState,
-        stepsMessage: undefined,
-        stepsSubMessage: undefined,
-        errors: {
-          stepName: undefined,
-          stepDescription: undefined,
-          trueStepDuration: undefined,
-        },
-      };
-      setCreateOrUpdateMomentState(newState);
-    }
-    setIsCreateOrUpdateStepDone(false);
-
-    const itsSteps = document.getElementById(ITS_STEPS_ID);
-    return itsSteps?.scrollIntoView({ behavior: "smooth" });
+    createOrUpdateStepAfterflow(
+      isCreateOrUpdateStepDone,
+      createOrUpdateMomentState,
+      setCreateOrUpdateMomentState,
+      setIsCreateOrUpdateStepDone,
+    );
   }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
 
   return (
