@@ -113,6 +113,7 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   scrollTo({ top: 0 });
 };
 
+// scroll back to the desired section (usually yourMoment or itsSteps in the Moment forms)
 export const scrollToSection = (sectionId: string) => {
   const section = document.getElementById(sectionId);
   section?.scrollIntoView({ behavior: "smooth" });

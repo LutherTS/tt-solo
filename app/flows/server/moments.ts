@@ -46,31 +46,33 @@ export const createOrUpdateMomentFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
 ) => {
-  const currentNow = dateToInputDatetime(new Date());
-  const minFromCurrentNow = dateToInputDatetime(
-    roundToNearestHours(sub(currentNow, { hours: 1 }), {
-      roundingMethod: "floor",
-    }),
-  );
-  const isMomentDateBeforeMinFromCurrentNow = compareDesc(
-    momentDate,
-    minFromCurrentNow,
-  );
+  if (variant === "creating") {
+    const currentNow = dateToInputDatetime(new Date());
+    const minFromCurrentNow = dateToInputDatetime(
+      roundToNearestHours(sub(currentNow, { hours: 1 }), {
+        roundingMethod: "floor",
+      }),
+    );
+    const isMomentDateBeforeMinFromCurrentNow = compareDesc(
+      momentDate,
+      minFromCurrentNow,
+    );
 
-  if (isMomentDateBeforeMinFromCurrentNow === 1)
-    return {
-      momentMessage: DEFAULT_MOMENT_MESSAGE,
-      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-      errors: {
-        momentStartDateAndTime: [
-          "Vous ne pouvez pas créer un moment qui commence environ plus d'une heure avant sa création.",
-        ],
-      },
-      bs: {
-        destinationName: destination,
-        momentActivity: activite,
-      },
-    };
+    if (isMomentDateBeforeMinFromCurrentNow === 1)
+      return {
+        momentMessage: DEFAULT_MOMENT_MESSAGE,
+        momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        errors: {
+          momentStartDateAndTime: [
+            "Vous ne pouvez pas créer un moment qui commence environ plus d'une heure avant sa création.",
+          ],
+        },
+        bs: {
+          destinationName: destination,
+          momentActivity: activite,
+        },
+      };
+  }
 
   // testing...
   // return { message: "I'm testing things here." };

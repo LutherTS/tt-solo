@@ -923,7 +923,14 @@ function MomentForms({
     setStepVisible("create");
     setIntituleCreateControlled("");
     setDetailsCreateControlled("");
-    setDureeCreateControlled("");
+    setDureeCreateControlled("10");
+    setCreateOrUpdateMomentState(null);
+  };
+
+  const handleResetStep = () => {
+    setIntituleCreateControlled("");
+    setDetailsCreateControlled("");
+    setDureeCreateControlled("10");
     setCreateOrUpdateMomentState(null);
   };
 
@@ -1150,10 +1157,14 @@ function MomentForms({
                     intitule={intituleUpdateControlled}
                     details={detailsUpdateControlled}
                     duree={dureeUpdateControlled}
-                    setIntitule={setIntituleUpdateControlled}
-                    setDetails={setDetailsUpdateControlled}
-                    setDuree={setDureeUpdateControlled}
+                    setIntituleUpdate={setIntituleUpdateControlled}
+                    setDetailsUpdate={setDetailsUpdateControlled}
+                    setDureeUpdate={setDureeUpdateControlled}
+                    setIntituleCreate={setIntituleCreateControlled}
+                    setDetailsCreate={setDetailsCreateControlled}
+                    setDureeCreate={setDureeCreateControlled}
                     createOrUpdateMomentState={createOrUpdateMomentState}
+                    setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
                   />
                 );
               })}
@@ -1193,6 +1204,7 @@ function MomentForms({
                 </p>{" "}
                 <Button
                   form={STEP_FORM_ID.creating}
+                  onClick={handleResetStep}
                   type="reset"
                   variant="destroy-step"
                 >
@@ -1447,10 +1459,14 @@ function ReorderItem({
   intitule,
   details,
   duree,
-  setIntitule,
-  setDetails,
-  setDuree,
+  setIntituleUpdate,
+  setDetailsUpdate,
+  setDureeUpdate,
+  setIntituleCreate,
+  setDetailsCreate,
+  setDureeCreate,
   createOrUpdateMomentState,
+  setCreateOrUpdateMomentState,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1466,10 +1482,16 @@ function ReorderItem({
   intitule: string;
   details: string;
   duree: string;
-  setIntitule: Dispatch<SetStateAction<string>>;
-  setDetails: Dispatch<SetStateAction<string>>;
-  setDuree: Dispatch<SetStateAction<string>>;
+  setIntituleUpdate: Dispatch<SetStateAction<string>>;
+  setDetailsUpdate: Dispatch<SetStateAction<string>>;
+  setDureeUpdate: Dispatch<SetStateAction<string>>;
+  setIntituleCreate: Dispatch<SetStateAction<string>>;
+  setDetailsCreate: Dispatch<SetStateAction<string>>;
+  setDureeCreate: Dispatch<SetStateAction<string>>;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
+  setCreateOrUpdateMomentState: Dispatch<
+    SetStateAction<CreateOrUpdateMomentState>
+  >;
 }) {
   const controls = useDragControls();
 
@@ -1484,7 +1506,29 @@ function ReorderItem({
       currentStepId,
       setSteps,
       setStepVisible,
+      setCreateOrUpdateMomentState,
     );
+  };
+
+  // the jumping is simply due to a current lack of animations
+  const handleRestoreStep = () => {
+    setStepVisible("create");
+  };
+
+  const handleModifyStep = () => {
+    setCurrentStepId(step.id);
+
+    setIntituleUpdate(step.intitule);
+    setDetailsUpdate(step.details);
+    setDureeUpdate(step.duree);
+
+    setIntituleCreate("");
+    setDetailsCreate("");
+    setDureeCreate("10");
+
+    setCreateOrUpdateMomentState(null);
+
+    setStepVisible("updating");
   };
 
   return (
@@ -1522,7 +1566,7 @@ function ReorderItem({
               form={STEP_FORM_ID.updating}
               type="button"
               variant="destroy-step"
-              onClick={() => setStepVisible("create")}
+              onClick={handleRestoreStep}
             >
               Restaurer l&apos;étape
             </Button>
@@ -1530,18 +1574,7 @@ function ReorderItem({
             <Button
               variant="destroy-step"
               type="button"
-              // since this is a selection of setStates and as a would-be action it would only be used once, there's no imperative need to make an action here
-              // ...but, if I want to "secure" ever single one of my buttons with isPending, I'd need all of them to be actions
-              // ...which is overkill, and would require so many action names, and would confuse people reading the code.
-              onClick={() => {
-                setCurrentStepId(step.id);
-
-                setIntitule(step.intitule);
-                setDetails(step.details);
-                setDuree(step.duree);
-
-                setStepVisible("updating");
-              }}
+              onClick={handleModifyStep}
             >
               Modifier cette étape
             </Button>
@@ -1554,7 +1587,7 @@ function ReorderItem({
               label="Intitulé de l'étape"
               name="intituledeleetape"
               definedValue={intitule}
-              definedOnValueChange={setIntitule}
+              definedOnValueChange={setIntituleUpdate}
               description="Définissez simplement le sujet de l'étape."
               // only because there is maximum one form open at all times
               // the buttons that change the forms will also have to reset the step errors on createOrUpdateMomentState
@@ -1565,7 +1598,7 @@ function ReorderItem({
               label="Détails de l'étape"
               name="detailsdeleetape"
               definedValue={details}
-              definedOnValueChange={setDetails}
+              definedOnValueChange={setDetailsUpdate}
               description="Expliquez en détails le déroulé de l'étape."
               rows={4}
               errors={createOrUpdateMomentState?.errors?.stepDescription}
@@ -1575,7 +1608,7 @@ function ReorderItem({
               label="Durée de l'étape"
               name="dureedeletape"
               definedValue={duree}
-              definedOnValueChange={setDuree}
+              definedOnValueChange={setDureeUpdate}
               description="Renseignez en minutes la longueur de l'étape."
               min="5"
               errors={createOrUpdateMomentState?.errors?.trueStepDuration}

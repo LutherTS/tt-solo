@@ -306,12 +306,18 @@ export const deleteStepActionflow = (
   currentStepId: string,
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
   setStepVisible: Dispatch<SetStateAction<StepVisible>>,
+  setCreateOrUpdateMomentState: Dispatch<
+    SetStateAction<CreateOrUpdateMomentState>
+  >,
 ) => {
   // later find a way to only show this on create?
   if (confirm("Êtes-vous sûr que vous voulez effacer cette étape ?")) {
     startDeleteStepTransition(() => {
       let newSteps = steps.filter((step) => step.id !== currentStepId);
       setSteps(newSteps);
+
+      setCreateOrUpdateMomentState(null);
+
       if (newSteps.length === 0) setStepVisible("creating");
       else setStepVisible("create");
     });
