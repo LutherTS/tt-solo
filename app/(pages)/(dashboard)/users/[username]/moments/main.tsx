@@ -71,13 +71,6 @@ import {
 } from "../../../components";
 import * as Icons from "../icons";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
-  PASTUSERMOMENTSPAGE,
-  USERMOMENTSPAGE,
-} from "@/app/searches/moments";
-import {
   createOrUpdateMomentActionflow,
   createOrUpdateStepActionflow,
   deleteMomentActionflow,
@@ -86,11 +79,16 @@ import {
   revalidateMomentsActionflow,
 } from "@/app/flows/client/moments";
 import {
-  activityOptions,
+  CONTAINS,
+  CURRENTUSERMOMENTSPAGE,
+  FUTUREUSERMOMENTSPAGE,
+  PASTUSERMOMENTSPAGE,
+  USERMOMENTSPAGE,
   ITS_STEPS_ID,
   SEARCH_FORM_ID,
   STEP_FORM_ID,
   YOUR_MOMENT_ID,
+  activityOptions,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,

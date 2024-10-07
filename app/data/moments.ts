@@ -1,5 +1,15 @@
 import { Option } from "@/app/types/globals";
 
+// searchParams keys
+
+export const CONTAINS = "contains" as const;
+export const USERMOMENTSPAGE = "usermomentspage" as const;
+export const PASTUSERMOMENTSPAGE = "pastusermomentspage" as const;
+export const CURRENTUSERMOMENTSPAGE = "currentusermomentspage" as const;
+export const FUTUREUSERMOMENTSPAGE = "futureusermomentspage" as const;
+
+// HTML ids
+
 export const SEARCH_FORM_ID = "search-form";
 
 export const YOUR_MOMENT_ID = "your-moment";
@@ -9,6 +19,8 @@ export const STEP_FORM_ID = {
   creating: "step-form-creating",
   updating: "step-form-updating",
 };
+
+// select options
 
 export const activityOptions: Option[] = [
   { key: 1, label: "Atelier", value: "Atelier" },

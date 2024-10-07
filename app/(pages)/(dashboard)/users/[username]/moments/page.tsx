@@ -20,7 +20,7 @@ import {
   FUTUREUSERMOMENTSPAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
-} from "@/app/searches/moments";
+} from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
   countCurrentUserMomentsWithContains,
