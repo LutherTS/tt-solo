@@ -78,22 +78,24 @@ import {
   USERMOMENTSPAGE,
 } from "@/app/searches/moments";
 import {
-  createOrUpdateMomentActionFlow,
-  createOrUpdateStepActionFlow,
-  deleteMomentActionFlow,
-  deleteStepActionFlow,
-  resetMomentFormActionFlow,
-  revalidateMomentsActionFlow,
+  createOrUpdateMomentActionflow,
+  createOrUpdateStepActionflow,
+  deleteMomentActionflow,
+  deleteStepActionflow,
+  resetMomentFormActionflow,
+  revalidateMomentsActionflow,
 } from "@/app/flows/client/moments";
 import {
   activityOptions,
   ITS_STEPS_ID,
+  SEARCH_FORM_ID,
   STEP_FORM_ID,
   YOUR_MOMENT_ID,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
   createOrUpdateStepAfterflow,
+  deleteMomentAfterflow,
   resetMomentFormAfterflow,
 } from "@/app/flows/client/afterflows/moments";
 
@@ -444,7 +446,7 @@ function ReadMomentsView({
   const revalidateMomentsAction = async (
     event: MouseEvent<HTMLButtonElement>,
   ) => {
-    return await revalidateMomentsActionFlow(
+    return await revalidateMomentsActionflow(
       event,
       startRevalidateMomentsTransition,
       revalidateMoments,
@@ -499,7 +501,7 @@ function ReadMomentsView({
         })}
         <button
           // to target the input in the form that needs to be reset
-          form="form"
+          form={SEARCH_FORM_ID}
           onClick={revalidateMomentsAction}
           disabled={isRevalidateMomentsPending}
           className={clsx(
@@ -534,7 +536,7 @@ function ReadMomentsView({
         </button>
       </div>
       {/* to place the input into a form so it can be reset */}
-      <form id="form">
+      <form id={SEARCH_FORM_ID}>
         <InputText
           // keeping the "contains" out of variable for this because unsure if "contains" the definitive id and name
           id="contains"
@@ -684,6 +686,7 @@ function ReadMomentsView({
   );
 }
 
+// !! Maintenant je dois m'assurer que les boutons mettent à jour createOrUpdateMomentState entre les différentes interactions. (Comme Annuler l'étape.)
 function MomentForms({
   variant,
   moment,
@@ -786,17 +789,20 @@ function MomentForms({
     moment,
   );
 
+  const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
+    useState<CreateOrUpdateMomentState>(null);
+
   // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
   // ...but to make the action autonomous I'll add it nonetheless
   // a cool thought could be to have disabled styles specific to the reason that disables the button, like making them only visible if the action of the button itself is pending, and not if it's due to anything else.
   const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
     useTransition();
 
-  const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-    useState<CreateOrUpdateMomentState>(null);
+  const [isCreateOrUpdateMomentDone, setIsCreateOrUpdateMomentDone] =
+    useState(false);
 
   const createOrUpdateMomentAction = async () => {
-    return await createOrUpdateMomentActionFlow(
+    return await createOrUpdateMomentActionflow(
       startCreateOrUpdateMomentTransition,
       createOrUpdateMomentBound,
       setDestinationTextControlled,
@@ -814,17 +820,22 @@ function MomentForms({
       setActiviteOptionControlled,
       setObjectifControlled,
       setContexteControlled,
-      endMomentDate,
-      now,
-      setSubView,
-      startMomentDate,
-      setView,
+      setIsCreateOrUpdateMomentDone,
     );
   };
 
   useEffect(() => {
-    createOrUpdateMomentAfterflow(view, createOrUpdateMomentState);
-  }, [createOrUpdateMomentState]);
+    if (isCreateOrUpdateMomentDone)
+      createOrUpdateMomentAfterflow(
+        createOrUpdateMomentState,
+        endMomentDate,
+        now,
+        startMomentDate,
+        setSubView,
+        setView,
+        setIsCreateOrUpdateMomentDone,
+      );
+  }, [isCreateOrUpdateMomentDone]);
 
   // deleteMomentAction
 
@@ -833,14 +844,25 @@ function MomentForms({
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
+  const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
+
   const deleteMomentAction = async () => {
-    return await deleteMomentActionFlow(
+    return await deleteMomentActionflow(
       startDeleteMomentTransition,
       deleteMomentBound,
       setCreateOrUpdateMomentState,
-      setView,
+      setIsDeleteMomentDone,
     );
   };
+
+  useEffect(() => {
+    if (isDeleteMomentDone)
+      deleteMomentAfterflow(
+        createOrUpdateMomentState,
+        setView,
+        setIsDeleteMomentDone,
+      );
+  }, [isDeleteMomentDone]);
 
   // resetMomentFormAction
 
@@ -851,7 +873,7 @@ function MomentForms({
 
   // action is (now) completely client, so no need for async
   const resetMomentFormAction = (event: FormEvent<HTMLFormElement>) => {
-    return resetMomentFormActionFlow(
+    return resetMomentFormActionflow(
       event,
       startResetMomentFormTransition,
       setIndispensable,
@@ -873,9 +895,8 @@ function MomentForms({
   };
 
   useEffect(() => {
-    if (isResetMomentFormDone) {
+    if (isResetMomentFormDone)
       resetMomentFormAfterflow(setIsResetMomentFormDone);
-    }
   }, [isResetMomentFormDone]);
 
   // Here we go again to control the StepForm fields...
@@ -1374,7 +1395,7 @@ function StepForm({
     useState(false);
 
   const createOrUpdateStepAction = () => {
-    return createOrUpdateStepActionFlow(
+    return createOrUpdateStepActionflow(
       startCreateOrUpdateStepTransition,
       intitule,
       details,
@@ -1393,12 +1414,8 @@ function StepForm({
   };
 
   useEffect(() => {
-    createOrUpdateStepAfterflow(
-      isCreateOrUpdateStepDone,
-      createOrUpdateMomentState,
-      setCreateOrUpdateMomentState,
-      setIsCreateOrUpdateStepDone,
-    );
+    if (isCreateOrUpdateStepDone)
+      createOrUpdateStepAfterflow(setIsCreateOrUpdateStepDone);
   }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
 
   return (
@@ -1452,7 +1469,7 @@ function ReorderItem({
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
   const deleteStepAction = () => {
-    return deleteStepActionFlow(
+    return deleteStepActionflow(
       startDeleteStepTransition,
       steps,
       currentStepId,

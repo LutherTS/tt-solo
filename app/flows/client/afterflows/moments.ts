@@ -1,23 +1,67 @@
 import { Dispatch, SetStateAction } from "react";
+import { compareAsc, compareDesc } from "date-fns";
 
 import { ITS_STEPS_ID, YOUR_MOMENT_ID } from "@/app/data/moments";
-import { CreateOrUpdateMomentState, View } from "@/app/types/moments";
+import { CreateOrUpdateMomentState, SubView, View } from "@/app/types/moments";
+import { setScrollToTop } from "@/app/utilities/moments";
 
 // scrolls back to the section of the form that possesses new errors
-// (every time createOrUpdateMomentState is updated)
+// or to the correct subView when successfully submitted
+// (every time createOrUpdateMomentAction is done)
 export const createOrUpdateMomentAfterflow = (
-  view: View,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
+  endMomentDate: string,
+  now: string,
+  startMomentDate: string,
+  setSubView: Dispatch<SetStateAction<SubView>>,
+  setView: Dispatch<SetStateAction<View>>,
+  setIsCreateOrUpdateMomentDone: Dispatch<SetStateAction<boolean>>,
 ) => {
-  if (view === "create-moment" && createOrUpdateMomentState) {
+  if (createOrUpdateMomentState) {
+    // A truthy createOrUpdateMomentState returns with either a momentMessage or a stepsMessage, not both. If by accident both are returned, momentMessage is handled first. If by accident none are returned (in a truthy createOrUpdateMomentState), nothing is expected to happen at this time.
     if (createOrUpdateMomentState.momentMessage) {
       const yourMoment = document.getElementById(YOUR_MOMENT_ID);
-      return yourMoment?.scrollIntoView({ behavior: "smooth" });
+      yourMoment?.scrollIntoView({ behavior: "smooth" });
+
+      return setIsCreateOrUpdateMomentDone(false);
     }
+
     if (createOrUpdateMomentState.stepsMessage) {
       const itsSteps = document.getElementById(ITS_STEPS_ID);
-      return itsSteps?.scrollIntoView({ behavior: "smooth" });
+      itsSteps?.scrollIntoView({ behavior: "smooth" });
+
+      return setIsCreateOrUpdateMomentDone(false);
     }
+  } else {
+    // this now works thanks to export const dynamic = "force-dynamic";
+    // ...I think
+    if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
+    else if (compareAsc(startMomentDate, now) === 1)
+      setSubView("future-moments");
+    // therefore present by default
+    else setSubView("current-moments");
+
+    setScrollToTop("read-moments", setView);
+    // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
+
+    return setIsCreateOrUpdateMomentDone(false);
+  }
+};
+
+export const deleteMomentAfterflow = (
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+  setView: Dispatch<SetStateAction<View>>,
+  setIsDeleteMomentDone: Dispatch<SetStateAction<boolean>>,
+) => {
+  if (createOrUpdateMomentState) {
+    const yourMoment = document.getElementById(YOUR_MOMENT_ID);
+    yourMoment?.scrollIntoView({ behavior: "smooth" });
+
+    return setIsDeleteMomentDone(false);
+  } else {
+    setScrollToTop("read-moments", setView);
+
+    return setIsDeleteMomentDone(false);
   }
 };
 
@@ -28,34 +72,17 @@ export const resetMomentFormAfterflow = (
 ) => {
   const yourMoment = document.getElementById(YOUR_MOMENT_ID);
   yourMoment?.scrollIntoView({ behavior: "smooth" });
-  setIsResetMomentFormDone(false);
+
+  return setIsResetMomentFormDone(false);
 };
 
-// erases every step message error after a step is successfully created or updated
+// scrolls back to itsSteps's section when the step form is successfully and unsuccessfully submitted
 // (every time createOrUpdateStepAction is done)
 export const createOrUpdateStepAfterflow = (
-  isCreateOrUpdateStepDone: boolean,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
   setIsCreateOrUpdateStepDone: Dispatch<SetStateAction<boolean>>,
 ) => {
-  if (isCreateOrUpdateStepDone) {
-    const newState = {
-      ...createOrUpdateMomentState,
-      stepsMessage: undefined,
-      stepsSubMessage: undefined,
-      errors: {
-        stepName: undefined,
-        stepDescription: undefined,
-        trueStepDuration: undefined,
-      },
-    };
-    setCreateOrUpdateMomentState(newState);
-  }
-  setIsCreateOrUpdateStepDone(false);
-
   const itsSteps = document.getElementById(ITS_STEPS_ID);
-  return itsSteps?.scrollIntoView({ behavior: "smooth" });
+  itsSteps?.scrollIntoView({ behavior: "smooth" });
+
+  return setIsCreateOrUpdateStepDone(false);
 };

@@ -1,7 +1,9 @@
 import { Option } from "@/app/types/globals";
 
-export const YOUR_MOMENT_ID = "votre-moment";
-export const ITS_STEPS_ID = "ses-etapes";
+export const SEARCH_FORM_ID = "search-form";
+
+export const YOUR_MOMENT_ID = "your-moment";
+export const ITS_STEPS_ID = "its-steps";
 
 export const STEP_FORM_ID = {
   creating: "step-form-creating",

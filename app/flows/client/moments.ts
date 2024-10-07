@@ -4,16 +4,12 @@ import {
   StepFormVariant,
   StepFromCRUD,
   StepVisible,
-  SubView,
-  View,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
   roundTimeUpTenMinutes,
-  setScrollToTop,
 } from "@/app/utilities/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
-import { compareAsc, compareDesc } from "date-fns";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
   Dispatch,
@@ -27,7 +23,7 @@ const DEFAULT_STEP_MESSAGE =
   "Erreurs sur le renseignement étapes du formulaire.";
 const DEFAULT_STEP_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
 
-export const revalidateMomentsActionFlow = async (
+export const revalidateMomentsActionflow = async (
   event: MouseEvent<HTMLButtonElement>,
   startRevalidateMomentsTransition: TransitionStartFunction,
   revalidateMoments: () => Promise<void>,
@@ -42,8 +38,8 @@ export const revalidateMomentsActionFlow = async (
   });
 };
 
-// the reason why I'm having to have all these are arguments is because formData is broken in the current React 19
-export const createOrUpdateMomentActionFlow = async (
+// the reason why I'm having to have all these as arguments is because formData is broken in the current React 19
+export const createOrUpdateMomentActionflow = async (
   startCreateOrUpdateMomentTransition: TransitionStartFunction,
   createOrUpdateMomentBound: () => Promise<CreateOrUpdateMomentState>,
   setDestinationTextControlled: Dispatch<SetStateAction<string>>,
@@ -63,11 +59,7 @@ export const createOrUpdateMomentActionFlow = async (
   setActiviteOptionControlled: Dispatch<SetStateAction<string>>,
   setObjectifControlled: Dispatch<SetStateAction<string>>,
   setContexteControlled: Dispatch<SetStateAction<string>>,
-  endMomentDate: string,
-  now: string,
-  setSubView: Dispatch<SetStateAction<SubView>>,
-  startMomentDate: string,
-  setView: Dispatch<SetStateAction<View>>,
+  setIsCreateOrUpdateMomentDone: Dispatch<SetStateAction<boolean>>,
 ) => {
   startCreateOrUpdateMomentTransition(async () => {
     const state = await createOrUpdateMomentBound();
@@ -83,58 +75,55 @@ export const createOrUpdateMomentActionFlow = async (
       setActivitySelect(false);
       // but what solving this specifically means is... you can never use selects on their own with the current state of React 19
 
+      setIsCreateOrUpdateMomentDone(true);
       return setCreateOrUpdateMomentState(state);
+    } else {
+      if (variant === "creating") {
+        setIndispensable(false);
+        setStartMomentDate(nowRoundedUpTenMinutes);
+        setSteps([]);
+        setStepVisible("creating");
+
+        setDestinationTextControlled("");
+        setDestinationOptionControlled("");
+        setActiviteTextControlled("");
+        setActiviteOptionControlled("");
+        setObjectifControlled("");
+        setContexteControlled("");
+      }
+
+      setIsCreateOrUpdateMomentDone(true);
+      return setCreateOrUpdateMomentState(null);
     }
-
-    if (variant === "creating") {
-      setIndispensable(false);
-      setStartMomentDate(nowRoundedUpTenMinutes);
-      setSteps([]);
-      setStepVisible("creating");
-
-      setDestinationTextControlled("");
-      setDestinationOptionControlled("");
-      setActiviteTextControlled("");
-      setActiviteOptionControlled("");
-      setObjectifControlled("");
-      setContexteControlled("");
-    }
-
-    // this now works thanks to export const dynamic = "force-dynamic";
-    // ...I think
-    if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
-    else if (compareAsc(startMomentDate, now) === 1)
-      setSubView("future-moments");
-    // therefore present by default
-    else setSubView("current-moments");
-
-    setScrollToTop("read-moments", setView);
-    // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
   });
 };
 
-export const deleteMomentActionFlow = async (
+export const deleteMomentActionflow = async (
   startDeleteMomentTransition: TransitionStartFunction,
   deleteMomentBound: () => Promise<CreateOrUpdateMomentState>,
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
   >,
-  setView: Dispatch<SetStateAction<View>>,
+  setIsDeleteMomentDone: Dispatch<SetStateAction<boolean>>,
 ) => {
   startDeleteMomentTransition(async () => {
     if (confirm("Êtes-vous sûr que vous voulez effacer ce moment ?")) {
       if (deleteMomentBound) {
         const state = await deleteMomentBound();
-        if (state) return setCreateOrUpdateMomentState(state);
-
-        setScrollToTop("read-moments", setView);
+        if (state) {
+          setIsDeleteMomentDone(true);
+          return setCreateOrUpdateMomentState(state);
+        } else {
+          setIsDeleteMomentDone(true);
+          return setCreateOrUpdateMomentState(null);
+        }
       }
     }
   });
 };
 
 // reset is only on the create variant of MomentForms
-export const resetMomentFormActionFlow = (
+export const resetMomentFormActionflow = (
   event: FormEvent<HTMLFormElement>,
   startResetMomentFormTransition: TransitionStartFunction,
   setIndispensable: Dispatch<SetStateAction<boolean>>,
@@ -195,9 +184,7 @@ export const resetMomentFormActionFlow = (
   });
 };
 
-// shift everything steps to the steps file... when I'll need to
-
-export const createOrUpdateStepActionFlow = (
+export const createOrUpdateStepActionflow = (
   startCreateOrUpdateStepTransition: TransitionStartFunction,
   intitule: string,
   details: string,
@@ -216,12 +203,14 @@ export const createOrUpdateStepActionFlow = (
   setIsCreateOrUpdateStepDone: Dispatch<SetStateAction<boolean>>,
 ) => {
   startCreateOrUpdateStepTransition(() => {
-    if (typeof intitule !== "string" || typeof details !== "string")
+    if (typeof intitule !== "string" || typeof details !== "string") {
+      setIsCreateOrUpdateStepDone(true);
       return setCreateOrUpdateMomentState({
         stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
         stepsSubMessage:
           "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
       });
+    }
 
     const [trimmedIntitule, trimmedDetails] = [intitule, details].map((e) =>
       e.trim(),
@@ -236,6 +225,7 @@ export const createOrUpdateStepActionFlow = (
     });
 
     if (!validatedFields.success) {
+      setIsCreateOrUpdateStepDone(true);
       return setCreateOrUpdateMomentState({
         stepsMessage: DEFAULT_STEP_MESSAGE,
         stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
@@ -250,6 +240,7 @@ export const createOrUpdateStepActionFlow = (
     const stepsDetails = steps.map((e) => e.details);
 
     if (stepsIntitules.includes(stepName)) {
+      setIsCreateOrUpdateStepDone(true);
       return setCreateOrUpdateMomentState({
         stepsMessage: DEFAULT_STEP_MESSAGE,
         stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
@@ -260,7 +251,9 @@ export const createOrUpdateStepActionFlow = (
         },
       });
     }
+
     if (stepsDetails.includes(stepDescription)) {
+      setIsCreateOrUpdateStepDone(true);
       return setCreateOrUpdateMomentState({
         stepsMessage: DEFAULT_STEP_MESSAGE,
         stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
@@ -303,17 +296,18 @@ export const createOrUpdateStepActionFlow = (
     setDuree("10");
 
     setIsCreateOrUpdateStepDone(true);
+    return setCreateOrUpdateMomentState(null);
   });
 };
 
-export const deleteStepActionFlow = (
+export const deleteStepActionflow = (
   startDeleteStepTransition: TransitionStartFunction,
   steps: StepFromCRUD[],
   currentStepId: string,
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
   setStepVisible: Dispatch<SetStateAction<StepVisible>>,
 ) => {
-  // later find a way to only show this on create (by this Friday when I'll show to Mohamed)
+  // later find a way to only show this on create?
   if (confirm("Êtes-vous sûr que vous voulez effacer cette étape ?")) {
     startDeleteStepTransition(() => {
       let newSteps = steps.filter((step) => step.id !== currentStepId);
