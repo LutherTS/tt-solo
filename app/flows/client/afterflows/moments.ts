@@ -3,7 +3,7 @@ import { compareAsc, compareDesc } from "date-fns";
 
 import { ITS_STEPS_ID, YOUR_MOMENT_ID } from "@/app/data/moments";
 import { CreateOrUpdateMomentState, SubView, View } from "@/app/types/moments";
-import { setScrollToTop } from "@/app/utilities/moments";
+import { scrollToSection, setScrollToTop } from "@/app/utilities/moments";
 
 // scrolls back to the section of the form that possesses new errors
 // or to the correct subView when successfully submitted
@@ -20,16 +20,12 @@ export const createOrUpdateMomentAfterflow = (
   if (createOrUpdateMomentState) {
     // A truthy createOrUpdateMomentState returns with either a momentMessage or a stepsMessage, not both. If by accident both are returned, momentMessage is handled first. If by accident none are returned (in a truthy createOrUpdateMomentState), nothing is expected to happen at this time.
     if (createOrUpdateMomentState.momentMessage) {
-      const yourMoment = document.getElementById(YOUR_MOMENT_ID);
-      yourMoment?.scrollIntoView({ behavior: "smooth" });
-
+      scrollToSection(YOUR_MOMENT_ID);
       return setIsCreateOrUpdateMomentDone(false);
     }
 
     if (createOrUpdateMomentState.stepsMessage) {
-      const itsSteps = document.getElementById(ITS_STEPS_ID);
-      itsSteps?.scrollIntoView({ behavior: "smooth" });
-
+      scrollToSection(ITS_STEPS_ID);
       return setIsCreateOrUpdateMomentDone(false);
     }
   } else {
@@ -43,7 +39,6 @@ export const createOrUpdateMomentAfterflow = (
 
     setScrollToTop("read-moments", setView);
     // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-
     return setIsCreateOrUpdateMomentDone(false);
   }
 };
@@ -54,13 +49,10 @@ export const deleteMomentAfterflow = (
   setIsDeleteMomentDone: Dispatch<SetStateAction<boolean>>,
 ) => {
   if (createOrUpdateMomentState) {
-    const yourMoment = document.getElementById(YOUR_MOMENT_ID);
-    yourMoment?.scrollIntoView({ behavior: "smooth" });
-
+    scrollToSection(YOUR_MOMENT_ID);
     return setIsDeleteMomentDone(false);
   } else {
     setScrollToTop("read-moments", setView);
-
     return setIsDeleteMomentDone(false);
   }
 };
@@ -70,9 +62,7 @@ export const deleteMomentAfterflow = (
 export const resetMomentFormAfterflow = (
   setIsResetMomentFormDone: Dispatch<SetStateAction<boolean>>,
 ) => {
-  const yourMoment = document.getElementById(YOUR_MOMENT_ID);
-  yourMoment?.scrollIntoView({ behavior: "smooth" });
-
+  scrollToSection(YOUR_MOMENT_ID);
   return setIsResetMomentFormDone(false);
 };
 
@@ -81,8 +71,6 @@ export const resetMomentFormAfterflow = (
 export const createOrUpdateStepAfterflow = (
   setIsCreateOrUpdateStepDone: Dispatch<SetStateAction<boolean>>,
 ) => {
-  const itsSteps = document.getElementById(ITS_STEPS_ID);
-  itsSteps?.scrollIntoView({ behavior: "smooth" });
-
+  scrollToSection(ITS_STEPS_ID);
   return setIsCreateOrUpdateStepDone(false);
 };

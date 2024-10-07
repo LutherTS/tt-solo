@@ -919,6 +919,14 @@ function MomentForms({
     currentStep ? currentStep.duree : "",
   );
 
+  const handleCancelStep = () => {
+    setStepVisible("create");
+    setIntituleCreateControlled("");
+    setDetailsCreateControlled("");
+    setDureeCreateControlled("");
+    setCreateOrUpdateMomentState(null);
+  };
+
   // createOrUpdateStepAction
 
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
@@ -1235,7 +1243,8 @@ function MomentForms({
                     variant="cancel-step"
                     form={STEP_FORM_ID.creating}
                     type="button"
-                    onClick={() => setStepVisible("create")}
+                    // that's an action, actually just an handler
+                    onClick={handleCancelStep}
                     disabled={steps.length === 0}
                   >
                     Annuler l&apos;étape
@@ -1247,7 +1256,7 @@ function MomentForms({
                     variant="cancel-step"
                     form={STEP_FORM_ID.creating}
                     type="button"
-                    onClick={() => setStepVisible("create")}
+                    onClick={handleCancelStep}
                     disabled={steps.length === 0}
                   >
                     Annuler l&apos;étape

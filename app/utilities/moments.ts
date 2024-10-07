@@ -112,3 +112,8 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   setDesiredView(desiredView);
   scrollTo({ top: 0 });
 };
+
+export const scrollToSection = (sectionId: string) => {
+  const section = document.getElementById(sectionId);
+  section?.scrollIntoView({ behavior: "smooth" });
+};
