@@ -104,7 +104,7 @@ export type CreateOrUpdateMomentState = {
     // step
     stepName?: string[];
     stepDescription?: string[];
-    trueStepDuration?: string[];
+    realStepDuration?: string[];
   };
   // no choice but to implement this work around yet, if I'm honest, it's something I can see myself using in the future
   bs?: {

@@ -221,7 +221,7 @@ export const createOrUpdateStepActionflow = (
     const validatedFields = CreateOrUpdateStepSchema.safeParse({
       stepName: trimmedIntitule,
       stepDescription: trimmedDetails,
-      trueStepDuration: numberedDuree,
+      realStepDuration: numberedDuree,
     });
 
     if (!validatedFields.success) {
@@ -233,7 +233,7 @@ export const createOrUpdateStepActionflow = (
       });
     }
 
-    const { stepName, stepDescription, trueStepDuration } =
+    const { stepName, stepDescription, realStepDuration } =
       validatedFields.data;
 
     const stepsIntitules = steps.map((e) => e.intitule);
@@ -267,7 +267,7 @@ export const createOrUpdateStepActionflow = (
 
     intitule = stepName;
     details = stepDescription;
-    duree = trueStepDuration.toString();
+    duree = realStepDuration.toString();
 
     let id = "";
     if (variant === "creating") id = window.crypto.randomUUID();

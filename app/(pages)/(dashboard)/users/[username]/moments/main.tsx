@@ -121,7 +121,7 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 
 // Main Component
 
-export function CRUD({
+export function Main({
   allUserMomentsToCRUD,
   destinationOptions,
   maxPages,
@@ -229,7 +229,6 @@ export function CRUD({
             destinationOptions={destinationOptions}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
-            view={view}
             setView={setView}
             setSubView={setSubView}
             now={now}
@@ -256,7 +255,6 @@ export function CRUD({
             variant="creating"
             destinationOptions={destinationOptions}
             createOrUpdateMoment={createOrUpdateMoment}
-            view={view}
             setView={setView}
             setSubView={setSubView}
             now={now}
@@ -693,7 +691,6 @@ function MomentForms({
   destinationOptions,
   createOrUpdateMoment,
   deleteMoment,
-  view,
   setView,
   setSubView,
   now,
@@ -703,7 +700,6 @@ function MomentForms({
   destinationOptions: Option[];
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
-  view: View;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
@@ -958,7 +954,6 @@ function MomentForms({
         setDetails={setDetailsCreateControlled}
         setDuree={setDureeCreateControlled}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
-        createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <StepForm
@@ -974,7 +969,6 @@ function MomentForms({
         setDetails={setDetailsUpdateControlled}
         setDuree={setDureeUpdateControlled}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
-        createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <form action={createOrUpdateMomentAction} onReset={resetMomentFormAction}>
@@ -1238,7 +1232,7 @@ function MomentForms({
                 definedValue={dureeCreateControlled}
                 definedOnValueChange={setDureeCreateControlled}
                 min="5"
-                errors={createOrUpdateMomentState?.errors?.trueStepDuration}
+                errors={createOrUpdateMomentState?.errors?.realStepDuration}
               />
               <div className="flex">
                 {/* Mobile */}
@@ -1376,7 +1370,6 @@ function MomentForms({
 
 // Main Supporting Components
 
-// I'll need to also make the step actual form contents in a variant component
 function StepForm({
   variant,
   currentStepId,
@@ -1390,7 +1383,6 @@ function StepForm({
   setDetails,
   setDuree,
   startCreateOrUpdateStepTransition,
-  createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
 }: {
   variant: StepFormVariant;
@@ -1405,7 +1397,6 @@ function StepForm({
   setDetails: Dispatch<SetStateAction<string>>;
   setDuree: Dispatch<SetStateAction<string>>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
   >;
@@ -1611,7 +1602,7 @@ function ReorderItem({
               definedOnValueChange={setDureeUpdate}
               description="Renseignez en minutes la longueur de l'étape."
               min="5"
-              errors={createOrUpdateMomentState?.errors?.trueStepDuration}
+              errors={createOrUpdateMomentState?.errors?.realStepDuration}
             />
             <div className="flex">
               {/* Mobile */}

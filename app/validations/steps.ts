@@ -37,7 +37,7 @@ const StepSchema = z.object({
   stepUpdatedAt: z.string().datetime(),
   momentId: z.string().uuid(),
   // extra
-  trueStepDuration: z
+  realStepDuration: z
     .number({
       invalid_type_error: "Veuillez saisir un nombre.",
     })
@@ -52,5 +52,5 @@ const StepSchema = z.object({
 export const CreateOrUpdateStepSchema = StepSchema.pick({
   stepName: true,
   stepDescription: true,
-  trueStepDuration: true,
+  realStepDuration: true,
 });
