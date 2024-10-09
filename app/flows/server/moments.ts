@@ -67,7 +67,7 @@ export const createOrUpdateMomentFlow = async (
             "Vous ne pouvez pas créer un moment qui commence environ plus d'une heure avant sa création.",
           ],
         },
-        bs: {
+        selectBug: {
           destinationName: destination,
           momentActivity: activite,
         },
@@ -89,7 +89,7 @@ export const createOrUpdateMomentFlow = async (
       momentMessage: "Erreur sur le renseignement du formulaire.",
       momentSubMessage:
         "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
-      bs: {
+      selectBug: {
         destinationName: destination,
         momentActivity: activite,
       },
@@ -116,7 +116,7 @@ export const createOrUpdateMomentFlow = async (
       momentMessage: DEFAULT_MOMENT_MESSAGE,
       momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
       errors: validatedFields.error.flatten().fieldErrors,
-      bs: {
+      selectBug: {
         destinationName: trimmedDestination,
         momentActivity: trimmedActivite,
       },
@@ -127,7 +127,7 @@ export const createOrUpdateMomentFlow = async (
     return {
       stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
       stepsSubMessage: NO_STEPS_ERROR_MESSAGE,
-      bs: {
+      selectBug: {
         destinationName: trimmedDestination,
         momentActivity: trimmedActivite,
       },
@@ -160,7 +160,7 @@ export const createOrUpdateMomentFlow = async (
       momentMessage: "Erreur.",
       momentSubMessage:
         "L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
-      bs: {
+      selectBug: {
         // sticking to the trimmed version for now because hopefully, very hopefully, this workaround will no longer be needed by October 24
         destinationName: trimmedDestination,
         momentActivity: trimmedActivite,
@@ -190,7 +190,7 @@ export const createOrUpdateMomentFlow = async (
         errors: {
           momentName: ["Vous avez déjà un moment de ce même nom."],
         },
-        bs: {
+        selectBug: {
           destinationName: trimmedDestination,
           momentActivity: trimmedActivite,
         },
@@ -254,7 +254,7 @@ export const createOrUpdateMomentFlow = async (
       return {
         momentMessage: "Erreur.",
         momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
-        bs: {
+        selectBug: {
           destinationName: trimmedDestination,
           momentActivity: trimmedActivite,
         },

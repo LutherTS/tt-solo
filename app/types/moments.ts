@@ -107,7 +107,8 @@ export type CreateOrUpdateMomentState = {
     realStepDuration?: string[];
   };
   // no choice but to implement this work around yet, if I'm honest, it's something I can see myself using in the future
-  bs?: {
+  selectBug?: {
+    // https://github.com/facebook/react/issues/30580
     destinationName?: string;
     momentActivity?: string;
   };

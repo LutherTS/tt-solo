@@ -66,10 +66,10 @@ export const createOrUpdateMomentActionflow = async (
     if (state) {
       // watch this
       // aligning the text of controlled with the option or whatever value was provided (trimmed)
-      if (state.bs?.destinationName)
-        setDestinationTextControlled(state.bs.destinationName);
-      if (state.bs?.momentActivity)
-        setActiviteTextControlled(state.bs.momentActivity);
+      if (state.selectBug?.destinationName)
+        setDestinationTextControlled(state.selectBug.destinationName);
+      if (state.selectBug?.momentActivity)
+        setActiviteTextControlled(state.selectBug.momentActivity);
       // returning to the text version, so that shifting back to the select version will automatically set back to the proper value
       setDestinationSelect(false);
       setActivitySelect(false);
