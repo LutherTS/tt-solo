@@ -119,7 +119,7 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 
 // Main Component
 
-export function Main({
+export default function Main({
   allUserMomentsToCRUD,
   destinationOptions,
   maxPages,
