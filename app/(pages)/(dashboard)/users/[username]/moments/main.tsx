@@ -682,7 +682,6 @@ function ReadMomentsView({
   );
 }
 
-// !! Maintenant je dois m'assurer que les boutons mettent à jour createOrUpdateMomentState entre les différentes interactions. (Comme Annuler l'étape.)
 function MomentForms({
   variant,
   moment,
@@ -933,9 +932,6 @@ function MomentForms({
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
   const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
-
-  // VERY IMPORTANT
-  // Reset the fields when switching step form between creating and updating.
 
   return (
     <>
@@ -1247,7 +1243,6 @@ function MomentForms({
                     variant="cancel-step"
                     form={STEP_FORM_ID.creating}
                     type="button"
-                    // that's an action, actually just an handler
                     onClick={handleCancelStep}
                     disabled={steps.length === 0}
                   >
@@ -1578,8 +1573,6 @@ function ReorderItem({
               definedValue={intitule}
               definedOnValueChange={setIntituleUpdate}
               description="Définissez simplement le sujet de l'étape."
-              // only because there is maximum one form open at all times
-              // the buttons that change the forms will also have to reset the step errors on createOrUpdateMomentState
               errors={createOrUpdateMomentState?.errors?.stepName}
             />
             <TextareaControlled

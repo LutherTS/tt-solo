@@ -298,7 +298,7 @@ export default async function MomentsPage({
     "use server";
 
     // Haven't tested it yet, but it should be working.
-    // This is it. The action itself, its barebones, the action itself is created with the component and as its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
+    // This is it. The action itself, its barebones, the action itself is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
     return await createOrUpdateMomentFlow(
       variant,
       indispensable,
@@ -314,7 +314,7 @@ export default async function MomentsPage({
 
     // I need to emphasize what is magical about this.
     // I don't need to authenticate the user in the action. Why? Because the action does not exist if the user is not authenticated. :D
-    // And this solve the issue of people cry that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
+    // And this solve the issue of people crying that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
   }
 
   async function deleteMoment(
