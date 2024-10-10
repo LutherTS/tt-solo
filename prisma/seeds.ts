@@ -173,7 +173,8 @@ async function seed() {
   console.log(`Seeding all Moments...`);
 
   for (const user of users) {
-    for (const destination of destinations) {
+    const userDestinations = destinations.filter((e) => e.userId === user.id);
+    for (const destination of userDestinations) {
       const destinationMoments = await Promise.all(
         momentsData.map(async (momentData) => {
           return await prisma.moment.upsert({

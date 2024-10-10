@@ -152,7 +152,9 @@ export default function Main({
   // here on its own is going to be worth an entire file.
   */
 
-  let [view, setView] = useState<View>("read-moments");
+  // let [view, setView] = useState<View>("read-moments");
+  // starting directly with the form for now
+  let [view, setView] = useState<View>("create-moment");
 
   let viewTitles = {
     "update-moment": "Éditez",

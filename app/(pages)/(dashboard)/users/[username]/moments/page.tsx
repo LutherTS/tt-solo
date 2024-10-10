@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 // import prisma from "@/prisma/db"; // proudly commented out
@@ -337,15 +338,17 @@ export default async function MomentsPage({
   // However, if the actions were obtained via import in a client component such as the one below, user data would have to be bound directly on the client component itself (which is insecure) or via a separate child server component (perhaps secure, but an exact step for that data) which would also have to pass these actions as props, doing the exact same thing.
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
-    <Main
-      allUserMomentsToCRUD={allUserMomentsToCRUD}
-      destinationOptions={destinationOptions}
-      maxPages={maxPages}
-      createOrUpdateMoment={createOrUpdateMoment}
-      deleteMoment={deleteMoment}
-      revalidateMoments={revalidateMoments}
-      now={now}
-    />
+    <Suspense>
+      <Main
+        allUserMomentsToCRUD={allUserMomentsToCRUD}
+        destinationOptions={destinationOptions}
+        maxPages={maxPages}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+        revalidateMoments={revalidateMoments}
+        now={now}
+      />
+    </Suspense>
   );
 }
 
