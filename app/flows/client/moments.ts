@@ -98,6 +98,39 @@ export const createOrUpdateMomentActionflow = async (
   });
 };
 
+export const trueCreateOrUpdateMomentActionflow = async (
+  event: FormEvent<HTMLFormElement>,
+  startCreateOrUpdateMomentTransition: TransitionStartFunction,
+  createOrUpdateMomentBound: () => Promise<CreateOrUpdateMomentState>,
+  setCreateOrUpdateMomentState: Dispatch<
+    SetStateAction<CreateOrUpdateMomentState>
+  >,
+  variant: MomentFormVariant,
+  setStartMomentDate: Dispatch<SetStateAction<string>>,
+  nowRoundedUpTenMinutes: string,
+  setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
+  setStepVisible: Dispatch<SetStateAction<StepVisible>>,
+  setIsCreateOrUpdateMomentDone: Dispatch<SetStateAction<boolean>>,
+) => {
+  startCreateOrUpdateMomentTransition(async () => {
+    event.preventDefault();
+
+    const state = await createOrUpdateMomentBound();
+    if (state) {
+      setIsCreateOrUpdateMomentDone(true);
+      return setCreateOrUpdateMomentState(state);
+    } else {
+      if (variant === "creating") {
+        setStartMomentDate(nowRoundedUpTenMinutes);
+        setSteps([]);
+        setStepVisible("creating");
+      }
+      setIsCreateOrUpdateMomentDone(true);
+      return setCreateOrUpdateMomentState(null);
+    }
+  });
+};
+
 export const deleteMomentActionflow = async (
   startDeleteMomentTransition: TransitionStartFunction,
   deleteMomentBound: () => Promise<CreateOrUpdateMomentState>,
