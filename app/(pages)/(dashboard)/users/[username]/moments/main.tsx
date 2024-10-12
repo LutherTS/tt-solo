@@ -999,6 +999,7 @@ function MomentForms({
       <form
         // action={createOrUpdateMomentAction}
         onReset={resetMomentFormAction}
+        // Yes.
         onSubmit={createOrUpdateMomentAction}
       >
         <Section
