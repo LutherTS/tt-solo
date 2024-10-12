@@ -82,6 +82,19 @@ export type CreateOrUpdateMoment = (
   // formData: FormData,
 ) => Promise<CreateOrUpdateMomentState>;
 
+export type TrueCreateOrUpdateMoment = (
+  formData: FormData,
+  variant: MomentFormVariant,
+  // indispensable: boolean,
+  startMomentDate: string,
+  steps: StepFromCRUD[],
+  // destination: string,
+  // activite: string,
+  // objectif: string,
+  // contexte: string,
+  momentFromCRUD: MomentToCRUD | undefined,
+) => Promise<TrueCreateOrUpdateMomentState>;
+
 // The type of the return of createOrUpdateMoment as it is being shared between the server and the client.
 // It is then reused between createOrUpdateMoment on the server and the type CreateOrUpdateMoment made on the client.
 // Then, MANUALLY I do insist, I need to make sure that the arguments on createOrUpdateMoment and CreateOrUpdateMoment are exactly the same. (In fact, they're meant to be directly copypastable between one another.)
@@ -111,6 +124,26 @@ export type CreateOrUpdateMomentState = {
     // https://github.com/facebook/react/issues/30580
     destinationName?: string;
     momentActivity?: string;
+  };
+} | null;
+
+export type TrueCreateOrUpdateMomentState = {
+  momentMessage?: string;
+  momentSubMessage?: string;
+  stepsMessage?: string;
+  stepsSubMessage?: string;
+  errors?: {
+    // moment
+    destinationName?: string[];
+    momentActivity?: string[];
+    momentName?: string[];
+    momentIsIndispensable?: string[];
+    momentDescription?: string[];
+    momentStartDateAndTime?: string[];
+    // step
+    stepName?: string[];
+    stepDescription?: string[];
+    realStepDuration?: string[];
   };
 } | null;
 

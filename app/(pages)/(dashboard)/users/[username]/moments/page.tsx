@@ -9,6 +9,7 @@ import {
   MomentToCRUD,
   CreateOrUpdateMomentState,
   MomentFormVariant,
+  TrueCreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -38,6 +39,7 @@ import {
   createOrUpdateMomentFlow,
   deleteMomentFlow,
   revalidateMomentsFlow,
+  trueCreateOrUpdateMomentFlow,
 } from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
@@ -318,6 +320,31 @@ export default async function MomentsPage({
     // And this solve the issue of people crying that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
   }
 
+  async function trueCreateOrUpdateMoment(
+    formData: FormData,
+    variant: MomentFormVariant,
+    startMomentDate: string,
+    steps: StepFromCRUD[],
+    momentFromCRUD: MomentToCRUD | undefined,
+  ): Promise<TrueCreateOrUpdateMomentState> {
+    "use server";
+
+    // Haven't tested it yet, but it should be working.
+    // This is it. The action itself, its barebones, the action itself is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
+    return await trueCreateOrUpdateMomentFlow(
+      formData,
+      variant,
+      startMomentDate,
+      steps,
+      momentFromCRUD,
+      user,
+    );
+
+    // I need to emphasize what is magical about this.
+    // I don't need to authenticate the user in the action. Why? Because the action does not exist if the user is not authenticated. :D
+    // And this solve the issue of people crying that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
+  }
+
   async function deleteMoment(
     momentFromCRUD: MomentToCRUD | undefined,
     // actually using the same return state as createOrUpdate
@@ -347,6 +374,7 @@ export default async function MomentsPage({
         deleteMoment={deleteMoment}
         revalidateMoments={revalidateMoments}
         now={now}
+        trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
       />
     </Suspense>
   );

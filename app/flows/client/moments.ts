@@ -1,9 +1,11 @@
 import {
   CreateOrUpdateMomentState,
   MomentFormVariant,
+  MomentToCRUD,
   StepFormVariant,
   StepFromCRUD,
   StepVisible,
+  TrueCreateOrUpdateMoment,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -101,11 +103,14 @@ export const createOrUpdateMomentActionflow = async (
 export const trueCreateOrUpdateMomentActionflow = async (
   event: FormEvent<HTMLFormElement>,
   startCreateOrUpdateMomentTransition: TransitionStartFunction,
-  createOrUpdateMomentBound: () => Promise<CreateOrUpdateMomentState>,
+  trueCreateOrUpdateMoment: TrueCreateOrUpdateMoment,
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
   >,
   variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentToCRUD | undefined,
   setStartMomentDate: Dispatch<SetStateAction<string>>,
   nowRoundedUpTenMinutes: string,
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
@@ -114,11 +119,19 @@ export const trueCreateOrUpdateMomentActionflow = async (
 ) => {
   startCreateOrUpdateMomentTransition(async () => {
     event.preventDefault();
-
-    const state = await createOrUpdateMomentBound();
-    if (state) {
+    // if the formData is now obtained from the event, I'll need to bind the action inside the startTransition, which in and out of itself is more relevant than binding it in the open for nothing
+    const trueCreateOrUpdateMomentBound = trueCreateOrUpdateMoment.bind(
+      null,
+      new FormData(event.currentTarget),
+      variant,
+      startMomentDate,
+      steps,
+      momentFromCRUD,
+    );
+    const trueState = await trueCreateOrUpdateMomentBound();
+    if (trueState) {
       setIsCreateOrUpdateMomentDone(true);
-      return setCreateOrUpdateMomentState(state);
+      return setCreateOrUpdateMomentState(trueState);
     } else {
       if (variant === "creating") {
         setStartMomentDate(nowRoundedUpTenMinutes);

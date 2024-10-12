@@ -44,6 +44,8 @@ import {
   StepVisible,
   View,
   SubView,
+  TrueCreateOrUpdateMoment,
+  TrueCreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -77,6 +79,7 @@ import {
   deleteStepActionflow,
   resetMomentFormActionflow,
   revalidateMomentsActionflow,
+  trueCreateOrUpdateMomentActionflow,
 } from "@/app/flows/client/moments";
 import {
   CONTAINS,
@@ -127,6 +130,7 @@ export default function Main({
   deleteMoment,
   revalidateMoments,
   now,
+  trueCreateOrUpdateMoment,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   destinationOptions: Option[];
@@ -135,6 +139,7 @@ export default function Main({
   deleteMoment: DeleteMoment;
   revalidateMoments: RevalidateMoments;
   now: string;
+  trueCreateOrUpdateMoment: TrueCreateOrUpdateMoment;
 }) {
   console.log({ now });
 
@@ -232,6 +237,7 @@ export default function Main({
             setView={setView}
             setSubView={setSubView}
             now={now}
+            trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
           />
         )}
       </div>
@@ -258,6 +264,7 @@ export default function Main({
             setView={setView}
             setSubView={setSubView}
             now={now}
+            trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
           />
         )}
       </div>
@@ -693,6 +700,7 @@ function MomentForms({
   setView,
   setSubView,
   now,
+  trueCreateOrUpdateMoment,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
@@ -702,6 +710,7 @@ function MomentForms({
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
   now: string;
+  trueCreateOrUpdateMoment: TrueCreateOrUpdateMoment;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
@@ -784,8 +793,11 @@ function MomentForms({
     moment,
   );
 
+  // const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
+  //   useState<CreateOrUpdateMomentState>(null);
+
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-    useState<CreateOrUpdateMomentState>(null);
+    useState<TrueCreateOrUpdateMomentState>(null);
 
   // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
   // ...but to make the action autonomous I'll add it nonetheless
@@ -796,25 +808,42 @@ function MomentForms({
   const [isCreateOrUpdateMomentDone, setIsCreateOrUpdateMomentDone] =
     useState(false);
 
-  const createOrUpdateMomentAction = async () => {
-    return await createOrUpdateMomentActionflow(
+  const createOrUpdateMomentAction = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    // return await createOrUpdateMomentActionflow(
+    //   startCreateOrUpdateMomentTransition,
+    //   createOrUpdateMomentBound,
+    //   setDestinationTextControlled,
+    //   setActiviteTextControlled,
+    //   setDestinationSelect,
+    //   setActivitySelect,
+    //   setCreateOrUpdateMomentState,
+    //   variant,
+    //   setIndispensable,
+    //   setStartMomentDate,
+    //   nowRoundedUpTenMinutes,
+    //   setSteps,
+    //   setStepVisible,
+    //   setDestinationOptionControlled,
+    //   setActiviteOptionControlled,
+    //   setObjectifControlled,
+    //   setContexteControlled,
+    //   setIsCreateOrUpdateMomentDone,
+    // );
+    return await trueCreateOrUpdateMomentActionflow(
+      event,
       startCreateOrUpdateMomentTransition,
-      createOrUpdateMomentBound,
-      setDestinationTextControlled,
-      setActiviteTextControlled,
-      setDestinationSelect,
-      setActivitySelect,
+      trueCreateOrUpdateMoment,
       setCreateOrUpdateMomentState,
       variant,
-      setIndispensable,
+      startMomentDate,
+      steps,
+      moment,
       setStartMomentDate,
       nowRoundedUpTenMinutes,
       setSteps,
       setStepVisible,
-      setDestinationOptionControlled,
-      setActiviteOptionControlled,
-      setObjectifControlled,
-      setContexteControlled,
       setIsCreateOrUpdateMomentDone,
     );
   };
@@ -967,7 +996,11 @@ function MomentForms({
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
-      <form action={createOrUpdateMomentAction} onReset={resetMomentFormAction}>
+      <form
+        // action={createOrUpdateMomentAction}
+        onReset={resetMomentFormAction}
+        onSubmit={createOrUpdateMomentAction}
+      >
         <Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
