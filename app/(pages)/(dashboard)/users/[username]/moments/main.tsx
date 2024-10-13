@@ -71,6 +71,8 @@ import {
   SelectWithOptionsControlled,
   TextareaControlled,
   InputSwitch,
+  SelectWithOptions,
+  Textarea,
 } from "../../../components";
 import * as Icons from "../icons";
 import {
@@ -1002,6 +1004,7 @@ function MomentForms({
         onReset={resetMomentFormAction}
         // Yes.
         onSubmit={createOrUpdateMomentAction}
+        id="moment-forms"
       >
         <Section
           title="Votre moment"
@@ -1011,11 +1014,11 @@ function MomentForms({
           subError={createOrUpdateMomentState?.momentSubMessage}
         >
           {!destinationSelect ? (
-            <InputTextControlled
+            <InputText
               label="Destination"
               name="destination"
-              definedValue={destinationTextControlled}
-              definedOnValueChange={setDestinationTextControlled}
+              // definedValue={destinationTextControlled}
+              // definedOnValueChange={setDestinationTextControlled}
               description="Votre projet vise à atteindre quel idéal ?"
               addendum={
                 destinationOptions.length > 0
@@ -1037,16 +1040,16 @@ function MomentForms({
                   Choisir la destination
                 </Button>
               )}
-            </InputTextControlled>
+            </InputText>
           ) : (
-            <SelectWithOptionsControlled
+            <SelectWithOptions
               label="Destination"
               description="Choisissez la destination que cherche à atteindre ce moment."
-              addendum="Ou définissez la vous-même via le bouton ci-dessus."
+              addendum="Ou définissez-la vous-même via le bouton ci-dessus."
               name="destination"
               placeholder="Choisissez..."
-              definedValue={destinationOptionControlled}
-              definedOnValueChange={setDestinationOptionControlled}
+              // definedValue={destinationOptionControlled}
+              // definedOnValueChange={setDestinationOptionControlled}
               options={destinationOptions}
               fieldFlexIsNotLabel
               tekTime
@@ -1061,16 +1064,16 @@ function MomentForms({
               >
                 Définir la destination
               </Button>
-            </SelectWithOptionsControlled>
+            </SelectWithOptions>
           )}
           {!activitySelect ? (
-            <InputTextControlled
+            <InputText
               label="Activité"
               description="Définissez le type d'activité qui va correspondre à votre problématique."
               addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
               name="activite"
-              definedValue={activiteTextControlled}
-              definedOnValueChange={setActiviteTextControlled}
+              // definedValue={activiteTextControlled}
+              // definedOnValueChange={setActiviteTextControlled}
               fieldFlexIsNotLabel
               // required={!activitySelect}
               required={false}
@@ -1083,15 +1086,15 @@ function MomentForms({
               >
                 Choisir l&apos;activité
               </Button>
-            </InputTextControlled>
+            </InputText>
           ) : (
-            <SelectWithOptionsControlled
+            <SelectWithOptions
               label="Activité"
               description="Choisissez le type d'activité qui va correspondre à votre problématique."
-              addendum="Ou définissez le vous-même via le bouton ci-dessus."
+              addendum="Ou définissez-le vous-même via le bouton ci-dessus."
               name="activite"
-              definedValue={activiteOptionControlled}
-              definedOnValueChange={setActiviteOptionControlled}
+              // definedValue={activiteOptionControlled}
+              // definedOnValueChange={setActiviteOptionControlled}
               placeholder="Choisissez..."
               options={activityOptions}
               fieldFlexIsNotLabel
@@ -1106,18 +1109,20 @@ function MomentForms({
               >
                 Définir l&apos;activité
               </Button>
-            </SelectWithOptionsControlled>
+            </SelectWithOptions>
           )}
-          <InputTextControlled
+          <InputText
             label="Objectif"
             name="objectif"
-            definedValue={objectifControlled}
-            definedOnValueChange={setObjectifControlled}
+            // definedValue={objectifControlled}
+            // definedOnValueChange={setObjectifControlled}
             description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
             required={false}
             errors={createOrUpdateMomentState?.errors?.momentName}
           />
+          {/* I specifically do not want to control my InputSwitch. So what I'll have to control when resetting is its key. But that all in all that's really a bug from Radix. */}
           <InputSwitch
+            // key={window.crypto.randomUUID()}
             label="Indispensable"
             name="indispensable"
             description="Activez l'interrupteur si ce moment est d'une importance incontournable."
@@ -1125,16 +1130,17 @@ function MomentForms({
             // definedOnValueChange={setIndispensable}
             errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
           />
-          <TextareaControlled
+          <Textarea
             label="Contexte"
             name="contexte"
-            definedValue={contexteControlled}
-            definedOnValueChange={setContexteControlled}
+            // definedValue={contexteControlled}
+            // definedOnValueChange={setContexteControlled}
             description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
             rows={6}
             required={false}
             errors={createOrUpdateMomentState?.errors?.momentDescription}
           />
+          {/* stays controlled */}
           <InputDatetimeLocalControlled
             label="Date et heure"
             name="dateetheure"

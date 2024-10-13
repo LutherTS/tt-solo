@@ -384,6 +384,7 @@ export const trueCreateOrUpdateMomentFlow = async (
 
   let objectif = formData.get("objectif");
   let indispensable = !!formData.get("indispensable");
+  console.log(indispensable);
   let contexte = formData.get("contexte");
 
   // destination, activite, objectif and contexte are now controlled

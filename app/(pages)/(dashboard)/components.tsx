@@ -210,16 +210,18 @@ export function InputText({
   children,
   fieldFlexIsNotLabel,
   required = true,
+  errors,
   ...rest
 }: {
   label?: string;
-  description?: string;
+  description?: string; // optional for search
   addendum?: string;
   name: string;
   tekTime?: boolean;
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
   required?: boolean;
+  errors?: string[];
 } & ComponentProps<"input">) {
   return (
     <FieldFlex isLabel={!fieldFlexIsNotLabel}>
@@ -228,12 +230,11 @@ export function InputText({
         {children}
       </div>
       {description && (
-        <div className="flex flex-col gap-1">
-          <p className="select-none text-sm text-neutral-500">{description}</p>
-          {addendum && (
-            <p className="select-none text-sm text-neutral-500">({addendum})</p>
-          )}
-        </div>
+        <InputDescriptionOrError
+          errors={errors}
+          description={description}
+          addendum={addendum}
+        />
       )}
       {!tekTime ? (
         <input
@@ -396,11 +397,12 @@ export function SelectWithOptions({
   children,
   fieldFlexIsNotLabel,
   required = true,
+  errors,
   tekTime,
 }: {
   id?: string;
   label: string;
-  description?: string;
+  description: string;
   addendum?: string;
   defaultValue?: string;
   name: string;
@@ -409,6 +411,7 @@ export function SelectWithOptions({
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
   required?: boolean;
+  errors?: string[];
   tekTime?: boolean;
 }) {
   return (
@@ -417,14 +420,11 @@ export function SelectWithOptions({
         <FieldTitle title={label} />
         {children}
       </div>
-      {description && (
-        <div className="flex flex-col gap-1">
-          <p className="select-none text-sm text-neutral-500">{description}</p>
-          {addendum && (
-            <p className="select-none text-sm text-neutral-500">({addendum})</p>
-          )}
-        </div>
-      )}
+      <InputDescriptionOrError
+        errors={errors}
+        description={description}
+        addendum={addendum}
+      />
       {!tekTime ? (
         <div className="relative grid">
           <select
@@ -646,21 +646,21 @@ export function Textarea({
   defaultValue,
   rows = 4,
   required = true,
+  errors,
 }: {
   form?: string;
   label: string;
-  description?: string;
+  description: string;
   name: string;
   defaultValue?: string;
   rows?: number;
   required?: boolean;
+  errors?: string[];
 }) {
   return (
     <FieldFlex isLabel>
       <FieldTitle title={label} />
-      {description && (
-        <p className="select-none text-sm text-neutral-500">{description}</p>
-      )}
+      <InputDescriptionOrError errors={errors} description={description} />
       <textarea
         form={form}
         name={name}
