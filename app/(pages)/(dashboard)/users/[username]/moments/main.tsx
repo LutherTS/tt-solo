@@ -70,6 +70,7 @@ import {
   NoDateCard,
   SelectWithOptionsControlled,
   TextareaControlled,
+  InputSwitch,
 } from "../../../components";
 import * as Icons from "../icons";
 import {
@@ -1116,12 +1117,12 @@ function MomentForms({
             required={false}
             errors={createOrUpdateMomentState?.errors?.momentName}
           />
-          <InputSwitchControlled
+          <InputSwitch
             label="Indispensable"
             name="indispensable"
             description="Activez l'interrupteur si ce moment est d'une importance incontournable."
-            definedValue={indispensable}
-            definedOnValueChange={setIndispensable}
+            // definedValue={indispensable}
+            // definedOnValueChange={setIndispensable}
             errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
           />
           <TextareaControlled

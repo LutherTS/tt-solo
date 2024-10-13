@@ -730,6 +730,50 @@ export function TextareaControlled({
 }
 
 // Modified from Advanced Radix UI's Animated Switch
+export function InputSwitch({
+  label,
+  name,
+  description,
+  // definedValue,
+  // definedOnValueChange = () => {},
+  errors,
+}: {
+  label: string;
+  name: string;
+  description: string;
+  // definedValue?: boolean;
+  // definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
+  errors?: string[];
+}) {
+  return (
+    <FieldFlex isLabel>
+      <div className="flex select-none items-center gap-4">
+        <FieldTitle title={label} />
+        <Switch.Root
+          name={name}
+          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled
+          // now going for uncontrolled, so using back defaultChecked
+          defaultChecked={false}
+          // checked={definedValue}
+          // onCheckedChange={definedOnValueChange}
+          className={clsx(
+            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
+          )}
+        >
+          <Switch.Thumb
+            className={clsx(
+              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
+              "data-[state=checked]:translate-x-5",
+            )}
+          />
+        </Switch.Root>
+      </div>
+      <InputDescriptionOrError errors={errors} description={description} />
+    </FieldFlex>
+  );
+}
+
+// Modified from Advanced Radix UI's Animated Switch
 export function InputSwitchControlled({
   label,
   name,

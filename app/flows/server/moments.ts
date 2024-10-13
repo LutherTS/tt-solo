@@ -383,7 +383,6 @@ export const trueCreateOrUpdateMomentFlow = async (
   }
 
   let objectif = formData.get("objectif");
-  // I can honestly already test this because even if it's not connected I'm enforcing a boolean which by default will always be false.
   let indispensable = !!formData.get("indispensable");
   let contexte = formData.get("contexte");
 
