@@ -703,7 +703,6 @@ function MomentForms({
   variant,
   moment,
   destinationOptions,
-  // createOrUpdateMoment,
   deleteMoment,
   setView,
   setSubView,
@@ -713,7 +712,6 @@ function MomentForms({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  // createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
@@ -759,7 +757,7 @@ function MomentForms({
   const destinationValues = destinationOptions.map((e) => e.value);
   const activityValues = activityOptions.map((e) => e.value);
 
-  // InputSwitch key
+  // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
   // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
@@ -773,10 +771,6 @@ function MomentForms({
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
     useState<TrueCreateOrUpdateMomentState>(null);
 
-  // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
-  // ...but to make the action autonomous I'll add it nonetheless
-  // a cool thought could be to have disabled styles specific to the reason that disables the button, like making them only visible if the action of the button itself is pending, and not if it's due to anything else. (Which I think can be done with the data attributes.)
-  // Here's an example. When I delete a moment, I deactivate the confirm moment button. But that's a safety measure the user should not even be aware of, so the confirm moment button should not have its disabled styles visible in this situation. What I'm looking for is a data-confirmed-disabled:styles kind of thing. ...Or maybe I can do that with JavaScript and clsx.
   const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
     useTransition();
 
@@ -795,6 +789,8 @@ function MomentForms({
       startMomentDate,
       steps,
       moment,
+      destinationSelect,
+      activitySelect,
       setStartMomentDate,
       nowRoundedUpTenMinutes,
       setSteps,
@@ -940,116 +936,115 @@ function MomentForms({
           error={createOrUpdateMomentState?.momentMessage}
           subError={createOrUpdateMomentState?.momentSubMessage}
         >
-          {!destinationSelect ? (
-            <InputText
-              label="Destination"
-              name="destination"
-              defaultValue={moment ? moment.destinationIdeal : ""}
-              // definedValue={destinationTextControlled}
-              // definedOnValueChange={setDestinationTextControlled}
-              description="Votre projet vise à atteindre quel idéal ?"
-              addendum={
-                destinationOptions.length > 0
-                  ? "Ou choissisez parmi vos destinations précédemment instanciées."
-                  : undefined
-              }
-              fieldFlexIsNotLabel
-              tekTime
-              // required={!destinationSelect}
-              required={false}
-              errors={createOrUpdateMomentState?.errors?.destinationName}
-            >
-              {destinationOptions.length > 0 && (
-                <Button
-                  type="button"
-                  variant="destroy"
-                  onClick={() => setDestinationSelect(true)}
-                >
-                  Choisir la destination
-                </Button>
-              )}
-            </InputText>
-          ) : (
-            <SelectWithOptions
-              label="Destination"
-              description="Choisissez la destination que cherche à atteindre ce moment."
-              addendum="Ou définissez-la vous-même via le bouton ci-dessus."
-              name="destination"
-              defaultValue={
-                moment && destinationValues.includes(moment.destinationIdeal)
-                  ? moment.destinationIdeal
-                  : ""
-              }
-              placeholder="Choisissez..."
-              // definedValue={destinationOptionControlled}
-              // definedOnValueChange={setDestinationOptionControlled}
-              options={destinationOptions}
-              fieldFlexIsNotLabel
-              tekTime
-              // required={destinationSelect}
-              required={false}
-              errors={createOrUpdateMomentState?.errors?.destinationName}
-            >
+          {/* I think now that I'm no longer requiring the inputs since they're validated internally, I can actually have them coexist with display none so that the values aren't lost without needing to control their fields */}
+          {/* {!destinationSelect ? ( */}
+          <InputText
+            label="Destination"
+            name="destination"
+            defaultValue={moment ? moment.destinationIdeal : ""}
+            description="Votre projet vise à atteindre quel idéal ?"
+            addendum={
+              destinationOptions.length > 0
+                ? "Ou choissisez parmi vos destinations précédemment instanciées."
+                : undefined
+            }
+            fieldFlexIsNotLabel
+            tekTime
+            required={false}
+            errors={createOrUpdateMomentState?.errors?.destinationName}
+            hidden={destinationSelect}
+          >
+            {destinationOptions.length > 0 && (
               <Button
                 type="button"
                 variant="destroy"
-                onClick={() => setDestinationSelect(false)}
+                onClick={() => setDestinationSelect(true)}
               >
-                Définir la destination
+                Choisir la destination
               </Button>
-            </SelectWithOptions>
-          )}
-          {!activitySelect ? (
-            <InputText
-              label="Activité"
-              description="Définissez le type d'activité qui va correspondre à votre problématique."
-              addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
-              name="activite"
-              defaultValue={moment ? moment.activity : ""}
-              // definedValue={activiteTextControlled}
-              // definedOnValueChange={setActiviteTextControlled}
-              fieldFlexIsNotLabel
-              // required={!activitySelect}
-              required={false}
-              errors={createOrUpdateMomentState?.errors?.momentActivity}
+            )}
+          </InputText>
+          {/* ) : ( */}
+          <SelectWithOptions
+            label="Destination"
+            description="Choisissez la destination que cherche à atteindre ce moment."
+            addendum="Ou définissez-la vous-même via le bouton ci-dessus."
+            name="destination"
+            defaultValue={
+              moment && destinationValues.includes(moment.destinationIdeal)
+                ? moment.destinationIdeal
+                : ""
+            }
+            placeholder="Choisissez..."
+            options={destinationOptions}
+            fieldFlexIsNotLabel
+            tekTime
+            required={false}
+            errors={createOrUpdateMomentState?.errors?.destinationName}
+            hidden={!destinationSelect}
+          >
+            <Button
+              type="button"
+              variant="destroy"
+              onClick={() => setDestinationSelect(false)}
             >
-              <Button
-                type="button"
-                variant="destroy"
-                onClick={() => setActivitySelect(true)}
-              >
-                Choisir l&apos;activité
-              </Button>
-            </InputText>
-          ) : (
-            <SelectWithOptions
-              label="Activité"
-              description="Choisissez le type d'activité qui va correspondre à votre problématique."
-              addendum="Ou définissez-le vous-même via le bouton ci-dessus."
-              name="activite"
-              defaultValue={
-                moment && activityValues.includes(moment.activity)
-                  ? moment.activity
-                  : ""
-              }
-              // definedValue={activiteOptionControlled}
-              // definedOnValueChange={setActiviteOptionControlled}
-              placeholder="Choisissez..."
-              options={activityOptions}
-              fieldFlexIsNotLabel
-              // required={activitySelect}
-              required={false}
-              errors={createOrUpdateMomentState?.errors?.momentActivity}
+              Définir la destination
+            </Button>
+          </SelectWithOptions>
+          {/* )} */}
+          {/* {!activitySelect ? ( */}
+          <InputText
+            label="Activité"
+            description="Définissez le type d'activité qui va correspondre à votre problématique."
+            addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
+            name="activite"
+            defaultValue={moment ? moment.activity : ""}
+            // definedValue={activiteTextControlled}
+            // definedOnValueChange={setActiviteTextControlled}
+            fieldFlexIsNotLabel
+            // required={!activitySelect}
+            required={false}
+            errors={createOrUpdateMomentState?.errors?.momentActivity}
+            hidden={activitySelect}
+          >
+            <Button
+              type="button"
+              variant="destroy"
+              onClick={() => setActivitySelect(true)}
             >
-              <Button
-                type="button"
-                variant="destroy"
-                onClick={() => setActivitySelect(false)}
-              >
-                Définir l&apos;activité
-              </Button>
-            </SelectWithOptions>
-          )}
+              Choisir l&apos;activité
+            </Button>
+          </InputText>
+          {/* ) : ( */}
+          <SelectWithOptions
+            label="Activité"
+            description="Choisissez le type d'activité qui va correspondre à votre problématique."
+            addendum="Ou définissez-le vous-même via le bouton ci-dessus."
+            name="activite"
+            defaultValue={
+              moment && activityValues.includes(moment.activity)
+                ? moment.activity
+                : ""
+            }
+            // definedValue={activiteOptionControlled}
+            // definedOnValueChange={setActiviteOptionControlled}
+            placeholder="Choisissez..."
+            options={activityOptions}
+            fieldFlexIsNotLabel
+            // required={activitySelect}
+            required={false}
+            errors={createOrUpdateMomentState?.errors?.momentActivity}
+            hidden={!activitySelect}
+          >
+            <Button
+              type="button"
+              variant="destroy"
+              onClick={() => setActivitySelect(false)}
+            >
+              Définir l&apos;activité
+            </Button>
+          </SelectWithOptions>
+          {/* )} */}
           <InputText
             label="Objectif"
             name="objectif"

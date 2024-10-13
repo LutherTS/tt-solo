@@ -114,6 +114,8 @@ export const trueCreateOrUpdateMomentActionflow = async (
   startMomentDate: string,
   steps: StepFromCRUD[],
   momentFromCRUD: MomentToCRUD | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
   setStartMomentDate: Dispatch<SetStateAction<string>>,
   nowRoundedUpTenMinutes: string,
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
@@ -130,6 +132,8 @@ export const trueCreateOrUpdateMomentActionflow = async (
       startMomentDate,
       steps,
       momentFromCRUD,
+      destinationSelect,
+      activitySelect,
     );
     const trueState = await trueCreateOrUpdateMomentBound();
     if (trueState) {

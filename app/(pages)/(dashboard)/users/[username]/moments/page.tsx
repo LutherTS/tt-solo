@@ -326,6 +326,8 @@ export default async function MomentsPage({
     startMomentDate: string,
     steps: StepFromCRUD[],
     momentFromCRUD: MomentToCRUD | undefined,
+    destinationSelect: boolean,
+    activitySelect: boolean,
   ): Promise<TrueCreateOrUpdateMomentState> {
     "use server";
 
@@ -337,6 +339,8 @@ export default async function MomentsPage({
       startMomentDate,
       steps,
       momentFromCRUD,
+      destinationSelect,
+      activitySelect,
       user,
     );
 

@@ -211,6 +211,7 @@ export function InputText({
   fieldFlexIsNotLabel,
   required = true,
   errors,
+  hidden,
   ...rest
 }: {
   label?: string;
@@ -222,9 +223,10 @@ export function InputText({
   fieldFlexIsNotLabel?: boolean;
   required?: boolean;
   errors?: string[];
+  hidden?: boolean;
 } & ComponentProps<"input">) {
   return (
-    <FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <FieldFlex isLabel={!fieldFlexIsNotLabel} hidden={hidden}>
       <div className="flex justify-between">
         {label && <FieldTitle title={label} />}
         {children}
@@ -399,6 +401,7 @@ export function SelectWithOptions({
   required = true,
   errors,
   tekTime,
+  hidden,
 }: {
   id?: string;
   label: string;
@@ -413,9 +416,10 @@ export function SelectWithOptions({
   required?: boolean;
   errors?: string[];
   tekTime?: boolean;
+  hidden?: boolean;
 }) {
   return (
-    <FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <FieldFlex isLabel={!fieldFlexIsNotLabel} hidden={hidden}>
       <div className="flex justify-between">
         <FieldTitle title={label} />
         {children}
@@ -972,15 +976,17 @@ export function InputDatetimeLocalControlled({
 
 export function FieldFlex({
   isLabel,
+  hidden,
   children,
 }: {
   isLabel?: boolean;
+  hidden?: boolean;
   children: React.ReactNode;
 }) {
   const className = "flex flex-col gap-2";
 
   return (
-    <>
+    <div className={clsx(hidden && "hidden")}>
       {isLabel ? (
         <label className={className}>{children}</label>
       ) : (
@@ -988,7 +994,7 @@ export function FieldFlex({
           {children}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -1051,6 +1057,7 @@ export function Button({
       "disabled:grayscale disabled:hover:border-cyan-500 disabled:hover:text-cyan-500",
   );
 
+  // mostly superfluous, but serves as an absolute safety, especially now that I'm turning all handlers into startTransition-powered actions
   const status = useFormStatus();
 
   return (

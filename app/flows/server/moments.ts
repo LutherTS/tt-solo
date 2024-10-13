@@ -326,6 +326,8 @@ export const trueCreateOrUpdateMomentFlow = async (
   startMomentDate: string,
   steps: StepFromCRUD[],
   momentFromCRUD: MomentToCRUD | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
   user: SelectUserIdAndUsername,
 ) => {
   if (variant === "creating") {
@@ -356,7 +358,9 @@ export const trueCreateOrUpdateMomentFlow = async (
   // return { message: "I'm testing things here." };
   // It works and with that, I now know my way around useTransition.
 
-  let destination = formData.get("destination");
+  let destination = !destinationSelect
+    ? formData.getAll("destination")[0]
+    : formData.getAll("destination")[1];
   if (destination === null) {
     return {
       momentMessage: DEFAULT_MOMENT_MESSAGE,
@@ -369,7 +373,9 @@ export const trueCreateOrUpdateMomentFlow = async (
     };
   }
 
-  let activite = formData.get("activite");
+  let activite = !activitySelect
+    ? formData.getAll("activite")[0]
+    : formData.getAll("activite")[1];
   if (activite === null) {
     return {
       momentMessage: DEFAULT_MOMENT_MESSAGE,
