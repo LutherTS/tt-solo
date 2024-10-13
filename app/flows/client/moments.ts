@@ -189,6 +189,7 @@ export const resetMomentFormActionflow = (
     SetStateAction<CreateOrUpdateMomentState>
   >,
   setIsResetMomentFormDone: Dispatch<SetStateAction<boolean>>,
+  setInputSwitchKey: Dispatch<SetStateAction<string>>,
 ) => {
   startResetMomentFormTransition(() => {
     if (
@@ -226,6 +227,9 @@ export const resetMomentFormActionflow = (
 
       // for the useEffect
       setIsResetMomentFormDone(true);
+
+      // to "reset" the InputSwitchKey
+      setInputSwitchKey(window.crypto.randomUUID());
     } else event.preventDefault();
   });
 };

@@ -891,6 +891,11 @@ function MomentForms({
       );
   }, [isDeleteMomentDone]);
 
+  // InputSwitch key
+  const [inputSwitchKey, setInputSwitchKey] = useState(
+    window.crypto.randomUUID(),
+  );
+
   // resetMomentFormAction
 
   const [isResetMomentFormPending, startResetMomentFormTransition] =
@@ -918,6 +923,7 @@ function MomentForms({
       setDureeCreateControlled,
       setCreateOrUpdateMomentState,
       setIsResetMomentFormDone,
+      setInputSwitchKey,
     );
   };
 
@@ -1122,7 +1128,7 @@ function MomentForms({
           />
           {/* I specifically do not want to control my InputSwitch. So what I'll have to control when resetting is its key. But that all in all that's really a bug from Radix. */}
           <InputSwitch
-            // key={window.crypto.randomUUID()}
+            key={inputSwitchKey}
             label="Indispensable"
             name="indispensable"
             description="Activez l'interrupteur si ce moment est d'une importance incontournable."
