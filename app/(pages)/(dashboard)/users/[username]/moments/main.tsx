@@ -11,7 +11,6 @@ import {
   MouseEvent,
   FormEvent,
   TransitionStartFunction,
-  MouseEventHandler,
 } from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -723,12 +722,6 @@ function MomentForms({
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
-  // InputSwitch unfortunately has to be controlled for resetting (courtesy of the current React 19) :/
-  // not anymore
-  // let [indispensable, setIndispensable] = useState(
-  //   moment ? moment.isIndispensable : false,
-  // );
-
   // datetime-local input is now controlled for dynamic moment and steps times
   let [startMomentDate, setStartMomentDate] = useState(
     moment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
@@ -763,61 +756,27 @@ function MomentForms({
   let [destinationSelect, setDestinationSelect] = useState(false);
   let [activitySelect, setActivitySelect] = useState(false);
 
-  // https://github.com/facebook/react/issues/29034
-  // which is sad because React 19 kinda promise to never again need useState
-
-  // let [destinationTextControlled, setDestinationTextControlled] = useState(
-  //   moment ? moment.destinationIdeal : "",
-  // );
-
   const destinationValues = destinationOptions.map((e) => e.value);
-
-  // let [destinationOptionControlled, setDestinationOptionControlled] = useState(
-  //   moment ? moment.destinationIdeal : "",
-  // );
-
-  // let [activiteTextControlled, setActiviteTextControlled] = useState(
-  //   moment ? moment.activity : "",
-  // );
-
   const activityValues = activityOptions.map((e) => e.value);
 
-  // let [activiteOptionControlled, setActiviteOptionControlled] = useState(
-  //   moment && activityValues.includes(moment.activity) ? moment.activity : "",
-  // );
+  // InputSwitch key
+  const [inputSwitchKey, setInputSwitchKey] = useState("");
 
-  // let [objectifControlled, setObjectifControlled] = useState(
-  //   moment ? moment.objective : "",
-  // );
-  // let [contexteControlled, setContexteControlled] = useState(
-  //   moment ? moment.context : "",
-  // );
+  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
+  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
+  let [stepDureeUpdate, setStepDureeUpdate] = useState(
+    currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
+  );
 
   // createOrUpdateMomentAction
-
-  // bind now happens within the action itself, which is more efficient
-  // const createOrUpdateMomentBound = createOrUpdateMoment.bind(
-  //   null,
-  //   variant,
-  //   indispensable,
-  //   startMomentDate,
-  //   steps,
-  //   destinationSelect ? destinationOptionControlled : destinationTextControlled,
-  //   activitySelect ? activiteOptionControlled : activiteTextControlled,
-  //   objectifControlled,
-  //   contexteControlled,
-  //   moment,
-  // );
-
-  // const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-  //   useState<CreateOrUpdateMomentState>(null);
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
     useState<TrueCreateOrUpdateMomentState>(null);
 
   // since this is used in a form, the button already has isPending from useFormStatus making this isCreateOrUpdateMomentPending superfluous
   // ...but to make the action autonomous I'll add it nonetheless
-  // a cool thought could be to have disabled styles specific to the reason that disables the button, like making them only visible if the action of the button itself is pending, and not if it's due to anything else.
+  // a cool thought could be to have disabled styles specific to the reason that disables the button, like making them only visible if the action of the button itself is pending, and not if it's due to anything else. (Which I think can be done with the data attributes.)
+  // Here's an example. When I delete a moment, I deactivate the confirm moment button. But that's a safety measure the user should not even be aware of, so the confirm moment button should not have its disabled styles visible in this situation. What I'm looking for is a data-confirmed-disabled:styles kind of thing. ...Or maybe I can do that with JavaScript and clsx.
   const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
     useTransition();
 
@@ -859,10 +818,6 @@ function MomentForms({
 
   // deleteMomentAction
 
-  // shifting bind to the action flow
-  // let deleteMomentBound: DeleteMoment;
-  // if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
-
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
   const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
@@ -886,9 +841,6 @@ function MomentForms({
       );
   }, [isDeleteMomentDone]);
 
-  // InputSwitch key
-  const [inputSwitchKey, setInputSwitchKey] = useState("");
-
   // resetMomentFormAction
 
   const [isResetMomentFormPending, startResetMomentFormTransition] =
@@ -904,9 +856,6 @@ function MomentForms({
       setStartMomentDate,
       setSteps,
       setStepVisible,
-      // setIntituleCreateControlled,
-      // setDetailsCreateControlled,
-      // setDureeCreateControlled,
       setCreateOrUpdateMomentState,
       setIsResetMomentFormDone,
       setInputSwitchKey,
@@ -917,31 +866,6 @@ function MomentForms({
     if (isResetMomentFormDone)
       resetMomentFormAfterflow(setIsResetMomentFormDone);
   }, [isResetMomentFormDone]);
-
-  // Here we go again to control the StepForm fields...
-  // And there's two variant, so I need to duplicate the states...
-  // ...Eventually. Only one variant is in the DOM at ont time. So for now I can... No. Two states. Even for startTransitions.
-  // ...
-  // I'm laughing but it's not funny.
-
-  // let [intituleCreateControlled, setIntituleCreateControlled] = useState("");
-  // let [detailsCreateControlled, setDetailsCreateControlled] = useState("");
-  // let [dureeCreateControlled, setDureeCreateControlled] = useState("10"); //
-
-  // let [intituleUpdateControlled, setIntituleUpdateControlled] = useState(
-  //   currentStep ? currentStep.intitule : "",
-  // );
-  // let [detailsUpdateControlled, setDetailsUpdateControlled] = useState(
-  //   currentStep ? currentStep.details : "",
-  // );
-  // let [dureeUpdateControlled, setDureeUpdateControlled] = useState(
-  //   currentStep ? currentStep.duree : "10",
-  // ); //
-
-  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
-  let [stepDureeUpdate, setStepDureeUpdate] = useState(
-    currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
-  );
 
   // addStepAction
 
@@ -984,15 +908,11 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        // intitule={intituleCreateControlled}
-        // details={detailsCreateControlled}
         duree={stepDureeCreate}
-        // setIntitule={setIntituleCreateControlled}
-        // setDetails={setDetailsCreateControlled}
         setDuree={setStepDureeCreate}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
-        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
         startResetStepTransition={startResetStepTransition}
+        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <StepForm
         variant="updating"
@@ -1000,15 +920,11 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        // intitule={intituleUpdateControlled}
-        // details={detailsUpdateControlled}
         duree={stepDureeUpdate}
-        // setIntitule={setIntituleUpdateControlled}
-        // setDetails={setDetailsUpdateControlled}
         setDuree={setStepDureeUpdate}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
-        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
         startResetStepTransition={startResetStepTransition}
+        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <form
         // action={createOrUpdateMomentAction}
@@ -1212,15 +1128,8 @@ function MomentForms({
                     setSteps={setSteps}
                     key={step.id}
                     isUpdateStepPending={isUpdateStepPending}
-                    // intitule={intituleUpdateControlled}
-                    // details={detailsUpdateControlled}
                     duree={stepDureeUpdate}
-                    // setIntituleUpdate={setIntituleUpdateControlled}
-                    // setDetailsUpdate={setDetailsUpdateControlled}
                     setDureeUpdate={setStepDureeUpdate}
-                    // setIntituleCreate={setIntituleCreateControlled}
-                    // setDetailsCreate={setDetailsCreateControlled}
-                    // setDureeCreate={setDureeCreateControlled}
                     createOrUpdateMomentState={createOrUpdateMomentState}
                     setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
                   />
@@ -1371,6 +1280,7 @@ function MomentForms({
                   isDeleteMomentPending ||
                   isCreateOrUpdateMomentPending
                 }
+                isDedicatedDisabled={isCreateOrUpdateMomentPending}
               >
                 Confirmer le moment
               </Button>
@@ -1423,6 +1333,7 @@ function MomentForms({
                   isDeleteMomentPending ||
                   isCreateOrUpdateMomentPending
                 }
+                isDedicatedDisabled={isCreateOrUpdateMomentPending}
               >
                 Confirmer le moment
               </Button>
@@ -1442,32 +1353,24 @@ function StepForm({
   steps,
   setSteps,
   setStepVisible,
-  // intitule,
-  // details,
   duree,
-  // setIntitule,
-  // setDetails,
   setDuree,
   startCreateOrUpdateStepTransition,
-  setCreateOrUpdateMomentState,
   startResetStepTransition,
+  setCreateOrUpdateMomentState,
 }: {
   variant: StepFormVariant;
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
-  // intitule: string;
-  // details: string;
   duree: string;
-  // setIntitule: Dispatch<SetStateAction<string>>;
-  // setDetails: Dispatch<SetStateAction<string>>;
   setDuree: Dispatch<SetStateAction<string>>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
+  startResetStepTransition: TransitionStartFunction;
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
   >;
-  startResetStepTransition: TransitionStartFunction;
 }) {
   // createOrUpdateStepAction
 
@@ -1494,20 +1397,7 @@ function StepForm({
       createOrUpdateStepAfterflow(setIsCreateOrUpdateStepDone);
   }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
 
-  // That will need to be an action just for the isPending. I actually think all handles should be actions for isPending. In a sense it is not humanly necessary since this is client-only stuff, not asynchronous and fast enough, but... Voilà. Let's imagine tomorrow I decide this should no longer not asynchronous and should communicate asynchronously with a database. Refactoring a transition will therefore be a lot easier than refactoring an action.
-  // const handleResetStep = () => {
-  //   // type reset already does the resetting
-  //   // setIntituleCreateControlled("");
-  //   // setDetailsCreateControlled("");
-  //   // setDureeCreateControlled("10");
-  //   setDuree(STEP_DURATION_DEFAULT);
-  //   setCreateOrUpdateMomentState(null);
-  // };
-
-  // Therefore, startResetStepTransition should also be made on the parent component.
-
   // resetStepAction
-  // no afterflow in mind so no need for isDone for now
 
   const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
     return resetStepActionflow(
@@ -1521,7 +1411,6 @@ function StepForm({
   return (
     <form
       id={STEP_FORM_ID[variant]}
-      // action={createOrUpdateStepAction}
       onSubmit={createOrUpdateStepAction}
       onReset={resetStepAction}
     ></form>
@@ -1540,15 +1429,8 @@ function ReorderItem({
   addingTime,
   setSteps,
   isUpdateStepPending,
-  // intitule,
-  // details,
   duree,
-  // setIntituleUpdate,
-  // setDetailsUpdate,
   setDureeUpdate,
-  // setIntituleCreate,
-  // setDetailsCreate,
-  // setDureeCreate,
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
 }: {
@@ -1563,15 +1445,8 @@ function ReorderItem({
   addingTime: number;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   isUpdateStepPending: boolean;
-  // intitule: string;
-  // details: string;
   duree: string;
-  // setIntituleUpdate: Dispatch<SetStateAction<string>>;
-  // setDetailsUpdate: Dispatch<SetStateAction<string>>;
   setDureeUpdate: Dispatch<SetStateAction<string>>;
-  // setIntituleCreate: Dispatch<SetStateAction<string>>;
-  // setDetailsCreate: Dispatch<SetStateAction<string>>;
-  // setDureeCreate: Dispatch<SetStateAction<string>>;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
