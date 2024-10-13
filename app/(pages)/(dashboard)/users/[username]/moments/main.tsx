@@ -129,7 +129,7 @@ export default function Main({
   allUserMomentsToCRUD,
   destinationOptions,
   maxPages,
-  createOrUpdateMoment,
+  // createOrUpdateMoment,
   deleteMoment,
   revalidateMoments,
   now,
@@ -138,7 +138,7 @@ export default function Main({
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   destinationOptions: Option[];
   maxPages: number[];
-  createOrUpdateMoment: CreateOrUpdateMoment;
+  // createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
   revalidateMoments: RevalidateMoments;
   now: string;
@@ -235,7 +235,7 @@ export default function Main({
             variant="updating"
             moment={moment}
             destinationOptions={destinationOptions}
-            createOrUpdateMoment={createOrUpdateMoment}
+            // createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
             setView={setView}
             setSubView={setSubView}
@@ -263,7 +263,7 @@ export default function Main({
           <MomentForms
             variant="creating"
             destinationOptions={destinationOptions}
-            createOrUpdateMoment={createOrUpdateMoment}
+            // createOrUpdateMoment={createOrUpdateMoment}
             setView={setView}
             setSubView={setSubView}
             now={now}
@@ -698,7 +698,7 @@ function MomentForms({
   variant,
   moment,
   destinationOptions,
-  createOrUpdateMoment,
+  // createOrUpdateMoment,
   deleteMoment,
   setView,
   setSubView,
@@ -708,7 +708,7 @@ function MomentForms({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  createOrUpdateMoment: CreateOrUpdateMoment;
+  // createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
@@ -783,18 +783,18 @@ function MomentForms({
 
   // createOrUpdateMomentAction
 
-  const createOrUpdateMomentBound = createOrUpdateMoment.bind(
-    null,
-    variant,
-    indispensable,
-    startMomentDate,
-    steps,
-    destinationSelect ? destinationOptionControlled : destinationTextControlled,
-    activitySelect ? activiteOptionControlled : activiteTextControlled,
-    objectifControlled,
-    contexteControlled,
-    moment,
-  );
+  // const createOrUpdateMomentBound = createOrUpdateMoment.bind(
+  //   null,
+  //   variant,
+  //   indispensable,
+  //   startMomentDate,
+  //   steps,
+  //   destinationSelect ? destinationOptionControlled : destinationTextControlled,
+  //   activitySelect ? activiteOptionControlled : activiteTextControlled,
+  //   objectifControlled,
+  //   contexteControlled,
+  //   moment,
+  // );
 
   // const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
   //   useState<CreateOrUpdateMomentState>(null);
@@ -1126,7 +1126,7 @@ function MomentForms({
             required={false}
             errors={createOrUpdateMomentState?.errors?.momentName}
           />
-          {/* I specifically do not want to control my InputSwitch. So what I'll have to control when resetting is its key. But that all in all that's really a bug from Radix. */}
+          {/* I specifically do not want to control my InputSwitch. So what I'll have to control when resetting is its key. But all in all that's really a bug from Radix. */}
           <InputSwitch
             key={inputSwitchKey}
             label="Indispensable"

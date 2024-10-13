@@ -339,6 +339,7 @@ export default async function MomentsPage({
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
     <Suspense>
+      {/* @ts-ignore please */}
       <Main
         allUserMomentsToCRUD={allUserMomentsToCRUD}
         destinationOptions={destinationOptions}
