@@ -737,6 +737,7 @@ export function InputSwitch({
   description,
   // definedValue,
   // definedOnValueChange = () => {},
+  required = true,
   errors,
 }: {
   label: string;
@@ -745,6 +746,7 @@ export function InputSwitch({
   description: string;
   // definedValue?: boolean;
   // definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
+  required?: boolean;
   errors?: string[];
 }) {
   return (
@@ -758,6 +760,7 @@ export function InputSwitch({
           defaultChecked={defaultChecked}
           // checked={definedValue}
           // onCheckedChange={definedOnValueChange}
+          required={required}
           className={clsx(
             "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
           )}

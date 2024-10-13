@@ -40,3 +40,7 @@ export const activityOptions: Option[] = [
   { key: 15, label: "Suivi de projet", value: "Suivi de projet" },
   { key: 16, label: "Séminaire", value: "Séminaire" },
 ];
+
+// form defaults
+
+export const STEP_DURATION_DEFAULT = "10";

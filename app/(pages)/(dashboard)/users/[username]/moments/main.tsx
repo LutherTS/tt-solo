@@ -11,6 +11,7 @@ import {
   MouseEvent,
   FormEvent,
   TransitionStartFunction,
+  MouseEventHandler,
 } from "react";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -81,8 +82,12 @@ import {
   deleteMomentActionflow,
   deleteStepActionflow,
   resetMomentFormActionflow,
+  resetStepActionflow,
   revalidateMomentsActionflow,
   trueCreateOrUpdateMomentActionflow,
+  trueCreateOrUpdateStepActionflow,
+  trueDeleteMomentActionflow,
+  trueResetMomentFormActionflow,
 } from "@/app/flows/client/moments";
 import {
   CONTAINS,
@@ -95,6 +100,7 @@ import {
   STEP_FORM_ID,
   YOUR_MOMENT_ID,
   activityOptions,
+  STEP_DURATION_DEFAULT,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -718,9 +724,10 @@ function MomentForms({
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
   // InputSwitch unfortunately has to be controlled for resetting (courtesy of the current React 19) :/
-  let [indispensable, setIndispensable] = useState(
-    moment ? moment.isIndispensable : false,
-  );
+  // not anymore
+  // let [indispensable, setIndispensable] = useState(
+  //   moment ? moment.isIndispensable : false,
+  // );
 
   // datetime-local input is now controlled for dynamic moment and steps times
   let [startMomentDate, setStartMomentDate] = useState(
@@ -759,35 +766,36 @@ function MomentForms({
   // https://github.com/facebook/react/issues/29034
   // which is sad because React 19 kinda promise to never again need useState
 
-  let [destinationTextControlled, setDestinationTextControlled] = useState(
-    moment ? moment.destinationIdeal : "",
-  );
+  // let [destinationTextControlled, setDestinationTextControlled] = useState(
+  //   moment ? moment.destinationIdeal : "",
+  // );
 
   const destinationValues = destinationOptions.map((e) => e.value);
 
-  let [destinationOptionControlled, setDestinationOptionControlled] = useState(
-    moment ? moment.destinationIdeal : "",
-  );
+  // let [destinationOptionControlled, setDestinationOptionControlled] = useState(
+  //   moment ? moment.destinationIdeal : "",
+  // );
 
-  let [activiteTextControlled, setActiviteTextControlled] = useState(
-    moment ? moment.activity : "",
-  );
+  // let [activiteTextControlled, setActiviteTextControlled] = useState(
+  //   moment ? moment.activity : "",
+  // );
 
   const activityValues = activityOptions.map((e) => e.value);
 
-  let [activiteOptionControlled, setActiviteOptionControlled] = useState(
-    moment && activityValues.includes(moment.activity) ? moment.activity : "",
-  );
+  // let [activiteOptionControlled, setActiviteOptionControlled] = useState(
+  //   moment && activityValues.includes(moment.activity) ? moment.activity : "",
+  // );
 
-  let [objectifControlled, setObjectifControlled] = useState(
-    moment ? moment.objective : "",
-  );
-  let [contexteControlled, setContexteControlled] = useState(
-    moment ? moment.context : "",
-  );
+  // let [objectifControlled, setObjectifControlled] = useState(
+  //   moment ? moment.objective : "",
+  // );
+  // let [contexteControlled, setContexteControlled] = useState(
+  //   moment ? moment.context : "",
+  // );
 
   // createOrUpdateMomentAction
 
+  // bind now happens within the action itself, which is more efficient
   // const createOrUpdateMomentBound = createOrUpdateMoment.bind(
   //   null,
   //   variant,
@@ -819,26 +827,6 @@ function MomentForms({
   const createOrUpdateMomentAction = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
-    // return await createOrUpdateMomentActionflow(
-    //   startCreateOrUpdateMomentTransition,
-    //   createOrUpdateMomentBound,
-    //   setDestinationTextControlled,
-    //   setActiviteTextControlled,
-    //   setDestinationSelect,
-    //   setActivitySelect,
-    //   setCreateOrUpdateMomentState,
-    //   variant,
-    //   setIndispensable,
-    //   setStartMomentDate,
-    //   nowRoundedUpTenMinutes,
-    //   setSteps,
-    //   setStepVisible,
-    //   setDestinationOptionControlled,
-    //   setActiviteOptionControlled,
-    //   setObjectifControlled,
-    //   setContexteControlled,
-    //   setIsCreateOrUpdateMomentDone,
-    // );
     return await trueCreateOrUpdateMomentActionflow(
       event,
       startCreateOrUpdateMomentTransition,
@@ -871,17 +859,19 @@ function MomentForms({
 
   // deleteMomentAction
 
-  let deleteMomentBound: DeleteMoment;
-  if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
+  // shifting bind to the action flow
+  // let deleteMomentBound: DeleteMoment;
+  // if (deleteMoment) deleteMomentBound = deleteMoment.bind(null, moment);
 
   const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
 
   const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
 
   const deleteMomentAction = async () => {
-    return await deleteMomentActionflow(
+    return await trueDeleteMomentActionflow(
       startDeleteMomentTransition,
-      deleteMomentBound,
+      deleteMoment,
+      moment,
       setCreateOrUpdateMomentState,
       setIsDeleteMomentDone,
     );
@@ -897,7 +887,7 @@ function MomentForms({
   }, [isDeleteMomentDone]);
 
   // InputSwitch key
-  const [inputSwitchKey, setInputSwitchKey] = useState("initial");
+  const [inputSwitchKey, setInputSwitchKey] = useState("");
 
   // resetMomentFormAction
 
@@ -908,22 +898,15 @@ function MomentForms({
 
   // action is (now) completely client, so no need for async
   const resetMomentFormAction = (event: FormEvent<HTMLFormElement>) => {
-    return resetMomentFormActionflow(
+    return trueResetMomentFormActionflow(
       event,
       startResetMomentFormTransition,
-      setIndispensable,
       setStartMomentDate,
       setSteps,
       setStepVisible,
-      setDestinationTextControlled,
-      setDestinationOptionControlled,
-      setActiviteTextControlled,
-      setActiviteOptionControlled,
-      setObjectifControlled,
-      setContexteControlled,
-      setIntituleCreateControlled,
-      setDetailsCreateControlled,
-      setDureeCreateControlled,
+      // setIntituleCreateControlled,
+      // setDetailsCreateControlled,
+      // setDureeCreateControlled,
       setCreateOrUpdateMomentState,
       setIsResetMomentFormDone,
       setInputSwitchKey,
@@ -941,33 +924,46 @@ function MomentForms({
   // ...
   // I'm laughing but it's not funny.
 
-  let [intituleCreateControlled, setIntituleCreateControlled] = useState("");
-  let [detailsCreateControlled, setDetailsCreateControlled] = useState("");
-  let [dureeCreateControlled, setDureeCreateControlled] = useState("10");
+  // let [intituleCreateControlled, setIntituleCreateControlled] = useState("");
+  // let [detailsCreateControlled, setDetailsCreateControlled] = useState("");
+  // let [dureeCreateControlled, setDureeCreateControlled] = useState("10"); //
 
-  let [intituleUpdateControlled, setIntituleUpdateControlled] = useState(
-    currentStep ? currentStep.intitule : "",
-  );
-  let [detailsUpdateControlled, setDetailsUpdateControlled] = useState(
-    currentStep ? currentStep.details : "",
-  );
-  let [dureeUpdateControlled, setDureeUpdateControlled] = useState(
-    currentStep ? currentStep.duree : "",
+  // let [intituleUpdateControlled, setIntituleUpdateControlled] = useState(
+  //   currentStep ? currentStep.intitule : "",
+  // );
+  // let [detailsUpdateControlled, setDetailsUpdateControlled] = useState(
+  //   currentStep ? currentStep.details : "",
+  // );
+  // let [dureeUpdateControlled, setDureeUpdateControlled] = useState(
+  //   currentStep ? currentStep.duree : "10",
+  // ); //
+
+  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
+  let [stepDureeUpdate, setStepDureeUpdate] = useState(
+    currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
   );
 
-  const handleCancelStep = () => {
-    setStepVisible("create");
-    setIntituleCreateControlled("");
-    setDetailsCreateControlled("");
-    setDureeCreateControlled("10");
-    setCreateOrUpdateMomentState(null);
+  // addStepAction
+
+  const [isAddStepPending, startAddStepTransition] = useTransition();
+
+  const addStepAction = () => {
+    startAddStepTransition(() => {
+      setStepVisible("creating");
+      setStepDureeCreate(STEP_DURATION_DEFAULT);
+    });
   };
 
-  const handleResetStep = () => {
-    setIntituleCreateControlled("");
-    setDetailsCreateControlled("");
-    setDureeCreateControlled("10");
-    setCreateOrUpdateMomentState(null);
+  // cancelStepAction
+
+  const [isCancelStepPending, startCancelStepTransition] = useTransition();
+
+  const cancelStepAction = () => {
+    startCancelStepTransition(() => {
+      setStepVisible("create");
+      setStepDureeCreate(STEP_DURATION_DEFAULT);
+      setCreateOrUpdateMomentState(null);
+    });
   };
 
   // createOrUpdateStepAction
@@ -975,6 +971,10 @@ function MomentForms({
   const [isCreateStepPending, startCreateStepTransition] = useTransition();
 
   const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
+
+  // resetStepAction
+
+  const [isResetStepPending, startResetStepTransition] = useTransition();
 
   return (
     <>
@@ -984,14 +984,15 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        intitule={intituleCreateControlled}
-        details={detailsCreateControlled}
-        duree={dureeCreateControlled}
-        setIntitule={setIntituleCreateControlled}
-        setDetails={setDetailsCreateControlled}
-        setDuree={setDureeCreateControlled}
+        // intitule={intituleCreateControlled}
+        // details={detailsCreateControlled}
+        duree={stepDureeCreate}
+        // setIntitule={setIntituleCreateControlled}
+        // setDetails={setDetailsCreateControlled}
+        setDuree={setStepDureeCreate}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+        startResetStepTransition={startResetStepTransition}
       />
       <StepForm
         variant="updating"
@@ -999,14 +1000,15 @@ function MomentForms({
         steps={steps}
         setSteps={setSteps}
         setStepVisible={setStepVisible}
-        intitule={intituleUpdateControlled}
-        details={detailsUpdateControlled}
-        duree={dureeUpdateControlled}
-        setIntitule={setIntituleUpdateControlled}
-        setDetails={setDetailsUpdateControlled}
-        setDuree={setDureeUpdateControlled}
+        // intitule={intituleUpdateControlled}
+        // details={detailsUpdateControlled}
+        duree={stepDureeUpdate}
+        // setIntitule={setIntituleUpdateControlled}
+        // setDetails={setDetailsUpdateControlled}
+        setDuree={setStepDureeUpdate}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+        startResetStepTransition={startResetStepTransition}
       />
       <form
         // action={createOrUpdateMomentAction}
@@ -1151,6 +1153,7 @@ function MomentForms({
             description="Activez l'interrupteur si ce moment est d'une importance incontournable."
             // definedValue={indispensable}
             // definedOnValueChange={setIndispensable}
+            required={false}
             errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
           />
           <Textarea
@@ -1209,15 +1212,15 @@ function MomentForms({
                     setSteps={setSteps}
                     key={step.id}
                     isUpdateStepPending={isUpdateStepPending}
-                    intitule={intituleUpdateControlled}
-                    details={detailsUpdateControlled}
-                    duree={dureeUpdateControlled}
-                    setIntituleUpdate={setIntituleUpdateControlled}
-                    setDetailsUpdate={setDetailsUpdateControlled}
-                    setDureeUpdate={setDureeUpdateControlled}
-                    setIntituleCreate={setIntituleCreateControlled}
-                    setDetailsCreate={setDetailsCreateControlled}
-                    setDureeCreate={setDureeCreateControlled}
+                    // intitule={intituleUpdateControlled}
+                    // details={detailsUpdateControlled}
+                    duree={stepDureeUpdate}
+                    // setIntituleUpdate={setIntituleUpdateControlled}
+                    // setDetailsUpdate={setDetailsUpdateControlled}
+                    setDureeUpdate={setStepDureeUpdate}
+                    // setIntituleCreate={setIntituleCreateControlled}
+                    // setDetailsCreate={setDetailsCreateControlled}
+                    // setDureeCreate={setDureeCreateControlled}
                     createOrUpdateMomentState={createOrUpdateMomentState}
                     setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
                   />
@@ -1259,30 +1262,34 @@ function MomentForms({
                 </p>{" "}
                 <Button
                   form={STEP_FORM_ID.creating}
-                  onClick={handleResetStep}
+                  //
+                  // onClick={handleResetStep}
                   type="reset"
                   variant="destroy-step"
+                  disabled={isResetStepPending}
                 >
                   Réinitialiser l&apos;étape
                 </Button>
               </div>
-              <InputTextControlled
+              <InputText
                 form={STEP_FORM_ID.creating}
                 label="Intitulé de l'étape"
                 name="intituledeleetape"
-                definedValue={intituleCreateControlled}
-                definedOnValueChange={setIntituleCreateControlled}
+                // definedValue={intituleCreateControlled}
+                // definedOnValueChange={setIntituleCreateControlled}
                 description="Définissez simplement le sujet de l'étape."
+                required={false}
                 errors={createOrUpdateMomentState?.errors?.stepName}
               />
-              <TextareaControlled
+              <Textarea
                 form={STEP_FORM_ID.creating}
                 label="Détails de l'étape"
                 name="detailsdeleetape"
-                definedValue={detailsCreateControlled}
-                definedOnValueChange={setDetailsCreateControlled}
+                // definedValue={detailsCreateControlled}
+                // definedOnValueChange={setDetailsCreateControlled}
                 description="Expliquez en détails le déroulé de l'étape."
                 rows={4}
+                required={false}
                 errors={createOrUpdateMomentState?.errors?.stepDescription}
               />
               <InputNumberControlled
@@ -1290,8 +1297,8 @@ function MomentForms({
                 label="Durée de l'étape"
                 name="dureedeletape"
                 description="Renseignez en minutes la longueur de l'étape."
-                definedValue={dureeCreateControlled}
-                definedOnValueChange={setDureeCreateControlled}
+                definedValue={stepDureeCreate}
+                definedOnValueChange={setStepDureeCreate}
                 min="5"
                 errors={createOrUpdateMomentState?.errors?.realStepDuration}
               />
@@ -1310,8 +1317,8 @@ function MomentForms({
                     variant="cancel-step"
                     form={STEP_FORM_ID.creating}
                     type="button"
-                    onClick={handleCancelStep}
-                    disabled={steps.length === 0}
+                    onClick={cancelStepAction}
+                    disabled={steps.length === 0 || isCancelStepPending}
                   >
                     Annuler l&apos;étape
                   </Button>
@@ -1322,8 +1329,8 @@ function MomentForms({
                     variant="cancel-step"
                     form={STEP_FORM_ID.creating}
                     type="button"
-                    onClick={handleCancelStep}
-                    disabled={steps.length === 0}
+                    onClick={cancelStepAction}
+                    disabled={steps.length === 0 || isCancelStepPending}
                   >
                     Annuler l&apos;étape
                   </Button>
@@ -1343,9 +1350,8 @@ function MomentForms({
             <Button
               type="button"
               variant="neutral"
-              onClick={() => {
-                setStepVisible("creating");
-              }}
+              onClick={addStepAction}
+              disabled={isAddStepPending}
             >
               Ajouter une étape
             </Button>
@@ -1436,41 +1442,42 @@ function StepForm({
   steps,
   setSteps,
   setStepVisible,
-  intitule,
-  details,
+  // intitule,
+  // details,
   duree,
-  setIntitule,
-  setDetails,
+  // setIntitule,
+  // setDetails,
   setDuree,
   startCreateOrUpdateStepTransition,
   setCreateOrUpdateMomentState,
+  startResetStepTransition,
 }: {
   variant: StepFormVariant;
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
-  intitule: string;
-  details: string;
+  // intitule: string;
+  // details: string;
   duree: string;
-  setIntitule: Dispatch<SetStateAction<string>>;
-  setDetails: Dispatch<SetStateAction<string>>;
+  // setIntitule: Dispatch<SetStateAction<string>>;
+  // setDetails: Dispatch<SetStateAction<string>>;
   setDuree: Dispatch<SetStateAction<string>>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
   >;
+  startResetStepTransition: TransitionStartFunction;
 }) {
   // createOrUpdateStepAction
 
   const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
     useState(false);
 
-  const createOrUpdateStepAction = () => {
-    return createOrUpdateStepActionflow(
+  const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
+    return trueCreateOrUpdateStepActionflow(
+      event,
       startCreateOrUpdateStepTransition,
-      intitule,
-      details,
       setCreateOrUpdateMomentState,
       duree,
       steps,
@@ -1478,9 +1485,6 @@ function StepForm({
       currentStepId,
       setSteps,
       setStepVisible,
-      setIntitule,
-      setDetails,
-      setDuree,
       setIsCreateOrUpdateStepDone,
     );
   };
@@ -1490,8 +1494,37 @@ function StepForm({
       createOrUpdateStepAfterflow(setIsCreateOrUpdateStepDone);
   }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
 
+  // That will need to be an action just for the isPending. I actually think all handles should be actions for isPending. In a sense it is not humanly necessary since this is client-only stuff, not asynchronous and fast enough, but... Voilà. Let's imagine tomorrow I decide this should no longer not asynchronous and should communicate asynchronously with a database. Refactoring a transition will therefore be a lot easier than refactoring an action.
+  // const handleResetStep = () => {
+  //   // type reset already does the resetting
+  //   // setIntituleCreateControlled("");
+  //   // setDetailsCreateControlled("");
+  //   // setDureeCreateControlled("10");
+  //   setDuree(STEP_DURATION_DEFAULT);
+  //   setCreateOrUpdateMomentState(null);
+  // };
+
+  // Therefore, startResetStepTransition should also be made on the parent component.
+
+  // resetStepAction
+  // no afterflow in mind so no need for isDone for now
+
+  const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
+    return resetStepActionflow(
+      event,
+      startResetStepTransition,
+      setDuree,
+      setCreateOrUpdateMomentState,
+    );
+  };
+
   return (
-    <form id={STEP_FORM_ID[variant]} action={createOrUpdateStepAction}></form>
+    <form
+      id={STEP_FORM_ID[variant]}
+      // action={createOrUpdateStepAction}
+      onSubmit={createOrUpdateStepAction}
+      onReset={resetStepAction}
+    ></form>
   );
 }
 
@@ -1507,15 +1540,15 @@ function ReorderItem({
   addingTime,
   setSteps,
   isUpdateStepPending,
-  intitule,
-  details,
+  // intitule,
+  // details,
   duree,
-  setIntituleUpdate,
-  setDetailsUpdate,
+  // setIntituleUpdate,
+  // setDetailsUpdate,
   setDureeUpdate,
-  setIntituleCreate,
-  setDetailsCreate,
-  setDureeCreate,
+  // setIntituleCreate,
+  // setDetailsCreate,
+  // setDureeCreate,
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
 }: {
@@ -1530,15 +1563,15 @@ function ReorderItem({
   addingTime: number;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   isUpdateStepPending: boolean;
-  intitule: string;
-  details: string;
+  // intitule: string;
+  // details: string;
   duree: string;
-  setIntituleUpdate: Dispatch<SetStateAction<string>>;
-  setDetailsUpdate: Dispatch<SetStateAction<string>>;
+  // setIntituleUpdate: Dispatch<SetStateAction<string>>;
+  // setDetailsUpdate: Dispatch<SetStateAction<string>>;
   setDureeUpdate: Dispatch<SetStateAction<string>>;
-  setIntituleCreate: Dispatch<SetStateAction<string>>;
-  setDetailsCreate: Dispatch<SetStateAction<string>>;
-  setDureeCreate: Dispatch<SetStateAction<string>>;
+  // setIntituleCreate: Dispatch<SetStateAction<string>>;
+  // setDetailsCreate: Dispatch<SetStateAction<string>>;
+  // setDureeCreate: Dispatch<SetStateAction<string>>;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: Dispatch<
     SetStateAction<CreateOrUpdateMomentState>
@@ -1568,17 +1601,8 @@ function ReorderItem({
 
   const handleModifyStep = () => {
     setCurrentStepId(step.id);
-
-    setIntituleUpdate(step.intitule);
-    setDetailsUpdate(step.details);
     setDureeUpdate(step.duree);
-
-    setIntituleCreate("");
-    setDetailsCreate("");
-    setDureeCreate("10");
-
     setCreateOrUpdateMomentState(null);
-
     setStepVisible("updating");
   };
 
@@ -1633,23 +1657,27 @@ function ReorderItem({
         </div>
         {stepVisible === "updating" && currentStepId === step.id ? (
           <div className="flex flex-col gap-y-8">
-            <InputTextControlled
+            <InputText
               form={STEP_FORM_ID.updating}
               label="Intitulé de l'étape"
               name="intituledeleetape"
-              definedValue={intitule}
-              definedOnValueChange={setIntituleUpdate}
+              defaultValue={step.intitule}
+              // definedValue={intitule}
+              // definedOnValueChange={setIntituleUpdate}
               description="Définissez simplement le sujet de l'étape."
+              required={false}
               errors={createOrUpdateMomentState?.errors?.stepName}
             />
-            <TextareaControlled
+            <Textarea
               form={STEP_FORM_ID.updating}
               label="Détails de l'étape"
               name="detailsdeleetape"
-              definedValue={details}
-              definedOnValueChange={setDetailsUpdate}
+              defaultValue={step.details}
+              // definedValue={details}
+              // definedOnValueChange={setDetailsUpdate}
               description="Expliquez en détails le déroulé de l'étape."
               rows={4}
+              required={false}
               errors={createOrUpdateMomentState?.errors?.stepDescription}
             />
             <InputNumberControlled
