@@ -357,7 +357,31 @@ export const trueCreateOrUpdateMomentFlow = async (
   // It works and with that, I now know my way around useTransition.
 
   let destination = formData.get("destination");
+  if (destination === null) {
+    return {
+      momentMessage: DEFAULT_MOMENT_MESSAGE,
+      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      errors: {
+        destinationName: [
+          "Veuillez choisir ou alors décrire une destination valide.",
+        ],
+      },
+    };
+  }
+
   let activite = formData.get("activite");
+  if (activite === null) {
+    return {
+      momentMessage: DEFAULT_MOMENT_MESSAGE,
+      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      errors: {
+        destinationName: [
+          "Veuillez choisir ou alors décrire une activité valide.",
+        ],
+      },
+    };
+  }
+
   let objectif = formData.get("objectif");
   // I can honestly already test this because even if it's not connected I'm enforcing a boolean which by default will always be false.
   let indispensable = !!formData.get("indispensable");
