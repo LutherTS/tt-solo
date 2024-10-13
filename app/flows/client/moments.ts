@@ -289,7 +289,7 @@ export const createOrUpdateStepActionflow = (
     const stepsIntitules = steps.map((e) => e.intitule);
     const stepsDetails = steps.map((e) => e.details);
 
-    if (stepsIntitules.includes(stepName)) {
+    if (stepsIntitules.includes(stepName) && variant === "creating") {
       setIsCreateOrUpdateStepDone(true);
       return setCreateOrUpdateMomentState({
         stepsMessage: DEFAULT_STEP_MESSAGE,
@@ -302,7 +302,7 @@ export const createOrUpdateStepActionflow = (
       });
     }
 
-    if (stepsDetails.includes(stepDescription)) {
+    if (stepsDetails.includes(stepDescription) && variant === "creating") {
       setIsCreateOrUpdateStepDone(true);
       return setCreateOrUpdateMomentState({
         stepsMessage: DEFAULT_STEP_MESSAGE,

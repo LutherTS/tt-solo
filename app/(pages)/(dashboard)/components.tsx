@@ -733,6 +733,7 @@ export function TextareaControlled({
 export function InputSwitch({
   label,
   name,
+  defaultChecked,
   description,
   // definedValue,
   // definedOnValueChange = () => {},
@@ -740,6 +741,7 @@ export function InputSwitch({
 }: {
   label: string;
   name: string;
+  defaultChecked: boolean;
   description: string;
   // definedValue?: boolean;
   // definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
@@ -753,7 +755,7 @@ export function InputSwitch({
           name={name}
           // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled
           // now going for uncontrolled, so using back defaultChecked
-          defaultChecked={false}
+          defaultChecked={defaultChecked}
           // checked={definedValue}
           // onCheckedChange={definedOnValueChange}
           className={clsx(

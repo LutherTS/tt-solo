@@ -736,7 +736,9 @@ function MomentForms({
     };
   });
 
-  let [stepVisible, setStepVisible] = useState<StepVisible>("creating");
+  let [stepVisible, setStepVisible] = useState<StepVisible>(
+    variant === "creating" ? "creating" : "create",
+  );
   let [steps, setSteps] = useState<StepFromCRUD[]>(
     momentSteps ? momentSteps : [],
   );
@@ -760,6 +762,9 @@ function MomentForms({
   let [destinationTextControlled, setDestinationTextControlled] = useState(
     moment ? moment.destinationIdeal : "",
   );
+
+  const destinationValues = destinationOptions.map((e) => e.value);
+
   let [destinationOptionControlled, setDestinationOptionControlled] = useState(
     moment ? moment.destinationIdeal : "",
   );
@@ -892,9 +897,7 @@ function MomentForms({
   }, [isDeleteMomentDone]);
 
   // InputSwitch key
-  const [inputSwitchKey, setInputSwitchKey] = useState(
-    window.crypto.randomUUID(),
-  );
+  const [inputSwitchKey, setInputSwitchKey] = useState("initial");
 
   // resetMomentFormAction
 
@@ -1023,6 +1026,7 @@ function MomentForms({
             <InputText
               label="Destination"
               name="destination"
+              defaultValue={moment ? moment.destinationIdeal : ""}
               // definedValue={destinationTextControlled}
               // definedOnValueChange={setDestinationTextControlled}
               description="Votre projet vise à atteindre quel idéal ?"
@@ -1053,6 +1057,11 @@ function MomentForms({
               description="Choisissez la destination que cherche à atteindre ce moment."
               addendum="Ou définissez-la vous-même via le bouton ci-dessus."
               name="destination"
+              defaultValue={
+                moment && destinationValues.includes(moment.destinationIdeal)
+                  ? moment.destinationIdeal
+                  : ""
+              }
               placeholder="Choisissez..."
               // definedValue={destinationOptionControlled}
               // definedOnValueChange={setDestinationOptionControlled}
@@ -1078,6 +1087,7 @@ function MomentForms({
               description="Définissez le type d'activité qui va correspondre à votre problématique."
               addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
               name="activite"
+              defaultValue={moment ? moment.activity : ""}
               // definedValue={activiteTextControlled}
               // definedOnValueChange={setActiviteTextControlled}
               fieldFlexIsNotLabel
@@ -1099,6 +1109,11 @@ function MomentForms({
               description="Choisissez le type d'activité qui va correspondre à votre problématique."
               addendum="Ou définissez-le vous-même via le bouton ci-dessus."
               name="activite"
+              defaultValue={
+                moment && activityValues.includes(moment.activity)
+                  ? moment.activity
+                  : ""
+              }
               // definedValue={activiteOptionControlled}
               // definedOnValueChange={setActiviteOptionControlled}
               placeholder="Choisissez..."
@@ -1120,6 +1135,7 @@ function MomentForms({
           <InputText
             label="Objectif"
             name="objectif"
+            defaultValue={moment ? moment.objective : ""}
             // definedValue={objectifControlled}
             // definedOnValueChange={setObjectifControlled}
             description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
@@ -1131,6 +1147,7 @@ function MomentForms({
             key={inputSwitchKey}
             label="Indispensable"
             name="indispensable"
+            defaultChecked={moment ? moment.isIndispensable : false}
             description="Activez l'interrupteur si ce moment est d'une importance incontournable."
             // definedValue={indispensable}
             // definedOnValueChange={setIndispensable}
@@ -1139,6 +1156,7 @@ function MomentForms({
           <Textarea
             label="Contexte"
             name="contexte"
+            defaultValue={moment ? moment.context : ""}
             // definedValue={contexteControlled}
             // definedOnValueChange={setContexteControlled}
             description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
