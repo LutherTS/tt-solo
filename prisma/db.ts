@@ -17,5 +17,5 @@ if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma;
 // https://www.prisma.io/docs/orm/more/help-and-troubleshooting/help-articles/nextjs-prisma-client-dev-practices
 
 /* Notes
-The mission is aborted but it's got to know how it's possible to extends the PrismaClient: https://www.prisma.io/docs/orm/prisma-client/client-extensions/result.
+The mission is aborted but it's good to know how it's possible to extends the PrismaClient: https://www.prisma.io/docs/orm/prisma-client/client-extensions/result.
 */
