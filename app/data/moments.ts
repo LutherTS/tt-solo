@@ -44,3 +44,32 @@ export const activityOptions: Option[] = [
 // form defaults
 
 export const STEP_DURATION_DEFAULT = "10";
+
+// views and subviews
+
+// currently unused
+export const views = [
+  "update-moment",
+  "read-moments",
+  "create-moment",
+] as const;
+
+export const viewTitles = {
+  "update-moment": "Éditez",
+  "read-moments": "Vos moments",
+  "create-moment": "Créez",
+};
+
+export const subViews = [
+  "all-moments",
+  "past-moments",
+  "current-moments",
+  "future-moments",
+] as const;
+
+export const subViewTitles = {
+  "all-moments": "Tous",
+  "past-moments": "Passés",
+  "current-moments": "Actuels",
+  "future-moments": "Futurs",
+};

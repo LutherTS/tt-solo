@@ -3,7 +3,6 @@
 import {
   Dispatch,
   SetStateAction,
-  // useActionState, // proudly commented out
   // useCallback,
   useEffect,
   useState,
@@ -12,9 +11,7 @@ import {
   FormEvent,
   TransitionStartFunction,
 } from "react";
-
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -25,10 +22,9 @@ import {
   useScroll,
 } from "framer-motion";
 import debounce from "debounce";
-// import { useTimer } from "react-use-precision-timer";
-
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
+// import { useTimer } from "react-use-precision-timer";
 
 import { Option } from "@/app/types/globals";
 import {
@@ -36,7 +32,6 @@ import {
   MomentToCRUD,
   StepFromCRUD,
   CreateOrUpdateMomentState,
-  CreateOrUpdateMoment,
   DeleteMoment,
   RevalidateMoments,
   MomentFormVariant,
@@ -63,25 +58,17 @@ import {
   FieldTitle,
   InputDatetimeLocalControlled,
   InputNumberControlled,
-  InputSwitchControlled,
   InputText,
-  InputTextControlled,
   PageTitle,
   Section,
   NoDateCard,
-  SelectWithOptionsControlled,
-  TextareaControlled,
   InputSwitch,
   SelectWithOptions,
   Textarea,
 } from "../../../components";
 import * as Icons from "../icons";
 import {
-  createOrUpdateMomentActionflow,
-  createOrUpdateStepActionflow,
-  deleteMomentActionflow,
   deleteStepActionflow,
-  resetMomentFormActionflow,
   resetStepActionflow,
   revalidateMomentsActionflow,
   trueCreateOrUpdateMomentActionflow,
@@ -101,6 +88,9 @@ import {
   YOUR_MOMENT_ID,
   activityOptions,
   STEP_DURATION_DEFAULT,
+  subViewTitles,
+  viewTitles,
+  subViews,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -133,22 +123,20 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 
 export default function Main({
   allUserMomentsToCRUD,
-  destinationOptions,
   maxPages,
-  // createOrUpdateMoment,
-  deleteMoment,
+  destinationOptions,
   revalidateMoments,
-  now,
   trueCreateOrUpdateMoment,
+  deleteMoment,
+  now,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
-  destinationOptions: Option[];
   maxPages: number[];
-  // createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  now: string;
   trueCreateOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
+  now: string;
 }) {
   console.log({ now });
 
@@ -170,12 +158,6 @@ export default function Main({
   // starting directly with the form for now
   let [view, setView] = useState<View>("create-moment");
 
-  let viewTitles = {
-    "update-moment": "Éditez",
-    "read-moments": "Vos moments",
-    "create-moment": "Créez",
-  };
-
   const [
     _realUserMoments,
     realPastMoments,
@@ -194,7 +176,7 @@ export default function Main({
 
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
-  // for UpdateMomentView
+  // at an upper level for UpdateMomentView
   let [moment, setMoment] = useState<MomentToCRUD>();
 
   return (
@@ -232,16 +214,13 @@ export default function Main({
         </div>
         {view !== "read-moments" && <Divider />}
       </div>
-      {/* For now create and update views need to be removed from the DOM opposingly, but eventually I have to give them respective form names. Same needs to be considered for destination and activite, but the solution used here for now is satisfactory. */}
       <div className={clsx(view !== "update-moment" && "hidden")}>
-        {/* Here, UpdateMomentView needs to be unmounted on ReadMomentsView to be reinstantiated with the correct defaults */}
         {view === "update-moment" && (
           // UpdateMomentView
           <MomentForms
             variant="updating"
             moment={moment}
             destinationOptions={destinationOptions}
-            // createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
             setView={setView}
             setSubView={setSubView}
@@ -254,22 +233,20 @@ export default function Main({
         <ReadMomentsView
           allUserMomentsToCRUD={allUserMomentsToCRUD}
           maxPages={maxPages}
-          revalidateMoments={revalidateMoments}
-          setMoment={setMoment}
           view={view}
           subView={subView}
           setView={setView}
           setSubView={setSubView}
+          setMoment={setMoment}
+          revalidateMoments={revalidateMoments}
         />
       </div>
       <div className={clsx(view !== "create-moment" && "hidden")}>
-        {/* Here, CreateMomentView needs to stay in the DOM in order for the form contents to remain when looking at other moments on ReadMomentsView. But an improvement could be to give variants of MomentForms their own form input names. However, in a real project with a database, revalidate could negate this effort depending on how it is implemented. This will be it for this demo. */}
         {view !== "update-moment" && (
           // CreateMomentView
           <MomentForms
             variant="creating"
             destinationOptions={destinationOptions}
-            // createOrUpdateMoment={createOrUpdateMoment}
             setView={setView}
             setSubView={setSubView}
             now={now}
@@ -286,29 +263,22 @@ export default function Main({
 function ReadMomentsView({
   allUserMomentsToCRUD,
   maxPages,
-  revalidateMoments,
   view,
   subView,
-  setMoment,
   setView,
   setSubView,
+  setMoment,
+  revalidateMoments,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
-  revalidateMoments: RevalidateMoments;
   view: View;
   subView: SubView;
-  setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
+  setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
+  revalidateMoments: RevalidateMoments;
 }) {
-  let subViewTitles = {
-    "all-moments": "Tous",
-    "past-moments": "Passés",
-    "current-moments": "Actuels",
-    "future-moments": "Futurs",
-  };
-
   const [
     realAllMoments,
     realPastMoments,
@@ -322,13 +292,6 @@ function ReadMomentsView({
     "current-moments": realCurrentMoments,
     "future-moments": realFutureMoments,
   };
-
-  const subViews = [
-    "all-moments",
-    "past-moments",
-    "current-moments",
-    "future-moments",
-  ] as const;
 
   let realDisplayedMoments = realAllMoments.dates;
   if (subView !== undefined && subViews.includes(subView))
@@ -345,6 +308,7 @@ function ReadMomentsView({
   const pathname = usePathname();
   const { replace } = useRouter();
 
+  // because of debounce I'm exceptionally not turning this handler into an action
   function handleSearch(term: string) {
     const params = new URLSearchParams(searchParams);
 
@@ -388,6 +352,7 @@ function ReadMomentsView({
     subViewMaxPages[subView],
   );
 
+  // for now search and pagination will remain handlers
   function handlePagination(direction: "left" | "right", subView: SubView) {
     const params = new URLSearchParams(searchParams);
     if (direction === "left")
@@ -439,6 +404,7 @@ function ReadMomentsView({
 
   const { scrollY } = useScroll();
 
+  // again, debounce-bound so not turned into an action
   const settingScrollPosition = (latest: number) => setScrollPosition(latest);
 
   const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
@@ -514,7 +480,6 @@ function ReadMomentsView({
           );
         })}
         <button
-          // to target the input in the form that needs to be reset
           form={SEARCH_FORM_ID}
           onClick={revalidateMomentsAction}
           disabled={isRevalidateMomentsPending}
@@ -549,12 +514,10 @@ function ReadMomentsView({
           ></div>
         </button>
       </div>
-      {/* to place the input into a form so it can be reset */}
       <form id={SEARCH_FORM_ID}>
         <InputText
-          // keeping the "contains" out of variable for this because unsure if "contains" the definitive id and name
-          id="contains"
-          name="contains"
+          id={CONTAINS}
+          name={CONTAINS}
           placeholder="Cherchez parmi vos moments..."
           defaultValue={searchParams.get(CONTAINS)?.toString()}
           onChange={(e) => {
