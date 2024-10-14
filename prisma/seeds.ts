@@ -30,11 +30,21 @@ async function seed() {
       // LePapier / “me”
       signInEmailAddress: "l@l.me",
       hashedPassword:
-        "$2a$12$7IgXH7ORHd4x5O7.VC5LROJJFMq620II9ESleuMIYs.6KNDAsEYAe", // LePapier
-      username: "demo", // shifted from "LePapier" to "demo"
+        "$2a$12$7IgXH7ORHd4x5O7.VC5LROJJFMq620II9ESleuMIYs.6KNDAsEYAe", // LePapier // https://bcrypt-generator.com/
+      username: "LePapier",
       pseudoname: "“me”",
       firstName: "Luther",
       lastName: "Tchofo Safo",
+    },
+    {
+      // demo / Demo
+      signInEmailAddress: "demo@demo.com",
+      hashedPassword:
+        "$2a$12$ufrbXeZYSZYAtNAw4L.T0epcTcG5rEUDW6Vxf/hZBoycpM2FCIOcC", // demo
+      username: "demo",
+      pseudoname: "Demo",
+      firstName: "Demetrius",
+      lastName: "Moses",
     },
   ];
   console.log({ usersData });
@@ -162,32 +172,36 @@ async function seed() {
 
   console.log(`Seeding all Moments...`);
 
-  for (const destination of destinations) {
-    const destinationMoments = await Promise.all(
-      momentsData.map(async (momentData) => {
-        return await prisma.moment.upsert({
-          where: {
-            name_destinationId: {
-              name: momentData.objective,
-              destinationId: destination.id,
+  for (const user of users) {
+    const userDestinations = destinations.filter((e) => e.userId === user.id);
+    for (const destination of userDestinations) {
+      const destinationMoments = await Promise.all(
+        momentsData.map(async (momentData) => {
+          return await prisma.moment.upsert({
+            where: {
+              name_userId: {
+                name: momentData.objective,
+                userId: user.id,
+              },
             },
-          },
-          update: {},
-          create: {
-            activity: momentData.activity,
-            name: momentData.objective,
-            isIndispensable: momentData.isIndispensable,
-            description: momentData.context,
-            startDateAndTime: momentData.startDateAndTime,
-            duration: momentDuration.toString(),
-            endDateAndTime: momentData.endDateAndTime,
-            destinationId: destination.id,
-          },
-        });
-      }),
-    );
+            update: {},
+            create: {
+              activity: momentData.activity,
+              name: momentData.objective,
+              isIndispensable: momentData.isIndispensable,
+              description: momentData.context,
+              startDateAndTime: momentData.startDateAndTime,
+              duration: momentDuration.toString(),
+              endDateAndTime: momentData.endDateAndTime,
+              destinationId: destination.id,
+              userId: user.id,
+            },
+          });
+        }),
+      );
 
-    moments = moments.concat(destinationMoments);
+      moments = moments.concat(destinationMoments);
+    }
   }
 
   console.log(`...All Moments seeded.`);
@@ -231,6 +245,7 @@ async function seed() {
   console.log(`Seeding all Steps...`);
 
   for (const moment of moments) {
+    // keeping the map because makeStepsCompoundDurationsArray isn't tailored for this
     const map: Map<number, number> = new Map();
     let durationTotal = 0;
     for (let j = 0; j < stepsData.length; j++) {

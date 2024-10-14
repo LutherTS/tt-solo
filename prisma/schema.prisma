@@ -25,6 +25,8 @@ model User {
   updatedAt                      DateTime                  @updatedAt @default(now())
 
   destinations                   Destination[]
+
+  moments                        Moment[]
 }
 
 // Destination is going to need a table above called Projects.
@@ -77,7 +79,13 @@ model Moment {
 
   steps                          Step[]
 
-  @@unique([name, destinationId])
+  userId                         String
+  user                           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Uniqueness is going to go above name, destinationId. A moment's name needs to be unique from the perspective of the user who create it. 
+  // Therefore, a new relation direct to the user needs to be implemented on the Moment model.
+  // This also means that a validation will be needed to be made that the user connected and the destination connected need to have the same userId.
+  @@unique([name, userId])
 }
 
 model Step {

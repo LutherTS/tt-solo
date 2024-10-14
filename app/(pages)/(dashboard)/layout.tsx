@@ -16,20 +16,23 @@ export default function Layout({
       <div className="size-full">
         {/* Page Wrapper */}
         {/* w-full replacing w-screen with w-full from CRUD main */}
-        <main className="flex w-full flex-col items-center">
+        <div className="flex w-full flex-col items-center">
           {/* Page Container */}
           <div
             // this could be thrown back to the children for headers
             className={clsx(
-              "min-h-screen w-full max-w-4xl space-y-8 overflow-clip px-8 pt-8",
+              // container can coexist with max-w-4xl
+              // pb-12 previously
+              "container min-h-screen w-full overflow-clip px-8 pt-8",
               "pb-12",
-              "md:pb-24",
+              // "md:pb-24",
+              "lg:max-w-4xl",
             )}
           >
             {/* Page Contents */}
             {children}
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

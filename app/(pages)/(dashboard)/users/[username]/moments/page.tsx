@@ -1,33 +1,46 @@
-import { revalidatePath } from "next/cache";
-import { Moment } from "@prisma/client";
-import { add } from "date-fns";
+import { Suspense } from "react";
+import { notFound } from "next/navigation";
 
-import prisma from "@/prisma/db";
-import { Option } from "@/app/types/general";
+import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
   StepFromCRUD,
   MomentToCRUD,
+  MomentFormVariant,
+  CreateOrUpdateMomentState,
 } from "@/app/types/moments";
-import { dateToInputDatetime, endDateAndTime } from "@/app/utilities/moments";
-import { CRUD } from "./crud";
+import {
+  dateToInputDatetime,
+  defineCurrentPage,
+} from "@/app/utilities/moments";
+import Main from "./main";
+import {
+  CONTAINS,
+  CURRENTUSERMOMENTSPAGE,
+  FUTUREUSERMOMENTSPAGE,
+  PASTUSERMOMENTSPAGE,
+  USERMOMENTSPAGE,
+} from "@/app/data/moments";
+import { findUserIdByUsername } from "@/app/reads/users";
+import {
+  countCurrentUserMomentsWithContains,
+  countFutureUserMomentsWithContains,
+  countPastUserMomentsWithContains,
+  countUserMomentsWithContains,
+  findCurrentUserMomentsWithContains,
+  findFutureUserMomentsWithContains,
+  findPastUserMomentsWithContains,
+  findUserMomentsWithContains,
+} from "@/app/reads/moments";
+import { findDestinationsByUserId } from "@/app/reads/destinations";
+import {
+  deleteMomentFlow,
+  revalidateMomentsFlow,
+  createOrUpdateMomentFlow,
+} from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
-
-// IMPORTANT
-// Just that weird thing about time not being current correctly now.
-// Either something to do with cache or the need for a useEffect.
-// (Which I'm now trying to address above with export const dynamic.)
-// (I'll need to test more but I think "force-dynamic" got things done.)
-
-// the time at rendering as a stable foundation for all time operations
-let now = new Date();
-// sharing time as string to bypass timezone adaptations
-let nowString = dateToInputDatetime(now);
-console.log(nowString);
-// There's a problem with cache when it comes to time here
-// It's only when the page recompiles that the correct time is taken into account. Probably something with noStore, I don't know.
 
 export default async function MomentsPage({
   params,
@@ -37,98 +50,46 @@ export default async function MomentsPage({
     username: string;
   };
   searchParams?: {
-    contains?: string;
-    usermomentspage?: string;
-    pastusermomentspage?: string;
-    currentusermomentspage?: string;
-    futureusermomentspage?: string;
+    [CONTAINS]?: string;
+    [USERMOMENTSPAGE]?: string;
+    [PASTUSERMOMENTSPAGE]?: string;
+    [CURRENTUSERMOMENTSPAGE]?: string;
+    [FUTUREUSERMOMENTSPAGE]?: string;
   };
 }) {
+  // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.
+  let now = dateToInputDatetime(new Date());
+  console.log({ now });
+
+  // PART READ
+
   const username = params.username;
 
-  const contains = searchParams?.contains || "";
-  const userMomentsPage = Number(searchParams?.usermomentspage) || 1;
-  const pastUserMomentsPage = Number(searchParams?.pastusermomentspage) || 1;
-  const currentUserMomentsPage =
-    Number(searchParams?.currentusermomentspage) || 1;
-  const futureUserMomentsPage =
-    Number(searchParams?.futureusermomentspage) || 1;
+  // error handling needed eventually
+  const userFound = await findUserIdByUsername(username);
+  // console.log({ userFound });
 
-  const pages = [
-    userMomentsPage,
-    pastUserMomentsPage,
-    currentUserMomentsPage,
-    futureUserMomentsPage,
-  ];
+  if (!userFound) return notFound();
 
-  const user = await prisma.user.findUnique({
-    where: { username },
-  });
-  // console.log(user);
+  // extremely important to use user in server actions without null
+  const user = userFound;
 
-  if (!user) return console.error("Somehow a user was not found.");
+  const userId = user.id;
 
-  // take and skip randomly implemented below for scalable defaults.
-  // All of these will be optimized and organized in their own folders.
+  // that is one chill searchParam right here
+  const contains = searchParams?.[CONTAINS] || "";
 
-  const TAKE = 2;
-
+  // error handling needed eventually
   const [
     userMomentsTotal,
     pastUserMomentsTotal,
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ] = await Promise.all([
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-      },
-    }),
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-        endDateAndTime: {
-          lt: nowString,
-        },
-      },
-    }),
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-        AND: [
-          { startDateAndTime: { lte: nowString } },
-          { endDateAndTime: { gte: nowString } },
-        ],
-      },
-    }),
-    prisma.moment.count({
-      where: {
-        destination: {
-          userId: user.id,
-        },
-        name: {
-          contains: contains !== "" ? contains : undefined,
-        },
-        startDateAndTime: {
-          gt: nowString,
-        },
-      },
-    }),
+    countUserMomentsWithContains(userId, contains),
+    countPastUserMomentsWithContains(userId, contains, now),
+    countCurrentUserMomentsWithContains(userId, contains, now),
+    countFutureUserMomentsWithContains(userId, contains, now),
   ]);
   // console.log({
   //   userMomentsTotal,
@@ -142,121 +103,72 @@ export default async function MomentsPage({
     pastUserMomentsTotal,
     currentUserMomentsTotal,
     futureUserMomentsTotal,
-  ];
-  // console.log(totals)
+  ] as const;
+  // console.log({ totals })
+
+  // TAKE is page-dependent here. So the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
+  const TAKE = 2;
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
-  // console.log(maxPages);
+  // console.log({ maxPages });
 
+  const searchParamsPageKeys = [
+    USERMOMENTSPAGE,
+    PASTUSERMOMENTSPAGE,
+    CURRENTUSERMOMENTSPAGE,
+    FUTUREUSERMOMENTSPAGE,
+  ] as const;
+
+  const pages = searchParamsPageKeys.map((e, i) =>
+    defineCurrentPage(
+      1,
+      // I had never seen that TypeScript syntax before.
+      // And it is not valid JavaScript.
+      Number(searchParams?.[e]),
+      maxPages[i],
+    ),
+  );
+  // console.log({ pages });
+
+  const [
+    userMomentsPage,
+    pastUserMomentsPage,
+    currentUserMomentsPage,
+    futureUserMomentsPage,
+  ] = pages;
+
+  // error handling needed eventually
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "desc",
-        },
-        take: TAKE,
-        skip: (userMomentsPage - 1) * TAKE,
-      }),
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-          endDateAndTime: {
-            lt: nowString,
-          },
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "desc",
-        },
-        take: TAKE,
-        skip: (pastUserMomentsPage - 1) * TAKE,
-      }),
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-          AND: [
-            { startDateAndTime: { lte: nowString } },
-            { endDateAndTime: { gte: nowString } },
-          ],
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "asc",
-        },
-        take: TAKE,
-        skip: (currentUserMomentsPage - 1) * TAKE,
-      }),
-      prisma.moment.findMany({
-        where: {
-          destination: {
-            userId: user.id,
-          },
-          name: {
-            contains: contains !== "" ? contains : undefined,
-          },
-          startDateAndTime: {
-            gt: nowString,
-          },
-        },
-        include: {
-          destination: true,
-          steps: {
-            orderBy: {
-              orderId: "asc",
-            },
-          },
-        },
-        orderBy: {
-          startDateAndTime: "asc",
-        },
-        take: TAKE,
-        skip: (futureUserMomentsPage - 1) * TAKE,
-      }),
+      findUserMomentsWithContains(userId, contains, userMomentsPage, TAKE),
+      findPastUserMomentsWithContains(
+        userId,
+        contains,
+        now,
+        pastUserMomentsPage,
+        TAKE,
+      ),
+      findCurrentUserMomentsWithContains(
+        userId,
+        contains,
+        now,
+        currentUserMomentsPage,
+        TAKE,
+      ),
+      findFutureUserMomentsWithContains(
+        userId,
+        contains,
+        now,
+        futureUserMomentsPage,
+        TAKE,
+      ),
     ]);
-  // console.log(userMoments);
-  // console.log(pastUserMoments);
-  // console.log(currentUserMoments);
-  // console.log(futureUserMoments);
+  // console.log({
+  //   userMoments,
+  //   pastUserMoments,
+  //   currentUserMoments,
+  //   futureUserMoments,
+  // });
 
   const allUserMoments = [
     userMoments,
@@ -264,8 +176,9 @@ export default async function MomentsPage({
     currentUserMoments,
     futureUserMoments,
   ];
-  // console.log(allUserMoments);
+  // console.log({ allUserMoments });
 
+  // treating data for the client...
   const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map(
     (e, i, a) => {
       return {
@@ -344,16 +257,13 @@ export default async function MomentsPage({
       };
     },
   );
+  // console.logs on demand...
 
-  const userDestinations = await prisma.destination.findMany({
-    where: {
-      userId: user.id,
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+  // error handling needed eventually
+  const userDestinations = await findDestinationsByUserId(userId);
+  // console.log({ userDestinations });
 
+  // treating data for the client...
   const destinationOptions: Option[] = userDestinations
     .sort((a, b) => {
       const nameA = a.name.toLowerCase();
@@ -369,247 +279,69 @@ export default async function MomentsPage({
         value: e.name,
       };
     });
+  // console.logs on demand...
 
-  // Ça a marché. Tout ce qui manque c'est le typage entre fichiers.
+  // PART WRITE
+
   async function createOrUpdateMoment(
-    variant: "creating" | "updating",
-    indispensable: boolean,
-    momentDate: string,
+    formData: FormData,
+    variant: MomentFormVariant,
+    startMomentDate: string,
     steps: StepFromCRUD[],
     momentFromCRUD: MomentToCRUD | undefined,
-    formData: FormData,
-  ) {
+    destinationSelect: boolean,
+    activitySelect: boolean,
+  ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
-    // test
-    // return { message: "I'm testing things here." };
-    // It works and with that, I now know my way around useTransition.
+    // Haven't tested it yet, but it should be working.
+    // This is it. The action itself, its barebones, the action itself is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
+    return await createOrUpdateMomentFlow(
+      formData,
+      variant,
+      startMomentDate,
+      steps,
+      momentFromCRUD,
+      destinationSelect,
+      activitySelect,
+      user,
+    );
 
-    let destination = formData.get("destination");
-    let activite = formData.get("activite");
-    let objectif = formData.get("objectif");
-    let contexte = formData.get("contexte");
-
-    if (
-      typeof destination !== "string" ||
-      typeof activite !== "string" ||
-      typeof objectif !== "string" ||
-      typeof contexte !== "string"
-    )
-      // return console.error(
-      //   "Le formulaire du moment n'a pas été correctement renseigné.",
-      // );
-      return {
-        message: "Le formulaire du moment n'a pas été correctement renseigné.",
-      };
-
-    if (!user)
-      // return console.error("Surprenamment un utilisateur n'a pas été retrouvé.");
-      return { message: "Surprenamment un utilisateur n'a pas été retrouvé." };
-
-    let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
-
-    const map: Map<number, number> = new Map();
-    let durationTotal = 0;
-    for (let j = 0; j < steps.length; j++) {
-      durationTotal += +steps[j].duree;
-      map.set(j, durationTotal);
-    }
-
-    if (variant === "creating") {
-      const destinationEntry = await prisma.destination.findUnique({
-        where: {
-          name_userId: {
-            name: destination,
-            userId: user.id,
-          },
-        },
-      });
-
-      let moment: Moment;
-
-      if (destinationEntry) {
-        moment = await prisma.moment.create({
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destinationId: destinationEntry.id,
-          },
-        });
-      } else {
-        moment = await prisma.moment.create({
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destination: {
-              create: {
-                name: destination,
-                userId: user.id,
-              },
-            },
-          },
-        });
-      }
-
-      let i = 1;
-      for (let j = 0; j < steps.length; j++) {
-        const step = steps[j];
-
-        await prisma.step.create({
-          data: {
-            orderId: i,
-            name: step.intitule,
-            description: step.details,
-            startDateAndTime:
-              j === 0
-                ? momentDate
-                : dateToInputDatetime(
-                    add(momentDate, { minutes: map.get(j - 1) }),
-                  ),
-            duration: step.duree,
-            endDateAndTime: dateToInputDatetime(
-              add(momentDate, { minutes: map.get(j) }),
-            ),
-            momentId: moment.id,
-          },
-        });
-        i++;
-      }
-    }
-
-    if (variant === "updating") {
-      if (!momentFromCRUD)
-        // return console.error("Surprenamment un moment n'a pas été réceptionné.");
-        return { message: "Surprenamment un moment n'a pas été réceptionné." };
-
-      const destinationEntry = await prisma.destination.findUnique({
-        where: {
-          name_userId: {
-            name: destination,
-            userId: user.id,
-          },
-        },
-      });
-
-      let moment: Moment;
-
-      if (destinationEntry) {
-        moment = await prisma.moment.update({
-          where: {
-            id: momentFromCRUD.id,
-          },
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destinationId: destinationEntry.id,
-          },
-        });
-      } else {
-        moment = await prisma.moment.update({
-          where: {
-            id: momentFromCRUD.id,
-          },
-          data: {
-            activity: activite,
-            name: objectif,
-            isIndispensable: indispensable,
-            description: contexte,
-            startDateAndTime: momentDate,
-            duration,
-            endDateAndTime: endDateAndTime(momentDate, duration),
-            destination: {
-              create: {
-                name: destination,
-                userId: user.id,
-              },
-            },
-          },
-        });
-      }
-
-      await prisma.step.deleteMany({
-        where: {
-          momentId: moment.id,
-        },
-      });
-
-      let i = 1;
-      for (let j = 0; j < steps.length; j++) {
-        const step = steps[j];
-
-        await prisma.step.create({
-          data: {
-            orderId: i,
-            name: step.intitule,
-            description: step.details,
-            startDateAndTime:
-              j === 0
-                ? momentDate
-                : dateToInputDatetime(
-                    add(momentDate, { minutes: map.get(j - 1) }),
-                  ),
-            duration: step.duree,
-            endDateAndTime: dateToInputDatetime(
-              add(momentDate, { minutes: map.get(j) }),
-            ),
-            momentId: moment.id,
-          },
-        });
-        i++;
-      }
-    }
-
-    revalidatePath(`/users/${username}/moments`);
+    // I need to emphasize what is magical about this.
+    // I don't need to authenticate the user in the action. Why? Because the action does not exist if the user is not authenticated. :D
+    // And this solve the issue of people crying that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
   }
 
-  async function deleteMoment(momentFromCRUD?: MomentToCRUD) {
+  async function deleteMoment(
+    momentFromCRUD: MomentToCRUD | undefined,
+  ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
-    if (!momentFromCRUD)
-      // return console.error("Surprenamment un moment n'a pas été réceptionné.");
-      return { message: "Surprenamment un moment n'a pas été réceptionné." };
-
-    await prisma.moment.delete({
-      where: {
-        id: momentFromCRUD.id,
-      },
-    });
-
-    revalidatePath(`/users/${username}/moments`);
+    return await deleteMomentFlow(momentFromCRUD, user);
   }
 
-  // still bugging with time, at this time
-  async function revalidateMoments() {
+  // insisting on : Promise<void> to keep in sync with the flow
+  async function revalidateMoments(): Promise<void> {
     "use server";
 
-    revalidatePath(`/users/${username}/moments`);
+    return await revalidateMomentsFlow(user);
   }
 
+  // The magic here is that no data directly from the User model ever leaves the server, since the actions reuse the verified User data obtained at the top of the function.
+  // However, if the actions were obtained via import in a client component such as the one below, user data would have to be bound directly on the client component itself (which is insecure) or via a separate child server component (perhaps secure, but an exact step for that data) which would also have to pass these actions as props, doing the exact same thing.
+  // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
-    <CRUD
-      allUserMomentsToCRUD={allUserMomentsToCRUD}
-      destinationOptions={destinationOptions}
-      maxPages={maxPages}
-      createOrUpdateMoment={createOrUpdateMoment}
-      deleteMoment={deleteMoment}
-      revalidateMoments={revalidateMoments}
-      now={nowString}
-    />
+    <Suspense>
+      <Main
+        allUserMomentsToCRUD={allUserMomentsToCRUD}
+        maxPages={maxPages}
+        destinationOptions={destinationOptions}
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+        now={now}
+      />
+    </Suspense>
   );
 }
 
@@ -632,4 +364,25 @@ Previous inline notes:
 In the end... It's better my code stays the same when it comes to durations, startDateAndTimes and endDateAndTimes. I know these are essentially computed fields. But if they have be computed every time I access the data, it's immensely slower if they're only computed on every insert and every update. 
 ...
 Now aside from validations the only thing I'm missing from my server actions is a good old try...catch for the unexpected errors I simply could not be held responsible for. (Those I'm unlikely to encounter locally.)
+...
+// There is no way that code is a thing.
+// truePages = [
+//   userMomentsPage,
+//   pastUserMomentsPage,
+//   currentUserMomentsPage,
+//   futureUserMomentsPage,
+// ] = truePages;
+...
+// it's a solution but I guess tomorrow I could optimize
+// I could also start (finally?) making them actions folder and files
+// ...and maybe even them data folder and files, too
+// though I really like having both read and write here on the same file...
+// ...so I could instead make their helpers in a brand-new folder
+// like reads and writes
+// the actions and the full read flows will stay here but deconstructed.
+// ...
+// I think does make sense that the reads are on the server and the writes are on the client. That can justifying placing server actions in the own folders which, to be honest, is exactly how I would work with a team.
+...
+SOLVED:
+(I don't understand how inside the action user can be null when I'm returning if it's null in the function. ...Let's have some fun with this for one second. It's because the action can be placed anywhere in the parent function, it doesn't follow the regular flow of creation within the page. I can place it before notFound and the code doesn't break. So do I make it use the argument user created inside parent function, but the action is pretty much created before the user is verified. Maybe if obtaining the user and verify the user was one single action, one flow... That's something I could try.)
 */
