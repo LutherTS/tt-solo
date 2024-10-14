@@ -70,10 +70,10 @@ import {
   deleteStepActionflow,
   resetStepActionflow,
   revalidateMomentsActionflow,
-  trueCreateOrUpdateMomentActionflow,
-  trueCreateOrUpdateStepActionflow,
-  trueDeleteMomentActionflow,
-  trueResetMomentFormActionflow,
+  createOrUpdateMomentActionflow,
+  createOrUpdateStepActionflow,
+  deleteMomentActionflow,
+  resetMomentFormActionflow,
 } from "@/app/flows/client/moments";
 import {
   CONTAINS,
@@ -90,6 +90,7 @@ import {
   subViewTitles,
   viewTitles,
   subViews,
+  MOMENT_FORM_ID,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -125,7 +126,7 @@ export default function Main({
   maxPages,
   destinationOptions,
   revalidateMoments,
-  trueCreateOrUpdateMoment,
+  createOrUpdateMoment,
   deleteMoment,
   now,
 }: {
@@ -133,7 +134,7 @@ export default function Main({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  trueCreateOrUpdateMoment: CreateOrUpdateMoment;
+  createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
   now: string;
 }) {
@@ -222,7 +223,7 @@ export default function Main({
             destinationOptions={destinationOptions}
             setView={setView}
             setSubView={setSubView}
-            trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
+            createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
             now={now}
           />
@@ -248,7 +249,7 @@ export default function Main({
             destinationOptions={destinationOptions}
             setView={setView}
             setSubView={setSubView}
-            trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
+            createOrUpdateMoment={createOrUpdateMoment}
             now={now}
           />
         )}
@@ -668,7 +669,7 @@ function MomentForms({
   destinationOptions,
   setView,
   setSubView,
-  trueCreateOrUpdateMoment,
+  createOrUpdateMoment,
   deleteMoment,
   now,
 }: {
@@ -677,7 +678,7 @@ function MomentForms({
   destinationOptions: Option[];
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
-  trueCreateOrUpdateMoment: CreateOrUpdateMoment;
+  createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
 }) {
@@ -751,10 +752,10 @@ function MomentForms({
   const createOrUpdateMomentAction = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
-    return await trueCreateOrUpdateMomentActionflow(
+    return await createOrUpdateMomentActionflow(
       event,
       startCreateOrUpdateMomentTransition,
-      trueCreateOrUpdateMoment,
+      createOrUpdateMoment,
       setCreateOrUpdateMomentState,
       variant,
       startMomentDate,
@@ -790,7 +791,7 @@ function MomentForms({
   const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
 
   const deleteMomentAction = async () => {
-    return await trueDeleteMomentActionflow(
+    return await deleteMomentActionflow(
       startDeleteMomentTransition,
       deleteMoment,
       moment,
@@ -817,7 +818,7 @@ function MomentForms({
 
   // action is (now) completely client, so no need for async
   const resetMomentFormAction = (event: FormEvent<HTMLFormElement>) => {
-    return trueResetMomentFormActionflow(
+    return resetMomentFormActionflow(
       event,
       startResetMomentFormTransition,
       setStartMomentDate,
@@ -896,7 +897,7 @@ function MomentForms({
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentFormAction}
-        id="moment-forms"
+        id={MOMENT_FORM_ID}
       >
         <Section
           title="Votre moment"
@@ -1301,7 +1302,7 @@ function StepForm({
     useState(false);
 
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
-    return trueCreateOrUpdateStepActionflow(
+    return createOrUpdateStepActionflow(
       event,
       startCreateOrUpdateStepTransition,
       setCreateOrUpdateMomentState,
@@ -1408,6 +1409,7 @@ function ReorderItem({
 
   const [isModifyStepPending, startModifyStepTransition] = useTransition();
 
+  // just like restoreStepAction, there's no need to import this action from an external file (at least at this time) since it is very specific to ReorderItem
   const modifyStepAction = () => {
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);

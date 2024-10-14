@@ -34,7 +34,7 @@ export const createOrUpdateMomentAfterflow = (
     if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
     else if (compareAsc(startMomentDate, now) === 1)
       setSubView("future-moments");
-    // therefore present by default
+    // present by default
     else setSubView("current-moments");
 
     setScrollToTop("read-moments", setView);
@@ -43,6 +43,17 @@ export const createOrUpdateMomentAfterflow = (
   }
 };
 
+// scrolls back to yourMoment's section at the top after resetting the form
+// (every time resetMomentFormAction is done)
+export const resetMomentFormAfterflow = (
+  setIsResetMomentFormDone: Dispatch<SetStateAction<boolean>>,
+) => {
+  scrollToSection(YOUR_MOMENT_ID);
+  return setIsResetMomentFormDone(false);
+};
+
+// scrolls back to yourMoment's section if there's a mistake, or leads to the top of "read-moments" after the moment is successfully deleted
+// (every time deleteMomentAction is done)
 export const deleteMomentAfterflow = (
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setView: Dispatch<SetStateAction<View>>,
@@ -55,15 +66,6 @@ export const deleteMomentAfterflow = (
     setScrollToTop("read-moments", setView);
     return setIsDeleteMomentDone(false);
   }
-};
-
-// scrolls back to yourMoment's section at the top after resetting the form
-// (every time resetMomentFormAction is done)
-export const resetMomentFormAfterflow = (
-  setIsResetMomentFormDone: Dispatch<SetStateAction<boolean>>,
-) => {
-  scrollToSection(YOUR_MOMENT_ID);
-  return setIsResetMomentFormDone(false);
 };
 
 // scrolls back to itsSteps's section when the step form is successfully and unsuccessfully submitted

@@ -36,7 +36,7 @@ import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
   deleteMomentFlow,
   revalidateMomentsFlow,
-  trueCreateOrUpdateMomentFlow,
+  createOrUpdateMomentFlow,
 } from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
@@ -283,41 +283,7 @@ export default async function MomentsPage({
 
   // PART WRITE
 
-  // Types are shared between this server file, the type file and the client file, manually verified both for the arguments and for the promise.
-  // async function createOrUpdateMoment(
-  //   variant: MomentFormVariant,
-  //   indispensable: boolean,
-  //   momentDate: string,
-  //   steps: StepFromCRUD[],
-  //   destination: string,
-  //   activite: string,
-  //   objectif: string,
-  //   contexte: string,
-  //   momentFromCRUD: MomentToCRUD | undefined,
-  // ): Promise<CreateOrUpdateMomentState> {
-  //   "use server";
-
-  //   // Haven't tested it yet, but it should be working.
-  //   // This is it. The action itself, its barebones, the action itself is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
-  //   return await createOrUpdateMomentFlow(
-  //     variant,
-  //     indispensable,
-  //     momentDate,
-  //     steps,
-  //     destination,
-  //     activite,
-  //     objectif,
-  //     contexte,
-  //     momentFromCRUD,
-  //     user,
-  //   );
-
-  //   // I need to emphasize what is magical about this.
-  //   // I don't need to authenticate the user in the action. Why? Because the action does not exist if the user is not authenticated. :D
-  //   // And this solve the issue of people crying that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
-  // }
-
-  async function trueCreateOrUpdateMoment(
+  async function createOrUpdateMoment(
     formData: FormData,
     variant: MomentFormVariant,
     startMomentDate: string,
@@ -330,7 +296,7 @@ export default async function MomentsPage({
 
     // Haven't tested it yet, but it should be working.
     // This is it. The action itself, its barebones, the action itself is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
-    return await trueCreateOrUpdateMomentFlow(
+    return await createOrUpdateMomentFlow(
       formData,
       variant,
       startMomentDate,
@@ -348,7 +314,6 @@ export default async function MomentsPage({
 
   async function deleteMoment(
     momentFromCRUD: MomentToCRUD | undefined,
-    // actually using the same return state as createOrUpdate
   ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
@@ -369,13 +334,12 @@ export default async function MomentsPage({
     <Suspense>
       <Main
         allUserMomentsToCRUD={allUserMomentsToCRUD}
-        destinationOptions={destinationOptions}
         maxPages={maxPages}
-        // createOrUpdateMoment={createOrUpdateMoment}
-        deleteMoment={deleteMoment}
+        destinationOptions={destinationOptions}
         revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
         now={now}
-        trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
       />
     </Suspense>
   );

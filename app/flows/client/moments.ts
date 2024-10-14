@@ -1,3 +1,12 @@
+import {
+  Dispatch,
+  FormEvent,
+  MouseEvent,
+  SetStateAction,
+  TransitionStartFunction,
+} from "react";
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+
 import { STEP_DURATION_DEFAULT, STEP_FORM_ID } from "@/app/data/moments";
 import {
   DeleteMoment,
@@ -14,14 +23,6 @@ import {
   roundTimeUpTenMinutes,
 } from "@/app/utilities/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import {
-  Dispatch,
-  FormEvent,
-  MouseEvent,
-  SetStateAction,
-  TransitionStartFunction,
-} from "react";
 
 const DEFAULT_STEP_MESSAGE =
   "Erreurs sur le renseignement étapes du formulaire.";
@@ -38,11 +39,11 @@ export const revalidateMomentsActionflow = async (
     const button = event.currentTarget;
     await revalidateMoments();
     replace(`${pathname}`);
-    button.form?.reset(); // Indeed.
+    button.form?.reset(); // Indeed. Better for type safety.
   });
 };
 
-export const trueCreateOrUpdateMomentActionflow = async (
+export const createOrUpdateMomentActionflow = async (
   event: FormEvent<HTMLFormElement>,
   startCreateOrUpdateMomentTransition: TransitionStartFunction,
   trueCreateOrUpdateMoment: CreateOrUpdateMoment,
@@ -63,8 +64,7 @@ export const trueCreateOrUpdateMomentActionflow = async (
 ) => {
   startCreateOrUpdateMomentTransition(async () => {
     event.preventDefault();
-    // if the formData is now obtained from the event, I'll need to bind the action inside the startTransition, which in and out of itself is more relevant than binding it in the open for nothing
-    const trueCreateOrUpdateMomentBound = trueCreateOrUpdateMoment.bind(
+    const createOrUpdateMomentBound = trueCreateOrUpdateMoment.bind(
       null,
       new FormData(event.currentTarget),
       variant,
@@ -74,10 +74,10 @@ export const trueCreateOrUpdateMomentActionflow = async (
       destinationSelect,
       activitySelect,
     );
-    const trueState = await trueCreateOrUpdateMomentBound();
-    if (trueState) {
+    const state = await createOrUpdateMomentBound();
+    if (state) {
       setIsCreateOrUpdateMomentDone(true);
-      return setCreateOrUpdateMomentState(trueState);
+      return setCreateOrUpdateMomentState(state);
     } else {
       if (variant === "creating") {
         setStartMomentDate(nowRoundedUpTenMinutes);
@@ -90,41 +90,8 @@ export const trueCreateOrUpdateMomentActionflow = async (
   });
 };
 
-export const trueDeleteMomentActionflow = async (
-  startDeleteMomentTransition: TransitionStartFunction,
-  deleteMoment: DeleteMoment | undefined,
-  moment: MomentToCRUD | undefined,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
-  setIsDeleteMomentDone: Dispatch<SetStateAction<boolean>>,
-) => {
-  startDeleteMomentTransition(async () => {
-    if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-      if (deleteMoment) {
-        const deleteMomentBound = deleteMoment.bind(null, moment);
-        const state = await deleteMomentBound();
-        if (state) {
-          setIsDeleteMomentDone(true);
-          return setCreateOrUpdateMomentState(state);
-        } else {
-          setIsDeleteMomentDone(true);
-          return setCreateOrUpdateMomentState(null);
-        }
-      } else {
-        setIsDeleteMomentDone(true);
-        return setCreateOrUpdateMomentState({
-          momentMessage: "Erreur.",
-          momentSubMessage:
-            "La fonction d'effacement du moment n'est pas disponible en interne.",
-        });
-      }
-    }
-  });
-};
-
 // reset is only on the create variant of MomentForms
-export const trueResetMomentFormActionflow = (
+export const resetMomentFormActionflow = (
   event: FormEvent<HTMLFormElement>,
   startResetMomentFormTransition: TransitionStartFunction,
   setStartMomentDate: Dispatch<SetStateAction<string>>,
@@ -172,7 +139,40 @@ export const trueResetMomentFormActionflow = (
   });
 };
 
-export const trueCreateOrUpdateStepActionflow = (
+export const deleteMomentActionflow = async (
+  startDeleteMomentTransition: TransitionStartFunction,
+  deleteMoment: DeleteMoment | undefined,
+  moment: MomentToCRUD | undefined,
+  setCreateOrUpdateMomentState: Dispatch<
+    SetStateAction<CreateOrUpdateMomentState>
+  >,
+  setIsDeleteMomentDone: Dispatch<SetStateAction<boolean>>,
+) => {
+  startDeleteMomentTransition(async () => {
+    if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
+      if (deleteMoment) {
+        const deleteMomentBound = deleteMoment.bind(null, moment);
+        const state = await deleteMomentBound();
+        if (state) {
+          setIsDeleteMomentDone(true);
+          return setCreateOrUpdateMomentState(state);
+        } else {
+          setIsDeleteMomentDone(true);
+          return setCreateOrUpdateMomentState(null);
+        }
+      } else {
+        setIsDeleteMomentDone(true);
+        return setCreateOrUpdateMomentState({
+          momentMessage: "Erreur.",
+          momentSubMessage:
+            "La fonction d'effacement du moment n'est pas disponible en interne.",
+        });
+      }
+    }
+  });
+};
+
+export const createOrUpdateStepActionflow = (
   event: FormEvent<HTMLFormElement>,
   startCreateOrUpdateStepTransition: TransitionStartFunction,
   setCreateOrUpdateMomentState: Dispatch<

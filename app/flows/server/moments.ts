@@ -37,7 +37,7 @@ const NO_STEPS_ERROR_MESSAGE =
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
 
 // return types not needed as long as its careful connected to the action(s)
-export const trueCreateOrUpdateMomentFlow = async (
+export const createOrUpdateMomentFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,

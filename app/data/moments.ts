@@ -20,6 +20,9 @@ export const STEP_FORM_ID = {
   updating: "step-form-updating",
 };
 
+// barely used for now
+export const MOMENT_FORM_ID = "moment-form";
+
 // select options
 
 export const activityOptions: Option[] = [
