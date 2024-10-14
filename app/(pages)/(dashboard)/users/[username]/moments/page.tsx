@@ -6,9 +6,8 @@ import {
   UserMomentsToCRUD,
   StepFromCRUD,
   MomentToCRUD,
-  CreateOrUpdateMomentState,
   MomentFormVariant,
-  TrueCreateOrUpdateMomentState,
+  CreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -326,7 +325,7 @@ export default async function MomentsPage({
     momentFromCRUD: MomentToCRUD | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
-  ): Promise<TrueCreateOrUpdateMomentState> {
+  ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
     // Haven't tested it yet, but it should be working.

@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import { compareAsc, compareDesc } from "date-fns";
 
 import { ITS_STEPS_ID, YOUR_MOMENT_ID } from "@/app/data/moments";
-import { CreateOrUpdateMomentState, SubView, View } from "@/app/types/moments";
+import { SubView, CreateOrUpdateMomentState, View } from "@/app/types/moments";
 import { scrollToSection, setScrollToTop } from "@/app/utilities/moments";
 
 // scrolls back to the section of the form that possesses new errors

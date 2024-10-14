@@ -31,7 +31,6 @@ import {
   UserMomentsToCRUD,
   MomentToCRUD,
   StepFromCRUD,
-  CreateOrUpdateMomentState,
   DeleteMoment,
   RevalidateMoments,
   MomentFormVariant,
@@ -39,8 +38,8 @@ import {
   StepVisible,
   View,
   SubView,
-  TrueCreateOrUpdateMoment,
-  TrueCreateOrUpdateMomentState,
+  CreateOrUpdateMoment,
+  CreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -134,7 +133,7 @@ export default function Main({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  trueCreateOrUpdateMoment: TrueCreateOrUpdateMoment;
+  trueCreateOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
   now: string;
 }) {
@@ -678,7 +677,7 @@ function MomentForms({
   destinationOptions: Option[];
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
-  trueCreateOrUpdateMoment: TrueCreateOrUpdateMoment;
+  trueCreateOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
 }) {
@@ -741,7 +740,7 @@ function MomentForms({
   // createOrUpdateMomentAction
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-    useState<TrueCreateOrUpdateMomentState>(null);
+    useState<CreateOrUpdateMomentState>(null);
 
   const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
     useTransition();
@@ -1557,7 +1556,7 @@ function StepInputs({
   step,
 }: {
   form: string;
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: Dispatch<SetStateAction<string>>;
   step?: StepFromCRUD;
