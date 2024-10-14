@@ -49,6 +49,7 @@ import {
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
+  makeStepsCompoundDurationsArray,
   numStringToTimeString,
   rotateStates,
   roundTimeUpTenMinutes,
@@ -740,16 +741,31 @@ function MomentForms({
   let [steps, setSteps] = useState<StepFromCRUD[]>(
     momentSteps ? momentSteps : [],
   );
-  let overallAddingTime = steps.reduce((acc, curr) => acc + +curr.duree, 0);
+
+  const stepsCompoundDurations = makeStepsCompoundDurationsArray(steps);
+
+  let [currentStepId, setCurrentStepId] = useState("");
+  let currentStep = steps.find((step) => step.id === currentStepId);
+
+  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
+  let [stepDureeUpdate, setStepDureeUpdate] = useState(
+    currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
+  );
+
+  let momentAddingTime = steps.reduce((acc, curr) => {
+    if (curr.id === currentStepId) return acc + +stepDureeUpdate;
+    else return acc + +curr.duree;
+  }, 0);
+
   let endMomentDate = format(
     add(startMomentDate, {
-      minutes: overallAddingTime,
+      minutes: momentAddingTime,
     }),
     "yyyy-MM-dd'T'HH:mm",
   );
 
-  let [currentStepId, setCurrentStepId] = useState("");
-  let currentStep = steps.find((step) => step.id === currentStepId);
+  // let [currentStepId, setCurrentStepId] = useState("");
+  // let currentStep = steps.find((step) => step.id === currentStepId);
 
   let [destinationSelect, setDestinationSelect] = useState(false);
   let [activitySelect, setActivitySelect] = useState(false);
@@ -761,10 +777,10 @@ function MomentForms({
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
   // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
-  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
-  let [stepDureeUpdate, setStepDureeUpdate] = useState(
-    currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
-  );
+  // let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
+  // let [stepDureeUpdate, setStepDureeUpdate] = useState(
+  //   currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
+  // );
 
   // createOrUpdateMomentAction
 
@@ -1076,16 +1092,8 @@ function MomentForms({
           {steps.length > 0 && (
             <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
               {steps.map((step, index) => {
-                // that needs to be a utility
-                const map: Map<number, number> = new Map();
-                let durationTotal = 0;
-                for (let j = 0; j < steps.length; j++) {
-                  durationTotal += +steps[j].duree;
-                  map.set(j, durationTotal);
-                }
-
-                let addingTime = index === 0 ? 0 : map.get(index - 1)!; // I know what I'm doing for now.
-                // And with this, I can even compute "endTime" if I want: startMomentDate + map.get(index)
+                let stepAddingTime =
+                  index === 0 ? 0 : stepsCompoundDurations[index - 1];
 
                 return (
                   <ReorderItem
@@ -1098,7 +1106,7 @@ function MomentForms({
                     setCurrentStepId={setCurrentStepId}
                     setStepVisible={setStepVisible}
                     startMomentDate={startMomentDate}
-                    addingTime={addingTime}
+                    stepAddingTime={stepAddingTime}
                     setSteps={setSteps}
                     isUpdateStepPending={isUpdateStepPending}
                     stepDureeUpdate={stepDureeUpdate}
@@ -1122,14 +1130,28 @@ function MomentForms({
                   <p className="font-medium text-blue-950">Fin attendue</p>
                   <p className="font-semibold">
                     <span className="font-medium text-neutral-800">à</span>{" "}
-                    {format(endMomentDate, "HH:mm")}
+                    <span
+                      className={clsx(
+                        stepVisible === "updating" && "text-neutral-400",
+                      )}
+                    >
+                      {format(endMomentDate, "HH:mm")}
+                    </span>
                   </p>
                 </div>
                 <div className="space-y-2">
                   <p className="font-medium text-blue-950">Durée totale</p>
                   <p className="font-semibold">
                     <span className="font-medium text-neutral-800">de </span>
-                    {numStringToTimeString(overallAddingTime.toString())}
+                    <span>
+                      <span
+                        className={clsx(
+                          stepVisible === "updating" && "text-neutral-400",
+                        )}
+                      >
+                        {numStringToTimeString(momentAddingTime.toString())}
+                      </span>
+                    </span>
                   </p>
                 </div>
               </div>
@@ -1372,7 +1394,7 @@ function ReorderItem({
   setCurrentStepId,
   setStepVisible,
   startMomentDate,
-  addingTime,
+  stepAddingTime,
   setSteps,
   isUpdateStepPending,
   stepDureeUpdate,
@@ -1388,7 +1410,7 @@ function ReorderItem({
   setCurrentStepId: Dispatch<SetStateAction<string>>;
   setStepVisible: Dispatch<SetStateAction<StepVisible>>;
   startMomentDate: string;
-  addingTime: number;
+  stepAddingTime: number;
   setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
@@ -1423,6 +1445,7 @@ function ReorderItem({
   const restoreStepAction = () => {
     startRestoreStepTransition(() => {
       setStepVisible("create");
+      setCurrentStepId("");
     });
   };
 
@@ -1553,7 +1576,7 @@ function ReorderItem({
                 >
                   {format(
                     add(startMomentDate, {
-                      minutes: addingTime,
+                      minutes: stepAddingTime,
                     }),
                     "HH:mm",
                   )}

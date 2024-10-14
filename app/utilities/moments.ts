@@ -1,6 +1,7 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { Dispatch, SetStateAction } from "react";
 import { ToWords } from "to-words";
+import { StepFromCRUD } from "../types/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -113,8 +114,20 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   scrollTo({ top: 0 });
 };
 
-// scroll back to the desired section (usually yourMoment or itsSteps in the Moment forms)
+// scrolls back to the desired section (usually yourMoment or itsSteps in the Moment forms)
 export const scrollToSection = (sectionId: string) => {
   const section = document.getElementById(sectionId);
   section?.scrollIntoView({ behavior: "smooth" });
+};
+
+// makes an array of all the adding times of a step up to that step (step 0 has the coumpound duration of step 0, step 1 has the compound duration of steps 0 and 1, etc.)
+export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
+  const stepsCompoundDurationsArray: number[] = [];
+  let compoundDuration = 0;
+  for (let i = 0; i < steps.length; i++) {
+    compoundDuration += +steps[i].duree;
+    stepsCompoundDurationsArray.push(compoundDuration);
+  }
+
+  return stepsCompoundDurationsArray;
 };

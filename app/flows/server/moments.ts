@@ -1,7 +1,10 @@
 import { revalidatePath } from "next/cache";
 import { add, compareDesc, roundToNearestHours, sub } from "date-fns";
 
-import { dateToInputDatetime } from "../../utilities/moments";
+import {
+  dateToInputDatetime,
+  makeStepsCompoundDurationsArray,
+} from "../../utilities/moments";
 import { CreateOrUpdateMomentSchema } from "../../validations/moments";
 import { findMomentByNameAndUserId } from "../../reads/moments";
 import { findDestinationIdByNameAndUserId } from "../../reads/destinations";
@@ -173,13 +176,6 @@ export const createOrUpdateMomentFlow = async (
 
   let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
-  const map: Map<number, number> = new Map();
-  let durationTotal = 0;
-  for (let j = 0; j < steps.length; j++) {
-    durationTotal += +steps[j].duree;
-    map.set(j, durationTotal);
-  }
-
   if (variant === "creating") {
     const preexistingMoment = await findMomentByNameAndUserId(objectif, userId);
 
@@ -244,7 +240,7 @@ export const createOrUpdateMomentFlow = async (
     await createStepsInCreateOrUpdateMomentFlow(
       steps,
       momentDate,
-      map,
+      // map,
       momentId,
     );
   }
@@ -308,7 +304,7 @@ export const createOrUpdateMomentFlow = async (
     await createStepsInCreateOrUpdateMomentFlow(
       steps,
       momentDate,
-      map,
+      // map,
       momentId,
     );
   }
@@ -471,13 +467,6 @@ export const trueCreateOrUpdateMomentFlow = async (
 
   let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
-  const map: Map<number, number> = new Map();
-  let durationTotal = 0;
-  for (let j = 0; j < steps.length; j++) {
-    durationTotal += +steps[j].duree;
-    map.set(j, durationTotal);
-  }
-
   if (variant === "creating") {
     const preexistingMoment = await findMomentByNameAndUserId(objectif, userId);
 
@@ -538,7 +527,7 @@ export const trueCreateOrUpdateMomentFlow = async (
     await createStepsInCreateOrUpdateMomentFlow(
       steps,
       startMomentDate,
-      map,
+      // map,
       momentId,
     );
   }
@@ -598,7 +587,7 @@ export const trueCreateOrUpdateMomentFlow = async (
     await createStepsInCreateOrUpdateMomentFlow(
       steps,
       startMomentDate,
-      map,
+      // map,
       momentId,
     );
   }
@@ -613,10 +602,12 @@ export const trueCreateOrUpdateMomentFlow = async (
 const createStepsInCreateOrUpdateMomentFlow = async (
   steps: StepFromCRUD[],
   momentDate: string,
-  map: Map<number, number>,
+  // map: Map<number, number>,
   momentId: string,
 ) => {
   let i = 1;
+
+  const stepsCompoundDurations = makeStepsCompoundDurationsArray(steps);
 
   for (let j = 0; j < steps.length; j++) {
     const step = steps[j];
@@ -624,10 +615,12 @@ const createStepsInCreateOrUpdateMomentFlow = async (
     const startDateAndTime =
       j === 0
         ? momentDate
-        : dateToInputDatetime(add(momentDate, { minutes: map.get(j - 1) }));
+        : dateToInputDatetime(
+            add(momentDate, { minutes: stepsCompoundDurations[j - 1] }),
+          );
 
     const endDateAndTime = dateToInputDatetime(
-      add(momentDate, { minutes: map.get(j) }),
+      add(momentDate, { minutes: stepsCompoundDurations[j] }),
     );
 
     // error handling needed eventually

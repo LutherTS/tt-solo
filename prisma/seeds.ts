@@ -245,6 +245,7 @@ async function seed() {
   console.log(`Seeding all Steps...`);
 
   for (const moment of moments) {
+    // keeping the map because makeStepsCompoundDurationsArray isn't tailored for this
     const map: Map<number, number> = new Map();
     let durationTotal = 0;
     for (let j = 0; j < stepsData.length; j++) {
