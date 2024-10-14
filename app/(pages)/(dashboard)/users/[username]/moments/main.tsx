@@ -221,11 +221,11 @@ export default function Main({
             variant="updating"
             moment={moment}
             destinationOptions={destinationOptions}
-            deleteMoment={deleteMoment}
             setView={setView}
             setSubView={setSubView}
-            now={now}
             trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
+            deleteMoment={deleteMoment}
+            now={now}
           />
         )}
       </div>
@@ -249,8 +249,8 @@ export default function Main({
             destinationOptions={destinationOptions}
             setView={setView}
             setSubView={setSubView}
-            now={now}
             trueCreateOrUpdateMoment={trueCreateOrUpdateMoment}
+            now={now}
           />
         )}
       </div>
@@ -667,20 +667,20 @@ function MomentForms({
   variant,
   moment,
   destinationOptions,
-  deleteMoment,
   setView,
   setSubView,
-  now,
   trueCreateOrUpdateMoment,
+  deleteMoment,
+  now,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  deleteMoment?: DeleteMoment;
   setView: Dispatch<SetStateAction<View>>;
   setSubView: Dispatch<SetStateAction<SubView>>;
-  now: string;
   trueCreateOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment?: DeleteMoment;
+  now: string;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
@@ -698,9 +698,6 @@ function MomentForms({
     };
   });
 
-  let [stepVisible, setStepVisible] = useState<StepVisible>(
-    variant === "creating" ? "creating" : "create",
-  );
   let [steps, setSteps] = useState<StepFromCRUD[]>(
     momentSteps ? momentSteps : [],
   );
@@ -710,6 +707,7 @@ function MomentForms({
   let [currentStepId, setCurrentStepId] = useState("");
   let currentStep = steps.find((step) => step.id === currentStepId);
 
+  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
   let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
   let [stepDureeUpdate, setStepDureeUpdate] = useState(
     currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
@@ -727,8 +725,9 @@ function MomentForms({
     "yyyy-MM-dd'T'HH:mm",
   );
 
-  // let [currentStepId, setCurrentStepId] = useState("");
-  // let currentStep = steps.find((step) => step.id === currentStepId);
+  let [stepVisible, setStepVisible] = useState<StepVisible>(
+    variant === "creating" ? "creating" : "create",
+  );
 
   let [destinationSelect, setDestinationSelect] = useState(false);
   let [activitySelect, setActivitySelect] = useState(false);
@@ -738,12 +737,6 @@ function MomentForms({
 
   // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
-
-  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
-  // let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
-  // let [stepDureeUpdate, setStepDureeUpdate] = useState(
-  //   currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
-  // );
 
   // createOrUpdateMomentAction
 
