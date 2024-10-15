@@ -1274,10 +1274,11 @@ function StepForm({
     );
   };
 
+  // no longer animating steps in any way, so currently createOrUpdateStepAfterflow effectively does not do anything
   useEffect(() => {
     if (isCreateOrUpdateStepDone)
       createOrUpdateStepAfterflow(setIsCreateOrUpdateStepDone);
-  }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
+  }, [isCreateOrUpdateStepDone]);
 
   // resetStepAction
 
@@ -1589,10 +1590,8 @@ function StepVisibleCreating({
       // }}
       // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
 
-      // The jump is due to space-y. I'll need to fix it.
-      // That's what it is: the two space-y remain stacked during animations.
-      // It will need to be faster once space-y is removed.
-      // It's actually the gap-y-8 from Section.
+      // The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
+      // That's what it is: the two gap-y-8 remain stacked during animations.
     >
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
@@ -1601,15 +1600,10 @@ function StepVisibleCreating({
         <Button
           form={STEP_FORM_ID.creating}
           variant="destroy-step"
-          //
-          // type="reset"
-          // disabled={isResetStepPending}
-          //
           type="button"
           onClick={cancelStepAction}
           disabled={steps.length === 0 || isCancelStepPending}
         >
-          {/* Réinitialiser l&apos;étape */}
           Annuler l&apos;étape
         </Button>
       </div>
@@ -1633,15 +1627,9 @@ function StepVisibleCreating({
           <Button
             variant="cancel-step"
             form={STEP_FORM_ID.creating}
-            //
-            // type="button"
-            // onClick={cancelStepAction}
-            // disabled={steps.length === 0 || isCancelStepPending}
-            //
             type="reset"
             disabled={isResetStepPending}
           >
-            {/* Annuler l&apos;étape */}
             Réinitialiser l&apos;étape
           </Button>
         </div>
@@ -1650,15 +1638,9 @@ function StepVisibleCreating({
           <Button
             variant="cancel-step"
             form={STEP_FORM_ID.creating}
-            //
-            // type="button"
-            // onClick={cancelStepAction}
-            // disabled={steps.length === 0 || isCancelStepPending}
-            //
             type="reset"
             disabled={isResetStepPending}
           >
-            {/* Annuler l&apos;étape */}
             Réinitialiser l&apos;étape
           </Button>
           <Button
@@ -1685,7 +1667,6 @@ function StepVisibleCreate({
   return (
     <motion.div
     // Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I want the navigation to not move I need the step form to toggle from a button, not to replace the button.
-    // En fait, en prenant en compte les animations (et même logiquement), le bouton pour annuler l'étape devrait être en haut et pas en bas. Réinitialiser et annuler devraient être déjà inversés.
 
     // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
     // animate={{
