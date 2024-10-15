@@ -16,6 +16,8 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
+  AnimatePresence,
+  motion,
   Reorder,
   useDragControls,
   useMotionValueEvent,
@@ -1113,82 +1115,111 @@ function MomentForms({
               </div>
             </>
           )}
-          {stepVisible === "creating" && (
-            // was a form, but forms can't be nested
-            <div className="flex flex-col gap-y-8">
-              <div className="flex items-baseline justify-between">
-                <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
-                  Ajouter une étape
-                </p>{" "}
-                <Button
+          <AnimatePresence initial={false} mode="wait">
+            {stepVisible === "creating" && (
+              // was a form, but forms can't be nested
+              <motion.div
+                // the animation ends as soon as it starts
+                className="flex flex-col gap-y-8"
+                initial={{ opacity: 0, height: 0, transition: { duration: 1 } }}
+                animate={{
+                  opacity: 1,
+                  height: "auto",
+                  transition: { duration: 1 },
+                }}
+                exit={{ opacity: 0, height: 0, transition: { duration: 1 } }}
+                // recommended by ChatGPT
+                // style={{ overflow: "hidden" }}
+                // The jump is due to space-y. I'll need to fix it.
+              >
+                <div className="flex items-baseline justify-between">
+                  <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+                    Ajouter une étape
+                  </p>{" "}
+                  <Button
+                    form={STEP_FORM_ID.creating}
+                    type="reset"
+                    variant="destroy-step"
+                    disabled={isResetStepPending}
+                  >
+                    Réinitialiser l&apos;étape
+                  </Button>
+                </div>
+                <StepInputs
                   form={STEP_FORM_ID.creating}
-                  type="reset"
-                  variant="destroy-step"
-                  disabled={isResetStepPending}
+                  createOrUpdateMomentState={createOrUpdateMomentState}
+                  stepDuree={stepDureeCreate}
+                  setStepDuree={setStepDureeCreate}
+                />
+                <div className="flex">
+                  {/* Mobile */}
+                  <div className="flex w-full flex-col gap-4 md:hidden">
+                    <Button
+                      variant="confirm-step"
+                      form={STEP_FORM_ID.creating}
+                      type="submit"
+                      disabled={isCreateStepPending}
+                    >
+                      Confirmer l&apos;étape
+                    </Button>
+                    <Button
+                      variant="cancel-step"
+                      form={STEP_FORM_ID.creating}
+                      type="button"
+                      onClick={cancelStepAction}
+                      disabled={steps.length === 0 || isCancelStepPending}
+                    >
+                      Annuler l&apos;étape
+                    </Button>
+                  </div>
+                  {/* Desktop */}
+                  <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+                    <Button
+                      variant="cancel-step"
+                      form={STEP_FORM_ID.creating}
+                      type="button"
+                      onClick={cancelStepAction}
+                      disabled={steps.length === 0 || isCancelStepPending}
+                    >
+                      Annuler l&apos;étape
+                    </Button>
+                    <Button
+                      variant="confirm-step"
+                      form={STEP_FORM_ID.creating}
+                      type="submit"
+                      disabled={isCreateStepPending}
+                    >
+                      Confirmer l&apos;étape
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+            {/* </AnimatePresence> */}
+            {stepVisible === "create" && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, transition: { duration: 1 } }}
+                animate={{
+                  opacity: 1,
+                  height: "auto",
+                  transition: { duration: 1 },
+                }}
+                exit={{ opacity: 0, height: 0, transition: { duration: 1 } }}
+                // recommended by ChatGPT
+                style={{ overflow: "hidden" }}
+              >
+                <Button
+                  type="button"
+                  variant="neutral"
+                  onClick={addStepAction}
+                  disabled={isAddStepPending}
                 >
-                  Réinitialiser l&apos;étape
+                  Ajouter une étape
                 </Button>
-              </div>
-              <StepInputs
-                form={STEP_FORM_ID.creating}
-                createOrUpdateMomentState={createOrUpdateMomentState}
-                stepDuree={stepDureeCreate}
-                setStepDuree={setStepDureeCreate}
-              />
-              <div className="flex">
-                {/* Mobile */}
-                <div className="flex w-full flex-col gap-4 md:hidden">
-                  <Button
-                    variant="confirm-step"
-                    form={STEP_FORM_ID.creating}
-                    type="submit"
-                    disabled={isCreateStepPending}
-                  >
-                    Confirmer l&apos;étape
-                  </Button>
-                  <Button
-                    variant="cancel-step"
-                    form={STEP_FORM_ID.creating}
-                    type="button"
-                    onClick={cancelStepAction}
-                    disabled={steps.length === 0 || isCancelStepPending}
-                  >
-                    Annuler l&apos;étape
-                  </Button>
-                </div>
-                {/* Desktop */}
-                <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-                  <Button
-                    variant="cancel-step"
-                    form={STEP_FORM_ID.creating}
-                    type="button"
-                    onClick={cancelStepAction}
-                    disabled={steps.length === 0 || isCancelStepPending}
-                  >
-                    Annuler l&apos;étape
-                  </Button>
-                  <Button
-                    variant="confirm-step"
-                    form={STEP_FORM_ID.creating}
-                    type="submit"
-                    disabled={isCreateStepPending}
-                  >
-                    Confirmer l&apos;étape
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-          {stepVisible === "create" && (
-            <Button
-              type="button"
-              variant="neutral"
-              onClick={addStepAction}
-              disabled={isAddStepPending}
-            >
-              Ajouter une étape
-            </Button>
-          )}
+              </motion.div>
+            )}
+            {/* Got it, it needs to wrap the exact same conditional. So that means I'm going to need a switch statement here. */}
+          </AnimatePresence>
         </Section>
         <Divider />
         <Section>

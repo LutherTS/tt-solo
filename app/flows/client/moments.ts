@@ -6,6 +6,7 @@ import {
   TransitionStartFunction,
 } from "react";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { v4 as uuidv4 } from "uuid";
 
 import { STEP_DURATION_DEFAULT, STEP_FORM_ID } from "@/app/data/moments";
 import {
@@ -131,7 +132,7 @@ export const resetMomentFormActionflow = (
       setCreateOrUpdateMomentState(null); // the jumping culprit, but in the end a different solution below ignores the issue (irregular defaults)
 
       // to "reset" the InputSwitchKey
-      setInputSwitchKey(window.crypto.randomUUID());
+      setInputSwitchKey(uuidv4());
 
       // for the useEffect
       setIsResetMomentFormDone(true);
@@ -260,7 +261,7 @@ export const createOrUpdateStepActionflow = (
     duree = realStepDuration.toString();
 
     let id = "";
-    if (variant === "creating") id = window.crypto.randomUUID();
+    if (variant === "creating") id = uuidv4();
     if (variant === "updating") id = currentStepId;
 
     const step = {

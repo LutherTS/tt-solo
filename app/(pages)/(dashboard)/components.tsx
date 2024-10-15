@@ -968,7 +968,12 @@ export function InputDatetimeLocalControlled({
         onKeyDown={(event) => {
           if (event.key === "Enter") event.preventDefault();
         }}
-        className={clsx("p-2", baseInputTexts, focusVisibleTexts)}
+        className={clsx(
+          "p-2",
+          baseInputTexts,
+          focusVisibleTexts,
+          "w-full appearance-none",
+        )}
       />
     </FieldFlex>
   );
