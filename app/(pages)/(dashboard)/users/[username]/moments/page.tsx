@@ -71,7 +71,7 @@ export default async function MomentsPage({
 
   if (!userFound) return notFound();
 
-  // extremely important to use user in server actions without null
+  // extremely important in order to use user in server actions without null
   const user = userFound;
 
   const userId = user.id;

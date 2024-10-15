@@ -568,6 +568,7 @@ function ReadMomentsView({
                                 <Button
                                   type="button"
                                   variant="destroy-step"
+                                  // to update a moment
                                   onClick={() => {
                                     setMoment(
                                       realMoments.find((e4) => e4.id === e3.id),
@@ -1166,6 +1167,7 @@ function MomentForms({
               >
                 Confirmer le moment
               </Button>
+              {/* could/should be a switch statement (better than ternary) */}
               {variant === "creating" && (
                 <Button
                   type="reset"
@@ -1188,6 +1190,7 @@ function MomentForms({
             </div>
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+              {/* could/should be a switch statement (better than ternary) */}
               {variant === "creating" && (
                 <Button
                   type="reset"
@@ -1404,7 +1407,7 @@ function ReorderItem({
               "transition-colors hover:text-neutral-400",
             )}
             onPointerDown={(event) => controls.start(event)}
-            style={{ touchAction: "none" }} // ? I guess they fixed something and now that prevented it to work on mobile? // ? No?
+            style={{ touchAction: "none" }}
           >
             Étape <span>{toWordsing(index + 1)}</span>
           </p>{" "}
@@ -1666,7 +1669,7 @@ function StepVisibleCreate({
 }) {
   return (
     <motion.div
-    // Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I want the navigation to not move I need the step form to toggle from a button, not to replace the button.
+    // Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
 
     // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
     // animate={{

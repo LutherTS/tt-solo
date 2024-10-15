@@ -73,9 +73,9 @@ export const deleteMomentAfterflow = (
 export const createOrUpdateStepAfterflow = (
   setIsCreateOrUpdateStepDone: Dispatch<SetStateAction<boolean>>,
 ) => {
-  // what could be sexier here could be to scroll to the actual new step that has been created, which means I got to have create and remember dynamic ids for steps here
-  // ...
-  // in the end I just don't think steps should have afterflows, so I'll keep the afterflow (and its corresponding boolean and useEffect) but it is no longer going to do anything
+  // In the end I just don't think steps should have afterflows, so I may keep this afterflow (and its corresponding boolean and useEffect) but it is no longer going to do anything.
+  // The idea that I'm going with is that manipulating steps actually needs to feel snappy, because it's at the heart of the project and it will be needed to be done multiple, multiple times. So here, unless the whole thing is designed around animations (which is bound to be a thing for follow-up native projects), it doesn't add anything necessary, much unlike the reorder feature which is absolutely a desirable bonus.
+
   // scrollToSection(ITS_STEPS_ID);
   return setIsCreateOrUpdateStepDone(false);
 };

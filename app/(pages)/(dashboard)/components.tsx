@@ -286,7 +286,7 @@ export function InputText({
   );
 }
 
-// Had to get everything controlled. In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by if (definedValue) controlled else uncontrolled, which in fact is exactly how React behaves natively.
+// In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by: if (definedValue) controlled else uncontrolled, which in fact is exactly how React behaves natively.
 // Also, description are now obliged because they now transform into errors.
 export function InputTextControlled({
   label,
@@ -502,6 +502,7 @@ export function SelectWithOptions({
   );
 }
 
+// there is an icons file by this one is specific to the components here
 function ChevronDownIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -758,7 +759,7 @@ export function InputSwitch({
         <FieldTitle title={label} />
         <Switch.Root
           name={name}
-          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled
+          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled // later solved with keys
           // now going for uncontrolled, so using back defaultChecked
           defaultChecked={defaultChecked}
           // checked={definedValue}

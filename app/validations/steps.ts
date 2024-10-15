@@ -7,7 +7,6 @@ const DEFAULT_STRING_MAXIMUM = 200;
 const DESCRIPTION_STRING_MAXIMUM = 900;
 
 const StepSchema = z.object({
-  // the insistence on momentId, etc. was due to the default names risking conflicts in the actions
   stepId: z.string().uuid(),
   stepOrderId: z.number(),
   stepName: z

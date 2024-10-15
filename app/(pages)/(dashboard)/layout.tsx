@@ -19,7 +19,7 @@ export default function Layout({
         <div className="flex w-full flex-col items-center">
           {/* Page Container */}
           <div
-            // this could be thrown back to the children for headers
+            // this could be thrown back to the children for some header
             className={clsx(
               // container can coexist with max-w-4xl
               // pb-12 previously

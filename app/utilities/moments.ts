@@ -1,5 +1,5 @@
-import { add, format, roundToNearestMinutes } from "date-fns";
 import { Dispatch, SetStateAction } from "react";
+import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
 import { StepFromCRUD } from "../types/moments";
@@ -86,7 +86,7 @@ export const roundTimeUpTenMinutes = (time: string) =>
     "yyyy-MM-dd'T'HH:mm",
   );
 
-// rotates by setting state any state array enum to the right or to the left
+// rotates states by setting any state array enum to the right or to the left
 export const rotateStates = <T>(
   // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
   direction: "left" | "right",
