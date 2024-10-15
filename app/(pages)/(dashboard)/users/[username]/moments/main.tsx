@@ -16,7 +16,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
-  AnimatePresence,
+  // AnimatePresence,
   motion,
   Reorder,
   useDragControls,
@@ -1115,6 +1115,8 @@ function MomentForms({
               </div>
             </>
           )}
+          {/* honestly not sure if animations are necessary now */}
+          {/* keeping the motion.div still in components though */}
           {/* <AnimatePresence initial={false} mode="popLayout"> */}
           {(() => {
             switch (stepVisible) {
@@ -1577,16 +1579,16 @@ function StepVisibleCreating({
     // was a form, but forms can't be nested
     <motion.div
       className="flex flex-col gap-y-8"
-
       // If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
 
-      // initial={{ opacity: 0, height: 0, transition: { duration: 0.5 } }}
+      // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
       // animate={{
       //   opacity: 1,
       //   height: "auto",
-      //   transition: { duration: 0.5 },
+      //   transition: { duration: 0.2 },
       // }}
-      // exit={{ opacity: 0, height: 0, transition: { duration: 0.5 } }}
+      // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+
       // The jump is due to space-y. I'll need to fix it.
       // That's what it is: the two space-y remain stacked during animations.
       // It will need to be faster once space-y is removed.
@@ -1682,17 +1684,16 @@ function StepVisibleCreate({
 }) {
   return (
     <motion.div
-
     // Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I want the navigation to not move I need the step form to toggle from a button, not to replace the button.
     // En fait, en prenant en compte les animations (et même logiquement), le bouton pour annuler l'étape devrait être en haut et pas en bas. Réinitialiser et annuler devraient être déjà inversés.
 
-    // initial={{ opacity: 0, height: 0, transition: { duration: 0.5 } }}
+    // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
     // animate={{
     //   opacity: 1,
     //   height: "auto",
-    //   transition: { duration: 0.5 },
+    //   transition: { duration: 0.2 },
     // }}
-    // exit={{ opacity: 0, height: 0, transition: { duration: 0.5 } }}
+    // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
     >
       <Button
         type="button"

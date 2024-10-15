@@ -74,6 +74,8 @@ export const createOrUpdateStepAfterflow = (
   setIsCreateOrUpdateStepDone: Dispatch<SetStateAction<boolean>>,
 ) => {
   // what could be sexier here could be to scroll to the actual new step that has been created, which means I got to have create and remember dynamic ids for steps here
-  scrollToSection(ITS_STEPS_ID);
+  // ...
+  // in the end I just don't think steps should have afterflows, so I'll keep the afterflow (and its corresponding boolean and useEffect) but it is no longer going to do anything
+  // scrollToSection(ITS_STEPS_ID);
   return setIsCreateOrUpdateStepDone(false);
 };
