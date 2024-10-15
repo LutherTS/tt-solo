@@ -1,10 +1,4 @@
-import {
-  Dispatch,
-  FormEvent,
-  MouseEvent,
-  SetStateAction,
-  TransitionStartFunction,
-} from "react";
+import { FormEvent, MouseEvent, TransitionStartFunction } from "react";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { v4 as uuidv4 } from "uuid";
 
@@ -24,6 +18,7 @@ import {
   roundTimeUpTenMinutes,
 } from "@/app/utilities/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
+import { SetState } from "@/app/types/globals";
 
 const DEFAULT_STEP_MESSAGE =
   "Erreurs sur le renseignement étapes du formulaire.";
@@ -48,20 +43,18 @@ export const createOrUpdateMomentActionflow = async (
   event: FormEvent<HTMLFormElement>,
   startCreateOrUpdateMomentTransition: TransitionStartFunction,
   trueCreateOrUpdateMoment: CreateOrUpdateMoment,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
   variant: MomentFormVariant,
   startMomentDate: string,
   steps: StepFromCRUD[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
-  setStartMomentDate: Dispatch<SetStateAction<string>>,
+  setStartMomentDate: SetState<string>,
   nowRoundedUpTenMinutes: string,
-  setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
-  setStepVisible: Dispatch<SetStateAction<StepVisible>>,
-  setIsCreateOrUpdateMomentDone: Dispatch<SetStateAction<boolean>>,
+  setSteps: SetState<StepFromCRUD[]>,
+  setStepVisible: SetState<StepVisible>,
+  setIsCreateOrUpdateMomentDone: SetState<boolean>,
 ) => {
   startCreateOrUpdateMomentTransition(async () => {
     event.preventDefault();
@@ -95,14 +88,12 @@ export const createOrUpdateMomentActionflow = async (
 export const resetMomentFormActionflow = (
   event: FormEvent<HTMLFormElement>,
   startResetMomentFormTransition: TransitionStartFunction,
-  setStartMomentDate: Dispatch<SetStateAction<string>>,
-  setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
-  setStepVisible: Dispatch<SetStateAction<StepVisible>>,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
-  setIsResetMomentFormDone: Dispatch<SetStateAction<boolean>>,
-  setInputSwitchKey: Dispatch<SetStateAction<string>>,
+  setStartMomentDate: SetState<string>,
+  setSteps: SetState<StepFromCRUD[]>,
+  setStepVisible: SetState<StepVisible>,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
+  setIsResetMomentFormDone: SetState<boolean>,
+  setInputSwitchKey: SetState<string>,
 ) => {
   startResetMomentFormTransition(() => {
     if (confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")) {
@@ -142,10 +133,8 @@ export const deleteMomentActionflow = async (
   startDeleteMomentTransition: TransitionStartFunction,
   deleteMoment: DeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
-  setIsDeleteMomentDone: Dispatch<SetStateAction<boolean>>,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
+  setIsDeleteMomentDone: SetState<boolean>,
 ) => {
   startDeleteMomentTransition(async () => {
     if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
@@ -174,16 +163,14 @@ export const deleteMomentActionflow = async (
 export const createOrUpdateStepActionflow = (
   event: FormEvent<HTMLFormElement>,
   startCreateOrUpdateStepTransition: TransitionStartFunction,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
   duree: string,
   steps: StepFromCRUD[],
   variant: StepFormVariant,
   currentStepId: string,
-  setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
-  setStepVisible: Dispatch<SetStateAction<StepVisible>>,
-  setIsCreateOrUpdateStepDone: Dispatch<SetStateAction<boolean>>,
+  setSteps: SetState<StepFromCRUD[]>,
+  setStepVisible: SetState<StepVisible>,
+  setIsCreateOrUpdateStepDone: SetState<boolean>,
 ) => {
   startCreateOrUpdateStepTransition(() => {
     event.preventDefault();
@@ -288,10 +275,8 @@ export const createOrUpdateStepActionflow = (
 export const resetStepActionflow = (
   event: FormEvent<HTMLFormElement>,
   startResetStepTransition: TransitionStartFunction,
-  setDuree: Dispatch<SetStateAction<string>>,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
+  setDuree: SetState<string>,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
 ) => {
   startResetStepTransition(() => {
     if (
@@ -314,11 +299,9 @@ export const deleteStepActionflow = (
   startDeleteStepTransition: TransitionStartFunction,
   steps: StepFromCRUD[],
   currentStepId: string,
-  setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>,
-  setStepVisible: Dispatch<SetStateAction<StepVisible>>,
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >,
+  setSteps: SetState<StepFromCRUD[]>,
+  setStepVisible: SetState<StepVisible>,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
 ) => {
   if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
     startDeleteStepTransition(() => {

@@ -1,9 +1,9 @@
-import { Dispatch, SetStateAction } from "react";
 import { compareAsc, compareDesc } from "date-fns";
 
 import { ITS_STEPS_ID, YOUR_MOMENT_ID } from "@/app/data/moments";
 import { SubView, CreateOrUpdateMomentState, View } from "@/app/types/moments";
 import { scrollToSection, setScrollToTop } from "@/app/utilities/moments";
+import { SetState } from "@/app/types/globals";
 
 // scrolls back to the section of the form that possesses new errors
 // or to the correct subView when successfully submitted
@@ -13,9 +13,9 @@ export const createOrUpdateMomentAfterflow = (
   endMomentDate: string,
   now: string,
   startMomentDate: string,
-  setSubView: Dispatch<SetStateAction<SubView>>,
-  setView: Dispatch<SetStateAction<View>>,
-  setIsCreateOrUpdateMomentDone: Dispatch<SetStateAction<boolean>>,
+  setSubView: SetState<SubView>,
+  setView: SetState<View>,
+  setIsCreateOrUpdateMomentDone: SetState<boolean>,
 ) => {
   if (createOrUpdateMomentState) {
     // A truthy createOrUpdateMomentState returns with either a momentMessage or a stepsMessage, not both. If by accident both are returned, momentMessage is handled first. If by accident none are returned (in a truthy createOrUpdateMomentState), nothing is expected to happen at this time.
@@ -46,7 +46,7 @@ export const createOrUpdateMomentAfterflow = (
 // scrolls back to yourMoment's section at the top after resetting the form
 // (every time resetMomentFormAction is done)
 export const resetMomentFormAfterflow = (
-  setIsResetMomentFormDone: Dispatch<SetStateAction<boolean>>,
+  setIsResetMomentFormDone: SetState<boolean>,
 ) => {
   scrollToSection(YOUR_MOMENT_ID);
   return setIsResetMomentFormDone(false);
@@ -56,8 +56,8 @@ export const resetMomentFormAfterflow = (
 // (every time deleteMomentAction is done)
 export const deleteMomentAfterflow = (
   createOrUpdateMomentState: CreateOrUpdateMomentState,
-  setView: Dispatch<SetStateAction<View>>,
-  setIsDeleteMomentDone: Dispatch<SetStateAction<boolean>>,
+  setView: SetState<View>,
+  setIsDeleteMomentDone: SetState<boolean>,
 ) => {
   if (createOrUpdateMomentState) {
     scrollToSection(YOUR_MOMENT_ID);
@@ -71,7 +71,7 @@ export const deleteMomentAfterflow = (
 // scrolls back to itsSteps's section when the step form is successfully and unsuccessfully submitted
 // (every time createOrUpdateStepAction is done)
 export const createOrUpdateStepAfterflow = (
-  setIsCreateOrUpdateStepDone: Dispatch<SetStateAction<boolean>>,
+  setIsCreateOrUpdateStepDone: SetState<boolean>,
 ) => {
   // In the end I just don't think steps should have afterflows, so I may keep this afterflow (and its corresponding boolean and useEffect) but it is no longer going to do anything.
   // The idea that I'm going with is that manipulating steps actually needs to feel snappy, because it's at the heart of the project and it will be needed to be done multiple, multiple times. So here, unless the whole thing is designed around animations (which is bound to be a thing for follow-up native projects), it doesn't add anything necessary, much unlike the reorder feature which is absolutely a desirable bonus.

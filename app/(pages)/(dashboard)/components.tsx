@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  ComponentProps,
-  Dispatch,
-  MouseEventHandler,
-  SetStateAction,
-} from "react";
+import { ComponentProps, MouseEventHandler } from "react";
 import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Switch from "@radix-ui/react-switch";
 import { isValid } from "date-fns";
+
+import { SetState } from "@/app/types/globals";
 
 // Variables
 
@@ -307,7 +304,7 @@ export function InputTextControlled({
   addendum?: string;
   name: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   tekTime?: boolean;
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
@@ -541,7 +538,7 @@ export function SelectWithOptionsControlled({
   description: string;
   addendum?: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   name: string;
   placeholder?: string;
   options: Option[];
@@ -702,7 +699,7 @@ export function TextareaControlled({
   description: string;
   name: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   rows?: number;
   required?: boolean;
   errors?: string[];
@@ -749,7 +746,7 @@ export function InputSwitch({
   defaultChecked: boolean;
   description: string;
   // definedValue?: boolean;
-  // definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
+  // definedOnValueChange?: SetState<boolean>;
   required?: boolean;
   errors?: string[];
 }) {
@@ -795,7 +792,7 @@ export function InputSwitchControlled({
   name: string;
   description: string;
   definedValue?: boolean;
-  definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
+  definedOnValueChange?: SetState<boolean>;
   errors?: string[];
 }) {
   return (
@@ -893,7 +890,7 @@ export function InputNumberControlled({
   name: string;
   description: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   step?: string;
   min?: string;
   max?: string;
@@ -944,7 +941,7 @@ export function InputDatetimeLocalControlled({
   name: string;
   description: string;
   definedValue: string;
-  definedOnValueChange: Dispatch<SetStateAction<string>>;
+  definedOnValueChange: SetState<string>;
   min?: string;
   max?: string;
   errors?: string[];

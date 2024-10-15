@@ -1,7 +1,6 @@
 import { Prisma } from "@prisma/client";
 
 import { selectMomentId } from "../reads/subreads/moments";
-import { Dispatch, SetStateAction } from "react";
 
 export type StepFromCRUD = {
   id: string;
@@ -55,19 +54,13 @@ export type UserMomentsToCRUD = {
 
 export type View = "update-moment" | "read-moments" | "create-moment";
 
-export type SetView = Dispatch<SetStateAction<View>>;
-
 export type SubView =
   | "all-moments"
   | "past-moments"
   | "current-moments"
   | "future-moments";
 
-export type SetSubView = Dispatch<SetStateAction<SubView>>;
-
 export type StepVisible = "create" | "creating" | "updating";
-
-export type SetStepVisible = Dispatch<SetStateAction<StepVisible>>;
 
 type DefaultFormVariant = "creating" | "updating";
 
