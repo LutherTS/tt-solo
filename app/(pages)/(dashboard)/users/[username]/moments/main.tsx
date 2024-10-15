@@ -1155,73 +1155,31 @@ function MomentForms({
           <div className="flex">
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
-              <Button
-                type="submit"
-                variant="confirm"
-                disabled={
-                  isResetMomentFormPending ||
-                  isDeleteMomentPending ||
-                  isCreateOrUpdateMomentPending
-                }
-                isDedicatedDisabled={isCreateOrUpdateMomentPending}
-              >
-                Confirmer le moment
-              </Button>
-              {/* could/should be a switch statement (better than ternary) */}
-              {variant === "creating" && (
-                <Button
-                  type="reset"
-                  variant="cancel"
-                  disabled={isResetMomentFormPending}
-                >
-                  Réinitialiser le moment
-                </Button>
-              )}
-              {variant === "updating" && (
-                <Button
-                  type="button"
-                  onClick={deleteMomentAction}
-                  variant="cancel"
-                  disabled={isDeleteMomentPending}
-                >
-                  Effacer le moment
-                </Button>
-              )}
+              <ConfirmMomentButton
+                isResetMomentFormPending={isResetMomentFormPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+              />
+              <ResetOrEraseMomentButton
+                variant={variant}
+                isResetMomentFormPending={isResetMomentFormPending}
+                deleteMomentAction={deleteMomentAction}
+                isDeleteMomentPending={isDeleteMomentPending}
+              />
             </div>
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-              {/* could/should be a switch statement (better than ternary) */}
-              {variant === "creating" && (
-                <Button
-                  type="reset"
-                  variant="cancel"
-                  disabled={isResetMomentFormPending}
-                >
-                  Réinitialiser le moment
-                </Button>
-              )}
-              {variant === "updating" && (
-                <Button
-                  type="button"
-                  onClick={deleteMomentAction}
-                  variant="cancel"
-                  disabled={isDeleteMomentPending}
-                >
-                  Effacer le moment
-                </Button>
-              )}
-              <Button
-                type="submit"
-                variant="confirm"
-                disabled={
-                  isResetMomentFormPending ||
-                  isDeleteMomentPending ||
-                  isCreateOrUpdateMomentPending
-                }
-                isDedicatedDisabled={isCreateOrUpdateMomentPending}
-              >
-                Confirmer le moment
-              </Button>
+              <ResetOrEraseMomentButton
+                variant={variant}
+                isResetMomentFormPending={isResetMomentFormPending}
+                deleteMomentAction={deleteMomentAction}
+                isDeleteMomentPending={isDeleteMomentPending}
+              />
+              <ConfirmMomentButton
+                isResetMomentFormPending={isResetMomentFormPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+              />
             </div>
           </div>
         </Section>
@@ -1340,6 +1298,9 @@ function ReorderItem({
 }) {
   const controls = useDragControls();
 
+  const isCurrentStepUpdating =
+    currentStepId === step.id && stepVisible === "updating";
+
   // deleteStepAction
 
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
@@ -1411,7 +1372,7 @@ function ReorderItem({
           >
             Étape <span>{toWordsing(index + 1)}</span>
           </p>{" "}
-          {stepVisible === "updating" && currentStepId === step.id ? (
+          {isCurrentStepUpdating ? (
             <Button
               type="button"
               variant="destroy-step"
@@ -1431,7 +1392,7 @@ function ReorderItem({
             </Button>
           )}
         </div>
-        {stepVisible === "updating" && currentStepId === step.id ? (
+        {isCurrentStepUpdating ? (
           <div className="flex flex-col gap-y-8">
             <StepInputs
               form={STEP_FORM_ID.updating}
@@ -1440,72 +1401,32 @@ function ReorderItem({
               setStepDuree={setStepDureeUpdate}
               step={step}
             />
-            <div className="flex">
+            <div>
               {/* Mobile */}
               <div className="flex w-full flex-col gap-4 md:hidden">
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="submit"
-                  variant="confirm-step"
-                  disabled={isUpdateStepPending}
-                >
-                  Actualiser l&apos;étape
-                </Button>
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="button"
-                  onClick={deleteStepAction}
-                  variant="cancel-step"
-                  disabled={isDeleteStepPending}
-                >
-                  Effacer l&apos;étape
-                </Button>
+                <UpdateStepButton isUpdateStepPending={isUpdateStepPending} />
+                <EraseStepButton
+                  deleteStepAction={deleteStepAction}
+                  isDeleteStepPending={isDeleteStepPending}
+                />
               </div>
               {/* Desktop */}
               <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="button"
-                  onClick={deleteStepAction}
-                  variant="cancel-step"
-                  disabled={isDeleteStepPending}
-                >
-                  Effacer l&apos;étape
-                </Button>
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="submit"
-                  variant="confirm-step"
-                  disabled={isUpdateStepPending}
-                >
-                  Actualiser l&apos;étape
-                </Button>
+                <EraseStepButton
+                  deleteStepAction={deleteStepAction}
+                  isDeleteStepPending={isDeleteStepPending}
+                />
+                <UpdateStepButton isUpdateStepPending={isUpdateStepPending} />
               </div>
             </div>
           </div>
         ) : (
-          <>
-            <div className="space-y-2">
-              <p className="font-medium text-blue-950">{step.intitule}</p>
-              <p>
-                <span
-                  className={clsx(
-                    index === 0 && "font-semibold text-neutral-800",
-                  )}
-                >
-                  {format(
-                    add(startMomentDate, {
-                      minutes: stepAddingTime,
-                    }),
-                    "HH:mm",
-                  )}
-                </span>
-                <> • </>
-                {numStringToTimeString(step.duree)}
-              </p>
-              <p className="text-sm text-neutral-500">{step.details}</p>
-            </div>
-          </>
+          <StepContents
+            step={step}
+            index={index}
+            startMomentDate={startMomentDate}
+            stepAddingTime={stepAddingTime}
+          />
         )}
       </div>
     </Reorder.Item>
@@ -1557,6 +1478,37 @@ function StepInputs({
         errors={createOrUpdateMomentState?.errors?.realStepDuration}
       />
     </>
+  );
+}
+
+function StepContents({
+  step,
+  index,
+  startMomentDate,
+  stepAddingTime,
+}: {
+  step: StepFromCRUD;
+  index: number;
+  startMomentDate: string;
+  stepAddingTime: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="font-medium text-blue-950">{step.intitule}</p>
+      <p>
+        <span className={clsx(index === 0 && "font-semibold text-neutral-800")}>
+          {format(
+            add(startMomentDate, {
+              minutes: stepAddingTime,
+            }),
+            "HH:mm",
+          )}
+        </span>
+        <> • </>
+        {numStringToTimeString(step.duree)}
+      </p>
+      <p className="text-sm text-neutral-500">{step.details}</p>
+    </div>
   );
 }
 
@@ -1688,6 +1640,112 @@ function StepVisibleCreate({
         Ajouter une étape
       </Button>
     </motion.div>
+  );
+}
+
+function ResetOrEraseMomentButton({
+  variant,
+  isResetMomentFormPending,
+  deleteMomentAction,
+  isDeleteMomentPending,
+}: {
+  variant: string;
+  isResetMomentFormPending: boolean;
+  deleteMomentAction: () => Promise<void>;
+  isDeleteMomentPending: boolean;
+}) {
+  return (
+    <>
+      {(() => {
+        switch (variant) {
+          case "creating":
+            return (
+              <Button
+                type="reset"
+                variant="cancel"
+                disabled={isResetMomentFormPending}
+              >
+                Réinitialiser le moment
+              </Button>
+            );
+          case "updating":
+            return (
+              <Button
+                type="button"
+                onClick={deleteMomentAction}
+                variant="cancel"
+                disabled={isDeleteMomentPending}
+              >
+                Effacer le moment
+              </Button>
+            );
+          default:
+            return null;
+        }
+      })()}
+    </>
+  );
+}
+
+function ConfirmMomentButton({
+  isResetMomentFormPending,
+  isDeleteMomentPending,
+  isCreateOrUpdateMomentPending,
+}: {
+  isResetMomentFormPending: boolean;
+  isDeleteMomentPending: boolean;
+  isCreateOrUpdateMomentPending: boolean;
+}) {
+  return (
+    <Button
+      type="submit"
+      variant="confirm"
+      disabled={
+        isResetMomentFormPending ||
+        isDeleteMomentPending ||
+        isCreateOrUpdateMomentPending
+      }
+      isDedicatedDisabled={isCreateOrUpdateMomentPending}
+    >
+      Confirmer le moment
+    </Button>
+  );
+}
+
+function EraseStepButton({
+  deleteStepAction,
+  isDeleteStepPending,
+}: {
+  deleteStepAction: () => void;
+  isDeleteStepPending: boolean;
+}) {
+  return (
+    <Button
+      form={STEP_FORM_ID.updating}
+      type="button"
+      onClick={deleteStepAction}
+      variant="cancel-step"
+      disabled={isDeleteStepPending}
+    >
+      Effacer l&apos;étape
+    </Button>
+  );
+}
+
+function UpdateStepButton({
+  isUpdateStepPending,
+}: {
+  isUpdateStepPending: boolean;
+}) {
+  return (
+    <Button
+      form={STEP_FORM_ID.updating}
+      type="submit"
+      variant="confirm-step"
+      disabled={isUpdateStepPending}
+    >
+      Actualiser l&apos;étape
+    </Button>
   );
 }
 
