@@ -1035,10 +1035,15 @@ export function Button({
   onClick?: MouseEventHandler<HTMLButtonElement>;
   children: React.ReactNode;
 }) {
+  const showDisabledStyles =
+    isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled);
+
   const destroy =
     "w-fit px-1 text-sm text-blue-500 hover:text-blue-600 focus-visible:rounded focus-visible:outline-blue-500 active:text-blue-400";
-  const destroyStep =
-    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded focus-visible:outline-cyan-500 active:text-cyan-400";
+  const destroyStep = clsx(
+    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded focus-visible:outline-cyan-500 active:text-cyan-400",
+    showDisabledStyles && "disabled:grayscale disabled:hover:text-cyan-500",
+  );
   const notDestroy = "w-full rounded border py-2";
   const neutral =
     "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:!bg-neutral-200 hover:!text-neutral-950 focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
@@ -1046,7 +1051,7 @@ export function Button({
   const confirm = clsx(
     "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400",
     // ensure disabled styles are only applied if the button is disabled by its own dedicated action, and are not applied if the button is disabled by another action... in fact, more like isDedicatedDisabled, differentiating disabled of function only from disabled of function and style
-    (isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled)) &&
+    showDisabledStyles &&
       "disabled:grayscale disabled:hover:border-blue-500 disabled:hover:bg-blue-500",
   );
   // no disable styles on cancel for now because deleting a moment is currently fast enough that it's not worth highlighting visually
@@ -1057,7 +1062,7 @@ export function Button({
   // disabled:border-neutral-500 disabled:text-neutral-500 bg-current
   const cancelStep = clsx(
     "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400",
-    (isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled)) &&
+    showDisabledStyles &&
       "disabled:grayscale disabled:hover:border-cyan-500 disabled:hover:text-cyan-500",
   );
 

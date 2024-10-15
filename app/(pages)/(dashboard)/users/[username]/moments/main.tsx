@@ -1598,11 +1598,17 @@ function StepVisibleCreating({
         </p>{" "}
         <Button
           form={STEP_FORM_ID.creating}
-          type="reset"
           variant="destroy-step"
-          disabled={isResetStepPending}
+          //
+          // type="reset"
+          // disabled={isResetStepPending}
+          //
+          type="button"
+          onClick={cancelStepAction}
+          disabled={steps.length === 0 || isCancelStepPending}
         >
-          Réinitialiser l&apos;étape
+          {/* Réinitialiser l&apos;étape */}
+          Annuler l&apos;étape
         </Button>
       </div>
       <StepInputs
@@ -1625,11 +1631,16 @@ function StepVisibleCreating({
           <Button
             variant="cancel-step"
             form={STEP_FORM_ID.creating}
-            type="button"
-            onClick={cancelStepAction}
-            disabled={steps.length === 0 || isCancelStepPending}
+            //
+            // type="button"
+            // onClick={cancelStepAction}
+            // disabled={steps.length === 0 || isCancelStepPending}
+            //
+            type="reset"
+            disabled={isResetStepPending}
           >
-            Annuler l&apos;étape
+            {/* Annuler l&apos;étape */}
+            Réinitialiser l&apos;étape
           </Button>
         </div>
         {/* Desktop */}
@@ -1637,11 +1648,16 @@ function StepVisibleCreating({
           <Button
             variant="cancel-step"
             form={STEP_FORM_ID.creating}
-            type="button"
-            onClick={cancelStepAction}
-            disabled={steps.length === 0 || isCancelStepPending}
+            //
+            // type="button"
+            // onClick={cancelStepAction}
+            // disabled={steps.length === 0 || isCancelStepPending}
+            //
+            type="reset"
+            disabled={isResetStepPending}
           >
-            Annuler l&apos;étape
+            {/* Annuler l&apos;étape */}
+            Réinitialiser l&apos;étape
           </Button>
           <Button
             variant="confirm-step"
