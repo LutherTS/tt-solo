@@ -11,7 +11,12 @@ import {
   FormEvent,
   TransitionStartFunction,
 } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  ReadonlyURLSearchParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -44,6 +49,9 @@ import {
   CreateOrUpdateMomentState,
   MomentsDestinationToCRUD,
   StepToCRUD,
+  SetView,
+  MomentsDateToCRUD,
+  SetSubView,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -188,33 +196,7 @@ export default function Main({
       <div>
         <div className="flex justify-between pb-8 align-baseline">
           <PageTitle title={viewTitles[view]} />
-          {view === "update-moment" && (
-            <Button
-              type="button"
-              variant="destroy-step"
-              onClick={() => setScrollToTop("read-moments", setView)}
-            >
-              Vos moments
-            </Button>
-          )}
-          {view === "read-moments" && (
-            <Button
-              type="button"
-              variant="destroy-step"
-              onClick={() => setScrollToTop("create-moment", setView)}
-            >
-              Créez un moment
-            </Button>
-          )}
-          {view === "create-moment" && (
-            <Button
-              type="button"
-              variant="destroy-step"
-              onClick={() => setScrollToTop("read-moments", setView)}
-            >
-              Vos moments
-            </Button>
-          )}
+          <SetViewButton view={view} setView={setView} />
         </div>
         {view !== "read-moments" && <Divider />}
       </div>
@@ -442,93 +424,18 @@ function ReadMomentsView({
   return (
     <div className="space-y-8">
       <div className={clsx("flex flex-wrap gap-4")}>
-        {subViews.map((e) => {
-          const className = "px-4 py-2 h-9 flex items-center justify-center";
-          return (
-            <button
-              onClick={() => setSubView(e)}
-              key={e}
-              className={clsx(
-                className,
-                "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-                subView === e && "focus-visible:outline-blue-500",
-                subView !== e && "focus-visible:outline-cyan-500",
-              )}
-            >
-              {/* real occupied space */}
-              <span className="invisible static">{subViewTitles[e]}</span>
-              {/* gradient text */}
-              <span
-                className={clsx(
-                  className,
-                  "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
-                )}
-              >
-                {subViewTitles[e]}
-              </span>
-              {/* white background */}
-              <div
-                className={clsx(
-                  "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-                )}
-              ></div>
-              {/* gradient border */}
-              <div
-                className={clsx(
-                  "absolute inset-0 rounded-full",
-                  subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
-                  subView !== e && "bg-transparent",
-                )}
-              ></div>
-            </button>
-          );
-        })}
-        <button
-          form={SEARCH_FORM_ID}
-          onClick={revalidateMomentsAction}
-          disabled={isRevalidateMomentsPending}
-          className={clsx(
-            "flex h-9 items-center justify-center px-4 py-2",
-            "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-            "focus-visible:outline-cyan-500",
-          )}
-        >
-          {/* real occupied space */}
-          <span className="invisible static">
-            <Icons.ArrowPathSolid />
-          </span>
-          {/* gradient text */}
-          <span
-            className={clsx(
-              "flex h-9 items-center justify-center px-4 py-2",
-              "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
-            )}
-          >
-            <Icons.ArrowPathSolid className="size-6 text-blue-950" />
-          </span>
-          {/* white background */}
-          <div
-            className={clsx(
-              "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-            )}
-          ></div>
-          {/* gradient border */}
-          <div
-            className={clsx("absolute inset-0 rounded-full", "bg-white")}
-          ></div>
-        </button>
-      </div>
-      <form id={SEARCH_FORM_ID}>
-        <InputText
-          id={CONTAINS}
-          name={CONTAINS}
-          placeholder="Cherchez parmi vos moments..."
-          defaultValue={searchParams.get(CONTAINS)?.toString()}
-          onChange={(e) => {
-            debouncedHandleSearch(e.currentTarget.value);
-          }}
+        {subViews.map((e) => (
+          <SetSubViewButton setSubView={setSubView} e={e} subView={subView} />
+        ))}
+        <RevalidateMomentsButton
+          revalidateMomentsAction={revalidateMomentsAction}
+          isRevalidateMomentsPending={isRevalidateMomentsPending}
         />
-      </form>
+      </div>
+      <SearchForm
+        searchParams={searchParams}
+        debouncedHandleSearch={debouncedHandleSearch}
+      />
       {realDisplayedMoments.length > 0 ? (
         <>
           {realDisplayedMoments.map((e, i, a) => (
@@ -552,22 +459,7 @@ function ReadMomentsView({
                   })}
                 </DateCard>
               </div>
-              {i === a.length - 1 && (
-                <p className="font-extralight text-neutral-800">
-                  <span className="font-normal">{e.momentsTotal}</span>{" "}
-                  moment(s) affiché(s){" "}
-                  <span className="font-normal">
-                    (
-                    {e.momentFirstIndex !== e.momentLastIndex
-                      ? `${e.momentFirstIndex}-${e.momentLastIndex}`
-                      : `${e.momentFirstIndex}`}
-                    )
-                  </span>{" "}
-                  sur <span className="font-normal">{e.allMomentsTotal}</span> à
-                  la page <span className="font-normal">{e.currentPage}</span>{" "}
-                  sur <span className="font-normal">{e.totalPage}</span>
-                </p>
-              )}
+              {i === a.length - 1 && <MomentsPageDetails e={e} />}
             </div>
           ))}
           <div className="flex justify-between">
@@ -617,9 +509,12 @@ function MomentForms({
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
+  const isVariantUpdatingMoment =
+    variant === "updating" && moment !== undefined;
+
   // datetime-local input is now controlled for dynamic moment and steps times
   let [startMomentDate, setStartMomentDate] = useState(
-    moment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
+    isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
 
   const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
@@ -632,7 +527,7 @@ function MomentForms({
   });
 
   let [steps, setSteps] = useState<StepFromCRUD[]>(
-    momentSteps ? momentSteps : [],
+    isVariantUpdatingMoment && momentSteps ? momentSteps : [],
   );
 
   const stepsCompoundDurations = makeStepsCompoundDurationsArray(steps);
@@ -842,7 +737,9 @@ function MomentForms({
           <InputText
             label="Destination"
             name="destination"
-            defaultValue={moment ? moment.destinationIdeal : ""}
+            defaultValue={
+              isVariantUpdatingMoment ? moment.destinationIdeal : ""
+            }
             description="Votre projet vise à atteindre quel idéal ?"
             addendum={
               destinationOptions.length > 0
@@ -871,7 +768,8 @@ function MomentForms({
             addendum="Ou définissez-la vous-même via le bouton ci-dessus."
             name="destination"
             defaultValue={
-              moment && destinationValues.includes(moment.destinationIdeal)
+              isVariantUpdatingMoment &&
+              destinationValues.includes(moment.destinationIdeal)
                 ? moment.destinationIdeal
                 : ""
             }
@@ -896,7 +794,7 @@ function MomentForms({
             description="Définissez le type d'activité qui va correspondre à votre problématique."
             addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
             name="activite"
-            defaultValue={moment ? moment.activity : ""}
+            defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
             fieldFlexIsNotLabel
             required={false}
             errors={createOrUpdateMomentState?.errors?.momentActivity}
@@ -916,7 +814,8 @@ function MomentForms({
             addendum="Ou définissez-le vous-même via le bouton ci-dessus."
             name="activite"
             defaultValue={
-              moment && activityValues.includes(moment.activity)
+              isVariantUpdatingMoment &&
+              activityValues.includes(moment.activity)
                 ? moment.activity
                 : ""
             }
@@ -938,7 +837,7 @@ function MomentForms({
           <InputText
             label="Objectif"
             name="objectif"
-            defaultValue={moment ? moment.objective : ""}
+            defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
             description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
             required={false}
             errors={createOrUpdateMomentState?.errors?.momentName}
@@ -947,7 +846,9 @@ function MomentForms({
             key={inputSwitchKey}
             label="Indispensable"
             name="indispensable"
-            defaultChecked={moment ? moment.isIndispensable : false}
+            defaultChecked={
+              isVariantUpdatingMoment ? moment.isIndispensable : false
+            }
             description="Activez l'interrupteur si ce moment est d'une importance incontournable."
             required={false}
             errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
@@ -955,7 +856,7 @@ function MomentForms({
           <Textarea
             label="Contexte"
             name="contexte"
-            defaultValue={moment ? moment.context : ""}
+            defaultValue={isVariantUpdatingMoment ? moment.context : ""}
             description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
             rows={6}
             required={false}
@@ -981,6 +882,7 @@ function MomentForms({
           {steps.length > 0 && (
             <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
               {steps.map((step, index) => {
+                // this needs to stay up there because it depends from an information obtained in MomentForms
                 let stepAddingTime =
                   index === 0 ? 0 : stepsCompoundDurations[index - 1];
 
@@ -1120,7 +1022,165 @@ function MomentForms({
 
 // Main Supporting Components
 
+// Actually the Dispatch types blablabla could be types I make and export myself. (In progress.)
+function SetViewButton({ view, setView }: { view: View; setView: SetView }) {
+  // though the function below could be a utility, it is very specific to this component at this time
+  function defineDesiredView(view: View) {
+    switch (view) {
+      case "update-moment":
+        return "read-moments";
+      case "read-moments":
+        return "create-moment";
+      case "create-moment":
+        return "read-moments";
+      default:
+        return "read-moments";
+    }
+  }
+
+  const desiredView = defineDesiredView(view);
+
+  return (
+    <Button
+      type="button"
+      variant="destroy-step"
+      onClick={() => setScrollToTop(desiredView, setView)}
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </Button>
+  );
+}
+
 // ReadMomentsView
+
+function SetSubViewButton({
+  setSubView,
+  e,
+  subView,
+}: {
+  setSubView: SetSubView;
+  e: SubView;
+  subView: SubView;
+}) {
+  // this needs to be inside the component because its entirely specific to the component
+  const className = "px-4 py-2 h-9 flex items-center justify-center";
+
+  return (
+    <button
+      onClick={() => setSubView(e)}
+      key={e}
+      className={clsx(
+        className,
+        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        subView === e && "focus-visible:outline-blue-500",
+        subView !== e && "focus-visible:outline-cyan-500",
+      )}
+    >
+      {/* real occupied space */}
+      <span className="invisible static">{subViewTitles[e]}</span>
+      {/* gradient text */}
+      <span
+        className={clsx(
+          className,
+          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+        )}
+      >
+        {subViewTitles[e]}
+      </span>
+      {/* white background */}
+      <div
+        className={clsx(
+          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+        )}
+      ></div>
+      {/* gradient border */}
+      <div
+        className={clsx(
+          "absolute inset-0 rounded-full",
+          subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
+          subView !== e && "bg-transparent",
+        )}
+      ></div>
+    </button>
+  );
+}
+
+function RevalidateMomentsButton({
+  revalidateMomentsAction,
+  isRevalidateMomentsPending,
+}: {
+  revalidateMomentsAction: (
+    event: MouseEvent<HTMLButtonElement>,
+  ) => Promise<void>;
+  isRevalidateMomentsPending: boolean;
+}) {
+  return (
+    <button
+      form={SEARCH_FORM_ID}
+      onClick={revalidateMomentsAction}
+      disabled={isRevalidateMomentsPending}
+      className={clsx(
+        "flex h-9 items-center justify-center px-4 py-2",
+        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        "focus-visible:outline-cyan-500",
+      )}
+    >
+      {/* real occupied space */}
+      <span className="invisible static">
+        <Icons.ArrowPathSolid />
+      </span>
+      {/* gradient text */}
+      <span
+        className={clsx(
+          "flex h-9 items-center justify-center px-4 py-2",
+          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+        )}
+      >
+        <Icons.ArrowPathSolid className="size-6 text-blue-950" />
+      </span>
+      {/* white background */}
+      <div
+        className={clsx(
+          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+        )}
+      ></div>
+      {/* gradient border */}
+      <div className={clsx("absolute inset-0 rounded-full", "bg-white")}></div>
+    </button>
+  );
+}
+
+function SearchForm({
+  searchParams,
+  debouncedHandleSearch,
+}: {
+  searchParams: ReadonlyURLSearchParams;
+  debouncedHandleSearch: debounce.DebouncedFunction<(term: string) => void>;
+}) {
+  return (
+    <form id={SEARCH_FORM_ID}>
+      <InputText
+        id={CONTAINS}
+        name={CONTAINS}
+        placeholder="Cherchez parmi vos moments..."
+        defaultValue={searchParams.get(CONTAINS)?.toString()}
+        onChange={(e) => {
+          debouncedHandleSearch(e.currentTarget.value);
+        }}
+      />
+    </form>
+  );
+}
 
 function DestinationInDateCard({
   e2,
@@ -1223,6 +1283,24 @@ function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
         : {e4.title}
       </p>
     </li>
+  );
+}
+
+function MomentsPageDetails({ e }: { e: MomentsDateToCRUD }) {
+  return (
+    <p className="font-extralight text-neutral-800">
+      <span className="font-normal">{e.momentsTotal}</span> moment(s) affiché(s){" "}
+      <span className="font-normal">
+        (
+        {e.momentFirstIndex !== e.momentLastIndex
+          ? `${e.momentFirstIndex}-${e.momentLastIndex}`
+          : `${e.momentFirstIndex}`}
+        )
+      </span>{" "}
+      sur <span className="font-normal">{e.allMomentsTotal}</span> à la page{" "}
+      <span className="font-normal">{e.currentPage}</span> sur{" "}
+      <span className="font-normal">{e.totalPage}</span>
+    </p>
   );
 }
 
