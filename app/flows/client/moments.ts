@@ -297,8 +297,8 @@ export const resetStepActionflow = (
 ) => {
   startResetStepTransition(() => {
     if (
-      // @ts-ignore Typescript unaware of explicitOriginalTarget
-      event.nativeEvent.explicitOriginalTarget.form?.id ===
+      // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
+      event.nativeEvent.explicitOriginalTarget?.form?.id ===
       STEP_FORM_ID.creating
     ) {
       if (confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")) {
