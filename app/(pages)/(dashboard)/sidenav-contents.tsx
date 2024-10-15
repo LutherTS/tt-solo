@@ -6,9 +6,14 @@ import { usePathname } from "next/navigation";
 
 import clsx from "clsx";
 
-import * as Icons from "./sidenav-icons";
+import * as SideNavIcons from "./sidenav-icons";
 
-const navLinks = [
+const navLinks: {
+  id: number;
+  label: string;
+  href: string;
+  icon: SideNavIcons.SideNavIconName;
+}[] = [
   // {
   //   id: 0,
   //   label: "Paramètres",
@@ -50,8 +55,7 @@ export function SideNavContents() {
         )}
       >
         {navLinks.map((navLink) => {
-          // @ts-ignore // this is between TypeScript and its god
-          const Icon = Icons[navLink.icon];
+          const Icon = SideNavIcons[navLink.icon];
 
           return (
             <div className="p-2" key={navLink.id}>

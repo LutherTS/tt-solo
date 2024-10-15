@@ -45,3 +45,24 @@ export function PaperAirplane({ className }: { className?: string }) {
     </svg>
   );
 }
+
+const sideNavIcons = {
+  Cog8Tooth,
+  CalendarDays,
+  PaperAirplane,
+} as const;
+
+export type SideNavIconName = keyof typeof sideNavIcons;
+
+/* Notes
+I will need to centralize all of my Icons inside a single icon file at the same level as the root layout file.
+It could also be at that time that I'll implement that getIcon generic helper function below, courtesy of ChatGPT too: 
+// Generic Helper Function
+function getIcon(name: IconName) {
+  return Icons[name];
+}
+// Usage
+const iconName = "ArrowPathSolid";
+const IconComponent = getIcon(iconName); // This is now type-safe
+<IconComponent />;
+*/

@@ -42,6 +42,8 @@ import {
   SubView,
   CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
+  MomentsDestinationToCRUD,
+  StepToCRUD,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -539,81 +541,13 @@ function ReadMomentsView({
                 >
                   {e.destinations.map((e2) => {
                     return (
-                      <div
-                        className="flex flex-col gap-y-8"
+                      <DestinationInDateCard
                         key={e2.destinationIdeal}
-                      >
-                        <div className="flex select-none items-baseline justify-between">
-                          <p
-                            className={clsx(
-                              "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-                            )}
-                          >
-                            {e2.destinationIdeal}
-                          </p>
-                        </div>
-                        {e2.moments.map((e3, i3) => (
-                          <div
-                            className={clsx(
-                              "group space-y-2",
-                              i3 === 0 && "-mt-5",
-                            )}
-                            key={e3.id}
-                          >
-                            <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
-                              <p className="font-medium text-blue-950">
-                                {e3.objective}
-                              </p>
-                              <div className="invisible flex justify-end group-hover:visible">
-                                <Button
-                                  type="button"
-                                  variant="destroy-step"
-                                  // to update a moment
-                                  onClick={() => {
-                                    setMoment(
-                                      realMoments.find((e4) => e4.id === e3.id),
-                                    );
-                                    setScrollToTop("update-moment", setView);
-                                  }}
-                                >
-                                  <Icons.PencilSquareSolid className="size-5" />
-                                </Button>
-                              </div>
-                            </div>
-                            <p>
-                              <span
-                                className={"font-semibold text-neutral-800"}
-                              >
-                                {e3.startDateAndTime.split("T")[1]}
-                              </span>{" "}
-                              • {numStringToTimeString(e3.duration)}
-                              {e3.isIndispensable && (
-                                <>
-                                  {" "}
-                                  •{" "}
-                                  <span className="text-sm font-semibold uppercase">
-                                    indispensable
-                                  </span>
-                                </>
-                              )}
-                            </p>
-                            <ol className="">
-                              {e3.steps.map((e4) => (
-                                <li
-                                  className="text-sm font-light leading-loose text-neutral-500"
-                                  key={e4.id}
-                                >
-                                  <p className="">
-                                    {e4.startDateAndTime.split("T")[1]} -{" "}
-                                    {e4.endDateAndTime.split("T")[1]} :{" "}
-                                    {e4.title}
-                                  </p>
-                                </li>
-                              ))}
-                            </ol>
-                          </div>
-                        ))}
-                      </div>
+                        e2={e2}
+                        setMoment={setMoment}
+                        realMoments={realMoments}
+                        setView={setView}
+                      />
                     );
                   })}
                 </DateCard>
@@ -637,24 +571,20 @@ function ReadMomentsView({
             </div>
           ))}
           <div className="flex justify-between">
-            <button
-              onClick={() => handlePagination("left", subView)}
+            <PaginationButton
+              handlePagination={handlePagination}
+              direction="left"
+              subView={subView}
               disabled={currentPage === 1}
-              className="disabled:text-neutral-200"
-            >
-              <div className="rounded-lg bg-white p-2 shadow">
-                <Icons.ArrowLeftSolid />
-              </div>
-            </button>
-            <button
-              onClick={() => handlePagination("right", subView)}
+              icon="ArrowLeftSolid"
+            />
+            <PaginationButton
+              handlePagination={handlePagination}
+              direction="right"
+              subView={subView}
               disabled={currentPage === subViewMaxPages[subView]}
-              className="disabled:text-neutral-200"
-            >
-              <div className="rounded-lg bg-white p-2 shadow">
-                <Icons.ArrowRightSolid />
-              </div>
-            </button>
+              icon="ArrowRightSolid"
+            />
           </div>
         </>
       ) : (
@@ -1189,6 +1119,144 @@ function MomentForms({
 }
 
 // Main Supporting Components
+
+// ReadMomentsView
+
+function DestinationInDateCard({
+  e2,
+  setMoment,
+  realMoments,
+  setView,
+}: {
+  e2: MomentsDestinationToCRUD;
+  setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
+  realMoments: MomentToCRUD[];
+  setView: Dispatch<SetStateAction<View>>;
+}) {
+  return (
+    <div className="flex flex-col gap-y-8">
+      <div className="flex select-none items-baseline justify-between">
+        <p
+          className={clsx(
+            "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
+          )}
+        >
+          {e2.destinationIdeal}
+        </p>
+      </div>
+      {e2.moments.map((e3, i3) => (
+        <MomentInDateCard
+          key={e3.id}
+          e3={e3}
+          i3={i3}
+          setMoment={setMoment}
+          realMoments={realMoments}
+          setView={setView}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MomentInDateCard({
+  e3,
+  i3,
+  setMoment,
+  realMoments,
+  setView,
+}: {
+  e3: MomentToCRUD;
+  i3: number;
+  setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
+  realMoments: MomentToCRUD[];
+  setView: Dispatch<SetStateAction<View>>;
+}) {
+  // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
+  function setUpdateMomentView() {
+    setMoment(realMoments.find((e0) => e0.id === e3.id));
+    setScrollToTop("update-moment", setView);
+  }
+
+  return (
+    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
+      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+        <p className="font-medium text-blue-950">{e3.objective}</p>
+        <div className="invisible flex justify-end group-hover:visible">
+          <Button
+            type="button"
+            variant="destroy-step"
+            onClick={setUpdateMomentView}
+          >
+            <Icons.PencilSquareSolid className="size-5" />
+          </Button>
+        </div>
+      </div>
+      <p>
+        <span className={"font-semibold text-neutral-800"}>
+          {e3.startDateAndTime.split("T")[1]}
+        </span>{" "}
+        • {numStringToTimeString(e3.duration)}
+        {e3.isIndispensable && (
+          <>
+            {" "}
+            •{" "}
+            <span className="text-sm font-semibold uppercase">
+              indispensable
+            </span>
+          </>
+        )}
+      </p>
+      <ol className="">
+        {e3.steps.map((e4) => (
+          <StepInDateCard key={e4.id} e4={e4} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
+  return (
+    <li className="text-sm font-light leading-loose text-neutral-500">
+      <p className="">
+        {e4.startDateAndTime.split("T")[1]} - {e4.endDateAndTime.split("T")[1]}{" "}
+        : {e4.title}
+      </p>
+    </li>
+  );
+}
+
+function PaginationButton({
+  handlePagination,
+  direction,
+  subView,
+  disabled,
+  icon,
+  iconClassName,
+}: {
+  handlePagination: (direction: "left" | "right", subView: SubView) => void;
+  direction: "left" | "right";
+  subView: SubView;
+  disabled: boolean;
+  icon: Icons.IconName;
+  iconClassName?: string;
+}) {
+  const Icon = Icons[icon];
+
+  return (
+    <button
+      onClick={() => handlePagination(direction, subView)}
+      disabled={disabled}
+      className="disabled:text-neutral-200"
+    >
+      <div className="rounded-lg bg-white p-2 shadow">
+        <Icon className={iconClassName} />
+      </div>
+    </button>
+  );
+}
+
+// MomentForms
 
 function StepForm({
   variant,

@@ -62,3 +62,12 @@ export function ArrowRightSolid({ className }: { className?: string }) {
     </svg>
   );
 }
+
+const icons = {
+  ArrowPathSolid,
+  PencilSquareSolid,
+  ArrowLeftSolid,
+  ArrowRightSolid,
+} as const;
+
+export type IconName = keyof typeof icons;
