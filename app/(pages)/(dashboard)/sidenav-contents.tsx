@@ -6,31 +6,31 @@ import { usePathname } from "next/navigation";
 
 import clsx from "clsx";
 
-import * as SideNavIcons from "./sidenav-icons";
+import * as Icons from "@/app/icons";
 
 const navLinks: {
   id: number;
   label: string;
   href: string;
-  icon: SideNavIcons.SideNavIconName;
+  icon: Icons.IconName;
 }[] = [
   // {
   //   id: 0,
   //   label: "Paramètres",
   //   href: "/settings",
-  //   icon: "Cog8Tooth",
+  //   icon: "Cog8ToothOutline",
   // },
   {
     id: 1,
     label: "Moments",
     href: "/moments",
-    icon: "CalendarDays",
+    icon: "CalendarDaysOutline",
   },
   // {
   //   id: 2,
   //   label: "Destinations",
   //   href: "/destinations",
-  //   icon: "PaperAirplane",
+  //   icon: "PaperAirplaneOutline",
   // },
 ];
 
@@ -55,7 +55,7 @@ export function SideNavContents() {
         )}
       >
         {navLinks.map((navLink) => {
-          const Icon = SideNavIcons[navLink.icon];
+          const Icon = Icons[navLink.icon];
 
           return (
             <div className="p-2" key={navLink.id}>

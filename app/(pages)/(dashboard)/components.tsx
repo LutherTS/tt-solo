@@ -6,6 +6,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Switch from "@radix-ui/react-switch";
 import { isValid } from "date-fns";
 
+import * as Icons from "@/app/icons";
 import { SetState } from "@/app/types/globals";
 
 // Variables
@@ -449,7 +450,7 @@ export function SelectWithOptions({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <ChevronDownIcon className="size-5" />
+            <Icons.ChevronDownMini className="size-5" />
           </div>
         </div>
       ) : (
@@ -478,7 +479,7 @@ export function SelectWithOptions({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <ChevronDownIcon className="size-5" />
+              <Icons.ChevronDownMini className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -496,24 +497,6 @@ export function SelectWithOptions({
         </div>
       )}
     </FieldFlex>
-  );
-}
-
-// there is an icons file by this one is specific to the components here
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className || "size-5"}
-    >
-      <path
-        fillRule="evenodd"
-        d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-        clipRule="evenodd"
-      />
-    </svg>
   );
 }
 
@@ -586,7 +569,7 @@ export function SelectWithOptionsControlled({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <ChevronDownIcon className="size-5" />
+            <Icons.ChevronDownMini className="size-5" />
           </div>
         </div>
       ) : (
@@ -618,7 +601,7 @@ export function SelectWithOptionsControlled({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <ChevronDownIcon className="size-5" />
+              <Icons.ChevronDownMini className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -883,6 +866,7 @@ export function InputNumberControlled({
   step,
   min = "0",
   max,
+  required = true,
   errors,
 }: {
   form?: string;
@@ -894,6 +878,7 @@ export function InputNumberControlled({
   step?: string;
   min?: string;
   max?: string;
+  required?: boolean;
   errors?: string[];
 }) {
   return (
@@ -910,6 +895,7 @@ export function InputNumberControlled({
           step={step}
           min={min}
           max={max}
+          required={required}
           onKeyDown={(event) => {
             if (event.key === "Enter") event.preventDefault();
           }}
@@ -927,6 +913,51 @@ export function InputNumberControlled({
   );
 }
 
+export function InputDatetimeLocal({
+  label,
+  name,
+  description,
+  defaultValue,
+  min,
+  max,
+  required = true,
+  errors,
+}: {
+  label: string;
+  name: string;
+  description: string;
+  defaultValue?: string;
+  min?: string;
+  max?: string;
+  required?: boolean;
+  errors?: string[];
+}) {
+  return (
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      <InputDescriptionOrError errors={errors} description={description} />
+      <input
+        // because it is so impossible to deeply modify the input datetime-local defaults, I'm forced to adapt all of my other inputs to some of its defaults (like their padding)
+        type="datetime-local"
+        name={name}
+        defaultValue={defaultValue}
+        min={min}
+        max={max}
+        required={required}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.preventDefault();
+        }}
+        className={clsx(
+          "p-2",
+          baseInputTexts,
+          focusVisibleTexts,
+          "w-full appearance-none",
+        )}
+      />
+    </FieldFlex>
+  );
+}
+
 export function InputDatetimeLocalControlled({
   label,
   name,
@@ -935,6 +966,7 @@ export function InputDatetimeLocalControlled({
   definedOnValueChange = () => {},
   min,
   max,
+  required = true,
   errors,
 }: {
   label: string;
@@ -944,6 +976,7 @@ export function InputDatetimeLocalControlled({
   definedOnValueChange: SetState<string>;
   min?: string;
   max?: string;
+  required?: boolean;
   errors?: string[];
 }) {
   return (
@@ -962,6 +995,7 @@ export function InputDatetimeLocalControlled({
         }}
         min={min}
         max={max}
+        required={required}
         onKeyDown={(event) => {
           if (event.key === "Enter") event.preventDefault();
         }}
@@ -1089,3 +1123,7 @@ export function Button({
     </button>
   );
 }
+
+/* Notes
+For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.
+*/

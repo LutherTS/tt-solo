@@ -72,8 +72,9 @@ import {
   InputSwitch,
   SelectWithOptions,
   Textarea,
+  InputDatetimeLocal,
 } from "../../../components";
-import * as Icons from "../icons";
+import * as Icons from "@/app/icons";
 import {
   deleteStepActionflow,
   resetStepActionflow,
@@ -730,6 +731,7 @@ function MomentForms({
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentFormAction}
         id={MOMENT_FORM_IDS[variant].momentForm}
+        noValidate
       >
         <Section
           title="Votre moment"
@@ -1030,7 +1032,7 @@ function SearchForm({
   debouncedHandleSearch: debounce.DebouncedFunction<(term: string) => void>;
 }) {
   return (
-    <form id={SEARCH_FORM_ID}>
+    <form id={SEARCH_FORM_ID} noValidate>
       <InputText
         id={CONTAINS}
         name={CONTAINS}
@@ -1274,6 +1276,7 @@ function StepForm({
       id={stepFormId}
       onSubmit={createOrUpdateStepAction}
       onReset={resetStepAction}
+      noValidate
     ></form>
   );
 }
@@ -1411,7 +1414,7 @@ function MomentInputs({
         label="Objectif"
         name="objectif"
         defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
-        description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
+        description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
         required={false}
         errors={createOrUpdateMomentState?.errors?.momentName}
       />
@@ -1441,6 +1444,15 @@ function MomentInputs({
         description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
         definedValue={startMomentDate}
         definedOnValueChange={setStartMomentDate}
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
+      />
+      <InputDatetimeLocal
+        label="Date et heure"
+        name="dateetheure"
+        description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
+        defaultValue={startMomentDate}
+        required={false}
         errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
       />
     </>
@@ -1923,6 +1935,7 @@ function StepInputs({
         definedOnValueChange={setStepDuree}
         description="Renseignez en minutes la longueur de l'étape."
         min="5"
+        required={false}
         errors={createOrUpdateMomentState?.errors?.realStepDuration}
       />
     </>
