@@ -191,13 +191,12 @@ export default function Main({
           <PageTitle title={viewTitles[view]} />
           <SetViewButton view={view} setView={setView} />
         </div>
-        {/* {view !== "read-moments" && <Divider />} */}
         <Divider />
       </div>
       <div>
         {/* putting motion on the div to prepare for animations */}
-        {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is create (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
-        {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume on the core view div below itself. */}
+        {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
+        {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
         <motion.div className={clsx(view !== "update-moment" && "hidden")}>
           {/* UpdateMomentView */}
           <MomentForms
@@ -420,7 +419,7 @@ function ReadMomentsView({
   return (
     // That space-y will or could have to go
     <div className="space-y-8">
-      {/* spacer for divider */}
+      {/* spacer for divider (through space-y-8 though) */}
       <div></div>
       <div className={clsx("flex flex-wrap gap-4")}>
         {subViews.map((e) => (
