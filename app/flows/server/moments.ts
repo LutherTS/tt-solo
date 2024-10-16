@@ -109,8 +109,9 @@ export const createOrUpdateMomentFlow = async (
     typeof destination !== "string" ||
     typeof activite !== "string" ||
     typeof objectif !== "string" ||
+    typeof indispensable !== "boolean" ||
     typeof contexte !== "string" ||
-    typeof indispensable !== "boolean"
+    typeof startMomentDate !== "string"
   )
     return {
       momentMessage: "Erreur sur le renseignement du formulaire.",

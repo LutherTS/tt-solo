@@ -180,7 +180,11 @@ export const createOrUpdateStepActionflow = (
     let intitule = formData.get("intituledeleetape");
     let details = formData.get("detailsdeleetape");
 
-    if (typeof intitule !== "string" || typeof details !== "string") {
+    if (
+      typeof intitule !== "string" ||
+      typeof details !== "string" ||
+      typeof duree !== "string"
+    ) {
       setIsCreateOrUpdateStepDone(true);
       return setCreateOrUpdateMomentState({
         stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
@@ -193,7 +197,8 @@ export const createOrUpdateStepActionflow = (
       e.trim(),
     );
 
-    const numberedDuree = +duree;
+    // if duree is not an actual number, input number sends an empty string
+    const numberedDuree = duree !== "" ? +duree : "";
 
     const validatedFields = CreateOrUpdateStepSchema.safeParse({
       stepName: trimmedIntitule,
