@@ -16,8 +16,8 @@ import {
   Section,
   NoDateCard,
   Textarea,
-} from "../../../components";
-import * as Icons from "../icons";
+} from "@/app/components";
+import * as Icons from "@/app/icons";
 import { SetState } from "@/app/types/globals";
 
 // Main Data

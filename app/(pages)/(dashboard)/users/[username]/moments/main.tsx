@@ -73,7 +73,7 @@ import {
   SelectWithOptions,
   Textarea,
   InputDatetimeLocal,
-} from "../../../components";
+} from "@/app/components";
 import * as Icons from "@/app/icons";
 import {
   deleteStepActionflow,

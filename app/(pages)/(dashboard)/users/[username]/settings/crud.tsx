@@ -1,4 +1,4 @@
-import { PageTitle, Divider } from "../../../components";
+import { PageTitle } from "@/app/components";
 
 export function CRUD() {
   return (
@@ -7,7 +7,6 @@ export function CRUD() {
         <div className="flex justify-between align-baseline">
           <PageTitle title="Vos paramètres" />
         </div>
-        {/* <Divider /> */}
       </div>
     </>
   );

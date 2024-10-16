@@ -719,8 +719,6 @@ export function InputSwitch({
   name,
   defaultChecked,
   description,
-  // definedValue,
-  // definedOnValueChange = () => {},
   required = true,
   errors,
 }: {
@@ -728,8 +726,6 @@ export function InputSwitch({
   name: string;
   defaultChecked: boolean;
   description: string;
-  // definedValue?: boolean;
-  // definedOnValueChange?: SetState<boolean>;
   required?: boolean;
   errors?: string[];
 }) {
@@ -742,8 +738,6 @@ export function InputSwitch({
           // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled // later solved with keys
           // now going for uncontrolled, so using back defaultChecked
           defaultChecked={defaultChecked}
-          // checked={definedValue}
-          // onCheckedChange={definedOnValueChange}
           required={required}
           className={clsx(
             "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
@@ -803,7 +797,7 @@ export function InputSwitchControlled({
   );
 }
 
-// IMPORTANT: input type number as a browser default does not show an error when the form fails to submit on mobile, so do remember the importance of server-side validations. (In this use case it's client-side validations.)
+// IMPORTANT: input type number as a browser default does not show an error when the form fails to submit on mobile.
 // (Same for input datetime-local.)
 export function InputNumber({
   form,
