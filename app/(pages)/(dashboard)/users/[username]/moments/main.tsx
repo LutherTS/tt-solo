@@ -48,6 +48,7 @@ import {
   MomentsDestinationToCRUD,
   StepToCRUD,
   MomentsDateToCRUD,
+  MomentFormIds,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -194,12 +195,17 @@ export default function Main({
           <PageTitle title={viewTitles[view]} />
           <SetViewButton view={view} setView={setView} />
         </div>
-        {view !== "read-moments" && <Divider />}
+        {/* {view !== "read-moments" && <Divider />} */}
+        <Divider />
       </div>
-      <div className={clsx(view !== "update-moment" && "hidden")}>
-        {view === "update-moment" && (
-          // UpdateMomentView
+      <div>
+        {/* putting motion on the div to prepare for animations */}
+        {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is create (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
+        {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume on the core view div below itself. */}
+        <motion.div className={clsx(view !== "update-moment" && "hidden")}>
+          {/* UpdateMomentView */}
           <MomentForms
+            key={view} // to remount every time the view changes
             variant="updating"
             moment={moment}
             destinationOptions={destinationOptions}
@@ -209,23 +215,21 @@ export default function Main({
             deleteMoment={deleteMoment}
             now={now}
           />
-        )}
-      </div>
-      <div className={clsx(view !== "read-moments" && "hidden")}>
-        <ReadMomentsView
-          allUserMomentsToCRUD={allUserMomentsToCRUD}
-          maxPages={maxPages}
-          view={view}
-          subView={subView}
-          setView={setView}
-          setSubView={setSubView}
-          setMoment={setMoment}
-          revalidateMoments={revalidateMoments}
-        />
-      </div>
-      <div className={clsx(view !== "create-moment" && "hidden")}>
-        {view !== "update-moment" && (
-          // CreateMomentView
+        </motion.div>
+        <motion.div className={clsx(view !== "read-moments" && "hidden")}>
+          <ReadMomentsView
+            allUserMomentsToCRUD={allUserMomentsToCRUD}
+            maxPages={maxPages}
+            view={view}
+            subView={subView}
+            setView={setView}
+            setSubView={setSubView}
+            setMoment={setMoment}
+            revalidateMoments={revalidateMoments}
+          />
+        </motion.div>
+        <motion.div className={clsx(view !== "create-moment" && "hidden")}>
+          {/* CreateMomentView */}
           <MomentForms
             variant="creating"
             destinationOptions={destinationOptions}
@@ -234,7 +238,7 @@ export default function Main({
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
           />
-        )}
+        </motion.div>
       </div>
     </main>
   );
@@ -418,10 +422,18 @@ function ReadMomentsView({
   };
 
   return (
+    // That space-y will or could have to go
     <div className="space-y-8">
+      {/* spacer for divider */}
+      <div></div>
       <div className={clsx("flex flex-wrap gap-4")}>
         {subViews.map((e) => (
-          <SetSubViewButton setSubView={setSubView} e={e} subView={subView} />
+          <SetSubViewButton
+            key={e}
+            setSubView={setSubView}
+            e={e}
+            subView={subView}
+          />
         ))}
         <RevalidateMomentsButton
           revalidateMomentsAction={revalidateMomentsAction}
@@ -549,7 +561,7 @@ function MomentForms({
   );
 
   let [stepVisible, setStepVisible] = useState<StepVisible>(
-    variant === "creating" ? "creating" : "create",
+    !isVariantUpdatingMoment ? "creating" : "create",
   );
 
   let [destinationSelect, setDestinationSelect] = useState(false);
@@ -927,7 +939,6 @@ function SetSubViewButton({
   return (
     <button
       onClick={() => setSubView(e)}
-      key={e}
       className={clsx(
         className,
         "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",

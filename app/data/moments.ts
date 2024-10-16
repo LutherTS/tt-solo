@@ -1,4 +1,5 @@
 import { Option } from "@/app/types/globals";
+import { MomentFormIds, MomentFormVariant } from "../types/moments";
 
 // searchParams keys
 
@@ -22,6 +23,33 @@ export const STEP_FORM_ID = {
 
 // barely used for now
 export const MOMENT_FORM_ID = "moment-form";
+
+/* FLASH IDEA
+On data files:
+If I make a dictionary of ids with keys, the name is in all caps.
+If it's an array, the name is in camelCase.
+*/
+
+const makeMomentFormIds = (suffix: string): MomentFormIds => {
+  return {
+    momentForm: `moment-form-${suffix}`,
+    yourMoment: `your-moment-${suffix}`,
+    itsSteps: `its-steps-${suffix}`,
+    stepFormCreating: `step-form-creating-${suffix}`,
+    stepFormUpdating: `step-form-updating-${suffix}`,
+  };
+};
+
+const updateMomentFormSuffix = "update-moment-form";
+const UPDATE_MOMENT_FORM_IDS = makeMomentFormIds(updateMomentFormSuffix);
+
+const createMomentFormSuffix = "create-moment-form";
+const CREATE_MOMENT_FORM_IDS = makeMomentFormIds(createMomentFormSuffix);
+
+export const MOMENT_FORM_IDS: { [K in MomentFormVariant]: MomentFormIds } = {
+  updating: UPDATE_MOMENT_FORM_IDS,
+  creating: CREATE_MOMENT_FORM_IDS,
+};
 
 // select options
 

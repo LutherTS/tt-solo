@@ -114,3 +114,11 @@ export type RevalidateMoments = () => Promise<void>;
 export type SelectMomentId = Prisma.UserGetPayload<{
   select: typeof selectMomentId;
 }>;
+
+export type MomentFormIds = {
+  momentForm: string;
+  yourMoment: string;
+  itsSteps: string;
+  stepFormCreating: string;
+  stepFormUpdating: string;
+};
