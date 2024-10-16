@@ -1187,7 +1187,7 @@ function PaginationButton({
     <button
       onClick={() => handlePagination(direction, subView)}
       disabled={disabled}
-      className="disabled:text-neutral-200"
+      className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
     >
       <div className="rounded-lg bg-white p-2 shadow">
         <Icon className={iconClassName} />
