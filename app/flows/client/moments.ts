@@ -2,7 +2,7 @@ import { FormEvent, MouseEvent, TransitionStartFunction } from "react";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { v4 as uuidv4 } from "uuid";
 
-import { STEP_DURATION_DEFAULT, STEP_FORM_ID } from "@/app/data/moments";
+import { MOMENT_FORM_IDS, STEP_DURATION_DEFAULT } from "@/app/data/moments";
 import {
   DeleteMoment,
   MomentFormVariant,
@@ -93,6 +93,7 @@ export const resetMomentFormActionflow = (
   setStepVisible: SetState<StepVisible>,
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
   setIsResetMomentFormDone: SetState<boolean>,
+  variant: MomentFormVariant,
   setInputSwitchKey: SetState<string>,
 ) => {
   startResetMomentFormTransition(() => {
@@ -114,7 +115,7 @@ export const resetMomentFormActionflow = (
 
       // resetting the create step form
       const stepFormCreating = document.getElementById(
-        STEP_FORM_ID.creating,
+        MOMENT_FORM_IDS[variant].stepFormCreating,
       ) as HTMLFormElement | null;
       stepFormCreating?.reset();
 
@@ -274,6 +275,7 @@ export const createOrUpdateStepActionflow = (
 
 export const resetStepActionflow = (
   event: FormEvent<HTMLFormElement>,
+  variant: MomentFormVariant,
   startResetStepTransition: TransitionStartFunction,
   setDuree: SetState<string>,
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
@@ -282,7 +284,7 @@ export const resetStepActionflow = (
     if (
       // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
       event.nativeEvent.explicitOriginalTarget?.form?.id ===
-      STEP_FORM_ID.creating
+      MOMENT_FORM_IDS[variant].stepFormCreating
     ) {
       if (confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")) {
         setDuree(STEP_DURATION_DEFAULT);

@@ -13,17 +13,6 @@ export const FUTUREUSERMOMENTSPAGE = "futureusermomentspage" as const;
 
 export const SEARCH_FORM_ID = "search-form";
 
-export const YOUR_MOMENT_ID = "your-moment";
-export const ITS_STEPS_ID = "its-steps";
-
-export const STEP_FORM_ID = {
-  creating: "step-form-creating",
-  updating: "step-form-updating",
-};
-
-// barely used for now
-export const MOMENT_FORM_ID = "moment-form";
-
 /* FLASH IDEA
 On data files:
 If I make a dictionary of ids with keys, the name is in all caps.

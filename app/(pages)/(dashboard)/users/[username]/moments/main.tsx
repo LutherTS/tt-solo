@@ -48,7 +48,6 @@ import {
   MomentsDestinationToCRUD,
   StepToCRUD,
   MomentsDateToCRUD,
-  MomentFormIds,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -90,16 +89,13 @@ import {
   FUTUREUSERMOMENTSPAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
-  ITS_STEPS_ID,
   SEARCH_FORM_ID,
-  STEP_FORM_ID,
-  YOUR_MOMENT_ID,
   activityOptions,
   STEP_DURATION_DEFAULT,
   subViewTitles,
   viewTitles,
   subViews,
-  MOMENT_FORM_ID,
+  MOMENT_FORM_IDS,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -606,6 +602,7 @@ function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone)
       createOrUpdateMomentAfterflow(
+        variant,
         createOrUpdateMomentState,
         endMomentDate,
         now,
@@ -635,6 +632,7 @@ function MomentForms({
   useEffect(() => {
     if (isDeleteMomentDone)
       deleteMomentAfterflow(
+        variant,
         createOrUpdateMomentState,
         setView,
         setIsDeleteMomentDone,
@@ -658,13 +656,14 @@ function MomentForms({
       setStepVisible,
       setCreateOrUpdateMomentState,
       setIsResetMomentFormDone,
+      variant,
       setInputSwitchKey,
     );
   };
 
   useEffect(() => {
     if (isResetMomentFormDone)
-      resetMomentFormAfterflow(setIsResetMomentFormDone);
+      resetMomentFormAfterflow(variant, setIsResetMomentFormDone);
   }, [isResetMomentFormDone]);
 
   // addStepAction
@@ -704,6 +703,7 @@ function MomentForms({
     <>
       <StepForm
         variant="creating"
+        momentFormVariant={variant}
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
@@ -716,6 +716,7 @@ function MomentForms({
       />
       <StepForm
         variant="updating"
+        momentFormVariant={variant}
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
@@ -729,12 +730,12 @@ function MomentForms({
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentFormAction}
-        id={MOMENT_FORM_ID}
+        id={MOMENT_FORM_IDS[variant].momentForm}
       >
         <Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
-          id={YOUR_MOMENT_ID}
+          id={MOMENT_FORM_IDS[variant].yourMoment}
           error={createOrUpdateMomentState?.momentMessage}
           subError={createOrUpdateMomentState?.momentSubMessage}
         >
@@ -756,7 +757,7 @@ function MomentForms({
         <Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          id={ITS_STEPS_ID}
+          id={MOMENT_FORM_IDS[variant].itsSteps}
           error={createOrUpdateMomentState?.stepsMessage}
           subError={createOrUpdateMomentState?.stepsSubMessage}
         >
@@ -778,6 +779,7 @@ function MomentForms({
                       key={step.id}
                       step={step}
                       index={index}
+                      momentFormVariant={variant}
                       steps={steps}
                       stepVisible={stepVisible}
                       currentStepId={currentStepId}
@@ -813,6 +815,7 @@ function MomentForms({
                 return (
                   <StepVisibleCreating
                     key={stepVisible}
+                    momentFormVariant={variant}
                     isResetStepPending={isResetStepPending}
                     createOrUpdateMomentState={createOrUpdateMomentState}
                     stepDureeCreate={stepDureeCreate}
@@ -1198,6 +1201,7 @@ function PaginationButton({
 
 function StepForm({
   variant,
+  momentFormVariant,
   currentStepId,
   steps,
   setSteps,
@@ -1209,6 +1213,7 @@ function StepForm({
   setCreateOrUpdateMomentState,
 }: {
   variant: StepFormVariant;
+  momentFormVariant: MomentFormVariant;
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: SetState<StepFromCRUD[]>;
@@ -1219,6 +1224,11 @@ function StepForm({
   startResetStepTransition: TransitionStartFunction;
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
 }) {
+  const stepFormId =
+    variant === "updating"
+      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
+      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
   // createOrUpdateStepAction
 
   const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
@@ -1242,7 +1252,10 @@ function StepForm({
   // no longer animating steps in any way, so currently createOrUpdateStepAfterflow effectively does not do anything
   useEffect(() => {
     if (isCreateOrUpdateStepDone)
-      createOrUpdateStepAfterflow(setIsCreateOrUpdateStepDone);
+      createOrUpdateStepAfterflow(
+        momentFormVariant,
+        setIsCreateOrUpdateStepDone,
+      );
   }, [isCreateOrUpdateStepDone]);
 
   // resetStepAction
@@ -1250,6 +1263,7 @@ function StepForm({
   const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
     return resetStepActionflow(
       event,
+      variant,
       startResetStepTransition,
       setStepDuree,
       setCreateOrUpdateMomentState,
@@ -1258,7 +1272,7 @@ function StepForm({
 
   return (
     <form
-      id={STEP_FORM_ID[variant]}
+      id={stepFormId}
       onSubmit={createOrUpdateStepAction}
       onReset={resetStepAction}
     ></form>
@@ -1437,6 +1451,7 @@ function MomentInputs({
 function ReorderItem({
   step,
   index,
+  momentFormVariant,
   steps,
   stepVisible,
   currentStepId,
@@ -1453,6 +1468,7 @@ function ReorderItem({
 }: {
   step: StepFromCRUD;
   index: number;
+  momentFormVariant: MomentFormVariant;
   steps: StepFromCRUD[];
   stepVisible: StepVisible;
   currentStepId: string;
@@ -1471,6 +1487,8 @@ function ReorderItem({
 
   const isCurrentStepUpdating =
     currentStepId === step.id && stepVisible === "updating";
+
+  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
 
   // deleteStepAction
 
@@ -1566,7 +1584,7 @@ function ReorderItem({
         {isCurrentStepUpdating ? (
           <div className="flex flex-col gap-y-8">
             <StepInputs
-              form={STEP_FORM_ID.updating}
+              form={form}
               createOrUpdateMomentState={createOrUpdateMomentState}
               stepDuree={stepDureeUpdate}
               setStepDuree={setStepDureeUpdate}
@@ -1575,8 +1593,12 @@ function ReorderItem({
             <div>
               {/* Mobile */}
               <div className="flex w-full flex-col gap-4 md:hidden">
-                <UpdateStepButton isUpdateStepPending={isUpdateStepPending} />
+                <UpdateStepButton
+                  form={form}
+                  isUpdateStepPending={isUpdateStepPending}
+                />
                 <EraseStepButton
+                  form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                 />
@@ -1584,10 +1606,14 @@ function ReorderItem({
               {/* Desktop */}
               <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
                 <EraseStepButton
+                  form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                 />
-                <UpdateStepButton isUpdateStepPending={isUpdateStepPending} />
+                <UpdateStepButton
+                  form={form}
+                  isUpdateStepPending={isUpdateStepPending}
+                />
               </div>
             </div>
           </div>
@@ -1653,6 +1679,7 @@ function StepsSummaries({
 }
 
 function StepVisibleCreating({
+  momentFormVariant,
   isResetStepPending,
   createOrUpdateMomentState,
   stepDureeCreate,
@@ -1662,6 +1689,7 @@ function StepVisibleCreating({
   steps,
   isCancelStepPending,
 }: {
+  momentFormVariant: MomentFormVariant;
   isResetStepPending: boolean;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDureeCreate: string;
@@ -1671,6 +1699,8 @@ function StepVisibleCreating({
   steps: StepFromCRUD[];
   isCancelStepPending: boolean;
 }) {
+  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
   return (
     // was a form, but forms can't be nested
     <motion.div
@@ -1693,7 +1723,7 @@ function StepVisibleCreating({
           Ajouter une étape
         </p>{" "}
         <Button
-          form={STEP_FORM_ID.creating}
+          form={form}
           variant="destroy-step"
           type="button"
           onClick={cancelStepAction}
@@ -1703,7 +1733,7 @@ function StepVisibleCreating({
         </Button>
       </div>
       <StepInputs
-        form={STEP_FORM_ID.creating}
+        form={form}
         createOrUpdateMomentState={createOrUpdateMomentState}
         stepDuree={stepDureeCreate}
         setStepDuree={setStepDureeCreate}
@@ -1713,7 +1743,7 @@ function StepVisibleCreating({
         <div className="flex w-full flex-col gap-4 md:hidden">
           <Button
             variant="confirm-step"
-            form={STEP_FORM_ID.creating}
+            form={form}
             type="submit"
             disabled={isCreateStepPending}
           >
@@ -1721,7 +1751,7 @@ function StepVisibleCreating({
           </Button>
           <Button
             variant="cancel-step"
-            form={STEP_FORM_ID.creating}
+            form={form}
             type="reset"
             disabled={isResetStepPending}
           >
@@ -1732,7 +1762,7 @@ function StepVisibleCreating({
         <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
           <Button
             variant="cancel-step"
-            form={STEP_FORM_ID.creating}
+            form={form}
             type="reset"
             disabled={isResetStepPending}
           >
@@ -1740,7 +1770,7 @@ function StepVisibleCreating({
           </Button>
           <Button
             variant="confirm-step"
-            form={STEP_FORM_ID.creating}
+            form={form}
             type="submit"
             disabled={isCreateStepPending}
           >
@@ -1901,13 +1931,15 @@ function StepInputs({
 }
 
 function UpdateStepButton({
+  form,
   isUpdateStepPending,
 }: {
+  form: string;
   isUpdateStepPending: boolean;
 }) {
   return (
     <Button
-      form={STEP_FORM_ID.updating}
+      form={form}
       type="submit"
       variant="confirm-step"
       disabled={isUpdateStepPending}
@@ -1918,15 +1950,17 @@ function UpdateStepButton({
 }
 
 function EraseStepButton({
+  form,
   deleteStepAction,
   isDeleteStepPending,
 }: {
+  form: string;
   deleteStepAction: () => void;
   isDeleteStepPending: boolean;
 }) {
   return (
     <Button
-      form={STEP_FORM_ID.updating}
+      form={form}
       type="button"
       onClick={deleteStepAction}
       variant="cancel-step"
