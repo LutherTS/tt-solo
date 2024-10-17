@@ -8,6 +8,7 @@ import { isValid } from "date-fns";
 
 import * as Icons from "@/app/icons";
 import { SetState } from "@/app/types/globals";
+import { EventStepDurationSchema } from "./validations/steps";
 
 // Variables
 
@@ -862,6 +863,7 @@ export function InputNumberControlled({
   max,
   required = true,
   errors,
+  schema, // indispensible with noValidate
 }: {
   form?: string;
   label: string;
@@ -874,6 +876,7 @@ export function InputNumberControlled({
   max?: string;
   required?: boolean;
   errors?: string[];
+  schema: typeof EventStepDurationSchema; // project-specific
 }) {
   return (
     <FieldFlex isLabel>
@@ -885,7 +888,20 @@ export function InputNumberControlled({
           type="number"
           name={name}
           value={definedValue}
-          onChange={(event) => definedOnValueChange(event.currentTarget.value)}
+          // because the field is controlled and immediately impacts the UI with calculations, I'm specifically using zod directly on the onChange event to make sure an incorrect data can never be registered even on the client itself
+          // event.currentTarget.value doesn't differentiate between an empty string and any string here
+          // so that means I need to allow strings in there but consider that they should always be understood as 0
+          onChange={(event) => {
+            const value = event.currentTarget.value;
+            // no .valueAsNumber because indeed invalids are all empty strings
+            const validatedFields = schema.safeParse({
+              eventStepDuration: +value,
+            });
+            if (validatedFields.success) {
+              const { eventStepDuration } = validatedFields.data;
+              definedOnValueChange(eventStepDuration.toString());
+            }
+          }}
           step={step}
           min={min}
           max={max}
@@ -983,6 +999,7 @@ export function InputDatetimeLocalControlled({
         name={name}
         value={definedValue}
         onChange={(event) => {
+          // no .valueAsDate because it's as a string that it can be set in the setState and understood by the HTML input
           const value = event.currentTarget.value;
           // ...incredible stuff
           if (isValid(new Date(value))) definedOnValueChange(value);

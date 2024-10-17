@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { add, compareDesc, roundToNearestHours, sub } from "date-fns";
+import { add, compareDesc, isValid, roundToNearestHours, sub } from "date-fns";
 
 import {
   dateToInputDatetime,
@@ -47,6 +47,16 @@ export const createOrUpdateMomentFlow = async (
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
 ) => {
+  // in case somehow startMomentDate is not sent correctly
+  if (!isValid(new Date(startMomentDate)))
+    return {
+      momentMessage: DEFAULT_MOMENT_MESSAGE,
+      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      errors: {
+        momentStartDateAndTime: ["Veuillez saisir une date valide."],
+      },
+    };
+
   if (variant === "creating") {
     const currentNow = dateToInputDatetime(new Date());
     const minFromCurrentNow = dateToInputDatetime(

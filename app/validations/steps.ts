@@ -40,16 +40,40 @@ const StepSchema = z.object({
     .number({
       invalid_type_error: "Veuillez saisir un nombre.",
     })
+    .multipleOf(1, {
+      message: "Veuillez saisir un entier.",
+    })
     .min(5, {
       message: "Votre étape doit durer un minimum de 5 minutes.",
     })
     .max(60 * 24, {
       message: "Votre étape ne peux pas durer plus de 24 heures.",
     }),
+  eventStepDuration: z
+    .number({
+      invalid_type_error: "Vous ne pouvez que saisir un nombre.",
+    })
+    .multipleOf(1, {
+      message: "Vous ne pouvez que saisir un entier.",
+    })
+    .nonnegative({
+      message: "Vous ne pouvez que saisir un nombre nul ou positif.",
+    })
+    .max(
+      1440, // 60 * 24
+      {
+        message:
+          "Vous ne pouvez que saisir un nombre de minutes inférieur à 24 heures.",
+      },
+    ),
 });
 
 export const CreateOrUpdateStepSchema = StepSchema.pick({
   stepName: true,
   stepDescription: true,
   realStepDuration: true,
+});
+
+export const EventStepDurationSchema = StepSchema.pick({
+  eventStepDuration: true,
 });

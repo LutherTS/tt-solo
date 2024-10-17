@@ -72,7 +72,6 @@ import {
   InputSwitch,
   SelectWithOptions,
   Textarea,
-  InputDatetimeLocal,
 } from "@/app/components";
 import * as Icons from "@/app/icons";
 import {
@@ -104,6 +103,7 @@ import {
   deleteMomentAfterflow,
   resetMomentFormAfterflow,
 } from "@/app/flows/client/afterflows/moments";
+import { EventStepDurationSchema } from "@/app/validations/steps";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -1447,14 +1447,6 @@ function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
       />
-      <InputDatetimeLocal
-        label="Date et heure"
-        name="dateetheure"
-        description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
-        defaultValue={startMomentDate}
-        required={false}
-        errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
-      />
     </>
   );
 }
@@ -1937,6 +1929,7 @@ function StepInputs({
         min="5"
         required={false}
         errors={createOrUpdateMomentState?.errors?.realStepDuration}
+        schema={EventStepDurationSchema}
       />
     </>
   );

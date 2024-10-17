@@ -197,7 +197,6 @@ export const createOrUpdateStepActionflow = (
       e.trim(),
     );
 
-    // if duree is not an actual number, input number sends an empty string
     const numberedDuree = duree !== "" ? +duree : "";
 
     const validatedFields = CreateOrUpdateStepSchema.safeParse({
