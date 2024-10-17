@@ -52,7 +52,7 @@ export type UserMomentsToCRUD = {
   dates: MomentsDateToCRUD[];
 };
 
-export type View = "update-moment" | "create-moment" | "read-moments";
+export type View = "update-moment" | "read-moments" | "create-moment";
 
 export type SubView =
   | "all-moments"
@@ -114,3 +114,11 @@ export type RevalidateMoments = () => Promise<void>;
 export type SelectMomentId = Prisma.UserGetPayload<{
   select: typeof selectMomentId;
 }>;
+
+export type MomentFormIds = {
+  momentForm: string;
+  yourMoment: string;
+  itsSteps: string;
+  stepFormCreating: string;
+  stepFormUpdating: string;
+};

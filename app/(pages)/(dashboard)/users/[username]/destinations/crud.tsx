@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
@@ -16,8 +16,9 @@ import {
   Section,
   NoDateCard,
   Textarea,
-} from "../../../components";
-import * as Icons from "../icons";
+} from "@/app/components";
+import * as Icons from "@/app/icons";
+import { SetState } from "@/app/types/globals";
 
 // Main Data
 
@@ -121,8 +122,8 @@ function ReadDestinationsView({
   revalidateDestinations,
 }: {
   destinationsToCRUD: DestinationToCRUD[];
-  setDestination: Dispatch<SetStateAction<DestinationToCRUD | undefined>>;
-  setView: Dispatch<SetStateAction<View>>;
+  setDestination: SetState<DestinationToCRUD | undefined>;
+  setView: SetState<View>;
   revalidateDestinations: any;
 }) {
   const pathname = usePathname();
@@ -268,7 +269,7 @@ function DestinationForm({
   createOrUpdateDestination,
   deleteDestination,
 }: {
-  setView: Dispatch<SetStateAction<View>>;
+  setView: SetState<View>;
   variant: "creating" | "updating";
   destination?: DestinationToCRUD;
   createOrUpdateDestination: any;

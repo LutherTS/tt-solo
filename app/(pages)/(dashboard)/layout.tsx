@@ -19,8 +19,9 @@ export default function Layout({
         <div className="flex w-full flex-col items-center">
           {/* Page Container */}
           <div
-            // this could be thrown back to the children for headers
+            // this could be thrown back to the children for some header
             className={clsx(
+              // THAT'S WHAT I NEED TO SHIFT TO THE CORE VIEWS
               // container can coexist with max-w-4xl
               // pb-12 previously
               "container min-h-screen w-full overflow-clip px-8 pt-8",

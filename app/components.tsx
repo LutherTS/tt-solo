@@ -1,16 +1,14 @@
 "use client";
 
-import {
-  ComponentProps,
-  Dispatch,
-  MouseEventHandler,
-  SetStateAction,
-} from "react";
+import { ComponentProps, MouseEventHandler } from "react";
 import { useFormStatus } from "react-dom";
-
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Switch from "@radix-ui/react-switch";
 import { isValid } from "date-fns";
+
+import * as Icons from "@/app/icons";
+import { SetState } from "@/app/types/globals";
+import { EventStepDurationSchema } from "./validations/steps";
 
 // Variables
 
@@ -287,7 +285,7 @@ export function InputText({
   );
 }
 
-// Had to get everything controlled. In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by if (definedValue) controlled else uncontrolled, which in fact is exactly how React behaves natively.
+// In the future, I hope to make uncontrolled and controlled into a single component, perhaps even defined by: if (definedValue) controlled else uncontrolled, which in fact is exactly how React behaves natively.
 // Also, description are now obliged because they now transform into errors.
 export function InputTextControlled({
   label,
@@ -308,7 +306,7 @@ export function InputTextControlled({
   addendum?: string;
   name: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   tekTime?: boolean;
   children?: React.ReactNode;
   fieldFlexIsNotLabel?: boolean;
@@ -453,7 +451,7 @@ export function SelectWithOptions({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <ChevronDownIcon className="size-5" />
+            <Icons.ChevronDownMini className="size-5" />
           </div>
         </div>
       ) : (
@@ -482,7 +480,7 @@ export function SelectWithOptions({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <ChevronDownIcon className="size-5" />
+              <Icons.ChevronDownMini className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -500,23 +498,6 @@ export function SelectWithOptions({
         </div>
       )}
     </FieldFlex>
-  );
-}
-
-function ChevronDownIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      className={className || "size-5"}
-    >
-      <path
-        fillRule="evenodd"
-        d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-        clipRule="evenodd"
-      />
-    </svg>
   );
 }
 
@@ -541,7 +522,7 @@ export function SelectWithOptionsControlled({
   description: string;
   addendum?: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   name: string;
   placeholder?: string;
   options: Option[];
@@ -589,7 +570,7 @@ export function SelectWithOptionsControlled({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <ChevronDownIcon className="size-5" />
+            <Icons.ChevronDownMini className="size-5" />
           </div>
         </div>
       ) : (
@@ -621,7 +602,7 @@ export function SelectWithOptionsControlled({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <ChevronDownIcon className="size-5" />
+              <Icons.ChevronDownMini className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -702,7 +683,7 @@ export function TextareaControlled({
   description: string;
   name: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   rows?: number;
   required?: boolean;
   errors?: string[];
@@ -739,8 +720,6 @@ export function InputSwitch({
   name,
   defaultChecked,
   description,
-  // definedValue,
-  // definedOnValueChange = () => {},
   required = true,
   errors,
 }: {
@@ -748,8 +727,6 @@ export function InputSwitch({
   name: string;
   defaultChecked: boolean;
   description: string;
-  // definedValue?: boolean;
-  // definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
   required?: boolean;
   errors?: string[];
 }) {
@@ -759,11 +736,9 @@ export function InputSwitch({
         <FieldTitle title={label} />
         <Switch.Root
           name={name}
-          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled
+          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled // later solved with keys
           // now going for uncontrolled, so using back defaultChecked
           defaultChecked={defaultChecked}
-          // checked={definedValue}
-          // onCheckedChange={definedOnValueChange}
           required={required}
           className={clsx(
             "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
@@ -795,7 +770,7 @@ export function InputSwitchControlled({
   name: string;
   description: string;
   definedValue?: boolean;
-  definedOnValueChange?: Dispatch<SetStateAction<boolean>>;
+  definedOnValueChange?: SetState<boolean>;
   errors?: string[];
 }) {
   return (
@@ -823,7 +798,7 @@ export function InputSwitchControlled({
   );
 }
 
-// IMPORTANT: input type number as a browser default does not show an error when the form fails to submit on mobile, so do remember the importance of server-side validations. (In this use case it's client-side validations.)
+// IMPORTANT: input type number as a browser default does not show an error when the form fails to submit on mobile.
 // (Same for input datetime-local.)
 export function InputNumber({
   form,
@@ -886,18 +861,22 @@ export function InputNumberControlled({
   step,
   min = "0",
   max,
+  required = true,
   errors,
+  schema, // indispensible with noValidate
 }: {
   form?: string;
   label: string;
   name: string;
   description: string;
   definedValue?: string;
-  definedOnValueChange?: Dispatch<SetStateAction<string>>;
+  definedOnValueChange?: SetState<string>;
   step?: string;
   min?: string;
   max?: string;
+  required?: boolean;
   errors?: string[];
+  schema: typeof EventStepDurationSchema; // project-specific
 }) {
   return (
     <FieldFlex isLabel>
@@ -909,10 +888,24 @@ export function InputNumberControlled({
           type="number"
           name={name}
           value={definedValue}
-          onChange={(event) => definedOnValueChange(event.currentTarget.value)}
+          // because the field is controlled and immediately impacts the UI with calculations, I'm specifically using zod directly on the onChange event to make sure an incorrect data can never be registered even on the client itself
+          // event.currentTarget.value doesn't differentiate between an empty string and any string here
+          // so that means I need to allow strings in there but consider that they should always be understood as 0
+          onChange={(event) => {
+            const value = event.currentTarget.value;
+            // no .valueAsNumber because indeed invalids are all empty strings
+            const validatedFields = schema.safeParse({
+              eventStepDuration: +value,
+            });
+            if (validatedFields.success) {
+              const { eventStepDuration } = validatedFields.data;
+              definedOnValueChange(eventStepDuration.toString());
+            }
+          }}
           step={step}
           min={min}
           max={max}
+          required={required}
           onKeyDown={(event) => {
             if (event.key === "Enter") event.preventDefault();
           }}
@@ -930,6 +923,51 @@ export function InputNumberControlled({
   );
 }
 
+export function InputDatetimeLocal({
+  label,
+  name,
+  description,
+  defaultValue,
+  min,
+  max,
+  required = true,
+  errors,
+}: {
+  label: string;
+  name: string;
+  description: string;
+  defaultValue?: string;
+  min?: string;
+  max?: string;
+  required?: boolean;
+  errors?: string[];
+}) {
+  return (
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      <InputDescriptionOrError errors={errors} description={description} />
+      <input
+        // because it is so impossible to deeply modify the input datetime-local defaults, I'm forced to adapt all of my other inputs to some of its defaults (like their padding)
+        type="datetime-local"
+        name={name}
+        defaultValue={defaultValue}
+        min={min}
+        max={max}
+        required={required}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") event.preventDefault();
+        }}
+        className={clsx(
+          "p-2",
+          baseInputTexts,
+          focusVisibleTexts,
+          "w-full appearance-none",
+        )}
+      />
+    </FieldFlex>
+  );
+}
+
 export function InputDatetimeLocalControlled({
   label,
   name,
@@ -938,15 +976,17 @@ export function InputDatetimeLocalControlled({
   definedOnValueChange = () => {},
   min,
   max,
+  required = true,
   errors,
 }: {
   label: string;
   name: string;
   description: string;
   definedValue: string;
-  definedOnValueChange: Dispatch<SetStateAction<string>>;
+  definedOnValueChange: SetState<string>;
   min?: string;
   max?: string;
+  required?: boolean;
   errors?: string[];
 }) {
   return (
@@ -959,16 +999,23 @@ export function InputDatetimeLocalControlled({
         name={name}
         value={definedValue}
         onChange={(event) => {
+          // no .valueAsDate because it's as a string that it can be set in the setState and understood by the HTML input
           const value = event.currentTarget.value;
           // ...incredible stuff
           if (isValid(new Date(value))) definedOnValueChange(value);
         }}
         min={min}
         max={max}
+        required={required}
         onKeyDown={(event) => {
           if (event.key === "Enter") event.preventDefault();
         }}
-        className={clsx("p-2", baseInputTexts, focusVisibleTexts)}
+        className={clsx(
+          "p-2",
+          baseInputTexts,
+          focusVisibleTexts,
+          "w-full appearance-none",
+        )}
       />
     </FieldFlex>
   );
@@ -1031,10 +1078,15 @@ export function Button({
   onClick?: MouseEventHandler<HTMLButtonElement>;
   children: React.ReactNode;
 }) {
+  const showDisabledStyles =
+    isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled);
+
   const destroy =
     "w-fit px-1 text-sm text-blue-500 hover:text-blue-600 focus-visible:rounded focus-visible:outline-blue-500 active:text-blue-400";
-  const destroyStep =
-    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded focus-visible:outline-cyan-500 active:text-cyan-400";
+  const destroyStep = clsx(
+    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded focus-visible:outline-cyan-500 active:text-cyan-400",
+    showDisabledStyles && "disabled:grayscale disabled:hover:text-cyan-500",
+  );
   const notDestroy = "w-full rounded border py-2";
   const neutral =
     "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:!bg-neutral-200 hover:!text-neutral-950 focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
@@ -1042,7 +1094,7 @@ export function Button({
   const confirm = clsx(
     "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400",
     // ensure disabled styles are only applied if the button is disabled by its own dedicated action, and are not applied if the button is disabled by another action... in fact, more like isDedicatedDisabled, differentiating disabled of function only from disabled of function and style
-    (isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled)) &&
+    showDisabledStyles &&
       "disabled:grayscale disabled:hover:border-blue-500 disabled:hover:bg-blue-500",
   );
   // no disable styles on cancel for now because deleting a moment is currently fast enough that it's not worth highlighting visually
@@ -1053,7 +1105,7 @@ export function Button({
   // disabled:border-neutral-500 disabled:text-neutral-500 bg-current
   const cancelStep = clsx(
     "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400",
-    (isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled)) &&
+    showDisabledStyles &&
       "disabled:grayscale disabled:hover:border-cyan-500 disabled:hover:text-cyan-500",
   );
 
@@ -1082,3 +1134,7 @@ export function Button({
     </button>
   );
 }
+
+/* Notes
+For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.
+*/

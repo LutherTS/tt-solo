@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Dispatch,
-  SetStateAction,
   // useCallback,
   useEffect,
   useState,
@@ -11,11 +9,18 @@ import {
   FormEvent,
   TransitionStartFunction,
 } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  ReadonlyURLSearchParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
+  // AnimatePresence,
+  motion,
   Reorder,
   useDragControls,
   useMotionValueEvent,
@@ -26,7 +31,7 @@ import debounce from "debounce";
 import useKeypress from "react-use-keypress";
 // import { useTimer } from "react-use-precision-timer";
 
-import { Option } from "@/app/types/globals";
+import { Option, SetState } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
   MomentToCRUD,
@@ -40,6 +45,9 @@ import {
   SubView,
   CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
+  MomentsDestinationToCRUD,
+  StepToCRUD,
+  MomentsDateToCRUD,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -64,8 +72,8 @@ import {
   InputSwitch,
   SelectWithOptions,
   Textarea,
-} from "../../../components";
-import * as Icons from "../icons";
+} from "@/app/components";
+import * as Icons from "@/app/icons";
 import {
   deleteStepActionflow,
   resetStepActionflow,
@@ -81,16 +89,13 @@ import {
   FUTUREUSERMOMENTSPAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
-  ITS_STEPS_ID,
   SEARCH_FORM_ID,
-  STEP_FORM_ID,
-  YOUR_MOMENT_ID,
   activityOptions,
   STEP_DURATION_DEFAULT,
   subViewTitles,
   viewTitles,
   subViews,
-  MOMENT_FORM_ID,
+  MOMENT_FORM_IDS,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -98,6 +103,7 @@ import {
   deleteMomentAfterflow,
   resetMomentFormAfterflow,
 } from "@/app/flows/client/afterflows/moments";
+import { EventStepDurationSchema } from "@/app/validations/steps";
 
 /* Dummy Form Presenting Data 
 Devenir tech lead sur TekTIME. 
@@ -184,40 +190,18 @@ export default function Main({
       <div>
         <div className="flex justify-between pb-8 align-baseline">
           <PageTitle title={viewTitles[view]} />
-          {view === "update-moment" && (
-            <Button
-              type="button"
-              variant="destroy-step"
-              onClick={() => setScrollToTop("read-moments", setView)}
-            >
-              Vos moments
-            </Button>
-          )}
-          {view === "read-moments" && (
-            <Button
-              type="button"
-              variant="destroy-step"
-              onClick={() => setScrollToTop("create-moment", setView)}
-            >
-              Créez un moment
-            </Button>
-          )}
-          {view === "create-moment" && (
-            <Button
-              type="button"
-              variant="destroy-step"
-              onClick={() => setScrollToTop("read-moments", setView)}
-            >
-              Vos moments
-            </Button>
-          )}
+          <SetViewButton view={view} setView={setView} />
         </div>
-        {view !== "read-moments" && <Divider />}
+        <Divider />
       </div>
-      <div className={clsx(view !== "update-moment" && "hidden")}>
-        {view === "update-moment" && (
-          // UpdateMomentView
+      <div>
+        {/* putting motion on the div to prepare for animations */}
+        {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
+        {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
+        <motion.div className={clsx(view !== "update-moment" && "hidden")}>
+          {/* UpdateMomentView */}
           <MomentForms
+            key={view} // to remount every time the view changes
             variant="updating"
             moment={moment}
             destinationOptions={destinationOptions}
@@ -227,23 +211,21 @@ export default function Main({
             deleteMoment={deleteMoment}
             now={now}
           />
-        )}
-      </div>
-      <div className={clsx(view !== "read-moments" && "hidden")}>
-        <ReadMomentsView
-          allUserMomentsToCRUD={allUserMomentsToCRUD}
-          maxPages={maxPages}
-          view={view}
-          subView={subView}
-          setView={setView}
-          setSubView={setSubView}
-          setMoment={setMoment}
-          revalidateMoments={revalidateMoments}
-        />
-      </div>
-      <div className={clsx(view !== "create-moment" && "hidden")}>
-        {view !== "update-moment" && (
-          // CreateMomentView
+        </motion.div>
+        <motion.div className={clsx(view !== "read-moments" && "hidden")}>
+          <ReadMomentsView
+            allUserMomentsToCRUD={allUserMomentsToCRUD}
+            maxPages={maxPages}
+            view={view}
+            subView={subView}
+            setView={setView}
+            setSubView={setSubView}
+            setMoment={setMoment}
+            revalidateMoments={revalidateMoments}
+          />
+        </motion.div>
+        <motion.div className={clsx(view !== "create-moment" && "hidden")}>
+          {/* CreateMomentView */}
           <MomentForms
             variant="creating"
             destinationOptions={destinationOptions}
@@ -252,7 +234,7 @@ export default function Main({
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
           />
-        )}
+        </motion.div>
       </div>
     </main>
   );
@@ -274,9 +256,9 @@ function ReadMomentsView({
   maxPages: number[];
   view: View;
   subView: SubView;
-  setView: Dispatch<SetStateAction<View>>;
-  setSubView: Dispatch<SetStateAction<SubView>>;
-  setMoment: Dispatch<SetStateAction<MomentToCRUD | undefined>>;
+  setView: SetState<View>;
+  setSubView: SetState<SubView>;
+  setMoment: SetState<MomentToCRUD | undefined>;
   revalidateMoments: RevalidateMoments;
 }) {
   const [
@@ -436,95 +418,28 @@ function ReadMomentsView({
   };
 
   return (
+    // That space-y will or could have to go
     <div className="space-y-8">
+      {/* spacer for divider (through space-y-8 though) */}
+      <div></div>
       <div className={clsx("flex flex-wrap gap-4")}>
-        {subViews.map((e) => {
-          const className = "px-4 py-2 h-9 flex items-center justify-center";
-          return (
-            <button
-              onClick={() => setSubView(e)}
-              key={e}
-              className={clsx(
-                className,
-                "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-                subView === e && "focus-visible:outline-blue-500",
-                subView !== e && "focus-visible:outline-cyan-500",
-              )}
-            >
-              {/* real occupied space */}
-              <span className="invisible static">{subViewTitles[e]}</span>
-              {/* gradient text */}
-              <span
-                className={clsx(
-                  className,
-                  "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
-                )}
-              >
-                {subViewTitles[e]}
-              </span>
-              {/* white background */}
-              <div
-                className={clsx(
-                  "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-                )}
-              ></div>
-              {/* gradient border */}
-              <div
-                className={clsx(
-                  "absolute inset-0 rounded-full",
-                  subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
-                  subView !== e && "bg-transparent",
-                )}
-              ></div>
-            </button>
-          );
-        })}
-        <button
-          form={SEARCH_FORM_ID}
-          onClick={revalidateMomentsAction}
-          disabled={isRevalidateMomentsPending}
-          className={clsx(
-            "flex h-9 items-center justify-center px-4 py-2",
-            "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-            "focus-visible:outline-cyan-500",
-          )}
-        >
-          {/* real occupied space */}
-          <span className="invisible static">
-            <Icons.ArrowPathSolid />
-          </span>
-          {/* gradient text */}
-          <span
-            className={clsx(
-              "flex h-9 items-center justify-center px-4 py-2",
-              "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
-            )}
-          >
-            <Icons.ArrowPathSolid className="size-6 text-blue-950" />
-          </span>
-          {/* white background */}
-          <div
-            className={clsx(
-              "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-            )}
-          ></div>
-          {/* gradient border */}
-          <div
-            className={clsx("absolute inset-0 rounded-full", "bg-white")}
-          ></div>
-        </button>
-      </div>
-      <form id={SEARCH_FORM_ID}>
-        <InputText
-          id={CONTAINS}
-          name={CONTAINS}
-          placeholder="Cherchez parmi vos moments..."
-          defaultValue={searchParams.get(CONTAINS)?.toString()}
-          onChange={(e) => {
-            debouncedHandleSearch(e.currentTarget.value);
-          }}
+        {subViews.map((e) => (
+          <SetSubViewButton
+            key={e}
+            setSubView={setSubView}
+            e={e}
+            subView={subView}
+          />
+        ))}
+        <RevalidateMomentsButton
+          revalidateMomentsAction={revalidateMomentsAction}
+          isRevalidateMomentsPending={isRevalidateMomentsPending}
         />
-      </form>
+      </div>
+      <SearchForm
+        searchParams={searchParams}
+        debouncedHandleSearch={debouncedHandleSearch}
+      />
       {realDisplayedMoments.length > 0 ? (
         <>
           {realDisplayedMoments.map((e, i, a) => (
@@ -537,121 +452,35 @@ function ReadMomentsView({
                 >
                   {e.destinations.map((e2) => {
                     return (
-                      <div
-                        className="flex flex-col gap-y-8"
+                      <DestinationInDateCard
                         key={e2.destinationIdeal}
-                      >
-                        <div className="flex select-none items-baseline justify-between">
-                          <p
-                            className={clsx(
-                              "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-                            )}
-                          >
-                            {e2.destinationIdeal}
-                          </p>
-                        </div>
-                        {e2.moments.map((e3, i3) => (
-                          <div
-                            className={clsx(
-                              "group space-y-2",
-                              i3 === 0 && "-mt-5",
-                            )}
-                            key={e3.id}
-                          >
-                            <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
-                              <p className="font-medium text-blue-950">
-                                {e3.objective}
-                              </p>
-                              <div className="invisible flex justify-end group-hover:visible">
-                                <Button
-                                  type="button"
-                                  variant="destroy-step"
-                                  onClick={() => {
-                                    setMoment(
-                                      realMoments.find((e4) => e4.id === e3.id),
-                                    );
-                                    setScrollToTop("update-moment", setView);
-                                  }}
-                                >
-                                  <Icons.PencilSquareSolid className="size-5" />
-                                </Button>
-                              </div>
-                            </div>
-                            <p>
-                              <span
-                                className={"font-semibold text-neutral-800"}
-                              >
-                                {e3.startDateAndTime.split("T")[1]}
-                              </span>{" "}
-                              • {numStringToTimeString(e3.duration)}
-                              {e3.isIndispensable && (
-                                <>
-                                  {" "}
-                                  •{" "}
-                                  <span className="text-sm font-semibold uppercase">
-                                    indispensable
-                                  </span>
-                                </>
-                              )}
-                            </p>
-                            <ol className="">
-                              {e3.steps.map((e4) => (
-                                <li
-                                  className="text-sm font-light leading-loose text-neutral-500"
-                                  key={e4.id}
-                                >
-                                  <p className="">
-                                    {e4.startDateAndTime.split("T")[1]} -{" "}
-                                    {e4.endDateAndTime.split("T")[1]} :{" "}
-                                    {e4.title}
-                                  </p>
-                                </li>
-                              ))}
-                            </ol>
-                          </div>
-                        ))}
-                      </div>
+                        e2={e2}
+                        setMoment={setMoment}
+                        realMoments={realMoments}
+                        setView={setView}
+                      />
                     );
                   })}
                 </DateCard>
               </div>
-              {i === a.length - 1 && (
-                <p className="font-extralight text-neutral-800">
-                  <span className="font-normal">{e.momentsTotal}</span>{" "}
-                  moment(s) affiché(s){" "}
-                  <span className="font-normal">
-                    (
-                    {e.momentFirstIndex !== e.momentLastIndex
-                      ? `${e.momentFirstIndex}-${e.momentLastIndex}`
-                      : `${e.momentFirstIndex}`}
-                    )
-                  </span>{" "}
-                  sur <span className="font-normal">{e.allMomentsTotal}</span> à
-                  la page <span className="font-normal">{e.currentPage}</span>{" "}
-                  sur <span className="font-normal">{e.totalPage}</span>
-                </p>
-              )}
+              {i === a.length - 1 && <MomentsPageDetails e={e} />}
             </div>
           ))}
           <div className="flex justify-between">
-            <button
-              onClick={() => handlePagination("left", subView)}
+            <PaginationButton
+              handlePagination={handlePagination}
+              direction="left"
+              subView={subView}
               disabled={currentPage === 1}
-              className="disabled:text-neutral-200"
-            >
-              <div className="rounded-lg bg-white p-2 shadow">
-                <Icons.ArrowLeftSolid />
-              </div>
-            </button>
-            <button
-              onClick={() => handlePagination("right", subView)}
+              icon="ArrowLeftSolid"
+            />
+            <PaginationButton
+              handlePagination={handlePagination}
+              direction="right"
+              subView={subView}
               disabled={currentPage === subViewMaxPages[subView]}
-              className="disabled:text-neutral-200"
-            >
-              <div className="rounded-lg bg-white p-2 shadow">
-                <Icons.ArrowRightSolid />
-              </div>
-            </button>
+              icon="ArrowRightSolid"
+            />
           </div>
         </>
       ) : (
@@ -676,17 +505,19 @@ function MomentForms({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  setView: Dispatch<SetStateAction<View>>;
-  setSubView: Dispatch<SetStateAction<SubView>>;
+  setView: SetState<View>;
+  setSubView: SetState<SubView>;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
+  const isVariantUpdatingMoment = variant === "updating" && moment;
+
   // datetime-local input is now controlled for dynamic moment and steps times
   let [startMomentDate, setStartMomentDate] = useState(
-    moment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
+    isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
 
   const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
@@ -699,7 +530,7 @@ function MomentForms({
   });
 
   let [steps, setSteps] = useState<StepFromCRUD[]>(
-    momentSteps ? momentSteps : [],
+    isVariantUpdatingMoment && momentSteps ? momentSteps : [],
   );
 
   const stepsCompoundDurations = makeStepsCompoundDurationsArray(steps);
@@ -726,14 +557,11 @@ function MomentForms({
   );
 
   let [stepVisible, setStepVisible] = useState<StepVisible>(
-    variant === "creating" ? "creating" : "create",
+    !isVariantUpdatingMoment ? "creating" : "create",
   );
 
   let [destinationSelect, setDestinationSelect] = useState(false);
   let [activitySelect, setActivitySelect] = useState(false);
-
-  const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = activityOptions.map((e) => e.value);
 
   // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
@@ -774,6 +602,7 @@ function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone)
       createOrUpdateMomentAfterflow(
+        variant,
         createOrUpdateMomentState,
         endMomentDate,
         now,
@@ -803,6 +632,7 @@ function MomentForms({
   useEffect(() => {
     if (isDeleteMomentDone)
       deleteMomentAfterflow(
+        variant,
         createOrUpdateMomentState,
         setView,
         setIsDeleteMomentDone,
@@ -826,13 +656,14 @@ function MomentForms({
       setStepVisible,
       setCreateOrUpdateMomentState,
       setIsResetMomentFormDone,
+      variant,
       setInputSwitchKey,
     );
   };
 
   useEffect(() => {
     if (isResetMomentFormDone)
-      resetMomentFormAfterflow(setIsResetMomentFormDone);
+      resetMomentFormAfterflow(variant, setIsResetMomentFormDone);
   }, [isResetMomentFormDone]);
 
   // addStepAction
@@ -872,6 +703,7 @@ function MomentForms({
     <>
       <StepForm
         variant="creating"
+        momentFormVariant={variant}
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
@@ -884,6 +716,7 @@ function MomentForms({
       />
       <StepForm
         variant="updating"
+        momentFormVariant={variant}
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
@@ -897,298 +730,116 @@ function MomentForms({
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentFormAction}
-        id={MOMENT_FORM_ID}
+        id={MOMENT_FORM_IDS[variant].momentForm}
+        noValidate
       >
         <Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
-          id={YOUR_MOMENT_ID}
+          id={MOMENT_FORM_IDS[variant].yourMoment}
           error={createOrUpdateMomentState?.momentMessage}
           subError={createOrUpdateMomentState?.momentSubMessage}
         >
-          <InputText
-            label="Destination"
-            name="destination"
-            defaultValue={moment ? moment.destinationIdeal : ""}
-            description="Votre projet vise à atteindre quel idéal ?"
-            addendum={
-              destinationOptions.length > 0
-                ? "Ou choissisez parmi vos destinations précédemment instanciées."
-                : undefined
-            }
-            fieldFlexIsNotLabel
-            tekTime
-            required={false}
-            errors={createOrUpdateMomentState?.errors?.destinationName}
-            hidden={destinationSelect}
-          >
-            {destinationOptions.length > 0 && (
-              <Button
-                type="button"
-                variant="destroy"
-                onClick={() => setDestinationSelect(true)}
-              >
-                Choisir la destination
-              </Button>
-            )}
-          </InputText>
-          <SelectWithOptions
-            label="Destination"
-            description="Choisissez la destination que cherche à atteindre ce moment."
-            addendum="Ou définissez-la vous-même via le bouton ci-dessus."
-            name="destination"
-            defaultValue={
-              moment && destinationValues.includes(moment.destinationIdeal)
-                ? moment.destinationIdeal
-                : ""
-            }
-            placeholder="Choisissez..."
-            options={destinationOptions}
-            fieldFlexIsNotLabel
-            tekTime
-            required={false}
-            errors={createOrUpdateMomentState?.errors?.destinationName}
-            hidden={!destinationSelect}
-          >
-            <Button
-              type="button"
-              variant="destroy"
-              onClick={() => setDestinationSelect(false)}
-            >
-              Définir la destination
-            </Button>
-          </SelectWithOptions>
-          <InputText
-            label="Activité"
-            description="Définissez le type d'activité qui va correspondre à votre problématique."
-            addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
-            name="activite"
-            defaultValue={moment ? moment.activity : ""}
-            fieldFlexIsNotLabel
-            required={false}
-            errors={createOrUpdateMomentState?.errors?.momentActivity}
-            hidden={activitySelect}
-          >
-            <Button
-              type="button"
-              variant="destroy"
-              onClick={() => setActivitySelect(true)}
-            >
-              Choisir l&apos;activité
-            </Button>
-          </InputText>
-          <SelectWithOptions
-            label="Activité"
-            description="Choisissez le type d'activité qui va correspondre à votre problématique."
-            addendum="Ou définissez-le vous-même via le bouton ci-dessus."
-            name="activite"
-            defaultValue={
-              moment && activityValues.includes(moment.activity)
-                ? moment.activity
-                : ""
-            }
-            placeholder="Choisissez..."
-            options={activityOptions}
-            fieldFlexIsNotLabel
-            required={false}
-            errors={createOrUpdateMomentState?.errors?.momentActivity}
-            hidden={!activitySelect}
-          >
-            <Button
-              type="button"
-              variant="destroy"
-              onClick={() => setActivitySelect(false)}
-            >
-              Définir l&apos;activité
-            </Button>
-          </SelectWithOptions>
-          <InputText
-            label="Objectif"
-            name="objectif"
-            defaultValue={moment ? moment.objective : ""}
-            description="Indiquez en une phrase le résultat que vous souhaiterez obtenir quand ce moment touchera à sa fin."
-            required={false}
-            errors={createOrUpdateMomentState?.errors?.momentName}
-          />
-          <InputSwitch
-            key={inputSwitchKey}
-            label="Indispensable"
-            name="indispensable"
-            defaultChecked={moment ? moment.isIndispensable : false}
-            description="Activez l'interrupteur si ce moment est d'une importance incontournable."
-            required={false}
-            errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
-          />
-          <Textarea
-            label="Contexte"
-            name="contexte"
-            defaultValue={moment ? moment.context : ""}
-            description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
-            rows={6}
-            required={false}
-            errors={createOrUpdateMomentState?.errors?.momentDescription}
-          />
-          <InputDatetimeLocalControlled
-            label="Date et heure"
-            name="dateetheure"
-            description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
-            definedValue={startMomentDate}
-            definedOnValueChange={setStartMomentDate}
-            errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
+          <MomentInputs
+            variant={variant}
+            moment={moment}
+            destinationOptions={destinationOptions}
+            createOrUpdateMomentState={createOrUpdateMomentState}
+            destinationSelect={destinationSelect}
+            setDestinationSelect={setDestinationSelect}
+            activitySelect={activitySelect}
+            setActivitySelect={setActivitySelect}
+            inputSwitchKey={inputSwitchKey}
+            startMomentDate={startMomentDate}
+            setStartMomentDate={setStartMomentDate}
           />
         </Section>
         <Divider />
         <Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          id={ITS_STEPS_ID}
+          id={MOMENT_FORM_IDS[variant].itsSteps}
           error={createOrUpdateMomentState?.stepsMessage}
           subError={createOrUpdateMomentState?.stepsSubMessage}
         >
           {steps.length > 0 && (
-            <Reorder.Group axis="y" values={steps} onReorder={setSteps} as="ol">
-              {steps.map((step, index) => {
-                let stepAddingTime =
-                  index === 0 ? 0 : stepsCompoundDurations[index - 1];
-
-                return (
-                  <ReorderItem
-                    key={step.id}
-                    step={step}
-                    index={index}
-                    steps={steps}
-                    stepVisible={stepVisible}
-                    currentStepId={currentStepId}
-                    setCurrentStepId={setCurrentStepId}
-                    setStepVisible={setStepVisible}
-                    startMomentDate={startMomentDate}
-                    stepAddingTime={stepAddingTime}
-                    setSteps={setSteps}
-                    isUpdateStepPending={isUpdateStepPending}
-                    stepDureeUpdate={stepDureeUpdate}
-                    setStepDureeUpdate={setStepDureeUpdate}
-                    createOrUpdateMomentState={createOrUpdateMomentState}
-                    setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-                  />
-                );
-              })}
-            </Reorder.Group>
-          )}
-          {steps.length > 0 && (
             <>
-              <div className="flex items-baseline justify-between">
-                <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
-                  Récapitulatifs
-                </p>
-              </div>
-              <div className="grid grid-cols-[1fr_1.5fr] gap-4 md:grid md:grid-cols-[1fr_1fr]">
-                <div className="space-y-2">
-                  <p className="font-medium text-blue-950">Fin attendue</p>
-                  <p className="font-semibold">
-                    <span className="font-medium text-neutral-800">à</span>{" "}
-                    <span
-                      className={clsx(
-                        stepVisible === "updating" && "text-neutral-400",
-                      )}
-                    >
-                      {format(endMomentDate, "HH:mm")}
-                    </span>
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="font-medium text-blue-950">Durée totale</p>
-                  <p className="font-semibold">
-                    <span className="font-medium text-neutral-800">de </span>
-                    <span>
-                      <span
-                        className={clsx(
-                          stepVisible === "updating" && "text-neutral-400",
-                        )}
-                      >
-                        {numStringToTimeString(momentAddingTime.toString())}
-                      </span>
-                    </span>
-                  </p>
-                </div>
-              </div>
+              <Reorder.Group // steps
+                axis="y"
+                values={steps}
+                onReorder={setSteps}
+                as="ol"
+              >
+                {steps.map((step, index) => {
+                  // this needs to stay up there because it depends from an information obtained in MomentForms
+                  let stepAddingTime =
+                    index === 0 ? 0 : stepsCompoundDurations[index - 1];
+
+                  return (
+                    <ReorderItem // step
+                      key={step.id}
+                      step={step}
+                      index={index}
+                      momentFormVariant={variant}
+                      steps={steps}
+                      stepVisible={stepVisible}
+                      currentStepId={currentStepId}
+                      setCurrentStepId={setCurrentStepId}
+                      setStepVisible={setStepVisible}
+                      startMomentDate={startMomentDate}
+                      stepAddingTime={stepAddingTime}
+                      setSteps={setSteps}
+                      isUpdateStepPending={isUpdateStepPending}
+                      stepDureeUpdate={stepDureeUpdate}
+                      setStepDureeUpdate={setStepDureeUpdate}
+                      createOrUpdateMomentState={createOrUpdateMomentState}
+                      setCreateOrUpdateMomentState={
+                        setCreateOrUpdateMomentState
+                      }
+                    />
+                  );
+                })}
+              </Reorder.Group>
+              <StepsSummaries
+                stepVisible={stepVisible}
+                endMomentDate={endMomentDate}
+                momentAddingTime={momentAddingTime}
+              />
             </>
           )}
-          {stepVisible === "creating" && (
-            // was a form, but forms can't be nested
-            <div className="flex flex-col gap-y-8">
-              <div className="flex items-baseline justify-between">
-                <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
-                  Ajouter une étape
-                </p>{" "}
-                <Button
-                  form={STEP_FORM_ID.creating}
-                  type="reset"
-                  variant="destroy-step"
-                  disabled={isResetStepPending}
-                >
-                  Réinitialiser l&apos;étape
-                </Button>
-              </div>
-              <StepInputs
-                form={STEP_FORM_ID.creating}
-                createOrUpdateMomentState={createOrUpdateMomentState}
-                stepDuree={stepDureeCreate}
-                setStepDuree={setStepDureeCreate}
-              />
-              <div className="flex">
-                {/* Mobile */}
-                <div className="flex w-full flex-col gap-4 md:hidden">
-                  <Button
-                    variant="confirm-step"
-                    form={STEP_FORM_ID.creating}
-                    type="submit"
-                    disabled={isCreateStepPending}
-                  >
-                    Confirmer l&apos;étape
-                  </Button>
-                  <Button
-                    variant="cancel-step"
-                    form={STEP_FORM_ID.creating}
-                    type="button"
-                    onClick={cancelStepAction}
-                    disabled={steps.length === 0 || isCancelStepPending}
-                  >
-                    Annuler l&apos;étape
-                  </Button>
-                </div>
-                {/* Desktop */}
-                <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-                  <Button
-                    variant="cancel-step"
-                    form={STEP_FORM_ID.creating}
-                    type="button"
-                    onClick={cancelStepAction}
-                    disabled={steps.length === 0 || isCancelStepPending}
-                  >
-                    Annuler l&apos;étape
-                  </Button>
-                  <Button
-                    variant="confirm-step"
-                    form={STEP_FORM_ID.creating}
-                    type="submit"
-                    disabled={isCreateStepPending}
-                  >
-                    Confirmer l&apos;étape
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-          {stepVisible === "create" && (
-            <Button
-              type="button"
-              variant="neutral"
-              onClick={addStepAction}
-              disabled={isAddStepPending}
-            >
-              Ajouter une étape
-            </Button>
-          )}
+          {/* honestly not sure if animations are necessary now */}
+          {/* keeping the motion.div still in components though */}
+          {/* <AnimatePresence initial={false} mode="popLayout"> */}
+          {(() => {
+            switch (stepVisible) {
+              case "creating":
+                return (
+                  <StepVisibleCreating
+                    key={stepVisible}
+                    momentFormVariant={variant}
+                    isResetStepPending={isResetStepPending}
+                    createOrUpdateMomentState={createOrUpdateMomentState}
+                    stepDureeCreate={stepDureeCreate}
+                    setStepDureeCreate={setStepDureeCreate}
+                    isCreateStepPending={isCreateStepPending}
+                    cancelStepAction={cancelStepAction}
+                    steps={steps}
+                    isCancelStepPending={isCancelStepPending}
+                  />
+                );
+              case "create":
+                return (
+                  <StepVisibleCreate
+                    key={stepVisible}
+                    addStepAction={addStepAction}
+                    isAddStepPending={isAddStepPending}
+                  />
+                );
+              default:
+                return null;
+            }
+          })()}
+          {/* </AnimatePresence> */}
         </Section>
         <Divider />
         <Section>
@@ -1196,71 +847,31 @@ function MomentForms({
           <div className="flex">
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
-              <Button
-                type="submit"
-                variant="confirm"
-                disabled={
-                  isResetMomentFormPending ||
-                  isDeleteMomentPending ||
-                  isCreateOrUpdateMomentPending
-                }
-                isDedicatedDisabled={isCreateOrUpdateMomentPending}
-              >
-                Confirmer le moment
-              </Button>
-              {variant === "creating" && (
-                <Button
-                  type="reset"
-                  variant="cancel"
-                  disabled={isResetMomentFormPending}
-                >
-                  Réinitialiser le moment
-                </Button>
-              )}
-              {variant === "updating" && (
-                <Button
-                  type="button"
-                  onClick={deleteMomentAction}
-                  variant="cancel"
-                  disabled={isDeleteMomentPending}
-                >
-                  Effacer le moment
-                </Button>
-              )}
+              <ConfirmMomentButton
+                isResetMomentFormPending={isResetMomentFormPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+              />
+              <ResetOrEraseMomentButton
+                variant={variant}
+                isResetMomentFormPending={isResetMomentFormPending}
+                deleteMomentAction={deleteMomentAction}
+                isDeleteMomentPending={isDeleteMomentPending}
+              />
             </div>
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-              {variant === "creating" && (
-                <Button
-                  type="reset"
-                  variant="cancel"
-                  disabled={isResetMomentFormPending}
-                >
-                  Réinitialiser le moment
-                </Button>
-              )}
-              {variant === "updating" && (
-                <Button
-                  type="button"
-                  onClick={deleteMomentAction}
-                  variant="cancel"
-                  disabled={isDeleteMomentPending}
-                >
-                  Effacer le moment
-                </Button>
-              )}
-              <Button
-                type="submit"
-                variant="confirm"
-                disabled={
-                  isResetMomentFormPending ||
-                  isDeleteMomentPending ||
-                  isCreateOrUpdateMomentPending
-                }
-                isDedicatedDisabled={isCreateOrUpdateMomentPending}
-              >
-                Confirmer le moment
-              </Button>
+              <ResetOrEraseMomentButton
+                variant={variant}
+                isResetMomentFormPending={isResetMomentFormPending}
+                deleteMomentAction={deleteMomentAction}
+                isDeleteMomentPending={isDeleteMomentPending}
+              />
+              <ConfirmMomentButton
+                isResetMomentFormPending={isResetMomentFormPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+              />
             </div>
           </div>
         </Section>
@@ -1271,8 +882,327 @@ function MomentForms({
 
 // Main Supporting Components
 
+function SetViewButton({
+  view,
+  setView,
+}: {
+  view: View;
+  setView: SetState<View>;
+}) {
+  // though the function below could be a utility, it is very specific to this component at this time
+  function defineDesiredView(view: View) {
+    switch (view) {
+      case "update-moment":
+        return "read-moments";
+      case "read-moments":
+        return "create-moment";
+      case "create-moment":
+        return "read-moments";
+      default:
+        return "read-moments";
+    }
+  }
+
+  const desiredView = defineDesiredView(view);
+
+  return (
+    <Button
+      type="button"
+      variant="destroy-step"
+      onClick={() => setScrollToTop(desiredView, setView)}
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </Button>
+  );
+}
+
+// ReadMomentsView Supporting Components
+
+function SetSubViewButton({
+  setSubView,
+  e,
+  subView,
+}: {
+  setSubView: SetState<SubView>;
+  e: SubView;
+  subView: SubView;
+}) {
+  // this needs to be inside the component because its entirely specific to the component
+  const className = "px-4 py-2 h-9 flex items-center justify-center";
+
+  return (
+    <button
+      onClick={() => setSubView(e)}
+      className={clsx(
+        className,
+        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        subView === e && "focus-visible:outline-blue-500",
+        subView !== e && "focus-visible:outline-cyan-500",
+      )}
+    >
+      {/* real occupied space */}
+      <span className="invisible static">{subViewTitles[e]}</span>
+      {/* gradient text */}
+      <span
+        className={clsx(
+          className,
+          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+        )}
+      >
+        {subViewTitles[e]}
+      </span>
+      {/* white background */}
+      <div
+        className={clsx(
+          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+        )}
+      ></div>
+      {/* gradient border */}
+      <div
+        className={clsx(
+          "absolute inset-0 rounded-full",
+          subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
+          subView !== e && "bg-transparent",
+        )}
+      ></div>
+    </button>
+  );
+}
+
+function RevalidateMomentsButton({
+  revalidateMomentsAction,
+  isRevalidateMomentsPending,
+}: {
+  revalidateMomentsAction: (
+    event: MouseEvent<HTMLButtonElement>,
+  ) => Promise<void>;
+  isRevalidateMomentsPending: boolean;
+}) {
+  return (
+    <button
+      form={SEARCH_FORM_ID}
+      onClick={revalidateMomentsAction}
+      disabled={isRevalidateMomentsPending}
+      className={clsx(
+        "flex h-9 items-center justify-center px-4 py-2",
+        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        "focus-visible:outline-cyan-500",
+      )}
+    >
+      {/* real occupied space */}
+      <span className="invisible static">
+        <Icons.ArrowPathSolid />
+      </span>
+      {/* gradient text */}
+      <span
+        className={clsx(
+          "flex h-9 items-center justify-center px-4 py-2",
+          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+        )}
+      >
+        <Icons.ArrowPathSolid className="size-6 text-blue-950" />
+      </span>
+      {/* white background */}
+      <div
+        className={clsx(
+          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+        )}
+      ></div>
+      {/* gradient border */}
+      <div className={clsx("absolute inset-0 rounded-full", "bg-white")}></div>
+    </button>
+  );
+}
+
+function SearchForm({
+  searchParams,
+  debouncedHandleSearch,
+}: {
+  searchParams: ReadonlyURLSearchParams;
+  debouncedHandleSearch: debounce.DebouncedFunction<(term: string) => void>;
+}) {
+  return (
+    <form id={SEARCH_FORM_ID} noValidate>
+      <InputText
+        id={CONTAINS}
+        name={CONTAINS}
+        placeholder="Cherchez parmi vos moments..."
+        defaultValue={searchParams.get(CONTAINS)?.toString()}
+        onChange={(e) => {
+          debouncedHandleSearch(e.currentTarget.value);
+        }}
+      />
+    </form>
+  );
+}
+
+function DestinationInDateCard({
+  e2,
+  setMoment,
+  realMoments,
+  setView,
+}: {
+  e2: MomentsDestinationToCRUD;
+  setMoment: SetState<MomentToCRUD | undefined>;
+  realMoments: MomentToCRUD[];
+  setView: SetState<View>;
+}) {
+  return (
+    <div className="flex flex-col gap-y-8">
+      <div className="flex select-none items-baseline justify-between">
+        <p
+          className={clsx(
+            "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
+          )}
+        >
+          {e2.destinationIdeal}
+        </p>
+      </div>
+      {e2.moments.map((e3, i3) => (
+        <MomentInDateCard
+          key={e3.id}
+          e3={e3}
+          i3={i3}
+          setMoment={setMoment}
+          realMoments={realMoments}
+          setView={setView}
+        />
+      ))}
+    </div>
+  );
+}
+
+function MomentInDateCard({
+  e3,
+  i3,
+  setMoment,
+  realMoments,
+  setView,
+}: {
+  e3: MomentToCRUD;
+  i3: number;
+  setMoment: SetState<MomentToCRUD | undefined>;
+  realMoments: MomentToCRUD[];
+  setView: SetState<View>;
+}) {
+  // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
+  function setUpdateMomentView() {
+    setMoment(realMoments.find((e0) => e0.id === e3.id));
+    setScrollToTop("update-moment", setView);
+  }
+
+  return (
+    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
+      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+        <p className="font-medium text-blue-950">{e3.objective}</p>
+        <div className="invisible flex justify-end group-hover:visible">
+          <Button
+            type="button"
+            variant="destroy-step"
+            onClick={setUpdateMomentView}
+          >
+            <Icons.PencilSquareSolid className="size-5" />
+          </Button>
+        </div>
+      </div>
+      <p>
+        <span className={"font-semibold text-neutral-800"}>
+          {e3.startDateAndTime.split("T")[1]}
+        </span>{" "}
+        • {numStringToTimeString(e3.duration)}
+        {e3.isIndispensable && (
+          <>
+            {" "}
+            •{" "}
+            <span className="text-sm font-semibold uppercase">
+              indispensable
+            </span>
+          </>
+        )}
+      </p>
+      <ol className="">
+        {e3.steps.map((e4) => (
+          <StepInDateCard key={e4.id} e4={e4} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
+  return (
+    <li className="text-sm font-light leading-loose text-neutral-500">
+      <p className="">
+        {e4.startDateAndTime.split("T")[1]} - {e4.endDateAndTime.split("T")[1]}{" "}
+        : {e4.title}
+      </p>
+    </li>
+  );
+}
+
+function MomentsPageDetails({ e }: { e: MomentsDateToCRUD }) {
+  return (
+    <p className="font-extralight text-neutral-800">
+      <span className="font-normal">{e.momentsTotal}</span> moment(s) affiché(s){" "}
+      <span className="font-normal">
+        (
+        {e.momentFirstIndex !== e.momentLastIndex
+          ? `${e.momentFirstIndex}-${e.momentLastIndex}`
+          : `${e.momentFirstIndex}`}
+        )
+      </span>{" "}
+      sur <span className="font-normal">{e.allMomentsTotal}</span> à la page{" "}
+      <span className="font-normal">{e.currentPage}</span> sur{" "}
+      <span className="font-normal">{e.totalPage}</span>
+    </p>
+  );
+}
+
+function PaginationButton({
+  handlePagination,
+  direction,
+  subView,
+  disabled,
+  icon,
+  iconClassName,
+}: {
+  handlePagination: (direction: "left" | "right", subView: SubView) => void;
+  direction: "left" | "right";
+  subView: SubView;
+  disabled: boolean;
+  icon: Icons.IconName;
+  iconClassName?: string;
+}) {
+  const Icon = Icons[icon];
+
+  return (
+    <button
+      onClick={() => handlePagination(direction, subView)}
+      disabled={disabled}
+      className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
+    >
+      <div className="rounded-lg bg-white p-2 shadow">
+        <Icon className={iconClassName} />
+      </div>
+    </button>
+  );
+}
+
+// MomentForms Supporting Components
+
 function StepForm({
   variant,
+  momentFormVariant,
   currentStepId,
   steps,
   setSteps,
@@ -1284,18 +1214,22 @@ function StepForm({
   setCreateOrUpdateMomentState,
 }: {
   variant: StepFormVariant;
+  momentFormVariant: MomentFormVariant;
   currentStepId: string;
   steps: StepFromCRUD[];
-  setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
-  setStepVisible: Dispatch<SetStateAction<StepVisible>>;
+  setSteps: SetState<StepFromCRUD[]>;
+  setStepVisible: SetState<StepVisible>;
   stepDuree: string;
-  setStepDuree: Dispatch<SetStateAction<string>>;
+  setStepDuree: SetState<string>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   startResetStepTransition: TransitionStartFunction;
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >;
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
 }) {
+  const stepFormId =
+    variant === "updating"
+      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
+      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
   // createOrUpdateStepAction
 
   const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
@@ -1316,16 +1250,21 @@ function StepForm({
     );
   };
 
+  // no longer animating steps in any way, so currently createOrUpdateStepAfterflow effectively does not do anything
   useEffect(() => {
     if (isCreateOrUpdateStepDone)
-      createOrUpdateStepAfterflow(setIsCreateOrUpdateStepDone);
-  }, [isCreateOrUpdateStepDone]); // Imagine now doing all this with dedicated animations.
+      createOrUpdateStepAfterflow(
+        momentFormVariant,
+        setIsCreateOrUpdateStepDone,
+      );
+  }, [isCreateOrUpdateStepDone]);
 
   // resetStepAction
 
   const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
     return resetStepActionflow(
       event,
+      variant,
       startResetStepTransition,
       setStepDuree,
       setCreateOrUpdateMomentState,
@@ -1334,16 +1273,188 @@ function StepForm({
 
   return (
     <form
-      id={STEP_FORM_ID[variant]}
+      id={stepFormId}
       onSubmit={createOrUpdateStepAction}
       onReset={resetStepAction}
+      noValidate
     ></form>
+  );
+}
+
+function MomentInputs({
+  variant,
+  moment,
+  destinationOptions,
+  createOrUpdateMomentState,
+  destinationSelect,
+  setDestinationSelect,
+  activitySelect,
+  setActivitySelect,
+  inputSwitchKey,
+  startMomentDate,
+  setStartMomentDate,
+}: {
+  variant: MomentFormVariant;
+  moment?: MomentToCRUD;
+  destinationOptions: Option[];
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  destinationSelect: boolean;
+  setDestinationSelect: SetState<boolean>;
+  activitySelect: boolean;
+  setActivitySelect: SetState<boolean>;
+  inputSwitchKey: string;
+  startMomentDate: string;
+  setStartMomentDate: SetState<string>;
+}) {
+  const isVariantUpdatingMoment = variant === "updating" && moment;
+
+  const destinationValues = destinationOptions.map((e) => e.value);
+  const activityValues = activityOptions.map((e) => e.value);
+
+  return (
+    <>
+      <InputText
+        label="Destination"
+        name="destination"
+        defaultValue={isVariantUpdatingMoment ? moment.destinationIdeal : ""}
+        description="Votre projet vise à atteindre quel idéal ?"
+        addendum={
+          destinationOptions.length > 0
+            ? "Ou choissisez parmi vos destinations précédemment instanciées."
+            : undefined
+        }
+        fieldFlexIsNotLabel
+        tekTime
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.destinationName}
+        hidden={destinationSelect}
+      >
+        {destinationOptions.length > 0 && (
+          <Button
+            type="button"
+            variant="destroy"
+            onClick={() => setDestinationSelect(true)}
+          >
+            Choisir la destination
+          </Button>
+        )}
+      </InputText>
+      <SelectWithOptions
+        label="Destination"
+        description="Choisissez la destination que cherche à atteindre ce moment."
+        addendum="Ou définissez-la vous-même via le bouton ci-dessus."
+        name="destination"
+        defaultValue={
+          isVariantUpdatingMoment &&
+          destinationValues.includes(moment.destinationIdeal)
+            ? moment.destinationIdeal
+            : ""
+        }
+        placeholder="Choisissez..."
+        options={destinationOptions}
+        fieldFlexIsNotLabel
+        tekTime
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.destinationName}
+        hidden={!destinationSelect}
+      >
+        <Button
+          type="button"
+          variant="destroy"
+          onClick={() => setDestinationSelect(false)}
+        >
+          Définir la destination
+        </Button>
+      </SelectWithOptions>
+      <InputText
+        label="Activité"
+        description="Définissez le type d'activité qui va correspondre à votre problématique."
+        addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
+        name="activite"
+        defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
+        fieldFlexIsNotLabel
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.momentActivity}
+        hidden={activitySelect}
+      >
+        <Button
+          type="button"
+          variant="destroy"
+          onClick={() => setActivitySelect(true)}
+        >
+          Choisir l&apos;activité
+        </Button>
+      </InputText>
+      <SelectWithOptions
+        label="Activité"
+        description="Choisissez le type d'activité qui va correspondre à votre problématique."
+        addendum="Ou définissez-le vous-même via le bouton ci-dessus."
+        name="activite"
+        defaultValue={
+          isVariantUpdatingMoment && activityValues.includes(moment.activity)
+            ? moment.activity
+            : ""
+        }
+        placeholder="Choisissez..."
+        options={activityOptions}
+        fieldFlexIsNotLabel
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.momentActivity}
+        hidden={!activitySelect}
+      >
+        <Button
+          type="button"
+          variant="destroy"
+          onClick={() => setActivitySelect(false)}
+        >
+          Définir l&apos;activité
+        </Button>
+      </SelectWithOptions>
+      <InputText
+        label="Objectif"
+        name="objectif"
+        defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
+        description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.momentName}
+      />
+      <InputSwitch
+        key={inputSwitchKey}
+        label="Indispensable"
+        name="indispensable"
+        defaultChecked={
+          isVariantUpdatingMoment ? moment.isIndispensable : false
+        }
+        description="Activez l'interrupteur si ce moment est d'une importance incontournable."
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
+      />
+      <Textarea
+        label="Contexte"
+        name="contexte"
+        defaultValue={isVariantUpdatingMoment ? moment.context : ""}
+        description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
+        rows={6}
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.momentDescription}
+      />
+      <InputDatetimeLocalControlled
+        label="Date et heure"
+        name="dateetheure"
+        description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
+        definedValue={startMomentDate}
+        definedOnValueChange={setStartMomentDate}
+        required={false}
+        errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
+      />
+    </>
   );
 }
 
 function ReorderItem({
   step,
   index,
+  momentFormVariant,
   steps,
   stepVisible,
   currentStepId,
@@ -1360,23 +1471,27 @@ function ReorderItem({
 }: {
   step: StepFromCRUD;
   index: number;
+  momentFormVariant: MomentFormVariant;
   steps: StepFromCRUD[];
   stepVisible: StepVisible;
   currentStepId: string;
-  setCurrentStepId: Dispatch<SetStateAction<string>>;
-  setStepVisible: Dispatch<SetStateAction<StepVisible>>;
+  setCurrentStepId: SetState<string>;
+  setStepVisible: SetState<StepVisible>;
   startMomentDate: string;
   stepAddingTime: number;
-  setSteps: Dispatch<SetStateAction<StepFromCRUD[]>>;
+  setSteps: SetState<StepFromCRUD[]>;
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
-  setStepDureeUpdate: Dispatch<SetStateAction<string>>;
+  setStepDureeUpdate: SetState<string>;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
-  setCreateOrUpdateMomentState: Dispatch<
-    SetStateAction<CreateOrUpdateMomentState>
-  >;
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
 }) {
   const controls = useDragControls();
+
+  const isCurrentStepUpdating =
+    currentStepId === step.id && stepVisible === "updating";
+
+  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
 
   // deleteStepAction
 
@@ -1435,7 +1550,7 @@ function ReorderItem({
       <div
         className={clsx(
           "flex flex-col gap-y-8",
-          index !== steps.length - 1 && "pb-8",
+          index !== steps.length - 1 && "pb-8", // I remember I did that specifically for animations
         )}
       >
         <div className="flex select-none items-baseline justify-between">
@@ -1449,7 +1564,7 @@ function ReorderItem({
           >
             Étape <span>{toWordsing(index + 1)}</span>
           </p>{" "}
-          {stepVisible === "updating" && currentStepId === step.id ? (
+          {isCurrentStepUpdating ? (
             <Button
               type="button"
               variant="destroy-step"
@@ -1469,84 +1584,304 @@ function ReorderItem({
             </Button>
           )}
         </div>
-        {stepVisible === "updating" && currentStepId === step.id ? (
+        {isCurrentStepUpdating ? (
           <div className="flex flex-col gap-y-8">
             <StepInputs
-              form={STEP_FORM_ID.updating}
+              form={form}
               createOrUpdateMomentState={createOrUpdateMomentState}
               stepDuree={stepDureeUpdate}
               setStepDuree={setStepDureeUpdate}
               step={step}
             />
-            <div className="flex">
+            <div>
               {/* Mobile */}
               <div className="flex w-full flex-col gap-4 md:hidden">
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="submit"
-                  variant="confirm-step"
-                  disabled={isUpdateStepPending}
-                >
-                  Actualiser l&apos;étape
-                </Button>
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="button"
-                  onClick={deleteStepAction}
-                  variant="cancel-step"
-                  disabled={isDeleteStepPending}
-                >
-                  Effacer l&apos;étape
-                </Button>
+                <UpdateStepButton
+                  form={form}
+                  isUpdateStepPending={isUpdateStepPending}
+                />
+                <EraseStepButton
+                  form={form}
+                  deleteStepAction={deleteStepAction}
+                  isDeleteStepPending={isDeleteStepPending}
+                />
               </div>
               {/* Desktop */}
               <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="button"
-                  onClick={deleteStepAction}
-                  variant="cancel-step"
-                  disabled={isDeleteStepPending}
-                >
-                  Effacer l&apos;étape
-                </Button>
-                <Button
-                  form={STEP_FORM_ID.updating}
-                  type="submit"
-                  variant="confirm-step"
-                  disabled={isUpdateStepPending}
-                >
-                  Actualiser l&apos;étape
-                </Button>
+                <EraseStepButton
+                  form={form}
+                  deleteStepAction={deleteStepAction}
+                  isDeleteStepPending={isDeleteStepPending}
+                />
+                <UpdateStepButton
+                  form={form}
+                  isUpdateStepPending={isUpdateStepPending}
+                />
               </div>
             </div>
           </div>
         ) : (
-          <>
-            <div className="space-y-2">
-              <p className="font-medium text-blue-950">{step.intitule}</p>
-              <p>
-                <span
-                  className={clsx(
-                    index === 0 && "font-semibold text-neutral-800",
-                  )}
-                >
-                  {format(
-                    add(startMomentDate, {
-                      minutes: stepAddingTime,
-                    }),
-                    "HH:mm",
-                  )}
-                </span>
-                <> • </>
-                {numStringToTimeString(step.duree)}
-              </p>
-              <p className="text-sm text-neutral-500">{step.details}</p>
-            </div>
-          </>
+          <StepContents
+            step={step}
+            index={index}
+            startMomentDate={startMomentDate}
+            stepAddingTime={stepAddingTime}
+          />
         )}
       </div>
     </Reorder.Item>
+  );
+}
+
+function StepsSummaries({
+  stepVisible,
+  endMomentDate,
+  momentAddingTime,
+}: {
+  stepVisible: StepVisible;
+  endMomentDate: string;
+  momentAddingTime: number;
+}) {
+  return (
+    <>
+      <div className="flex items-baseline justify-between">
+        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+          Récapitulatifs
+        </p>
+      </div>
+      <div className="grid grid-cols-[1fr_1.5fr] gap-4 md:grid md:grid-cols-[1fr_1fr]">
+        <div className="space-y-2">
+          <p className="font-medium text-blue-950">Fin attendue</p>
+          <p className="font-semibold">
+            <span className="font-medium text-neutral-800">à</span>{" "}
+            <span
+              className={clsx(stepVisible === "updating" && "text-neutral-400")}
+            >
+              {format(endMomentDate, "HH:mm")}
+            </span>
+          </p>
+        </div>
+        <div className="space-y-2">
+          <p className="font-medium text-blue-950">Durée totale</p>
+          <p className="font-semibold">
+            <span className="font-medium text-neutral-800">de </span>
+            <span>
+              <span
+                className={clsx(
+                  stepVisible === "updating" && "text-neutral-400",
+                )}
+              >
+                {numStringToTimeString(momentAddingTime.toString())}
+              </span>
+            </span>
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function StepVisibleCreating({
+  momentFormVariant,
+  isResetStepPending,
+  createOrUpdateMomentState,
+  stepDureeCreate,
+  setStepDureeCreate,
+  isCreateStepPending,
+  cancelStepAction,
+  steps,
+  isCancelStepPending,
+}: {
+  momentFormVariant: MomentFormVariant;
+  isResetStepPending: boolean;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  stepDureeCreate: string;
+  setStepDureeCreate: SetState<string>;
+  isCreateStepPending: boolean;
+  cancelStepAction: () => void;
+  steps: StepFromCRUD[];
+  isCancelStepPending: boolean;
+}) {
+  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
+  return (
+    // was a form, but forms can't be nested
+    <motion.div
+      className="flex flex-col gap-y-8"
+      // If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
+
+      // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+      // animate={{
+      //   opacity: 1,
+      //   height: "auto",
+      //   transition: { duration: 0.2 },
+      // }}
+      // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+
+      // The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
+      // That's what it is: the two gap-y-8 remain stacked during animations.
+    >
+      <div className="flex items-baseline justify-between">
+        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+          Ajouter une étape
+        </p>{" "}
+        <Button
+          form={form}
+          variant="destroy-step"
+          type="button"
+          onClick={cancelStepAction}
+          disabled={steps.length === 0 || isCancelStepPending}
+        >
+          Annuler l&apos;étape
+        </Button>
+      </div>
+      <StepInputs
+        form={form}
+        createOrUpdateMomentState={createOrUpdateMomentState}
+        stepDuree={stepDureeCreate}
+        setStepDuree={setStepDureeCreate}
+      />
+      <div className="flex">
+        {/* Mobile */}
+        <div className="flex w-full flex-col gap-4 md:hidden">
+          <Button
+            variant="confirm-step"
+            form={form}
+            type="submit"
+            disabled={isCreateStepPending}
+          >
+            Confirmer l&apos;étape
+          </Button>
+          <Button
+            variant="cancel-step"
+            form={form}
+            type="reset"
+            disabled={isResetStepPending}
+          >
+            Réinitialiser l&apos;étape
+          </Button>
+        </div>
+        {/* Desktop */}
+        <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+          <Button
+            variant="cancel-step"
+            form={form}
+            type="reset"
+            disabled={isResetStepPending}
+          >
+            Réinitialiser l&apos;étape
+          </Button>
+          <Button
+            variant="confirm-step"
+            form={form}
+            type="submit"
+            disabled={isCreateStepPending}
+          >
+            Confirmer l&apos;étape
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function StepVisibleCreate({
+  addStepAction,
+  isAddStepPending,
+}: {
+  addStepAction: () => void;
+  isAddStepPending: boolean;
+}) {
+  return (
+    <motion.div
+    // Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
+
+    // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+    // animate={{
+    //   opacity: 1,
+    //   height: "auto",
+    //   transition: { duration: 0.2 },
+    // }}
+    // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+    >
+      <Button
+        type="button"
+        variant="neutral"
+        onClick={addStepAction}
+        disabled={isAddStepPending}
+      >
+        Ajouter une étape
+      </Button>
+    </motion.div>
+  );
+}
+
+function ConfirmMomentButton({
+  isResetMomentFormPending,
+  isDeleteMomentPending,
+  isCreateOrUpdateMomentPending,
+}: {
+  isResetMomentFormPending: boolean;
+  isDeleteMomentPending: boolean;
+  isCreateOrUpdateMomentPending: boolean;
+}) {
+  return (
+    <Button
+      type="submit"
+      variant="confirm"
+      disabled={
+        isResetMomentFormPending ||
+        isDeleteMomentPending ||
+        isCreateOrUpdateMomentPending
+      }
+      isDedicatedDisabled={isCreateOrUpdateMomentPending}
+    >
+      Confirmer le moment
+    </Button>
+  );
+}
+
+function ResetOrEraseMomentButton({
+  variant,
+  isResetMomentFormPending,
+  deleteMomentAction,
+  isDeleteMomentPending,
+}: {
+  variant: string;
+  isResetMomentFormPending: boolean;
+  deleteMomentAction: () => Promise<void>;
+  isDeleteMomentPending: boolean;
+}) {
+  return (
+    <>
+      {(() => {
+        switch (variant) {
+          case "creating":
+            return (
+              <Button
+                type="reset"
+                variant="cancel"
+                disabled={isResetMomentFormPending}
+              >
+                Réinitialiser le moment
+              </Button>
+            );
+          case "updating":
+            return (
+              <Button
+                type="button"
+                onClick={deleteMomentAction}
+                variant="cancel"
+                disabled={isDeleteMomentPending}
+              >
+                Effacer le moment
+              </Button>
+            );
+          default:
+            return null;
+        }
+      })()}
+    </>
   );
 }
 
@@ -1560,7 +1895,7 @@ function StepInputs({
   form: string;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
-  setStepDuree: Dispatch<SetStateAction<string>>;
+  setStepDuree: SetState<string>;
   step?: StepFromCRUD;
 }) {
   return (
@@ -1592,9 +1927,83 @@ function StepInputs({
         definedOnValueChange={setStepDuree}
         description="Renseignez en minutes la longueur de l'étape."
         min="5"
+        required={false}
         errors={createOrUpdateMomentState?.errors?.realStepDuration}
+        schema={EventStepDurationSchema}
       />
     </>
+  );
+}
+
+function UpdateStepButton({
+  form,
+  isUpdateStepPending,
+}: {
+  form: string;
+  isUpdateStepPending: boolean;
+}) {
+  return (
+    <Button
+      form={form}
+      type="submit"
+      variant="confirm-step"
+      disabled={isUpdateStepPending}
+    >
+      Actualiser l&apos;étape
+    </Button>
+  );
+}
+
+function EraseStepButton({
+  form,
+  deleteStepAction,
+  isDeleteStepPending,
+}: {
+  form: string;
+  deleteStepAction: () => void;
+  isDeleteStepPending: boolean;
+}) {
+  return (
+    <Button
+      form={form}
+      type="button"
+      onClick={deleteStepAction}
+      variant="cancel-step"
+      disabled={isDeleteStepPending}
+    >
+      Effacer l&apos;étape
+    </Button>
+  );
+}
+
+function StepContents({
+  step,
+  index,
+  startMomentDate,
+  stepAddingTime,
+}: {
+  step: StepFromCRUD;
+  index: number;
+  startMomentDate: string;
+  stepAddingTime: number;
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="font-medium text-blue-950">{step.intitule}</p>
+      <p>
+        <span className={clsx(index === 0 && "font-semibold text-neutral-800")}>
+          {format(
+            add(startMomentDate, {
+              minutes: stepAddingTime,
+            }),
+            "HH:mm",
+          )}
+        </span>
+        <> • </>
+        {numStringToTimeString(step.duree)}
+      </p>
+      <p className="text-sm text-neutral-500">{step.details}</p>
+    </div>
   );
 }
 

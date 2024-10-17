@@ -6,26 +6,31 @@ import { usePathname } from "next/navigation";
 
 import clsx from "clsx";
 
-import * as Icons from "./sidenav-icons";
+import * as Icons from "@/app/icons";
 
-const navLinks = [
+const navLinks: {
+  id: number;
+  label: string;
+  href: string;
+  icon: Icons.IconName;
+}[] = [
   // {
   //   id: 0,
   //   label: "Paramètres",
   //   href: "/settings",
-  //   icon: "Cog8Tooth",
+  //   icon: "Cog8ToothOutline",
   // },
   {
     id: 1,
     label: "Moments",
     href: "/moments",
-    icon: "CalendarDays",
+    icon: "CalendarDaysOutline",
   },
   // {
   //   id: 2,
   //   label: "Destinations",
   //   href: "/destinations",
-  //   icon: "PaperAirplane",
+  //   icon: "PaperAirplaneOutline",
   // },
 ];
 
@@ -50,7 +55,6 @@ export function SideNavContents() {
         )}
       >
         {navLinks.map((navLink) => {
-          // @ts-ignore // this is between TypeScript and its god
           const Icon = Icons[navLink.icon];
 
           return (

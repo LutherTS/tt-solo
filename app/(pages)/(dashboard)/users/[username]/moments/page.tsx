@@ -63,7 +63,8 @@ export default async function MomentsPage({
 
   // PART READ
 
-  const username = params.username;
+  // params and searchParams are awaited in the RC 2
+  const username = params.username; // I need to see what happens if no params are provided here, like users//moments
 
   // error handling needed eventually
   const userFound = await findUserIdByUsername(username);
@@ -71,7 +72,7 @@ export default async function MomentsPage({
 
   if (!userFound) return notFound();
 
-  // extremely important to use user in server actions without null
+  // extremely important in order to use user in server actions without null
   const user = userFound;
 
   const userId = user.id;
