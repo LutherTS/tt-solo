@@ -64,12 +64,14 @@ export default async function MomentsPage({
   // PART READ
 
   // params and searchParams are awaited in the RC 2
-  const username = params.username; // I need to see what happens if no params are provided here, like users//moments
+  const username = params.username; // I need to see what happens if no params are provided here, like users//moments. // It just seems to be a global notFound because even the username console.log does not get triggered, like it doesn't even consider users//moments... Better even, the browser fixes the URL and considers it to be users/moments, an entirely different page. So that is indeed the "global" notFound page at the app level.
+  // console.log({ username });
 
   // error handling needed eventually
   const userFound = await findUserIdByUsername(username);
   // console.log({ userFound });
 
+  // (I also need to do the default for notFound)
   if (!userFound) return notFound();
 
   // extremely important in order to use user in server actions without null
@@ -333,7 +335,7 @@ export default async function MomentsPage({
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. Loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
-    <Suspense fallback={<>Loading...</>}>
+    <Suspense fallback={<p>Loading...</p>}>
       <Main
         allUserMomentsToCRUD={allUserMomentsToCRUD}
         maxPages={maxPages}

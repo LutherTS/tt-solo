@@ -580,7 +580,11 @@ function MomentForms({
   const createOrUpdateMomentAction = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
+    // const x = await
+    // setIsCreateOrUpdateMomentDone(true)
+    // return x
     return await createOrUpdateMomentActionflow(
+      // remove setIsCreateOrUpdateMomentDone from the action-flow
       event,
       startCreateOrUpdateMomentTransition,
       createOrUpdateMoment,
@@ -600,8 +604,9 @@ function MomentForms({
   };
 
   useEffect(() => {
-    if (isCreateOrUpdateMomentDone)
+    if (isCreateOrUpdateMomentDone) {
       createOrUpdateMomentAfterflow(
+        // remove setIsCreateOrUpdateMomentDone from the after-flow
         variant,
         createOrUpdateMomentState,
         endMomentDate,
@@ -611,6 +616,8 @@ function MomentForms({
         setView,
         setIsCreateOrUpdateMomentDone,
       );
+      setIsCreateOrUpdateMomentDone(false);
+    }
   }, [isCreateOrUpdateMomentDone]);
 
   // deleteMomentAction
