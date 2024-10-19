@@ -24,7 +24,7 @@ export default function Layout({
               // THAT'S WHAT I NEED TO SHIFT TO THE CORE VIEWS
               // container can coexist with max-w-4xl
               // pb-12 previously
-              "container min-h-screen w-full overflow-clip px-8 pt-8",
+              "container flex min-h-screen w-full flex-col items-center overflow-clip px-8 pt-8",
               "pb-12",
               // "md:pb-24",
               "lg:max-w-4xl",
