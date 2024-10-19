@@ -67,7 +67,6 @@ export default async function MomentsPage({
   const username = params.username; // I need to see what happens if no params are provided here, like users//moments. // It just seems to be a global notFound because even the username console.log does not get triggered, like it doesn't even consider users//moments... Better even, the browser fixes the URL and considers it to be users/moments, an entirely different page. So that is indeed the "global" notFound page at the app level.
   // console.log({ username });
 
-  // error handling needed eventually
   const userFound = await findUserIdByUsername(username);
   // console.log({ userFound });
 
@@ -82,7 +81,6 @@ export default async function MomentsPage({
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
 
-  // error handling needed eventually
   const [
     userMomentsTotal,
     pastUserMomentsTotal,
@@ -140,7 +138,6 @@ export default async function MomentsPage({
     futureUserMomentsPage,
   ] = pages;
 
-  // error handling needed eventually
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
       findUserMomentsWithContains(userId, contains, userMomentsPage, TAKE),
@@ -262,7 +259,6 @@ export default async function MomentsPage({
   );
   // console.logs on demand...
 
-  // error handling needed eventually
   const userDestinations = await findDestinationsByUserId(userId);
   // console.log({ userDestinations });
 

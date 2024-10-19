@@ -63,7 +63,7 @@ export const activityOptions: Option[] = [
 
 // form defaults
 
-export const STEP_DURATION_DEFAULT = "10";
+export const STEP_DURATION_DEFAULT = "0";
 
 // views and subviews
 

@@ -75,13 +75,13 @@ import {
 } from "@/app/components";
 import * as Icons from "@/app/icons";
 import {
-  deleteStepActionflow,
+  createOrUpdateStepActionflow,
   resetStepActionflow,
+  deleteStepActionflow,
   revalidateMomentsActionflow,
   createOrUpdateMomentActionflow,
-  createOrUpdateStepActionflow,
+  resetMomentActionflow,
   deleteMomentActionflow,
-  resetMomentFormActionflow,
 } from "@/app/flows/client/moments";
 import {
   CONTAINS,
@@ -98,10 +98,9 @@ import {
   MOMENT_FORM_IDS,
 } from "@/app/data/moments";
 import {
-  createOrUpdateMomentAfterflow,
-  createOrUpdateStepAfterflow,
-  deleteMomentAfterflow,
-  resetMomentFormAfterflow,
+  trueCreateOrUpdateMomentAfterflow,
+  trueDeleteMomentAfterflow,
+  trueResetMomentAfterflow,
 } from "@/app/flows/client/afterflows/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
@@ -408,13 +407,14 @@ function ReadMomentsView({
   const revalidateMomentsAction = async (
     event: MouseEvent<HTMLButtonElement>,
   ) => {
-    return await revalidateMomentsActionflow(
-      event,
-      startRevalidateMomentsTransition,
-      revalidateMoments,
-      replace,
-      pathname,
-    );
+    startRevalidateMomentsTransition(async () => {
+      await revalidateMomentsActionflow(
+        event,
+        revalidateMoments,
+        replace,
+        pathname,
+      );
+    });
   };
 
   return (
@@ -544,20 +544,24 @@ function MomentForms({
     currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
   );
 
+  let [stepVisible, setStepVisible] = useState<StepVisible>(
+    !isVariantUpdatingMoment ? "creating" : "create",
+  );
+
   let momentAddingTime = steps.reduce((acc, curr) => {
-    if (curr.id === currentStepId) return acc + +stepDureeUpdate;
+    // it is understood that curr.id === currentStepId can only happen when stepVisible === "updating"
+    if (curr.id === currentStepId && stepVisible === "updating")
+      return acc + +stepDureeUpdate;
     else return acc + +curr.duree;
   }, 0);
+
+  if (stepVisible === "creating") momentAddingTime += +stepDureeCreate;
 
   let endMomentDate = format(
     add(startMomentDate, {
       minutes: momentAddingTime,
     }),
     "yyyy-MM-dd'T'HH:mm",
-  );
-
-  let [stepVisible, setStepVisible] = useState<StepVisible>(
-    !isVariantUpdatingMoment ? "creating" : "create",
   );
 
   let [destinationSelect, setDestinationSelect] = useState(false);
@@ -580,33 +584,30 @@ function MomentForms({
   const createOrUpdateMomentAction = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
-    // const x = await
-    // setIsCreateOrUpdateMomentDone(true)
-    // return x
-    return await createOrUpdateMomentActionflow(
-      // remove setIsCreateOrUpdateMomentDone from the action-flow
-      event,
-      startCreateOrUpdateMomentTransition,
-      createOrUpdateMoment,
-      setCreateOrUpdateMomentState,
-      variant,
-      startMomentDate,
-      steps,
-      moment,
-      destinationSelect,
-      activitySelect,
-      setStartMomentDate,
-      nowRoundedUpTenMinutes,
-      setSteps,
-      setStepVisible,
-      setIsCreateOrUpdateMomentDone,
-    );
+    startCreateOrUpdateMomentTransition(async () => {
+      const state = await createOrUpdateMomentActionflow(
+        event,
+        createOrUpdateMoment,
+        variant,
+        startMomentDate,
+        steps,
+        moment,
+        destinationSelect,
+        activitySelect,
+        setStartMomentDate,
+        nowRoundedUpTenMinutes,
+        setSteps,
+        setStepVisible,
+      );
+
+      setCreateOrUpdateMomentState(state);
+      setIsCreateOrUpdateMomentDone(true);
+    });
   };
 
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
-      createOrUpdateMomentAfterflow(
-        // remove setIsCreateOrUpdateMomentDone from the after-flow
+      trueCreateOrUpdateMomentAfterflow(
         variant,
         createOrUpdateMomentState,
         endMomentDate,
@@ -614,11 +615,42 @@ function MomentForms({
         startMomentDate,
         setSubView,
         setView,
-        setIsCreateOrUpdateMomentDone,
       );
+
       setIsCreateOrUpdateMomentDone(false);
     }
   }, [isCreateOrUpdateMomentDone]);
+
+  // resetMomentFormAction
+
+  const [isResetMomentPending, startResetMomentTransition] = useTransition();
+
+  const [isResetMomentDone, setIsResetMomentDone] = useState(false);
+
+  const resetMomentAction = (event: FormEvent<HTMLFormElement>) => {
+    startResetMomentTransition(() => {
+      if (confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")) {
+        const state = resetMomentActionflow(
+          setStartMomentDate,
+          setSteps,
+          setStepVisible,
+          variant,
+          setInputSwitchKey,
+        );
+
+        setCreateOrUpdateMomentState(state);
+        setIsResetMomentDone(true);
+      } else event.preventDefault();
+    });
+  };
+
+  useEffect(() => {
+    if (isResetMomentDone) {
+      trueResetMomentAfterflow(variant);
+
+      setIsResetMomentDone(false);
+    }
+  }, [isResetMomentDone]);
 
   // deleteMomentAction
 
@@ -627,51 +659,22 @@ function MomentForms({
   const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
 
   const deleteMomentAction = async () => {
-    return await deleteMomentActionflow(
-      startDeleteMomentTransition,
-      deleteMoment,
-      moment,
-      setCreateOrUpdateMomentState,
-      setIsDeleteMomentDone,
-    );
+    startDeleteMomentTransition(async () => {
+      if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
+        const state = await deleteMomentActionflow(deleteMoment, moment);
+
+        setCreateOrUpdateMomentState(state);
+        setIsDeleteMomentDone(true);
+      }
+    });
   };
 
   useEffect(() => {
-    if (isDeleteMomentDone)
-      deleteMomentAfterflow(
-        variant,
-        createOrUpdateMomentState,
-        setView,
-        setIsDeleteMomentDone,
-      );
+    if (isDeleteMomentDone) {
+      trueDeleteMomentAfterflow(variant, createOrUpdateMomentState, setView);
+      setIsDeleteMomentDone(false);
+    }
   }, [isDeleteMomentDone]);
-
-  // resetMomentFormAction
-
-  const [isResetMomentFormPending, startResetMomentFormTransition] =
-    useTransition();
-
-  const [isResetMomentFormDone, setIsResetMomentFormDone] = useState(false);
-
-  // action is (now) completely client, so no need for async
-  const resetMomentFormAction = (event: FormEvent<HTMLFormElement>) => {
-    return resetMomentFormActionflow(
-      event,
-      startResetMomentFormTransition,
-      setStartMomentDate,
-      setSteps,
-      setStepVisible,
-      setCreateOrUpdateMomentState,
-      setIsResetMomentFormDone,
-      variant,
-      setInputSwitchKey,
-    );
-  };
-
-  useEffect(() => {
-    if (isResetMomentFormDone)
-      resetMomentFormAfterflow(variant, setIsResetMomentFormDone);
-  }, [isResetMomentFormDone]);
 
   // addStepAction
 
@@ -736,7 +739,7 @@ function MomentForms({
       />
       <form
         onSubmit={createOrUpdateMomentAction}
-        onReset={resetMomentFormAction}
+        onReset={resetMomentAction}
         id={MOMENT_FORM_IDS[variant].momentForm}
         noValidate
       >
@@ -855,13 +858,13 @@ function MomentForms({
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
               <ConfirmMomentButton
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
               />
               <ResetOrEraseMomentButton
                 variant={variant}
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 deleteMomentAction={deleteMomentAction}
                 isDeleteMomentPending={isDeleteMomentPending}
               />
@@ -870,12 +873,12 @@ function MomentForms({
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
               <ResetOrEraseMomentButton
                 variant={variant}
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 deleteMomentAction={deleteMomentAction}
                 isDeleteMomentPending={isDeleteMomentPending}
               />
               <ConfirmMomentButton
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
               />
@@ -1239,43 +1242,43 @@ function StepForm({
 
   // createOrUpdateStepAction
 
-  const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
-    useState(false);
-
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
-    return createOrUpdateStepActionflow(
-      event,
-      startCreateOrUpdateStepTransition,
-      setCreateOrUpdateMomentState,
-      stepDuree,
-      steps,
-      variant,
-      currentStepId,
-      setSteps,
-      setStepVisible,
-      setIsCreateOrUpdateStepDone,
-    );
-  };
-
-  // no longer animating steps in any way, so currently createOrUpdateStepAfterflow effectively does not do anything
-  useEffect(() => {
-    if (isCreateOrUpdateStepDone)
-      createOrUpdateStepAfterflow(
-        momentFormVariant,
-        setIsCreateOrUpdateStepDone,
+    startCreateOrUpdateStepTransition(() => {
+      const state = createOrUpdateStepActionflow(
+        event,
+        stepDuree,
+        steps,
+        variant,
+        currentStepId,
+        setSteps,
+        setStepVisible,
       );
-  }, [isCreateOrUpdateStepDone]);
+
+      setCreateOrUpdateMomentState(state);
+    });
+  };
 
   // resetStepAction
 
   const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
-    return resetStepActionflow(
-      event,
-      variant,
-      startResetStepTransition,
-      setStepDuree,
-      setCreateOrUpdateMomentState,
-    );
+    startResetStepTransition(() => {
+      // do not confirm if reset is not triggered by stepFormCreating
+      const noConfirm =
+        // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
+        event.nativeEvent.explicitOriginalTarget?.form?.id !==
+        // triggers confirm only if original intent is from stepFormCreating
+        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
+      if (
+        // Attention please: this right here HARD LEVEL JAVASCRIPT.
+        noConfirm ||
+        confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
+      ) {
+        resetStepActionflow(setStepDuree);
+
+        setCreateOrUpdateMomentState(null);
+      } else event.preventDefault();
+    });
   };
 
   return (
@@ -1505,14 +1508,13 @@ function ReorderItem({
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
   const deleteStepAction = () => {
-    return deleteStepActionflow(
-      startDeleteStepTransition,
-      steps,
-      currentStepId,
-      setSteps,
-      setStepVisible,
-      setCreateOrUpdateMomentState,
-    );
+    startDeleteStepTransition(() => {
+      if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
+        deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
+
+        setCreateOrUpdateMomentState(null);
+      }
+    });
   };
 
   // restoreStepAction
@@ -1662,7 +1664,10 @@ function StepsSummaries({
           <p className="font-semibold">
             <span className="font-medium text-neutral-800">à</span>{" "}
             <span
-              className={clsx(stepVisible === "updating" && "text-neutral-400")}
+              className={clsx(
+                stepVisible === "updating" ||
+                  (stepVisible === "creating" && "text-neutral-400"),
+              )}
             >
               {format(endMomentDate, "HH:mm")}
             </span>
@@ -1675,7 +1680,8 @@ function StepsSummaries({
             <span>
               <span
                 className={clsx(
-                  stepVisible === "updating" && "text-neutral-400",
+                  stepVisible === "updating" ||
+                    (stepVisible === "creating" && "text-neutral-400"),
                 )}
               >
                 {numStringToTimeString(momentAddingTime.toString())}
@@ -1824,11 +1830,11 @@ function StepVisibleCreate({
 }
 
 function ConfirmMomentButton({
-  isResetMomentFormPending,
+  isResetMomentPending,
   isDeleteMomentPending,
   isCreateOrUpdateMomentPending,
 }: {
-  isResetMomentFormPending: boolean;
+  isResetMomentPending: boolean;
   isDeleteMomentPending: boolean;
   isCreateOrUpdateMomentPending: boolean;
 }) {
@@ -1837,7 +1843,7 @@ function ConfirmMomentButton({
       type="submit"
       variant="confirm"
       disabled={
-        isResetMomentFormPending ||
+        isResetMomentPending ||
         isDeleteMomentPending ||
         isCreateOrUpdateMomentPending
       }
@@ -1850,12 +1856,12 @@ function ConfirmMomentButton({
 
 function ResetOrEraseMomentButton({
   variant,
-  isResetMomentFormPending,
+  isResetMomentPending,
   deleteMomentAction,
   isDeleteMomentPending,
 }: {
   variant: string;
-  isResetMomentFormPending: boolean;
+  isResetMomentPending: boolean;
   deleteMomentAction: () => Promise<void>;
   isDeleteMomentPending: boolean;
 }) {
@@ -1868,7 +1874,7 @@ function ResetOrEraseMomentButton({
               <Button
                 type="reset"
                 variant="cancel"
-                disabled={isResetMomentFormPending}
+                disabled={isResetMomentPending}
               >
                 Réinitialiser le moment
               </Button>

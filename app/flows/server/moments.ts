@@ -208,7 +208,6 @@ export const createOrUpdateMomentFlow = async (
 
     // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their own if statements.
 
-    // error handling needed eventually
     const destinationEntry = await findDestinationIdByNameAndUserId(
       destination,
       userId,
@@ -219,7 +218,6 @@ export const createOrUpdateMomentFlow = async (
     if (destinationEntry) {
       const destinationId = destinationEntry.id;
 
-      // error handling needed eventually
       moment = await createMomentFromFormData(
         activite,
         objectif,
@@ -231,7 +229,6 @@ export const createOrUpdateMomentFlow = async (
         userId,
       );
     } else {
-      // error handling needed eventually
       moment = await createMomentAndDestination(
         activite,
         objectif,
@@ -262,7 +259,6 @@ export const createOrUpdateMomentFlow = async (
 
     let momentId = momentFromCRUD.id;
 
-    // error handling needed eventually
     const destinationEntry = await findDestinationIdByNameAndUserId(
       destination,
       userId,
@@ -273,7 +269,6 @@ export const createOrUpdateMomentFlow = async (
     if (destinationEntry) {
       const destinationId = destinationEntry.id;
 
-      // error handling needed eventually
       moment = await updateMomentFromFormData(
         activite,
         objectif,
@@ -286,7 +281,6 @@ export const createOrUpdateMomentFlow = async (
         userId,
       );
     } else {
-      // error handling needed eventually
       moment = await updateMomentAndDestination(
         activite,
         objectif,
@@ -302,7 +296,6 @@ export const createOrUpdateMomentFlow = async (
 
     momentId = moment.id;
 
-    // error handling needed eventually
     await deleteMomentStepsByMomentId(momentId);
 
     await createStepsInCreateOrUpdateMomentFlow(
@@ -342,7 +335,6 @@ const createStepsInCreateOrUpdateMomentFlow = async (
       add(momentDate, { minutes: stepsCompoundDurations[j] }),
     );
 
-    // error handling needed eventually
     await createStepFromSteps(
       i,
       step.intitule,
@@ -369,7 +361,6 @@ export const deleteMomentFlow = async (
 
   const momentId = momentFromCRUD.id;
 
-  // error handling needed eventually
   await deleteMomentByMomentId(momentId);
 
   const username = user.username;
