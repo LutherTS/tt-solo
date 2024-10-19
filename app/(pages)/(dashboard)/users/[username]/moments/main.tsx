@@ -98,9 +98,9 @@ import {
   MOMENT_FORM_IDS,
 } from "@/app/data/moments";
 import {
-  trueCreateOrUpdateMomentAfterflow,
-  trueDeleteMomentAfterflow,
-  trueResetMomentAfterflow,
+  createOrUpdateMomentAfterflow,
+  deleteMomentAfterflow,
+  resetMomentAfterflow,
 } from "@/app/flows/client/afterflows/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
@@ -607,7 +607,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
-      trueCreateOrUpdateMomentAfterflow(
+      createOrUpdateMomentAfterflow(
         variant,
         createOrUpdateMomentState,
         endMomentDate,
@@ -646,7 +646,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isResetMomentDone) {
-      trueResetMomentAfterflow(variant);
+      resetMomentAfterflow(variant);
 
       setIsResetMomentDone(false);
     }
@@ -671,7 +671,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      trueDeleteMomentAfterflow(variant, createOrUpdateMomentState, setView);
+      deleteMomentAfterflow(variant, createOrUpdateMomentState, setView);
       setIsDeleteMomentDone(false);
     }
   }, [isDeleteMomentDone]);

@@ -13,7 +13,7 @@ import { SetState } from "@/app/types/globals";
 // scrolls back to the section of the form that possesses new errors
 // or to the correct subView when successfully submitted
 // (every time createOrUpdateMomentAction is done)
-export const trueCreateOrUpdateMomentAfterflow = (
+export const createOrUpdateMomentAfterflow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   endMomentDate: string,
@@ -48,13 +48,13 @@ export const trueCreateOrUpdateMomentAfterflow = (
 
 // scrolls back to yourMoment's section at the top after resetting the form
 // (every time resetMomentFormAction is done)
-export const trueResetMomentAfterflow = (variant: MomentFormVariant) => {
+export const resetMomentAfterflow = (variant: MomentFormVariant) => {
   scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
 };
 
 // scrolls back to yourMoment's section if there's a mistake, or leads to the top of "read-moments" after the moment is successfully deleted
 // (every time deleteMomentAction is done)
-export const trueDeleteMomentAfterflow = (
+export const deleteMomentAfterflow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setView: SetState<View>,
