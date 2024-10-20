@@ -1,7 +1,7 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
-import { CreateOrUpdateMomentState, StepFromCRUD } from "../types/moments";
+import { StepFromCRUD } from "../types/moments";
 import { SetState } from "../types/globals";
 
 // changes a Date object into a input datetime-local string
@@ -131,27 +131,4 @@ export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
   }
 
   return stepsCompoundDurationsArray;
-};
-
-// removeMomentFormErrors and removeStepFormErrors need to be adapted
-
-// currently unused
-export const removeMomentFormErrors = (
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
-): CreateOrUpdateMomentState => {
-  return {
-    ...createOrUpdateMomentState,
-    momentMessages: {},
-    momentErrors: {},
-  };
-};
-
-export const removeStepFormErrors = (
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
-): CreateOrUpdateMomentState => {
-  return {
-    ...createOrUpdateMomentState,
-    stepsMessages: {},
-    stepsErrors: {},
-  };
 };

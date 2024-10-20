@@ -32,9 +32,6 @@ const DEFAULT_MOMENT_MESSAGE =
   "Erreurs sur le renseignement moment du formulaire.";
 const DEFAULT_MOMENT_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
 
-const NO_STEPS_ERROR_MESSAGE =
-  "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.";
-
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
 
 // commencer par dupliquer en momentErrors et stepsErrors
