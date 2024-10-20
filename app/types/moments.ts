@@ -86,30 +86,49 @@ export type CreateOrUpdateMoment = (
   activitySelect: boolean,
 ) => Promise<CreateOrUpdateMomentState>;
 
+type FormMessages = {
+  message?: string;
+  subMessage?: string;
+};
+
+type MomentMessages = FormMessages;
+
+type StepsMessages = FormMessages;
+
 // The type of the return of createOrUpdateMoment as it is being shared between the server and the client.
 // It is then reused between createOrUpdateMoment on the server and the type CreateOrUpdateMoment made on the client.
 // Then, MANUALLY I do insist, I need to make sure that the arguments on createOrUpdateMoment and CreateOrUpdateMoment are exactly the same. (In fact, they're meant to be directly copypastable between one another.)
 // This type allows to manually define beforehand exactly what the return should be between the server and the client so that whoever works with the action knows exactly they could output.
 // For example, changing null to void, I went back to createOrUpdateMoment and removed the last return, then went the useState of createOrUpdateMomentState, and initiated it with literally no argument.
 // Then when it became kind of imperative that a null should be returned, I changed void to null here and did the relevant changes across the server and the client.
+// ...
+// IMPORTANT
+// I'm gonna have to evolve CreateOrUpdateMomentState so that it includes a priority towards where it needs to scroll to after an error, because now I'm going to allow both momentMessage and stepsMessage stuff to remain.
+// It's a completely different way to operate with this state, and since I'm even going to have to touch on how it is made, I'm gonna need to address pretty much everything related to it.
+// Et il faut aussi que le travail des erreurs se fasse dans les deux sens...
+// ...Looking at my afterflows I don't think I'll actually need errorScrollPriority since it's only the top form that actually does a priority scrolling and I've already established this priority in the afterflow.
+// What I will need however, is a complete revamp of errors that clearly separates between momentErrors and stepsErrors, so that I don't have to always, always modify both when I only one to modify one. Let's go.
 export type CreateOrUpdateMomentState = {
+  momentMessages?: MomentMessages;
+  stepsMessages?: StepsMessages;
   momentMessage?: string;
   momentSubMessage?: string;
   stepsMessage?: string;
   stepsSubMessage?: string;
-  errors?: {
-    // moment
+  momentErrors?: {
     destinationName?: string[];
     momentActivity?: string[];
     momentName?: string[];
     momentIsIndispensable?: string[];
     momentDescription?: string[];
     momentStartDateAndTime?: string[];
-    // step
+  };
+  stepsErrors?: {
     stepName?: string[];
     stepDescription?: string[];
     realStepDuration?: string[];
   };
+  errorScrollPriority?: "moment" | "steps";
 } | null;
 
 export type DeleteMoment = (

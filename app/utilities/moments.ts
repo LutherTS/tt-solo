@@ -133,6 +133,8 @@ export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
   return stepsCompoundDurationsArray;
 };
 
+// removeMomentFormErrors and removeStepFormErrors need to be adapted
+
 // currently unused
 export const removeMomentFormErrors = (
   createOrUpdateMomentState: CreateOrUpdateMomentState,
@@ -141,15 +143,7 @@ export const removeMomentFormErrors = (
     ...createOrUpdateMomentState,
     momentMessage: undefined,
     momentSubMessage: undefined,
-    errors: {
-      ...createOrUpdateMomentState?.errors,
-      destinationName: undefined,
-      momentActivity: undefined,
-      momentName: undefined,
-      momentIsIndispensable: undefined,
-      momentDescription: undefined,
-      momentStartDateAndTime: undefined,
-    },
+    momentErrors: {},
   };
 };
 
@@ -160,11 +154,6 @@ export const removeStepFormErrors = (
     ...createOrUpdateMomentState,
     stepsMessage: undefined,
     stepsSubMessage: undefined,
-    errors: {
-      ...createOrUpdateMomentState?.errors,
-      stepName: undefined,
-      stepDescription: undefined,
-      realStepDuration: undefined,
-    },
+    stepsErrors: {},
   };
 };

@@ -54,7 +54,7 @@ import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
-  removeStepFormErrors,
+  // removeStepFormErrors,
   rotateStates,
   roundTimeUpTenMinutes,
   setScrollToTop,
@@ -93,7 +93,7 @@ import {
   USERMOMENTSPAGE,
   SEARCH_FORM_ID,
   activityOptions,
-  STEP_DURATION_DEFAULT,
+  // STEP_DURATION_DEFAULT,
   subViewTitles,
   viewTitles,
   subViews,
@@ -542,16 +542,14 @@ function MomentForms({
   let [currentStepId, setCurrentStepId] = useState("");
   let currentStep = steps.find((step) => step.id === currentStepId);
 
-  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
-  let [stepDureeCreate, setStepDureeCreate] = useState(
-    steps.length === 0 ? STEP_DURATION_ORIGINAL : STEP_DURATION_DEFAULT,
-  );
-  let [stepDureeUpdate, setStepDureeUpdate] = useState(
-    currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
-  );
-
   let [stepVisible, setStepVisible] = useState<StepVisible>(
     !isVariantUpdatingMoment ? "creating" : "create",
+  );
+
+  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
+  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_ORIGINAL);
+  let [stepDureeUpdate, setStepDureeUpdate] = useState(
+    currentStep ? currentStep.duree : STEP_DURATION_ORIGINAL,
   );
 
   let momentAddingTime = steps.reduce((acc, curr) => {
@@ -605,6 +603,7 @@ function MomentForms({
         nowRoundedUpTenMinutes,
         setSteps,
         setStepVisible,
+        createOrUpdateMomentState,
       );
 
       setCreateOrUpdateMomentState(state);
@@ -692,7 +691,7 @@ function MomentForms({
   const addStepAction = () => {
     startAddStepTransition(() => {
       setStepVisible("creating");
-      setStepDureeCreate(STEP_DURATION_DEFAULT);
+      setStepDureeCreate(STEP_DURATION_ORIGINAL);
     });
   };
 
@@ -703,9 +702,11 @@ function MomentForms({
   const cancelStepAction = () => {
     startCancelStepTransition(() => {
       setStepVisible("create");
-      setStepDureeCreate(STEP_DURATION_DEFAULT);
+      setStepDureeCreate(STEP_DURATION_ORIGINAL);
       // I want to only cancel the step part of the state
-      setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+      // but chilling for now...
+      // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+      setCreateOrUpdateMomentState(null);
     });
   };
 
@@ -727,11 +728,13 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
+        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeCreate}
         setStepDuree={setStepDureeCreate}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
         startResetStepTransition={startResetStepTransition}
+        createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <StepForm
@@ -740,11 +743,13 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
+        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeUpdate}
         setStepDuree={setStepDureeUpdate}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         startResetStepTransition={startResetStepTransition}
+        createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <form
@@ -1226,11 +1231,13 @@ function StepForm({
   currentStepId,
   steps,
   setSteps,
+  stepVisible,
   setStepVisible,
   stepDuree,
   setStepDuree,
   startCreateOrUpdateStepTransition,
   startResetStepTransition,
+  createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
 }: {
   variant: StepFormVariant;
@@ -1238,11 +1245,13 @@ function StepForm({
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: SetState<StepFromCRUD[]>;
+  stepVisible: StepVisible;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   startResetStepTransition: TransitionStartFunction;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
 }) {
   const stepFormId =
@@ -1262,6 +1271,7 @@ function StepForm({
         currentStepId,
         setSteps,
         setStepVisible,
+        createOrUpdateMomentState,
       );
 
       setCreateOrUpdateMomentState(state);
@@ -1279,16 +1289,16 @@ function StepForm({
         // triggers confirm only if original intent is from stepFormCreating
         MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
-      const noSteps = steps.length === 0;
-
       if (
         // Attention please: this right here HARD LEVEL JAVASCRIPT.
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        resetStepActionflow(setStepDuree, noSteps);
+        resetStepActionflow(setStepDuree);
 
-        setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+        // chilling...
+        // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+        setCreateOrUpdateMomentState(null);
       } else event.preventDefault();
     });
   };
@@ -1348,7 +1358,7 @@ function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.errors?.destinationName}
+        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
         hidden={destinationSelect}
       >
         {destinationOptions.length > 0 && (
@@ -1377,7 +1387,7 @@ function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.errors?.destinationName}
+        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
         hidden={!destinationSelect}
       >
         <Button
@@ -1396,7 +1406,7 @@ function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentActivity}
+        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
         hidden={activitySelect}
       >
         <Button
@@ -1421,7 +1431,7 @@ function MomentInputs({
         options={activityOptions}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentActivity}
+        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
         hidden={!activitySelect}
       >
         <Button
@@ -1438,7 +1448,7 @@ function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
         description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentName}
+        errors={createOrUpdateMomentState?.momentErrors?.momentName}
       />
       <InputSwitch
         key={inputSwitchKey}
@@ -1449,7 +1459,7 @@ function MomentInputs({
         }
         description="Activez l'interrupteur si ce moment est d'une importance incontournable."
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
+        errors={createOrUpdateMomentState?.momentErrors?.momentIsIndispensable}
       />
       <Textarea
         label="Contexte"
@@ -1458,7 +1468,7 @@ function MomentInputs({
         description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
         rows={6}
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentDescription}
+        errors={createOrUpdateMomentState?.momentErrors?.momentDescription}
       />
       <InputDatetimeLocalControlled
         label="Date et heure"
@@ -1467,7 +1477,7 @@ function MomentInputs({
         definedValue={startMomentDate}
         definedOnValueChange={setStartMomentDate}
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
+        errors={createOrUpdateMomentState?.momentErrors?.momentStartDateAndTime}
       />
     </>
   );
@@ -1524,7 +1534,9 @@ function ReorderItem({
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
         deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
 
-        setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+        // chilling...
+        // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+        setCreateOrUpdateMomentState(null);
       }
     });
   };
@@ -1550,7 +1562,9 @@ function ReorderItem({
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);
       setStepDureeUpdate(step.duree);
-      setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+      // chilling...
+      // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
+      setCreateOrUpdateMomentState(null);
       setStepVisible("updating");
     });
   };
@@ -1932,7 +1946,7 @@ function StepInputs({
         defaultValue={step?.intitule}
         description="Définissez simplement le sujet de l'étape."
         required={false}
-        errors={createOrUpdateMomentState?.errors?.stepName}
+        errors={createOrUpdateMomentState?.stepsErrors?.stepName}
       />
       <Textarea
         form={form}
@@ -1942,7 +1956,7 @@ function StepInputs({
         description="Expliquez en détails le déroulé de l'étape."
         rows={4}
         required={false}
-        errors={createOrUpdateMomentState?.errors?.stepDescription}
+        errors={createOrUpdateMomentState?.stepsErrors?.stepDescription}
       />
       <InputNumberControlled
         form={form}
@@ -1953,7 +1967,7 @@ function StepInputs({
         description="Renseignez en minutes la longueur de l'étape."
         min="5"
         required={false}
-        errors={createOrUpdateMomentState?.errors?.realStepDuration}
+        errors={createOrUpdateMomentState?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
       />
     </>

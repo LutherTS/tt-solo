@@ -23,14 +23,16 @@ export const createOrUpdateMomentAfterflow = (
   setView: SetState<View>,
 ) => {
   if (createOrUpdateMomentState) {
-    // A truthy createOrUpdateMomentState returns with either a momentMessage or a stepsMessage, not both. If by accident both are returned, momentMessage is handled first. If by accident none are returned (in a truthy createOrUpdateMomentState), nothing is expected to happen at this time.
-    if (createOrUpdateMomentState.momentMessage) {
-      scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
-      // all of these could simply be at the end of the afterflow's useEffect instead of being inside the afterflow
-    }
+    switch (createOrUpdateMomentState.errorScrollPriority) {
+      case "moment":
+        scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+        break;
+      case "steps":
+        scrollToSection(MOMENT_FORM_IDS[variant].itsSteps);
+        break;
 
-    if (createOrUpdateMomentState.stepsMessage) {
-      scrollToSection(MOMENT_FORM_IDS[variant].itsSteps);
+      default:
+        break;
     }
   } else {
     // this now works thanks to export const dynamic = "force-dynamic";

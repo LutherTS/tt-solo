@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import {
   MOMENT_FORM_IDS,
-  STEP_DURATION_DEFAULT,
+  // STEP_DURATION_DEFAULT,
   STEP_DURATION_ORIGINAL,
 } from "@/app/data/moments";
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
+  // removeStepFormErrors,
   roundTimeUpTenMinutes,
 } from "@/app/utilities/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
@@ -33,13 +34,14 @@ export const revalidateMomentsActionflow = async (
   revalidateMoments: () => Promise<void>,
   replace: (href: string, options?: NavigateOptions) => void,
   pathname: string,
-) => {
+): Promise<void> => {
   const button = event.currentTarget;
   await revalidateMoments();
   replace(`${pathname}`);
   button.form?.reset(); // Indeed. Better for type safety.
 };
 
+// best be to prepare the state right here
 export const createOrUpdateMomentActionflow = async (
   event: FormEvent<HTMLFormElement>,
   createOrUpdateMoment: CreateOrUpdateMoment,
@@ -53,6 +55,7 @@ export const createOrUpdateMomentActionflow = async (
   nowRoundedUpTenMinutes: string,
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
 ): Promise<CreateOrUpdateMomentState> => {
   event.preventDefault();
 
@@ -66,9 +69,12 @@ export const createOrUpdateMomentActionflow = async (
     destinationSelect,
     activitySelect,
   );
-  const state = await createOrUpdateMomentBound();
+  let state = await createOrUpdateMomentBound();
 
   if (state) {
+    // now I've got something to do
+    // let's first state with the following:
+    state = { ...createOrUpdateMomentState, ...state };
   } else {
     if (variant === "creating") {
       setStartMomentDate(nowRoundedUpTenMinutes);
@@ -139,6 +145,7 @@ export const createOrUpdateStepActionflow = (
   currentStepId: string,
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
 ): CreateOrUpdateMomentState => {
   event.preventDefault();
 
@@ -152,6 +159,8 @@ export const createOrUpdateStepActionflow = (
     typeof duree !== "string"
   ) {
     return {
+      // for now we's just gonna chill
+      // ...createOrUpdateMomentState,
       stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
       stepsSubMessage:
         "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
@@ -171,10 +180,22 @@ export const createOrUpdateStepActionflow = (
   });
 
   if (!validatedFields.success) {
+    const fieldErrors = validatedFields.error.flatten().fieldErrors;
+    // getting it chilling for now
+    // const stepFormErrorsRemoved = removeStepFormErrors(
+    //   createOrUpdateMomentState,
+    // );
+    // const errors = stepFormErrorsRemoved?.errors
+    //   ? Object.assign(stepFormErrorsRemoved.errors, fieldErrors)
+    //   : fieldErrors;
+
     return {
+      // ...createOrUpdateMomentState,
       stepsMessage: DEFAULT_STEP_MESSAGE,
       stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
-      errors: validatedFields.error.flatten().fieldErrors,
+      // I'm keeping fieldErrors for now though and might implement everywhere
+      // errors: fieldErrors,
+      stepsErrors: fieldErrors,
     };
   }
 
@@ -183,23 +204,36 @@ export const createOrUpdateStepActionflow = (
   const stepsIntitules = steps.map((e) => e.intitule);
   const stepsDetails = steps.map((e) => e.details);
 
+  // Ça va devenir lourd donc franchement il faut un bouton qui puisse effacer les erreurs.
+  // Mais pour l'heure oui, il faut s'assurer que le système actuel marche correctement.
+  // ...Et sincèrement j'aimerais vraiment avoir un petit afterflow sur le formulaire.
   if (stepsIntitules.includes(stepName) && variant === "creating") {
+    let errors = {
+      stepName: [
+        "Vous ne pouvez pas créer deux étapes du même nom sur le même moment.",
+      ],
+    };
+
+    // chilling again for now...
+    // errors = createOrUpdateMomentState?.errors
+    //   ? Object.assign(createOrUpdateMomentState.errors, errors)
+    //   : errors;
+
     return {
+      // ...createOrUpdateMomentState,
       stepsMessage: DEFAULT_STEP_MESSAGE,
       stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
-      errors: {
-        stepName: [
-          "Vous ne pouvez pas créer deux étapes du même nom sur le même moment.",
-        ],
-      },
+      stepsErrors: errors,
     };
   }
 
   if (stepsDetails.includes(stepDescription) && variant === "creating") {
     return {
+      // chilling...
+      // ...createOrUpdateMomentState,
       stepsMessage: DEFAULT_STEP_MESSAGE,
       stepsSubMessage: DEFAULT_STEP_SUBMESSAGE,
-      errors: {
+      stepsErrors: {
         stepDescription: [
           "Vous ne pouvez pas vraiment créer deux étapes avec les mêmes détails sur le même moment.",
         ],
@@ -233,16 +267,16 @@ export const createOrUpdateStepActionflow = (
   setSteps(newSteps);
   setStepVisible("create");
 
+  // chillng...
+  // return removeStepFormErrors(createOrUpdateMomentState);
   return null;
 };
 
-export const resetStepActionflow = (
-  setStepDuree: SetState<string>,
-  noSteps: boolean,
-) => {
+export const resetStepActionflow = (setStepDuree: SetState<string>): void => {
   // in complement to HTML reset, since duree is controlled
-  if (noSteps) setStepDuree(STEP_DURATION_ORIGINAL);
-  else setStepDuree(STEP_DURATION_DEFAULT);
+  // if (showOriginal) setStepDuree(STEP_DURATION_ORIGINAL);
+  // else setStepDuree(STEP_DURATION_DEFAULT);
+  setStepDuree(STEP_DURATION_ORIGINAL);
 };
 
 export const deleteStepActionflow = (
@@ -250,7 +284,7 @@ export const deleteStepActionflow = (
   currentStepId: string,
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
-) => {
+): void => {
   let newSteps = steps.filter((step) => step.id !== currentStepId);
   setSteps(newSteps);
 

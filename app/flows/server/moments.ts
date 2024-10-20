@@ -20,6 +20,7 @@ import {
   deleteMomentStepsByMomentId,
 } from "../../writes/steps";
 import {
+  CreateOrUpdateMomentState,
   MomentFormVariant,
   MomentToCRUD,
   SelectMomentId,
@@ -36,7 +37,8 @@ const NO_STEPS_ERROR_MESSAGE =
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
 
-// return types not needed as long as its careful connected to the action(s)
+// commencer par dupliquer en momentErrors et stepsErrors
+// the one function so far where errorScrollPriority is needed
 export const createOrUpdateMomentFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
@@ -46,15 +48,16 @@ export const createOrUpdateMomentFlow = async (
   destinationSelect: boolean,
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
-) => {
+): Promise<CreateOrUpdateMomentState> => {
   // in case somehow startMomentDate is not sent correctly
   if (!isValid(new Date(startMomentDate)))
     return {
       momentMessage: DEFAULT_MOMENT_MESSAGE,
       momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-      errors: {
+      momentErrors: {
         momentStartDateAndTime: ["Veuillez saisir une date valide."],
       },
+      errorScrollPriority: "moment",
     };
 
   if (variant === "creating") {
@@ -73,11 +76,12 @@ export const createOrUpdateMomentFlow = async (
       return {
         momentMessage: DEFAULT_MOMENT_MESSAGE,
         momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-        errors: {
+        momentErrors: {
           momentStartDateAndTime: [
             "Vous ne pouvez pas créer un moment qui commence environ plus d'une heure avant sa création.",
           ],
         },
+        errorScrollPriority: "moment",
       };
   }
 
@@ -85,14 +89,18 @@ export const createOrUpdateMomentFlow = async (
     ? formData.getAll("destination")[0]
     : formData.getAll("destination")[1];
   if (destination === null) {
+    // what if, it's at the setting that I do:
+    // ((s) => {return {...s, ...state}})?
+    // One way or the other I can do everything inside the above function of the setter.
     return {
       momentMessage: DEFAULT_MOMENT_MESSAGE,
       momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-      errors: {
+      momentErrors: {
         destinationName: [
           "Veuillez choisir ou alors décrire une destination valide.",
         ],
       },
+      errorScrollPriority: "moment",
     };
   }
 
@@ -103,11 +111,12 @@ export const createOrUpdateMomentFlow = async (
     return {
       momentMessage: DEFAULT_MOMENT_MESSAGE,
       momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-      errors: {
+      momentErrors: {
         destinationName: [
           "Veuillez choisir ou alors décrire une activité valide.",
         ],
       },
+      errorScrollPriority: "moment",
     };
   }
 
@@ -127,6 +136,8 @@ export const createOrUpdateMomentFlow = async (
       momentMessage: "Erreur sur le renseignement du formulaire.",
       momentSubMessage:
         "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
+      momentErrors: {},
+      errorScrollPriority: "moment",
     };
 
   const [
@@ -149,14 +160,22 @@ export const createOrUpdateMomentFlow = async (
     return {
       momentMessage: DEFAULT_MOMENT_MESSAGE,
       momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-      errors: validatedFields.error.flatten().fieldErrors,
+      momentErrors: validatedFields.error.flatten().fieldErrors,
+      errorScrollPriority: "moment",
     };
   }
 
+  // le scroll to step est propre à NO_STEPS_ERROR_MESSAGE, du coup oui, il me faudra error scroll priority
   if (steps.length === 0) {
     return {
+      // The empty string works but it's still not undefined
+      momentMessage: "",
+      momentSubMessage: "",
       stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
       stepsSubMessage: NO_STEPS_ERROR_MESSAGE,
+      momentErrors: {},
+      stepsErrors: {},
+      errorScrollPriority: "steps",
     };
   }
 
@@ -186,6 +205,8 @@ export const createOrUpdateMomentFlow = async (
       momentMessage: "Erreur.",
       momentSubMessage:
         "L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
+      momentErrors: {},
+      errorScrollPriority: "moment",
     };
 
   // That being said though, once authentication is in place I will still need to check if the user is valid at time of the action, if the action mutates the data. (Which honestly is always a prerequisite.)
@@ -201,9 +222,10 @@ export const createOrUpdateMomentFlow = async (
       return {
         momentMessage: DEFAULT_MOMENT_MESSAGE,
         momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
-        errors: {
+        momentErrors: {
           momentName: ["Vous avez déjà un moment de ce même nom."],
         },
+        errorScrollPriority: "moment",
       };
 
     // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their own if statements.
@@ -255,6 +277,8 @@ export const createOrUpdateMomentFlow = async (
       return {
         momentMessage: "Erreur.",
         momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
+        momentErrors: {},
+        errorScrollPriority: "moment",
       };
 
     let momentId = momentFromCRUD.id;

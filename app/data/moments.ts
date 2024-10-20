@@ -73,7 +73,8 @@ export const activityOptions: Option[] = [
 
 export const STEP_DURATION_ORIGINAL = "10";
 
-export const STEP_DURATION_DEFAULT = "0";
+// I've effectively decided not to use STEP_DURATION_DEFAULT of 0
+// export const STEP_DURATION_DEFAULT = "0";
 
 // views and subviews
 
