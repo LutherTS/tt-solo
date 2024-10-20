@@ -141,8 +141,7 @@ export const removeMomentFormErrors = (
 ): CreateOrUpdateMomentState => {
   return {
     ...createOrUpdateMomentState,
-    momentMessage: undefined,
-    momentSubMessage: undefined,
+    momentMessages: {},
     momentErrors: {},
   };
 };
@@ -152,8 +151,7 @@ export const removeStepFormErrors = (
 ): CreateOrUpdateMomentState => {
   return {
     ...createOrUpdateMomentState,
-    stepsMessage: undefined,
-    stepsSubMessage: undefined,
+    stepsMessages: {},
     stepsErrors: {},
   };
 };

@@ -16,6 +16,7 @@ import { SetState } from "@/app/types/globals";
 export const createOrUpdateMomentAfterflow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
   endMomentDate: string,
   now: string,
   startMomentDate: string,
@@ -34,6 +35,12 @@ export const createOrUpdateMomentAfterflow = (
       default:
         break;
     }
+
+    setCreateOrUpdateMomentState((s) => {
+      delete s?.errorScrollPriority;
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete
+      return s;
+    });
   } else {
     // this now works thanks to export const dynamic = "force-dynamic";
     // ...I think

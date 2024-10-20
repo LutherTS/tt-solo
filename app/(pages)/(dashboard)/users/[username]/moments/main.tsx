@@ -617,6 +617,7 @@ function MomentForms({
       createOrUpdateMomentAfterflow(
         variant,
         createOrUpdateMomentState,
+        setCreateOrUpdateMomentState,
         endMomentDate,
         now,
         startMomentDate,
@@ -762,8 +763,8 @@ function MomentForms({
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
           id={MOMENT_FORM_IDS[variant].yourMoment}
-          error={createOrUpdateMomentState?.momentMessage}
-          subError={createOrUpdateMomentState?.momentSubMessage}
+          error={createOrUpdateMomentState?.momentMessages?.message}
+          subError={createOrUpdateMomentState?.momentMessages?.subMessage}
         >
           <MomentInputs
             variant={variant}
@@ -784,8 +785,8 @@ function MomentForms({
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
           id={MOMENT_FORM_IDS[variant].itsSteps}
-          error={createOrUpdateMomentState?.stepsMessage}
-          subError={createOrUpdateMomentState?.stepsSubMessage}
+          error={createOrUpdateMomentState?.stepsMessages?.message}
+          subError={createOrUpdateMomentState?.stepsMessages?.subMessage}
         >
           {steps.length > 0 && (
             <>
@@ -1294,11 +1295,12 @@ function StepForm({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        resetStepActionflow(setStepDuree);
+        const state = resetStepActionflow(
+          setStepDuree,
+          createOrUpdateMomentState,
+        );
 
-        // chilling...
-        // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
-        setCreateOrUpdateMomentState(null);
+        setCreateOrUpdateMomentState(state);
       } else event.preventDefault();
     });
   };

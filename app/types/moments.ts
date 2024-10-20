@@ -107,14 +107,9 @@ type StepsMessages = FormMessages;
 // It's a completely different way to operate with this state, and since I'm even going to have to touch on how it is made, I'm gonna need to address pretty much everything related to it.
 // Et il faut aussi que le travail des erreurs se fasse dans les deux sens...
 // ...Looking at my afterflows I don't think I'll actually need errorScrollPriority since it's only the top form that actually does a priority scrolling and I've already established this priority in the afterflow.
-// What I will need however, is a complete revamp of errors that clearly separates between momentErrors and stepsErrors, so that I don't have to always, always modify both when I only one to modify one. Let's go.
+// What I will need however, is a complete revamp of errors that clearly separates between momentErrors and stepsErrors, so that I don't have to always, always modify both when I only one to modify one. Let's go. // Done.
 export type CreateOrUpdateMomentState = {
   momentMessages?: MomentMessages;
-  stepsMessages?: StepsMessages;
-  momentMessage?: string;
-  momentSubMessage?: string;
-  stepsMessage?: string;
-  stepsSubMessage?: string;
   momentErrors?: {
     destinationName?: string[];
     momentActivity?: string[];
@@ -123,6 +118,7 @@ export type CreateOrUpdateMomentState = {
     momentDescription?: string[];
     momentStartDateAndTime?: string[];
   };
+  stepsMessages?: StepsMessages;
   stepsErrors?: {
     stepName?: string[];
     stepDescription?: string[];

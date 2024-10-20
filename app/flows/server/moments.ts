@@ -39,6 +39,7 @@ const NO_STEPS_ERROR_MESSAGE =
 
 // commencer par dupliquer en momentErrors et stepsErrors
 // the one function so far where errorScrollPriority is needed
+// some (most) errors to me are like showstoppers, they eraser all other errors to single-handedly focus on themselves
 export const createOrUpdateMomentFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
@@ -52,8 +53,10 @@ export const createOrUpdateMomentFlow = async (
   // in case somehow startMomentDate is not sent correctly
   if (!isValid(new Date(startMomentDate)))
     return {
-      momentMessage: DEFAULT_MOMENT_MESSAGE,
-      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      momentMessages: {
+        message: DEFAULT_MOMENT_MESSAGE,
+        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      },
       momentErrors: {
         momentStartDateAndTime: ["Veuillez saisir une date valide."],
       },
@@ -74,8 +77,10 @@ export const createOrUpdateMomentFlow = async (
 
     if (isStartMomentDateBeforeMinFromCurrentNow === 1)
       return {
-        momentMessage: DEFAULT_MOMENT_MESSAGE,
-        momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        momentMessages: {
+          message: DEFAULT_MOMENT_MESSAGE,
+          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        },
         momentErrors: {
           momentStartDateAndTime: [
             "Vous ne pouvez pas créer un moment qui commence environ plus d'une heure avant sa création.",
@@ -93,8 +98,10 @@ export const createOrUpdateMomentFlow = async (
     // ((s) => {return {...s, ...state}})?
     // One way or the other I can do everything inside the above function of the setter.
     return {
-      momentMessage: DEFAULT_MOMENT_MESSAGE,
-      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      momentMessages: {
+        message: DEFAULT_MOMENT_MESSAGE,
+        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      },
       momentErrors: {
         destinationName: [
           "Veuillez choisir ou alors décrire une destination valide.",
@@ -109,8 +116,10 @@ export const createOrUpdateMomentFlow = async (
     : formData.getAll("activite")[1];
   if (activite === null) {
     return {
-      momentMessage: DEFAULT_MOMENT_MESSAGE,
-      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      momentMessages: {
+        message: DEFAULT_MOMENT_MESSAGE,
+        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      },
       momentErrors: {
         destinationName: [
           "Veuillez choisir ou alors décrire une activité valide.",
@@ -133,10 +142,14 @@ export const createOrUpdateMomentFlow = async (
     typeof startMomentDate !== "string"
   )
     return {
-      momentMessage: "Erreur sur le renseignement du formulaire.",
-      momentSubMessage:
-        "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
+      momentMessages: {
+        message: "Erreur sur le renseignement du formulaire.",
+        subMessage:
+          "(Si vous voyez ce message, cela signifie que la cause est sûrement hors de votre contrôle.)",
+      },
       momentErrors: {},
+      stepsMessages: {},
+      stepsErrors: {},
       errorScrollPriority: "moment",
     };
 
@@ -158,8 +171,10 @@ export const createOrUpdateMomentFlow = async (
 
   if (!validatedFields.success) {
     return {
-      momentMessage: DEFAULT_MOMENT_MESSAGE,
-      momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      momentMessages: {
+        message: DEFAULT_MOMENT_MESSAGE,
+        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+      },
       momentErrors: validatedFields.error.flatten().fieldErrors,
       errorScrollPriority: "moment",
     };
@@ -169,11 +184,13 @@ export const createOrUpdateMomentFlow = async (
   if (steps.length === 0) {
     return {
       // The empty string works but it's still not undefined
-      momentMessage: "",
-      momentSubMessage: "",
-      stepsMessage: "Erreur sur le renseignement étapes du formulaire.",
-      stepsSubMessage: NO_STEPS_ERROR_MESSAGE,
+      momentMessages: {},
       momentErrors: {},
+      stepsMessages: {
+        message: "Erreur sur le renseignement étapes du formulaire.",
+        subMessage:
+          "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
+      },
       stepsErrors: {},
       errorScrollPriority: "steps",
     };
@@ -202,10 +219,14 @@ export const createOrUpdateMomentFlow = async (
 
   if (!user)
     return {
-      momentMessage: "Erreur.",
-      momentSubMessage:
-        "L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
+      momentMessages: {
+        message: "Erreur.",
+        subMessage:
+          "L'utilisateur vous correspondant n'a pas été retrouvé en interne.",
+      },
       momentErrors: {},
+      stepsMessages: {},
+      stepsErrors: {},
       errorScrollPriority: "moment",
     };
 
@@ -220,8 +241,10 @@ export const createOrUpdateMomentFlow = async (
 
     if (preexistingMoment)
       return {
-        momentMessage: DEFAULT_MOMENT_MESSAGE,
-        momentSubMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        momentMessages: {
+          message: DEFAULT_MOMENT_MESSAGE,
+          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        },
         momentErrors: {
           momentName: ["Vous avez déjà un moment de ce même nom."],
         },
@@ -275,9 +298,13 @@ export const createOrUpdateMomentFlow = async (
   if (variant === "updating") {
     if (!momentFromCRUD)
       return {
-        momentMessage: "Erreur.",
-        momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
+        momentMessages: {
+          message: "Erreur.",
+          subMessage: "Le moment n'a pas été réceptionné en interne.",
+        },
         momentErrors: {},
+        stepsMessages: {},
+        stepsErrors: {},
         errorScrollPriority: "moment",
       };
 
@@ -376,11 +403,16 @@ const createStepsInCreateOrUpdateMomentFlow = async (
 export const deleteMomentFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
-) => {
+): Promise<CreateOrUpdateMomentState> => {
   if (!momentFromCRUD)
     return {
-      momentMessage: "Erreur.",
-      momentSubMessage: "Le moment n'a pas été réceptionné en interne.",
+      momentMessages: {
+        message: "Erreur.",
+        subMessage: "Le moment n'a pas été réceptionné en interne.",
+      },
+      momentErrors: {},
+      stepsMessages: {},
+      stepsErrors: {},
     };
 
   const momentId = momentFromCRUD.id;
