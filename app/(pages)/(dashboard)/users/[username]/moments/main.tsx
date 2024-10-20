@@ -48,6 +48,7 @@ import {
   MomentsDestinationToCRUD,
   StepToCRUD,
   MomentsDateToCRUD,
+  SearchParamsKey,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -96,6 +97,7 @@ import {
   viewTitles,
   subViews,
   MOMENT_FORM_IDS,
+  STEP_DURATION_ORIGINAL,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -267,7 +269,7 @@ function ReadMomentsView({
     realFutureMoments,
   ] = allUserMomentsToCRUD;
 
-  const realShowcaseMoments = {
+  const realShowcaseMoments: { [K in SubView]: UserMomentsToCRUD } = {
     "all-moments": realAllMoments,
     "past-moments": realPastMoments,
     "current-moments": realCurrentMoments,
@@ -306,12 +308,13 @@ function ReadMomentsView({
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
-  const subViewSearchParams = {
+  const subViewSearchParams: { [K in SubView]: SearchParamsKey } = {
     "all-moments": USERMOMENTSPAGE,
     "past-moments": PASTUSERMOMENTSPAGE,
     "current-moments": CURRENTUSERMOMENTSPAGE,
     "future-moments": FUTUREUSERMOMENTSPAGE,
   };
+
   const [
     maxPageAllMoments,
     maxPagePastMoments,
@@ -319,7 +322,7 @@ function ReadMomentsView({
     maxPageFutureMoments,
   ] = maxPages;
 
-  let subViewMaxPages = {
+  let subViewMaxPages: { [K in SubView]: number } = {
     "all-moments": maxPageAllMoments,
     "past-moments": maxPagePastMoments,
     "current-moments": maxPageCurrentMoments,
@@ -347,7 +350,7 @@ function ReadMomentsView({
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
-    if (params.get(subViewSearchParams[subView]) === "1")
+    if (params.get(subViewSearchParams[subView]) === initialPage.toString())
       params.delete(subViewSearchParams[subView]);
 
     replace(`${pathname}?${params.toString()}`);
@@ -539,7 +542,9 @@ function MomentForms({
   let currentStep = steps.find((step) => step.id === currentStepId);
 
   // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
-  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
+  let [stepDureeCreate, setStepDureeCreate] = useState(
+    steps.length === 0 ? STEP_DURATION_ORIGINAL : STEP_DURATION_DEFAULT,
+  );
   let [stepDureeUpdate, setStepDureeUpdate] = useState(
     currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
   );
@@ -585,6 +590,7 @@ function MomentForms({
     event: FormEvent<HTMLFormElement>,
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
+      // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
       const state = await createOrUpdateMomentActionflow(
         event,
         createOrUpdateMoment,
@@ -607,6 +613,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
+      // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
       createOrUpdateMomentAfterflow(
         variant,
         createOrUpdateMomentState,
@@ -1269,12 +1276,14 @@ function StepForm({
         // triggers confirm only if original intent is from stepFormCreating
         MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
+      const noSteps = steps.length === 0;
+
       if (
         // Attention please: this right here HARD LEVEL JAVASCRIPT.
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        resetStepActionflow(setStepDuree);
+        resetStepActionflow(setStepDuree, noSteps);
 
         setCreateOrUpdateMomentState(null);
       } else event.preventDefault();
@@ -1604,7 +1613,7 @@ function ReorderItem({
             />
             <div>
               {/* Mobile */}
-              <div className="flex w-full flex-col gap-4 md:hidden">
+              <StepFormControlsMobileWrapper>
                 <UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
@@ -1614,9 +1623,9 @@ function ReorderItem({
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                 />
-              </div>
+              </StepFormControlsMobileWrapper>
               {/* Desktop */}
-              <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+              <StepFormControlsDesktopWrapper>
                 <EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
@@ -1626,7 +1635,7 @@ function ReorderItem({
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
                 />
-              </div>
+              </StepFormControlsDesktopWrapper>
             </div>
           </div>
         ) : (
@@ -1665,8 +1674,8 @@ function StepsSummaries({
             <span className="font-medium text-neutral-800">à</span>{" "}
             <span
               className={clsx(
-                stepVisible === "updating" ||
-                  (stepVisible === "creating" && "text-neutral-400"),
+                (stepVisible === "updating" || stepVisible === "creating") &&
+                  "text-neutral-400",
               )}
             >
               {format(endMomentDate, "HH:mm")}
@@ -1680,8 +1689,8 @@ function StepsSummaries({
             <span>
               <span
                 className={clsx(
-                  stepVisible === "updating" ||
-                    (stepVisible === "creating" && "text-neutral-400"),
+                  (stepVisible === "updating" || stepVisible === "creating") &&
+                    "text-neutral-400",
                 )}
               >
                 {numStringToTimeString(momentAddingTime.toString())}
@@ -1756,7 +1765,7 @@ function StepVisibleCreating({
       />
       <div className="flex">
         {/* Mobile */}
-        <div className="flex w-full flex-col gap-4 md:hidden">
+        <StepFormControlsMobileWrapper>
           <Button
             variant="confirm-step"
             form={form}
@@ -1773,9 +1782,9 @@ function StepVisibleCreating({
           >
             Réinitialiser l&apos;étape
           </Button>
-        </div>
+        </StepFormControlsMobileWrapper>
         {/* Desktop */}
-        <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+        <StepFormControlsDesktopWrapper>
           <Button
             variant="cancel-step"
             form={form}
@@ -1792,7 +1801,7 @@ function StepVisibleCreating({
           >
             Confirmer l&apos;étape
           </Button>
-        </div>
+        </StepFormControlsDesktopWrapper>
       </div>
     </motion.div>
   );
@@ -1945,6 +1954,26 @@ function StepInputs({
         schema={EventStepDurationSchema}
       />
     </>
+  );
+}
+
+function StepFormControlsMobileWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <div className="flex w-full flex-col gap-4 md:hidden">{children}</div>;
+}
+
+function StepFormControlsDesktopWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="hidden pt-2 md:ml-auto md:grid md:w-full md:grow md:grid-cols-2 md:gap-4">
+      {children}
+    </div>
   );
 }
 

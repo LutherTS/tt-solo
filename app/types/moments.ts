@@ -1,6 +1,13 @@
 import { Prisma } from "@prisma/client";
 
 import { selectMomentId } from "../reads/subreads/moments";
+import {
+  CONTAINS,
+  CURRENTUSERMOMENTSPAGE,
+  FUTUREUSERMOMENTSPAGE,
+  PASTUSERMOMENTSPAGE,
+  USERMOMENTSPAGE,
+} from "@/app/data/moments";
 
 export type StepFromCRUD = {
   id: string;
@@ -122,3 +129,10 @@ export type MomentFormIds = {
   stepFormCreating: string;
   stepFormUpdating: string;
 };
+
+export type SearchParamsKey =
+  | typeof CONTAINS
+  | typeof USERMOMENTSPAGE
+  | typeof PASTUSERMOMENTSPAGE
+  | typeof CURRENTUSERMOMENTSPAGE
+  | typeof FUTUREUSERMOMENTSPAGE;

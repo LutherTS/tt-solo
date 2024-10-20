@@ -2,7 +2,11 @@ import { FormEvent, MouseEvent } from "react";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { v4 as uuidv4 } from "uuid";
 
-import { MOMENT_FORM_IDS, STEP_DURATION_DEFAULT } from "@/app/data/moments";
+import {
+  MOMENT_FORM_IDS,
+  STEP_DURATION_DEFAULT,
+  STEP_DURATION_ORIGINAL,
+} from "@/app/data/moments";
 import {
   DeleteMoment,
   MomentFormVariant,
@@ -232,9 +236,13 @@ export const createOrUpdateStepActionflow = (
   return null;
 };
 
-export const resetStepActionflow = (setStepDuree: SetState<string>) => {
+export const resetStepActionflow = (
+  setStepDuree: SetState<string>,
+  noSteps: boolean,
+) => {
   // in complement to HTML reset, since duree is controlled
-  setStepDuree(STEP_DURATION_DEFAULT);
+  if (noSteps) setStepDuree(STEP_DURATION_ORIGINAL);
+  else setStepDuree(STEP_DURATION_DEFAULT);
 };
 
 export const deleteStepActionflow = (
