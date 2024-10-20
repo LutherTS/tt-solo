@@ -1,7 +1,7 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
-import { StepFromCRUD } from "../types/moments";
+import { CreateOrUpdateMomentState, StepFromCRUD } from "../types/moments";
 import { SetState } from "../types/globals";
 
 // changes a Date object into a input datetime-local string
@@ -131,4 +131,40 @@ export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
   }
 
   return stepsCompoundDurationsArray;
+};
+
+// currently unused
+export const removeMomentFormErrors = (
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+): CreateOrUpdateMomentState => {
+  return {
+    ...createOrUpdateMomentState,
+    momentMessage: undefined,
+    momentSubMessage: undefined,
+    errors: {
+      ...createOrUpdateMomentState?.errors,
+      destinationName: undefined,
+      momentActivity: undefined,
+      momentName: undefined,
+      momentIsIndispensable: undefined,
+      momentDescription: undefined,
+      momentStartDateAndTime: undefined,
+    },
+  };
+};
+
+export const removeStepFormErrors = (
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+): CreateOrUpdateMomentState => {
+  return {
+    ...createOrUpdateMomentState,
+    stepsMessage: undefined,
+    stepsSubMessage: undefined,
+    errors: {
+      ...createOrUpdateMomentState?.errors,
+      stepName: undefined,
+      stepDescription: undefined,
+      realStepDuration: undefined,
+    },
+  };
 };
