@@ -54,6 +54,7 @@ import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
+  removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
   rotateStates,
   roundTimeUpTenMinutes,
@@ -761,6 +762,10 @@ function MomentForms({
           id={MOMENT_FORM_IDS[variant].yourMoment}
           error={createOrUpdateMomentState?.momentMessages?.message}
           subError={createOrUpdateMomentState?.momentMessages?.subMessage}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+          removeMessagesAndErrorsCallback={
+            removeMomentMessagesAndErrorsCallback
+          }
         >
           <MomentInputs
             variant={variant}
@@ -783,6 +788,8 @@ function MomentForms({
           id={MOMENT_FORM_IDS[variant].itsSteps}
           error={createOrUpdateMomentState?.stepsMessages?.message}
           subError={createOrUpdateMomentState?.stepsMessages?.subMessage}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+          removeMessagesAndErrorsCallback={removeStepsMessagesAndErrorsCallback}
         >
           {steps.length > 0 && (
             <>

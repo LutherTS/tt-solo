@@ -133,9 +133,16 @@ export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
   return stepsCompoundDurationsArray;
 };
 
-// clean createOrUpdateMomentState from its steps-related properties only, leaving moment-related properties untouched
+// cleans createOrUpdateMomentState from its steps-related properties only, leaving moment-related properties untouched
 export const removeStepsMessagesAndErrorsCallback = (
   s: CreateOrUpdateMomentState,
 ) => {
   return { ...s, stepsMessages: {}, stepsErrors: {} };
+};
+
+// same as above but for the moment part of the form
+export const removeMomentMessagesAndErrorsCallback = (
+  s: CreateOrUpdateMomentState,
+) => {
+  return { ...s, momentMessages: {}, momentErrors: {} };
 };
