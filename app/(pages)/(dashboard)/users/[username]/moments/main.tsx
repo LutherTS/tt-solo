@@ -54,6 +54,7 @@ import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
+  removeStepsMessagesAndErrorsCallback,
   rotateStates,
   roundTimeUpTenMinutes,
   setScrollToTop,
@@ -702,10 +703,7 @@ function MomentForms({
     startCancelStepTransition(() => {
       setStepVisible("create");
       setStepDureeCreate(STEP_DURATION_ORIGINAL);
-      // I want to only cancel the step part of the state
-      // but chilling for now...
-      // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
-      setCreateOrUpdateMomentState(null);
+      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
     });
   };
 
@@ -1533,10 +1531,7 @@ function ReorderItem({
     startDeleteStepTransition(() => {
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
         deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
-
-        // chilling...
-        // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
-        setCreateOrUpdateMomentState(null);
+        setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       }
     });
   };
@@ -1550,6 +1545,7 @@ function ReorderItem({
     startRestoreStepTransition(() => {
       setStepVisible("create");
       setCurrentStepId("");
+      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
     });
   };
 
@@ -1562,9 +1558,7 @@ function ReorderItem({
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);
       setStepDureeUpdate(step.duree);
-      // chilling...
-      // setCreateOrUpdateMomentState((s) => removeStepFormErrors(s));
-      setCreateOrUpdateMomentState(null);
+      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       setStepVisible("updating");
     });
   };
