@@ -9,6 +9,14 @@ export const PASTUSERMOMENTSPAGE = "pastusermomentspage" as const;
 export const CURRENTUSERMOMENTSPAGE = "currentusermomentspage" as const;
 export const FUTUREUSERMOMENTSPAGE = "futureusermomentspage" as const;
 
+export const SEARCH_PARAMS_KEYS = [
+  CONTAINS,
+  USERMOMENTSPAGE,
+  PASTUSERMOMENTSPAGE,
+  CURRENTUSERMOMENTSPAGE,
+  FUTUREUSERMOMENTSPAGE,
+] as const;
+
 // HTML ids
 
 export const SEARCH_FORM_ID = "search-form";
@@ -63,7 +71,10 @@ export const activityOptions: Option[] = [
 
 // form defaults
 
-export const STEP_DURATION_DEFAULT = "10";
+export const STEP_DURATION_ORIGINAL = "10";
+
+// I've effectively decided not to use STEP_DURATION_DEFAULT of 0
+// export const STEP_DURATION_DEFAULT = "0";
 
 // views and subviews
 

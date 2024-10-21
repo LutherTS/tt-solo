@@ -64,12 +64,13 @@ export default async function MomentsPage({
   // PART READ
 
   // params and searchParams are awaited in the RC 2
-  const username = params.username; // I need to see what happens if no params are provided here, like users//moments
+  const username = params.username; // I need to see what happens if no params are provided here, like users//moments. // It just seems to be a global notFound because even the username console.log does not get triggered, like it doesn't even consider users//moments... Better even, the browser fixes the URL and considers it to be users/moments, an entirely different page. So that is indeed the "global" notFound page at the app level.
+  // console.log({ username });
 
-  // error handling needed eventually
   const userFound = await findUserIdByUsername(username);
   // console.log({ userFound });
 
+  // (I also need to do the default for notFound)
   if (!userFound) return notFound();
 
   // extremely important in order to use user in server actions without null
@@ -80,7 +81,6 @@ export default async function MomentsPage({
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
 
-  // error handling needed eventually
   const [
     userMomentsTotal,
     pastUserMomentsTotal,
@@ -138,7 +138,6 @@ export default async function MomentsPage({
     futureUserMomentsPage,
   ] = pages;
 
-  // error handling needed eventually
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
       findUserMomentsWithContains(userId, contains, userMomentsPage, TAKE),
@@ -260,7 +259,6 @@ export default async function MomentsPage({
   );
   // console.logs on demand...
 
-  // error handling needed eventually
   const userDestinations = await findDestinationsByUserId(userId);
   // console.log({ userDestinations });
 
@@ -332,7 +330,8 @@ export default async function MomentsPage({
   // However, if the actions were obtained via import in a client component such as the one below, user data would have to be bound directly on the client component itself (which is insecure) or via a separate child server component (perhaps secure, but an exact step for that data) which would also have to pass these actions as props, doing the exact same thing.
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
-    <Suspense>
+    // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. Loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
+    <Suspense fallback={<p>Loading...</p>}>
       <Main
         allUserMomentsToCRUD={allUserMomentsToCRUD}
         maxPages={maxPages}

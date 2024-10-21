@@ -28,6 +28,7 @@ export default function Layout({
               "pb-12",
               // "md:pb-24",
               "lg:max-w-4xl",
+              "flex flex-col",
             )}
           >
             {/* Page Contents */}

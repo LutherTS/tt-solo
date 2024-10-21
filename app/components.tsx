@@ -9,6 +9,7 @@ import { isValid } from "date-fns";
 import * as Icons from "@/app/icons";
 import { SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "./validations/steps";
+import { CreateOrUpdateMomentState } from "./types/moments";
 
 // Variables
 
@@ -72,21 +73,60 @@ export function NoDateCard({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
 }
 
-function FormValidationError({ error }: { error: string }) {
-  return <p className="max-w-prose text-sm text-pink-500">{error}</p>;
+function FormValidationError({
+  error,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
+}: {
+  error: string;
+  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: CreateOrUpdateMomentState,
+  ) => CreateOrUpdateMomentState; // could be more precise but true
+}) {
+  function handleClick() {
+    if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
+      setCreateOrUpdateMomentState(removeMessagesAndErrorsCallback);
+  }
+
+  return (
+    <p
+      className={clsx(
+        "max-w-prose text-sm text-pink-500",
+        setCreateOrUpdateMomentState &&
+          removeMessagesAndErrorsCallback &&
+          "hover:cursor-pointer",
+      )}
+      onClick={handleClick}
+    >
+      {error}
+    </p>
+  );
 }
 
 function FormDescriptionOrError({
   error,
   description,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
 }: {
   error?: string;
   description: string;
+  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: CreateOrUpdateMomentState,
+  ) => CreateOrUpdateMomentState;
 }) {
   return (
     <>
-      {error ? (
-        <FormValidationError error={error} />
+      {error &&
+      setCreateOrUpdateMomentState &&
+      removeMessagesAndErrorsCallback ? (
+        <FormValidationError
+          error={error}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+          removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
+        />
       ) : (
         <p className="max-w-prose text-sm text-neutral-500">{description}</p>
       )}
@@ -103,6 +143,8 @@ export function Section({
   id,
   error,
   subError,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
   children,
 }: {
   title?: string;
@@ -113,6 +155,10 @@ export function Section({
   id?: string;
   error?: string;
   subError?: string;
+  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: CreateOrUpdateMomentState,
+  ) => CreateOrUpdateMomentState;
   children: React.ReactNode;
 }) {
   return (
@@ -135,6 +181,10 @@ export function Section({
                 <FormDescriptionOrError
                   error={error}
                   description={description}
+                  setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+                  removeMessagesAndErrorsCallback={
+                    removeMessagesAndErrorsCallback
+                  }
                 />
               )}
               {subError ? (

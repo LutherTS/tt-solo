@@ -48,11 +48,14 @@ import {
   MomentsDestinationToCRUD,
   StepToCRUD,
   MomentsDateToCRUD,
+  SearchParamsKey,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
+  removeMomentMessagesAndErrorsCallback,
+  removeStepsMessagesAndErrorsCallback,
   rotateStates,
   roundTimeUpTenMinutes,
   setScrollToTop,
@@ -75,13 +78,13 @@ import {
 } from "@/app/components";
 import * as Icons from "@/app/icons";
 import {
-  deleteStepActionflow,
+  createOrUpdateStepActionflow,
   resetStepActionflow,
+  deleteStepActionflow,
   revalidateMomentsActionflow,
   createOrUpdateMomentActionflow,
-  createOrUpdateStepActionflow,
+  resetMomentActionflow,
   deleteMomentActionflow,
-  resetMomentFormActionflow,
 } from "@/app/flows/client/moments";
 import {
   CONTAINS,
@@ -91,17 +94,16 @@ import {
   USERMOMENTSPAGE,
   SEARCH_FORM_ID,
   activityOptions,
-  STEP_DURATION_DEFAULT,
   subViewTitles,
   viewTitles,
   subViews,
   MOMENT_FORM_IDS,
+  STEP_DURATION_ORIGINAL,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
-  createOrUpdateStepAfterflow,
   deleteMomentAfterflow,
-  resetMomentFormAfterflow,
+  resetMomentAfterflow,
 } from "@/app/flows/client/afterflows/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
@@ -268,7 +270,7 @@ function ReadMomentsView({
     realFutureMoments,
   ] = allUserMomentsToCRUD;
 
-  const realShowcaseMoments = {
+  const realShowcaseMoments: { [K in SubView]: UserMomentsToCRUD } = {
     "all-moments": realAllMoments,
     "past-moments": realPastMoments,
     "current-moments": realCurrentMoments,
@@ -307,12 +309,13 @@ function ReadMomentsView({
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
-  const subViewSearchParams = {
+  const subViewSearchParams: { [K in SubView]: SearchParamsKey } = {
     "all-moments": USERMOMENTSPAGE,
     "past-moments": PASTUSERMOMENTSPAGE,
     "current-moments": CURRENTUSERMOMENTSPAGE,
     "future-moments": FUTUREUSERMOMENTSPAGE,
   };
+
   const [
     maxPageAllMoments,
     maxPagePastMoments,
@@ -320,7 +323,7 @@ function ReadMomentsView({
     maxPageFutureMoments,
   ] = maxPages;
 
-  let subViewMaxPages = {
+  let subViewMaxPages: { [K in SubView]: number } = {
     "all-moments": maxPageAllMoments,
     "past-moments": maxPagePastMoments,
     "current-moments": maxPageCurrentMoments,
@@ -348,7 +351,7 @@ function ReadMomentsView({
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
-    if (params.get(subViewSearchParams[subView]) === "1")
+    if (params.get(subViewSearchParams[subView]) === initialPage.toString())
       params.delete(subViewSearchParams[subView]);
 
     replace(`${pathname}?${params.toString()}`);
@@ -408,13 +411,14 @@ function ReadMomentsView({
   const revalidateMomentsAction = async (
     event: MouseEvent<HTMLButtonElement>,
   ) => {
-    return await revalidateMomentsActionflow(
-      event,
-      startRevalidateMomentsTransition,
-      revalidateMoments,
-      replace,
-      pathname,
-    );
+    startRevalidateMomentsTransition(async () => {
+      await revalidateMomentsActionflow(
+        event,
+        revalidateMoments,
+        replace,
+        pathname,
+      );
+    });
   };
 
   return (
@@ -538,26 +542,30 @@ function MomentForms({
   let [currentStepId, setCurrentStepId] = useState("");
   let currentStep = steps.find((step) => step.id === currentStepId);
 
+  let [stepVisible, setStepVisible] = useState<StepVisible>(
+    !isVariantUpdatingMoment ? "creating" : "create",
+  );
+
   // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
-  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_DEFAULT);
+  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_ORIGINAL);
   let [stepDureeUpdate, setStepDureeUpdate] = useState(
-    currentStep ? currentStep.duree : STEP_DURATION_DEFAULT,
+    currentStep ? currentStep.duree : STEP_DURATION_ORIGINAL,
   );
 
   let momentAddingTime = steps.reduce((acc, curr) => {
-    if (curr.id === currentStepId) return acc + +stepDureeUpdate;
+    // it is understood that curr.id === currentStepId can only happen when stepVisible === "updating"
+    if (curr.id === currentStepId && stepVisible === "updating")
+      return acc + +stepDureeUpdate;
     else return acc + +curr.duree;
   }, 0);
+
+  if (stepVisible === "creating") momentAddingTime += +stepDureeCreate;
 
   let endMomentDate = format(
     add(startMomentDate, {
       minutes: momentAddingTime,
     }),
     "yyyy-MM-dd'T'HH:mm",
-  );
-
-  let [stepVisible, setStepVisible] = useState<StepVisible>(
-    !isVariantUpdatingMoment ? "creating" : "create",
   );
 
   let [destinationSelect, setDestinationSelect] = useState(false);
@@ -580,38 +588,77 @@ function MomentForms({
   const createOrUpdateMomentAction = async (
     event: FormEvent<HTMLFormElement>,
   ) => {
-    return await createOrUpdateMomentActionflow(
-      event,
-      startCreateOrUpdateMomentTransition,
-      createOrUpdateMoment,
-      setCreateOrUpdateMomentState,
-      variant,
-      startMomentDate,
-      steps,
-      moment,
-      destinationSelect,
-      activitySelect,
-      setStartMomentDate,
-      nowRoundedUpTenMinutes,
-      setSteps,
-      setStepVisible,
-      setIsCreateOrUpdateMomentDone,
-    );
+    startCreateOrUpdateMomentTransition(async () => {
+      // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
+      const state = await createOrUpdateMomentActionflow(
+        event,
+        createOrUpdateMoment,
+        variant,
+        startMomentDate,
+        steps,
+        moment,
+        destinationSelect,
+        activitySelect,
+        setStartMomentDate,
+        nowRoundedUpTenMinutes,
+        setSteps,
+        setStepVisible,
+        createOrUpdateMomentState,
+      );
+
+      setCreateOrUpdateMomentState(state);
+      setIsCreateOrUpdateMomentDone(true);
+    });
   };
 
   useEffect(() => {
-    if (isCreateOrUpdateMomentDone)
+    if (isCreateOrUpdateMomentDone) {
+      // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
       createOrUpdateMomentAfterflow(
         variant,
         createOrUpdateMomentState,
+        setCreateOrUpdateMomentState,
         endMomentDate,
         now,
         startMomentDate,
         setSubView,
         setView,
-        setIsCreateOrUpdateMomentDone,
       );
+
+      setIsCreateOrUpdateMomentDone(false);
+    }
   }, [isCreateOrUpdateMomentDone]);
+
+  // resetMomentFormAction
+
+  const [isResetMomentPending, startResetMomentTransition] = useTransition();
+
+  const [isResetMomentDone, setIsResetMomentDone] = useState(false);
+
+  const resetMomentAction = (event: FormEvent<HTMLFormElement>) => {
+    startResetMomentTransition(() => {
+      if (confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")) {
+        const state = resetMomentActionflow(
+          setStartMomentDate,
+          setSteps,
+          setStepVisible,
+          variant,
+          setInputSwitchKey,
+        );
+
+        setCreateOrUpdateMomentState(state);
+        setIsResetMomentDone(true);
+      } else event.preventDefault();
+    });
+  };
+
+  useEffect(() => {
+    if (isResetMomentDone) {
+      resetMomentAfterflow(variant);
+
+      setIsResetMomentDone(false);
+    }
+  }, [isResetMomentDone]);
 
   // deleteMomentAction
 
@@ -620,51 +667,23 @@ function MomentForms({
   const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
 
   const deleteMomentAction = async () => {
-    return await deleteMomentActionflow(
-      startDeleteMomentTransition,
-      deleteMoment,
-      moment,
-      setCreateOrUpdateMomentState,
-      setIsDeleteMomentDone,
-    );
+    startDeleteMomentTransition(async () => {
+      if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
+        const state = await deleteMomentActionflow(deleteMoment, moment);
+
+        setCreateOrUpdateMomentState(state);
+        setIsDeleteMomentDone(true);
+      }
+    });
   };
 
   useEffect(() => {
-    if (isDeleteMomentDone)
-      deleteMomentAfterflow(
-        variant,
-        createOrUpdateMomentState,
-        setView,
-        setIsDeleteMomentDone,
-      );
+    if (isDeleteMomentDone) {
+      deleteMomentAfterflow(variant, createOrUpdateMomentState, setView);
+
+      setIsDeleteMomentDone(false);
+    }
   }, [isDeleteMomentDone]);
-
-  // resetMomentFormAction
-
-  const [isResetMomentFormPending, startResetMomentFormTransition] =
-    useTransition();
-
-  const [isResetMomentFormDone, setIsResetMomentFormDone] = useState(false);
-
-  // action is (now) completely client, so no need for async
-  const resetMomentFormAction = (event: FormEvent<HTMLFormElement>) => {
-    return resetMomentFormActionflow(
-      event,
-      startResetMomentFormTransition,
-      setStartMomentDate,
-      setSteps,
-      setStepVisible,
-      setCreateOrUpdateMomentState,
-      setIsResetMomentFormDone,
-      variant,
-      setInputSwitchKey,
-    );
-  };
-
-  useEffect(() => {
-    if (isResetMomentFormDone)
-      resetMomentFormAfterflow(variant, setIsResetMomentFormDone);
-  }, [isResetMomentFormDone]);
 
   // addStepAction
 
@@ -673,7 +692,7 @@ function MomentForms({
   const addStepAction = () => {
     startAddStepTransition(() => {
       setStepVisible("creating");
-      setStepDureeCreate(STEP_DURATION_DEFAULT);
+      setStepDureeCreate(STEP_DURATION_ORIGINAL);
     });
   };
 
@@ -684,8 +703,8 @@ function MomentForms({
   const cancelStepAction = () => {
     startCancelStepTransition(() => {
       setStepVisible("create");
-      setStepDureeCreate(STEP_DURATION_DEFAULT);
-      setCreateOrUpdateMomentState(null);
+      setStepDureeCreate(STEP_DURATION_ORIGINAL);
+      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
     });
   };
 
@@ -707,11 +726,13 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
+        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeCreate}
         setStepDuree={setStepDureeCreate}
         startCreateOrUpdateStepTransition={startCreateStepTransition}
         startResetStepTransition={startResetStepTransition}
+        createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <StepForm
@@ -720,16 +741,18 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
+        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeUpdate}
         setStepDuree={setStepDureeUpdate}
         startCreateOrUpdateStepTransition={startUpdateStepTransition}
         startResetStepTransition={startResetStepTransition}
+        createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
       <form
         onSubmit={createOrUpdateMomentAction}
-        onReset={resetMomentFormAction}
+        onReset={resetMomentAction}
         id={MOMENT_FORM_IDS[variant].momentForm}
         noValidate
       >
@@ -737,8 +760,12 @@ function MomentForms({
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
           id={MOMENT_FORM_IDS[variant].yourMoment}
-          error={createOrUpdateMomentState?.momentMessage}
-          subError={createOrUpdateMomentState?.momentSubMessage}
+          error={createOrUpdateMomentState?.momentMessages?.message}
+          subError={createOrUpdateMomentState?.momentMessages?.subMessage}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+          removeMessagesAndErrorsCallback={
+            removeMomentMessagesAndErrorsCallback
+          }
         >
           <MomentInputs
             variant={variant}
@@ -759,8 +786,10 @@ function MomentForms({
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
           id={MOMENT_FORM_IDS[variant].itsSteps}
-          error={createOrUpdateMomentState?.stepsMessage}
-          subError={createOrUpdateMomentState?.stepsSubMessage}
+          error={createOrUpdateMomentState?.stepsMessages?.message}
+          subError={createOrUpdateMomentState?.stepsMessages?.subMessage}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+          removeMessagesAndErrorsCallback={removeStepsMessagesAndErrorsCallback}
         >
           {steps.length > 0 && (
             <>
@@ -848,13 +877,13 @@ function MomentForms({
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
               <ConfirmMomentButton
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
               />
               <ResetOrEraseMomentButton
                 variant={variant}
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 deleteMomentAction={deleteMomentAction}
                 isDeleteMomentPending={isDeleteMomentPending}
               />
@@ -863,12 +892,12 @@ function MomentForms({
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
               <ResetOrEraseMomentButton
                 variant={variant}
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 deleteMomentAction={deleteMomentAction}
                 isDeleteMomentPending={isDeleteMomentPending}
               />
               <ConfirmMomentButton
-                isResetMomentFormPending={isResetMomentFormPending}
+                isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
               />
@@ -1206,11 +1235,13 @@ function StepForm({
   currentStepId,
   steps,
   setSteps,
+  stepVisible,
   setStepVisible,
   stepDuree,
   setStepDuree,
   startCreateOrUpdateStepTransition,
   startResetStepTransition,
+  createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
 }: {
   variant: StepFormVariant;
@@ -1218,11 +1249,13 @@ function StepForm({
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: SetState<StepFromCRUD[]>;
+  stepVisible: StepVisible;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   startResetStepTransition: TransitionStartFunction;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
 }) {
   const stepFormId =
@@ -1232,43 +1265,47 @@ function StepForm({
 
   // createOrUpdateStepAction
 
-  const [isCreateOrUpdateStepDone, setIsCreateOrUpdateStepDone] =
-    useState(false);
-
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
-    return createOrUpdateStepActionflow(
-      event,
-      startCreateOrUpdateStepTransition,
-      setCreateOrUpdateMomentState,
-      stepDuree,
-      steps,
-      variant,
-      currentStepId,
-      setSteps,
-      setStepVisible,
-      setIsCreateOrUpdateStepDone,
-    );
-  };
-
-  // no longer animating steps in any way, so currently createOrUpdateStepAfterflow effectively does not do anything
-  useEffect(() => {
-    if (isCreateOrUpdateStepDone)
-      createOrUpdateStepAfterflow(
-        momentFormVariant,
-        setIsCreateOrUpdateStepDone,
+    startCreateOrUpdateStepTransition(() => {
+      const state = createOrUpdateStepActionflow(
+        event,
+        stepDuree,
+        steps,
+        variant,
+        currentStepId,
+        setSteps,
+        setStepVisible,
+        createOrUpdateMomentState,
       );
-  }, [isCreateOrUpdateStepDone]);
+
+      setCreateOrUpdateMomentState(state);
+    });
+  };
 
   // resetStepAction
 
   const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
-    return resetStepActionflow(
-      event,
-      variant,
-      startResetStepTransition,
-      setStepDuree,
-      setCreateOrUpdateMomentState,
-    );
+    startResetStepTransition(() => {
+      // do not confirm if reset is not triggered by stepFormCreating
+      const noConfirm =
+        // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
+        event.nativeEvent.explicitOriginalTarget?.form?.id !==
+        // triggers confirm only if original intent is from stepFormCreating
+        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
+      if (
+        // Attention please: this right here HARD LEVEL JAVASCRIPT.
+        noConfirm ||
+        confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
+      ) {
+        const state = resetStepActionflow(
+          setStepDuree,
+          createOrUpdateMomentState,
+        );
+
+        setCreateOrUpdateMomentState(state);
+      } else event.preventDefault();
+    });
   };
 
   return (
@@ -1326,7 +1363,7 @@ function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.errors?.destinationName}
+        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
         hidden={destinationSelect}
       >
         {destinationOptions.length > 0 && (
@@ -1355,7 +1392,7 @@ function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.errors?.destinationName}
+        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
         hidden={!destinationSelect}
       >
         <Button
@@ -1374,7 +1411,7 @@ function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentActivity}
+        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
         hidden={activitySelect}
       >
         <Button
@@ -1399,7 +1436,7 @@ function MomentInputs({
         options={activityOptions}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentActivity}
+        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
         hidden={!activitySelect}
       >
         <Button
@@ -1416,7 +1453,7 @@ function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
         description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentName}
+        errors={createOrUpdateMomentState?.momentErrors?.momentName}
       />
       <InputSwitch
         key={inputSwitchKey}
@@ -1427,7 +1464,7 @@ function MomentInputs({
         }
         description="Activez l'interrupteur si ce moment est d'une importance incontournable."
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentIsIndispensable}
+        errors={createOrUpdateMomentState?.momentErrors?.momentIsIndispensable}
       />
       <Textarea
         label="Contexte"
@@ -1436,7 +1473,7 @@ function MomentInputs({
         description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
         rows={6}
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentDescription}
+        errors={createOrUpdateMomentState?.momentErrors?.momentDescription}
       />
       <InputDatetimeLocalControlled
         label="Date et heure"
@@ -1445,7 +1482,7 @@ function MomentInputs({
         definedValue={startMomentDate}
         definedOnValueChange={setStartMomentDate}
         required={false}
-        errors={createOrUpdateMomentState?.errors?.momentStartDateAndTime}
+        errors={createOrUpdateMomentState?.momentErrors?.momentStartDateAndTime}
       />
     </>
   );
@@ -1498,14 +1535,12 @@ function ReorderItem({
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
   const deleteStepAction = () => {
-    return deleteStepActionflow(
-      startDeleteStepTransition,
-      steps,
-      currentStepId,
-      setSteps,
-      setStepVisible,
-      setCreateOrUpdateMomentState,
-    );
+    startDeleteStepTransition(() => {
+      if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
+        deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
+        setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+      }
+    });
   };
 
   // restoreStepAction
@@ -1517,6 +1552,7 @@ function ReorderItem({
     startRestoreStepTransition(() => {
       setStepVisible("create");
       setCurrentStepId("");
+      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
     });
   };
 
@@ -1529,7 +1565,7 @@ function ReorderItem({
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);
       setStepDureeUpdate(step.duree);
-      setCreateOrUpdateMomentState(null);
+      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       setStepVisible("updating");
     });
   };
@@ -1595,7 +1631,7 @@ function ReorderItem({
             />
             <div>
               {/* Mobile */}
-              <div className="flex w-full flex-col gap-4 md:hidden">
+              <StepFormControlsMobileWrapper>
                 <UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
@@ -1605,9 +1641,9 @@ function ReorderItem({
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                 />
-              </div>
+              </StepFormControlsMobileWrapper>
               {/* Desktop */}
-              <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+              <StepFormControlsDesktopWrapper>
                 <EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
@@ -1617,7 +1653,7 @@ function ReorderItem({
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
                 />
-              </div>
+              </StepFormControlsDesktopWrapper>
             </div>
           </div>
         ) : (
@@ -1655,7 +1691,10 @@ function StepsSummaries({
           <p className="font-semibold">
             <span className="font-medium text-neutral-800">à</span>{" "}
             <span
-              className={clsx(stepVisible === "updating" && "text-neutral-400")}
+              className={clsx(
+                (stepVisible === "updating" || stepVisible === "creating") &&
+                  "text-neutral-400",
+              )}
             >
               {format(endMomentDate, "HH:mm")}
             </span>
@@ -1668,7 +1707,8 @@ function StepsSummaries({
             <span>
               <span
                 className={clsx(
-                  stepVisible === "updating" && "text-neutral-400",
+                  (stepVisible === "updating" || stepVisible === "creating") &&
+                    "text-neutral-400",
                 )}
               >
                 {numStringToTimeString(momentAddingTime.toString())}
@@ -1743,7 +1783,7 @@ function StepVisibleCreating({
       />
       <div className="flex">
         {/* Mobile */}
-        <div className="flex w-full flex-col gap-4 md:hidden">
+        <StepFormControlsMobileWrapper>
           <Button
             variant="confirm-step"
             form={form}
@@ -1760,9 +1800,9 @@ function StepVisibleCreating({
           >
             Réinitialiser l&apos;étape
           </Button>
-        </div>
+        </StepFormControlsMobileWrapper>
         {/* Desktop */}
-        <div className="hidden pt-2 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+        <StepFormControlsDesktopWrapper>
           <Button
             variant="cancel-step"
             form={form}
@@ -1779,7 +1819,7 @@ function StepVisibleCreating({
           >
             Confirmer l&apos;étape
           </Button>
-        </div>
+        </StepFormControlsDesktopWrapper>
       </div>
     </motion.div>
   );
@@ -1817,11 +1857,11 @@ function StepVisibleCreate({
 }
 
 function ConfirmMomentButton({
-  isResetMomentFormPending,
+  isResetMomentPending,
   isDeleteMomentPending,
   isCreateOrUpdateMomentPending,
 }: {
-  isResetMomentFormPending: boolean;
+  isResetMomentPending: boolean;
   isDeleteMomentPending: boolean;
   isCreateOrUpdateMomentPending: boolean;
 }) {
@@ -1830,7 +1870,7 @@ function ConfirmMomentButton({
       type="submit"
       variant="confirm"
       disabled={
-        isResetMomentFormPending ||
+        isResetMomentPending ||
         isDeleteMomentPending ||
         isCreateOrUpdateMomentPending
       }
@@ -1843,12 +1883,12 @@ function ConfirmMomentButton({
 
 function ResetOrEraseMomentButton({
   variant,
-  isResetMomentFormPending,
+  isResetMomentPending,
   deleteMomentAction,
   isDeleteMomentPending,
 }: {
   variant: string;
-  isResetMomentFormPending: boolean;
+  isResetMomentPending: boolean;
   deleteMomentAction: () => Promise<void>;
   isDeleteMomentPending: boolean;
 }) {
@@ -1861,7 +1901,7 @@ function ResetOrEraseMomentButton({
               <Button
                 type="reset"
                 variant="cancel"
-                disabled={isResetMomentFormPending}
+                disabled={isResetMomentPending}
               >
                 Réinitialiser le moment
               </Button>
@@ -1907,7 +1947,7 @@ function StepInputs({
         defaultValue={step?.intitule}
         description="Définissez simplement le sujet de l'étape."
         required={false}
-        errors={createOrUpdateMomentState?.errors?.stepName}
+        errors={createOrUpdateMomentState?.stepsErrors?.stepName}
       />
       <Textarea
         form={form}
@@ -1917,7 +1957,7 @@ function StepInputs({
         description="Expliquez en détails le déroulé de l'étape."
         rows={4}
         required={false}
-        errors={createOrUpdateMomentState?.errors?.stepDescription}
+        errors={createOrUpdateMomentState?.stepsErrors?.stepDescription}
       />
       <InputNumberControlled
         form={form}
@@ -1928,10 +1968,30 @@ function StepInputs({
         description="Renseignez en minutes la longueur de l'étape."
         min="5"
         required={false}
-        errors={createOrUpdateMomentState?.errors?.realStepDuration}
+        errors={createOrUpdateMomentState?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
       />
     </>
+  );
+}
+
+function StepFormControlsMobileWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <div className="flex w-full flex-col gap-4 md:hidden">{children}</div>;
+}
+
+function StepFormControlsDesktopWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="hidden pt-2 md:ml-auto md:grid md:w-full md:grow md:grid-cols-2 md:gap-4">
+      {children}
+    </div>
   );
 }
 
