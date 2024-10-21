@@ -185,14 +185,14 @@ export default function Main({
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
   // at an upper level for UpdateMomentView
-  let [moment, setMoment] = useState<MomentToCRUD>();
+  let [moment, setMoment] = useState<MomentToCRUD>(); // if I switch it to null, which is more logical, I'm gonna need to revamp everything
 
   return (
     <main>
       <div>
         <div className="flex justify-between pb-8 align-baseline">
           <PageTitle title={viewTitles[view]} />
-          <SetViewButton view={view} setView={setView} />
+          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </div>
         <Divider />
       </div>
@@ -800,15 +800,30 @@ function MomentForms({
                 as="ol"
               >
                 {steps.map((step, index) => {
-                  // this needs to stay up there because it depends from an information obtained in MomentForms
+                  // this needs to stay up there because it depends from an information obtained in MomentForms (even though I am now passing it down as a property)
                   let stepAddingTime =
                     index === 0 ? 0 : stepsCompoundDurations[index - 1];
+
+                  const currentStepIndex = steps.findIndex(
+                    (e) => e.id === currentStepId,
+                  );
+                  const isAfterCurrentStep = index > currentStepIndex;
+
+                  if (
+                    currentStep &&
+                    currentStepIndex > -1 &&
+                    isAfterCurrentStep
+                  ) {
+                    stepAddingTime =
+                      stepAddingTime - +currentStep.duree + +stepDureeUpdate;
+                  }
 
                   return (
                     <ReorderItem // step
                       key={step.id}
                       step={step}
                       index={index}
+                      isAfterCurrentStep={isAfterCurrentStep}
                       momentFormVariant={variant}
                       steps={steps}
                       stepVisible={stepVisible}
@@ -825,6 +840,7 @@ function MomentForms({
                       setCreateOrUpdateMomentState={
                         setCreateOrUpdateMomentState
                       }
+                      stepsCompoundDurations={stepsCompoundDurations}
                     />
                   );
                 })}
@@ -854,6 +870,8 @@ function MomentForms({
                     cancelStepAction={cancelStepAction}
                     steps={steps}
                     isCancelStepPending={isCancelStepPending}
+                    stepsCompoundDurations={stepsCompoundDurations}
+                    startMomentDate={startMomentDate}
                   />
                 );
               case "create":
@@ -914,9 +932,11 @@ function MomentForms({
 function SetViewButton({
   view,
   setView,
+  setMoment,
 }: {
   view: View;
   setView: SetState<View>;
+  setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   // though the function below could be a utility, it is very specific to this component at this time
   function defineDesiredView(view: View) {
@@ -938,7 +958,10 @@ function SetViewButton({
     <Button
       type="button"
       variant="destroy-step"
-      onClick={() => setScrollToTop(desiredView, setView)}
+      onClick={() => {
+        if (view === "update-moment") setMoment(undefined);
+        setScrollToTop(desiredView, setView);
+      }}
     >
       {(() => {
         switch (desiredView) {
@@ -1491,6 +1514,7 @@ function MomentInputs({
 function ReorderItem({
   step,
   index,
+  isAfterCurrentStep,
   momentFormVariant,
   steps,
   stepVisible,
@@ -1505,9 +1529,11 @@ function ReorderItem({
   setStepDureeUpdate,
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
+  stepsCompoundDurations,
 }: {
   step: StepFromCRUD;
   index: number;
+  isAfterCurrentStep: boolean;
   momentFormVariant: MomentFormVariant;
   steps: StepFromCRUD[];
   stepVisible: StepVisible;
@@ -1522,11 +1548,15 @@ function ReorderItem({
   setStepDureeUpdate: SetState<string>;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
+  stepsCompoundDurations: number[];
 }) {
   const controls = useDragControls();
 
   const isCurrentStepUpdating =
     currentStepId === step.id && stepVisible === "updating";
+
+  const hasAPreviousStepUpdating =
+    isAfterCurrentStep && stepVisible === "updating";
 
   const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
 
@@ -1593,9 +1623,12 @@ function ReorderItem({
           <p
             className={clsx(
               "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-              "transition-colors hover:text-neutral-400",
+              "transition-colors",
+              stepVisible !== "updating" && "hover:text-neutral-400",
             )}
-            onPointerDown={(event) => controls.start(event)}
+            onPointerDown={(event) => {
+              if (stepVisible !== "updating") controls.start(event);
+            }}
             style={{ touchAction: "none" }}
           >
             Étape <span>{toWordsing(index + 1)}</span>
@@ -1628,6 +1661,9 @@ function ReorderItem({
               stepDuree={stepDureeUpdate}
               setStepDuree={setStepDureeUpdate}
               step={step}
+              startMomentDate={startMomentDate}
+              stepAddingTime={stepAddingTime}
+              stepsCompoundDurations={stepsCompoundDurations}
             />
             <div>
               {/* Mobile */}
@@ -1660,6 +1696,7 @@ function ReorderItem({
           <StepContents
             step={step}
             index={index}
+            hasAPreviousStepUpdating={hasAPreviousStepUpdating}
             startMomentDate={startMomentDate}
             stepAddingTime={stepAddingTime}
           />
@@ -1731,6 +1768,8 @@ function StepVisibleCreating({
   cancelStepAction,
   steps,
   isCancelStepPending,
+  stepsCompoundDurations,
+  startMomentDate,
 }: {
   momentFormVariant: MomentFormVariant;
   isResetStepPending: boolean;
@@ -1741,6 +1780,8 @@ function StepVisibleCreating({
   cancelStepAction: () => void;
   steps: StepFromCRUD[];
   isCancelStepPending: boolean;
+  stepsCompoundDurations: number[];
+  startMomentDate: string;
 }) {
   const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
@@ -1780,6 +1821,8 @@ function StepVisibleCreating({
         createOrUpdateMomentState={createOrUpdateMomentState}
         stepDuree={stepDureeCreate}
         setStepDuree={setStepDureeCreate}
+        startMomentDate={startMomentDate}
+        stepsCompoundDurations={stepsCompoundDurations}
       />
       <div className="flex">
         {/* Mobile */}
@@ -1931,12 +1974,18 @@ function StepInputs({
   stepDuree,
   setStepDuree,
   step,
+  startMomentDate,
+  stepAddingTime,
+  stepsCompoundDurations,
 }: {
   form: string;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
+  startMomentDate: string;
+  stepsCompoundDurations: number[];
   step?: StepFromCRUD;
+  stepAddingTime?: number;
 }) {
   return (
     <>
@@ -1970,7 +2019,24 @@ function StepInputs({
         required={false}
         errors={createOrUpdateMomentState?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
-      />
+      >
+        <p className="text-sm font-medium text-blue-900">
+          commence à{" "}
+          {step // && stepAddingTime (can equal 0 which is falsy)
+            ? format(
+                add(startMomentDate, {
+                  minutes: stepAddingTime,
+                }),
+                "HH:mm",
+              )
+            : format(
+                add(startMomentDate, {
+                  minutes: stepsCompoundDurations.at(-1),
+                }),
+                "HH:mm",
+              )}
+        </p>
+      </InputNumberControlled>
     </>
   );
 }
@@ -2039,11 +2105,13 @@ function EraseStepButton({
 function StepContents({
   step,
   index,
+  hasAPreviousStepUpdating,
   startMomentDate,
   stepAddingTime,
 }: {
   step: StepFromCRUD;
   index: number;
+  hasAPreviousStepUpdating: boolean;
   startMomentDate: string;
   stepAddingTime: number;
 }) {
@@ -2051,7 +2119,13 @@ function StepContents({
     <div className="space-y-2">
       <p className="font-medium text-blue-950">{step.intitule}</p>
       <p>
-        <span className={clsx(index === 0 && "font-semibold text-neutral-800")}>
+        <span
+          className={clsx(
+            index === 0 && "font-semibold",
+            hasAPreviousStepUpdating && "text-neutral-400",
+            !hasAPreviousStepUpdating && "text-neutral-800",
+          )}
+        >
           {format(
             add(startMomentDate, {
               minutes: stepAddingTime,

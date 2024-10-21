@@ -859,6 +859,7 @@ export function InputNumber({
   step,
   min = "0",
   max,
+  children,
 }: {
   form?: string;
   label: string;
@@ -868,10 +869,14 @@ export function InputNumber({
   step?: string;
   min?: string;
   max?: string;
+  children?: React.ReactNode;
 }) {
   return (
     <FieldFlex isLabel>
-      <FieldTitle title={label} />
+      <div className="flex items-baseline justify-between">
+        {label && <FieldTitle title={label} />}
+        {children}
+      </div>
       {description && (
         <p className="select-none text-sm text-neutral-500">{description}</p>
       )}
@@ -914,6 +919,7 @@ export function InputNumberControlled({
   required = true,
   errors,
   schema, // indispensible with noValidate
+  children,
 }: {
   form?: string;
   label: string;
@@ -927,10 +933,14 @@ export function InputNumberControlled({
   required?: boolean;
   errors?: string[];
   schema: typeof EventStepDurationSchema; // project-specific
+  children?: React.ReactNode;
 }) {
   return (
     <FieldFlex isLabel>
-      <FieldTitle title={label} />
+      <div className="flex items-baseline justify-between">
+        {label && <FieldTitle title={label} />}
+        {children}
+      </div>
       <InputDescriptionOrError errors={errors} description={description} />
       <div className="grid grid-cols-2 gap-4">
         <input
