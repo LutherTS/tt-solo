@@ -99,6 +99,7 @@ import {
   subViews,
   MOMENT_FORM_IDS,
   STEP_DURATION_ORIGINAL,
+  INITIAL_PAGE,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -330,9 +331,8 @@ function ReadMomentsView({
     "future-moments": maxPageFutureMoments,
   };
 
-  let initialPage = 1;
   const currentPage = defineCurrentPage(
-    initialPage,
+    INITIAL_PAGE,
     Number(searchParams.get(subViewSearchParams[subView])),
     subViewMaxPages[subView],
   );
@@ -343,7 +343,7 @@ function ReadMomentsView({
     if (direction === "left")
       params.set(
         subViewSearchParams[subView],
-        Math.max(1, currentPage - 1).toString(),
+        Math.max(INITIAL_PAGE, currentPage - 1).toString(),
       );
     else
       params.set(
@@ -351,7 +351,7 @@ function ReadMomentsView({
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
-    if (params.get(subViewSearchParams[subView]) === initialPage.toString())
+    if (params.get(subViewSearchParams[subView]) === INITIAL_PAGE.toString())
       params.delete(subViewSearchParams[subView]);
 
     replace(`${pathname}?${params.toString()}`);
@@ -1480,7 +1480,7 @@ function MomentInputs({
       />
       <InputSwitch
         key={inputSwitchKey}
-        label="Indispensable"
+        label="Indispensable ?"
         name="indispensable"
         defaultChecked={
           isVariantUpdatingMoment ? moment.isIndispensable : false

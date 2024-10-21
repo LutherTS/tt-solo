@@ -275,10 +275,12 @@ export function InputText({
 } & ComponentProps<"input">) {
   return (
     <FieldFlex isLabel={!fieldFlexIsNotLabel} hidden={hidden}>
-      <div className="flex justify-between">
-        {label && <FieldTitle title={label} />}
-        {children}
-      </div>
+      {label && (
+        <div className="flex justify-between">
+          <FieldTitle title={label} />
+          {children}
+        </div>
+      )}
       {description && (
         <InputDescriptionOrError
           errors={errors}
@@ -365,10 +367,12 @@ export function InputTextControlled({
 } & ComponentProps<"input">) {
   return (
     <FieldFlex isLabel={!fieldFlexIsNotLabel}>
-      <div className="flex justify-between">
-        {label && <FieldTitle title={label} />}
-        {children}
-      </div>
+      {label && (
+        <div className="flex justify-between">
+          <FieldTitle title={label} />
+          {children}
+        </div>
+      )}
       <InputDescriptionOrError
         errors={errors}
         description={description}

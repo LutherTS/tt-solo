@@ -18,6 +18,7 @@ import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
+  INITIAL_PAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
 } from "@/app/data/moments";
@@ -61,7 +62,7 @@ export default async function MomentsPage({
   let now = dateToInputDatetime(new Date());
   console.log({ now });
 
-  // PART READ
+  // PART READ (a.k.a database calls)
 
   // params and searchParams are awaited in the RC 2
   const username = params.username; // I need to see what happens if no params are provided here, like users//moments. // It just seems to be a global notFound because even the username console.log does not get triggered, like it doesn't even consider users//moments... Better even, the browser fixes the URL and considers it to be users/moments, an entirely different page. So that is indeed the "global" notFound page at the app level.
@@ -70,7 +71,6 @@ export default async function MomentsPage({
   const userFound = await findUserIdByUsername(username);
   // console.log({ userFound });
 
-  // (I also need to do the default for notFound)
   if (!userFound) return notFound();
 
   // extremely important in order to use user in server actions without null
@@ -107,7 +107,7 @@ export default async function MomentsPage({
   ] as const;
   // console.log({ totals })
 
-  // TAKE is page-dependent here. So the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
+  // TAKE is page-dependent here. Therefore the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
   const TAKE = 2;
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
@@ -122,7 +122,7 @@ export default async function MomentsPage({
 
   const pages = searchParamsPageKeys.map((e, i) =>
     defineCurrentPage(
-      1,
+      INITIAL_PAGE,
       // I had never seen that TypeScript syntax before.
       // And it is not valid JavaScript.
       Number(searchParams?.[e]),
@@ -280,7 +280,7 @@ export default async function MomentsPage({
     });
   // console.logs on demand...
 
-  // PART WRITE
+  // PART WRITE (a.k.a. server actions)
 
   async function createOrUpdateMoment(
     formData: FormData,
@@ -333,9 +333,11 @@ export default async function MomentsPage({
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. Loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
     <Suspense fallback={<p>Loading...</p>}>
       <Main
+        // reads
         allUserMomentsToCRUD={allUserMomentsToCRUD}
         maxPages={maxPages}
         destinationOptions={destinationOptions}
+        // writes
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}

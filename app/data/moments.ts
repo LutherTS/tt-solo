@@ -17,6 +17,9 @@ export const SEARCH_PARAMS_KEYS = [
   FUTUREUSERMOMENTSPAGE,
 ] as const;
 
+// initial and lowest moments page number
+export const INITIAL_PAGE = 1;
+
 // HTML ids
 
 export const SEARCH_FORM_ID = "search-form";
