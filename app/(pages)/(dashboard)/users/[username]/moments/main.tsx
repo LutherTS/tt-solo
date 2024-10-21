@@ -186,7 +186,7 @@ export default function Main({
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
   // at an upper level for UpdateMomentView
-  let [moment, setMoment] = useState<MomentToCRUD>(); // if I switch it to null, which is more logical, I'm gonna need to revamp everything
+  let [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
 
   return (
     <main>
@@ -197,6 +197,7 @@ export default function Main({
         </div>
         <Divider />
       </div>
+      {/* IMPORTANT: ACTUALLY HERE'S WHAT NEEDS TO BE THE MOTION.DIV, animating along its x-axis with some className={`flex`} animate={{ x: `-${index * 100}%` }}. "UpdateMomentView" is index 0, ReadMomentsView is index 1, and "CreateMomentView" is index 2. Then with a parent div that has className="overflow-hidden". */}
       <div>
         {/* putting motion on the div to prepare for animations */}
         {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
@@ -204,7 +205,7 @@ export default function Main({
         <motion.div className={clsx(view !== "update-moment" && "hidden")}>
           {/* UpdateMomentView */}
           <MomentForms
-            key={view} // to remount every time the view changes
+            key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
             variant="updating"
             moment={moment}
             destinationOptions={destinationOptions}
@@ -959,6 +960,7 @@ function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
+        // SetViewButton is the only that does setMoment to undefined
         if (view === "update-moment") setMoment(undefined);
         setScrollToTop(desiredView, setView);
       }}
