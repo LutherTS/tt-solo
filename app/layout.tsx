@@ -18,3 +18,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+// Next.js 15, here I come.
