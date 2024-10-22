@@ -8,6 +8,7 @@ import {
   MouseEvent,
   FormEvent,
   TransitionStartFunction,
+  Ref,
 } from "react";
 import {
   ReadonlyURLSearchParams,
@@ -20,6 +21,7 @@ import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   motion,
+  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -29,6 +31,7 @@ import {
 import debounce from "debounce";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
+import { useMeasure } from "react-use";
 // import { useTimer } from "react-use-precision-timer";
 
 import { Option, SetState } from "@/app/types/globals";
@@ -193,13 +196,6 @@ export default function Main({
 
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
-  useEffect(() => {
-    currentViewHeight.set(
-      // 0 as fallback, so if there's no height on screen the error is here
-      document.getElementById(view)?.clientHeight || 0,
-    );
-  }, [view]);
-
   return (
     <main>
       {/* same "flex w-screen flex-col items-center md:w-[calc(100vw_-_9rem)]" as ViewWrapper (without the shrink-0) */}
@@ -232,7 +228,11 @@ export default function Main({
           }}
         >
           <ViewWrapper>
-            <ViewContainer id="update-moment">
+            <ViewContainer
+              id="update-moment"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
               {/* UpdateMomentView */}
               <MomentForms
                 key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
@@ -249,7 +249,11 @@ export default function Main({
             </ViewContainer>
           </ViewWrapper>
           <ViewWrapper>
-            <ViewContainer id="read-moments">
+            <ViewContainer
+              id="read-moments"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
               <ReadMomentsView
                 allUserMomentsToCRUD={allUserMomentsToCRUD}
                 maxPages={maxPages}
@@ -263,7 +267,11 @@ export default function Main({
             </ViewContainer>
           </ViewWrapper>
           <ViewWrapper>
-            <ViewContainer id="create-moment">
+            <ViewContainer
+              id="create-moment"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
               {/* CreateMomentView */}
               <MomentForms
                 variant="creating"
@@ -292,13 +300,27 @@ function ViewWrapper({ children }: { children: React.ReactNode }) {
 
 function ViewContainer({
   id,
+  currentView,
+  currentViewHeight,
   children,
 }: {
   id: View;
+  currentView: View;
+  currentViewHeight: MotionValue<number>;
   children: React.ReactNode;
 }) {
+  const [ref, { height }] = useMeasure();
+  // making TypeScript happy
+  const reference = ref as Ref<HTMLDivElement>;
+
+  if (id === currentView) currentViewHeight.set(height + 12 * 4); // 12 * 4 because height from useMeasure does not count self padding ("pb-12" below)
+
   return (
-    <div id={id} className={clsx("container px-8 lg:max-w-4xl", "pb-12")}>
+    <div
+      id={id}
+      ref={reference} // it works actually
+      className={clsx("container px-8 lg:max-w-4xl", "pb-12")}
+    >
       {children}
     </div>
   );
@@ -663,11 +685,9 @@ function MomentForms({
         moment,
         destinationSelect,
         activitySelect,
-        setStartMomentDate,
-        nowRoundedUpTenMinutes,
-        setSteps,
-        setStepVisible,
         createOrUpdateMomentState,
+        endMomentDate,
+        setSubView,
       );
 
       setCreateOrUpdateMomentState(state);
@@ -682,10 +702,6 @@ function MomentForms({
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
-        endMomentDate,
-        now,
-        startMomentDate,
-        setSubView,
         setView,
         setIsCRUDOpSuccessful,
       );
@@ -702,7 +718,15 @@ function MomentForms({
 
   const resetMomentAction = (event: FormEvent<HTMLFormElement>) => {
     startResetMomentTransition(() => {
-      if (confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")) {
+      const noConfirm =
+        // @ts-ignore might not work on mobile but it's a bonus
+        event.nativeEvent.explicitOriginalTarget?.type !== "reset";
+
+      // retroactive high level JavaScript, but honestly this should be done on any action that uses a confirm, assuming that action can be triggered externally and automatically
+      if (
+        noConfirm ||
+        confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
+      ) {
         const state = resetMomentActionflow(
           setStartMomentDate,
           setSteps,

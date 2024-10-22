@@ -1,8 +1,5 @@
-import { compareAsc, compareDesc } from "date-fns";
-
 import { MOMENT_FORM_IDS } from "@/app/data/moments";
 import {
-  SubView,
   CreateOrUpdateMomentState,
   View,
   MomentFormVariant,
@@ -17,13 +14,11 @@ export const createOrUpdateMomentAfterflow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
-  endMomentDate: string,
-  now: string,
-  startMomentDate: string,
-  setSubView: SetState<SubView>,
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
 ) => {
+  // now = dateToInputDatetime(new Date());
+
   if (createOrUpdateMomentState) {
     switch (createOrUpdateMomentState.errorScrollPriority) {
       case "moment":
@@ -44,14 +39,6 @@ export const createOrUpdateMomentAfterflow = (
     });
   } else {
     setIsCRUDOpSuccessful(true);
-
-    // this now works thanks to export const dynamic = "force-dynamic";
-    // ...I think
-    if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
-    else if (compareAsc(startMomentDate, now) === 1)
-      setSubView("future-moments");
-    // present by default
-    else setSubView("current-moments");
 
     setScrollToTop("read-moments", setView);
     // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13

@@ -47,6 +47,8 @@ export const createOrUpdateMomentFlow = async (
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
 ): Promise<CreateOrUpdateMomentState> => {
+  const currentNow = dateToInputDatetime(new Date());
+
   // in case somehow startMomentDate is not sent correctly
   if (!isValid(new Date(startMomentDate)))
     return {
@@ -61,7 +63,6 @@ export const createOrUpdateMomentFlow = async (
     };
 
   if (variant === "creating") {
-    const currentNow = dateToInputDatetime(new Date());
     const minFromCurrentNow = dateToInputDatetime(
       roundToNearestHours(sub(currentNow, { hours: 1 }), {
         roundingMethod: "floor",

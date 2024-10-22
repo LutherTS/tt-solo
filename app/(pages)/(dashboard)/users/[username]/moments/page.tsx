@@ -41,7 +41,7 @@ import {
 } from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
-// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still it says I'm on a static route...
 
 export default async function MomentsPage({
   params,

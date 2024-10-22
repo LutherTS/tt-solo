@@ -12,6 +12,7 @@ import {
   StepVisible,
   CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
+  SubView,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -19,6 +20,7 @@ import {
 } from "@/app/utilities/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 import { SetState } from "@/app/types/globals";
+import { compareAsc, compareDesc } from "date-fns";
 
 const DEFAULT_STEP_MESSAGE =
   "Erreurs sur le renseignement étapes du formulaire.";
@@ -46,11 +48,9 @@ export const createOrUpdateMomentActionflow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
-  setStartMomentDate: SetState<string>,
-  nowRoundedUpTenMinutes: string,
-  setSteps: SetState<StepFromCRUD[]>,
-  setStepVisible: SetState<StepVisible>,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
+  endMomentDate: string,
+  setSubView: SetState<SubView>,
 ): Promise<CreateOrUpdateMomentState> => {
   event.preventDefault();
 
@@ -69,11 +69,23 @@ export const createOrUpdateMomentActionflow = async (
   if (state) {
     return { ...createOrUpdateMomentState, ...state };
   } else {
+    const currentNow = dateToInputDatetime(new Date());
+
+    if (compareDesc(endMomentDate, currentNow) === 1)
+      setSubView("past-moments");
+    else if (compareAsc(startMomentDate, currentNow) === 1)
+      setSubView("future-moments");
+    // present by default
+    else setSubView("current-moments");
+
+    // resetting the whole form manually
     if (variant === "creating") {
-      setStartMomentDate(nowRoundedUpTenMinutes);
-      setSteps([]);
-      setStepVisible("creating");
+      const momentForm = document.getElementById(
+        MOMENT_FORM_IDS[variant].momentForm,
+      ) as HTMLFormElement | null;
+      momentForm?.reset();
     }
+
     return state;
   }
 };
