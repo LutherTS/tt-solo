@@ -13,29 +13,30 @@ export default function Layout({
     >
       <SideNav isFixed />
       {/* min-h-screen now unnecessary */}
-      <div className="size-full">
-        {/* Page Wrapper */}
-        {/* w-full replacing w-screen with w-full from CRUD main */}
-        <div className="flex w-full flex-col items-center">
-          {/* Page Container */}
-          <div
-            // this could be thrown back to the children for some header
-            className={clsx(
-              // THAT'S WHAT I NEED TO SHIFT TO THE CORE VIEWS
-              // container can coexist with max-w-4xl
-              // pb-12 previously
-              "container min-h-screen w-full overflow-clip px-8 pt-8",
-              "pb-12",
-              // "md:pb-24",
-              "lg:max-w-4xl",
-              "flex flex-col",
-            )}
-          >
-            {/* Page Contents */}
-            {children}
-          </div>
-        </div>
+      {/* removing size-full */}
+      {/* <div className=""> */}
+      {/* Page Wrapper */}
+      {/* w-full replacing w-screen with w-full from CRUD main */}
+      {/* removed the dive below */}
+      {/* <div className="flex w-full flex-col items-center"> */}
+      {/* Page Container */}
+      <div
+        // this could be thrown back to the children for some header
+        className={clsx(
+          // THAT'S WHAT I NEED TO SHIFT TO THE CORE VIEWS
+          // container can coexist with max-w-4xl
+          // removing all paddings then, px-8 pt-8 pb-12
+          // and removing container, too, with that lg:max-w-4xl
+          // removed w-full overflow-clip
+          "min-h-screen",
+          "flex flex-col",
+        )}
+      >
+        {/* Page Contents */}
+        {children}
       </div>
+      {/* </div> */}
+      {/* </div> */}
     </div>
   );
 }

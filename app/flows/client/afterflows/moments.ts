@@ -22,6 +22,7 @@ export const createOrUpdateMomentAfterflow = (
   startMomentDate: string,
   setSubView: SetState<SubView>,
   setView: SetState<View>,
+  // setIsAnimationAllowed: SetState<boolean>
 ) => {
   if (createOrUpdateMomentState) {
     switch (createOrUpdateMomentState.errorScrollPriority) {
@@ -42,6 +43,8 @@ export const createOrUpdateMomentAfterflow = (
       return s;
     });
   } else {
+    // setIsAnimationAllowed(true)
+
     // this now works thanks to export const dynamic = "force-dynamic";
     // ...I think
     if (compareDesc(endMomentDate, now) === 1) setSubView("past-moments");
@@ -67,10 +70,13 @@ export const deleteMomentAfterflow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setView: SetState<View>,
+  // setIsAnimationAllowed: SetState<boolean>
 ) => {
   if (createOrUpdateMomentState) {
     scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
   } else {
+    // setIsAnimationAllowed(true)
+
     setScrollToTop("read-moments", setView);
   }
 };

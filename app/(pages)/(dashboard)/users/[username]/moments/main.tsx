@@ -186,59 +186,96 @@ export default function Main({
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
   // at an upper level for UpdateMomentView
-  let [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+
+  const [isAnimationAllowed, setIsAnimationAllowed] = useState(false);
 
   return (
     <main>
-      <div>
-        <div className="flex justify-between pb-8 align-baseline">
-          <PageTitle title={viewTitles[view]} />
-          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
+      <div className="w-[calc(100vw_-_9rem)">
+        {/* you get the pt-8, but you also need to flex center */}
+        <div className="flex w-[calc(100vw_-_9rem)] flex-col items-center pt-8">
+          {/* you get your px-8 and container with lg:max-w-4xl */}
+          <div className="container flex justify-between px-8 pb-8 align-baseline lg:max-w-4xl">
+            <PageTitle title={viewTitles[view]} />
+            <SetViewButton
+              view={view}
+              setView={setView}
+              setMoment={setMoment}
+            />
+          </div>
+          <Divider />
         </div>
-        <Divider />
-      </div>
-      {/* IMPORTANT: ACTUALLY HERE'S WHAT NEEDS TO BE THE MOTION.DIV, animating along its x-axis with some className={`flex`} animate={{ x: `-${index * 100}%` }}. "UpdateMomentView" is index 0, ReadMomentsView is index 1, and "CreateMomentView" is index 2. Then with a parent div that has className="overflow-hidden". */}
-      <div>
-        {/* putting motion on the div to prepare for animations */}
-        {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
-        {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
-        <motion.div className={clsx(view !== "update-moment" && "hidden")}>
-          {/* UpdateMomentView */}
-          <MomentForms
-            key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
-            variant="updating"
-            moment={moment}
-            destinationOptions={destinationOptions}
-            setView={setView}
-            setSubView={setSubView}
-            createOrUpdateMoment={createOrUpdateMoment}
-            deleteMoment={deleteMoment}
-            now={now}
-          />
-        </motion.div>
-        <motion.div className={clsx(view !== "read-moments" && "hidden")}>
-          <ReadMomentsView
-            allUserMomentsToCRUD={allUserMomentsToCRUD}
-            maxPages={maxPages}
-            view={view}
-            subView={subView}
-            setView={setView}
-            setSubView={setSubView}
-            setMoment={setMoment}
-            revalidateMoments={revalidateMoments}
-          />
-        </motion.div>
-        <motion.div className={clsx(view !== "create-moment" && "hidden")}>
-          {/* CreateMomentView */}
-          <MomentForms
-            variant="creating"
-            destinationOptions={destinationOptions}
-            setView={setView}
-            setSubView={setSubView}
-            createOrUpdateMoment={createOrUpdateMoment}
-            now={now}
-          />
-        </motion.div>
+        {/* IMPORTANT: ACTUALLY HERE'S WHAT NEEDS TO BE THE MOTION.DIV, animating along its x-axis with some className={`flex`} animate={{ x: `-${index * 100}%` }}. "UpdateMomentView" is index 0, ReadMomentsView is index 1, and "CreateMomentView" is index 2. Then with a parent div that has className="overflow-hidden".
+      Then a boolean will be needed so that animate only plays when createOrUpdate and delete are successful so that animate={{ x: isAllowed ? `-${index * 100}%` : undefined }}. And isAllowed will only be instantly be false as soon as the animation starts so onAnimationStart={() => setIsAllowed(false)}. isAllowed with be set to true in the successful paths (which currently are a null createOrUpdateMomentState) of createOrUpdateMomentAfterflow and deleteMomentAfterflow.
+      So. when createOrUpdateMoment or deleteMoment are successful, setIsAllowed(true), and then immediately setIsAllowed(false) once the animation starts. */}
+        {/* you get the pb-12, but you also need to flex center (no) */}
+        <div className="w-[calc(100vw_-_9rem)] pb-12">
+          <div className="flex">
+            {/* putting motion on the div to prepare for animations */}
+            {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
+            {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
+            {/* each of you get your px-8 and container with lg:max-w-4xl */}
+            <div
+              className={clsx(
+                view !== "update-moment" && "hidden",
+                "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
+              )}
+            >
+              <motion.div className={clsx("container px-8 lg:max-w-4xl")}>
+                {/* UpdateMomentView */}
+                <MomentForms
+                  key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+                  variant="updating"
+                  moment={moment}
+                  destinationOptions={destinationOptions}
+                  setView={setView}
+                  setSubView={setSubView}
+                  createOrUpdateMoment={createOrUpdateMoment}
+                  deleteMoment={deleteMoment}
+                  now={now}
+                />
+              </motion.div>
+            </div>
+            <div
+              className={clsx(
+                view !== "read-moments" && "hidden",
+                "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
+              )}
+            >
+              <motion.div className={clsx("container px-8 lg:max-w-4xl")}>
+                <ReadMomentsView
+                  allUserMomentsToCRUD={allUserMomentsToCRUD}
+                  maxPages={maxPages}
+                  view={view}
+                  subView={subView}
+                  setView={setView}
+                  setSubView={setSubView}
+                  setMoment={setMoment}
+                  revalidateMoments={revalidateMoments}
+                />
+              </motion.div>
+            </div>
+            <div
+              className={clsx(
+                view !== "create-moment" && "hidden",
+                "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
+              )}
+            >
+              <motion.div className={clsx("container px-8 lg:max-w-4xl")}>
+                {/* CreateMomentView */}
+                <MomentForms
+                  variant="creating"
+                  destinationOptions={destinationOptions}
+                  setView={setView}
+                  setSubView={setSubView}
+                  createOrUpdateMoment={createOrUpdateMoment}
+                  now={now}
+                />
+              </motion.div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
