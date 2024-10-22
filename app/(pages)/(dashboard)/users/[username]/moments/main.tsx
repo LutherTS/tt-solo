@@ -23,6 +23,7 @@ import {
   motion,
   Reorder,
   useDragControls,
+  useMotionValue,
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
@@ -189,15 +190,21 @@ export default function Main({
   // at an upper level for UpdateMomentView
   const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
 
-  const [isAnimationAllowed, setIsAnimationAllowed] = useState(false);
+  const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
+
+  let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
+
+  useEffect(() => {
+    currentViewHeight.set(
+      // 0 as fallback, so if there's no height on screen the error is here
+      document.getElementById(view)?.clientHeight || 0,
+    );
+  }, [view]);
 
   return (
-    // removed w-[calc(100vw_-_9rem)] for now
-    <main className="">
-      {/* you get the pt-8, but you also need to flex center */}
-      {/* and belowyou get your px-8 and container with lg:max-w-4xl */}
-      {/* hiding the header for now to focus on the carousel */}
-      <div className="flex w-[calc(100vw_-_9rem)] flex-col items-center pt-8">
+    <main className="pb-12 pt-8">
+      <div className="flex w-screen flex-col items-center md:w-[calc(100vw_-_9rem)]">
+        {/* and below you get your px-8 and container with lg:max-w-4xl */}
         <div className="container flex justify-between px-8 pb-8 align-baseline lg:max-w-4xl">
           <PageTitle title={viewTitles[view]} />
           <SetViewButton view={view} setView={setView} setMoment={setMoment} />
@@ -207,80 +214,100 @@ export default function Main({
       {/* IMPORTANT: ACTUALLY HERE'S WHAT NEEDS TO BE THE MOTION.DIV, animating along its x-axis with some className={`flex`} animate={{ x: `-${index * 100}%` }}. "UpdateMomentView" is index 0, ReadMomentsView is index 1, and "CreateMomentView" is index 2. Then with a parent div that has className="overflow-hidden".
       Then a boolean will be needed so that animate only plays when createOrUpdate and delete are successful so that animate={{ x: isAllowed ? `-${index * 100}%` : undefined }}. And isAllowed will only be instantly be false as soon as the animation starts so onAnimationStart={() => setIsAllowed(false)}. isAllowed with be set to true in the successful paths (which currently are a null createOrUpdateMomentState) of createOrUpdateMomentAfterflow and deleteMomentAfterflow.
       So. when createOrUpdateMoment or deleteMoment are successful, setIsAllowed(true), and then immediately setIsAllowed(false) once the animation starts. */}
-      {/* you get the pb-12, but you also need to flex center (no) */}
-      <div className="pb-12">
-        {/* incredible, the overflow-hidden doesn't work with relative; but does without flex-1 */}
-        <div className="relative w-[calc(100vw_-_9rem)] overflow-hidden">
-          <motion.div
-            className="flex"
-            animate={{ x: `-${views.indexOf(view) * 100}%` }}
-          >
-            {/* putting motion on the div to prepare for animations */}
-            {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
-            {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
-            {/* each of you get your px-8 and container with lg:max-w-4xl */}
-            <div
-              className={clsx(
-                // view !== "update-moment" && "hidden",
-                "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
-              )}
-            >
-              <div className={clsx("container px-8 lg:max-w-4xl")}>
-                {/* UpdateMomentView */}
-                <MomentForms
-                  key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
-                  variant="updating"
-                  moment={moment}
-                  destinationOptions={destinationOptions}
-                  setView={setView}
-                  setSubView={setSubView}
-                  createOrUpdateMoment={createOrUpdateMoment}
-                  deleteMoment={deleteMoment}
-                  now={now}
-                />
-              </div>
-            </div>
-            <div
-              className={clsx(
-                // view !== "read-moments" && "hidden",
-                "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
-              )}
-            >
-              <div className={clsx("container px-8 lg:max-w-4xl")}>
-                <ReadMomentsView
-                  allUserMomentsToCRUD={allUserMomentsToCRUD}
-                  maxPages={maxPages}
-                  view={view}
-                  subView={subView}
-                  setView={setView}
-                  setSubView={setSubView}
-                  setMoment={setMoment}
-                  revalidateMoments={revalidateMoments}
-                />
-              </div>
-            </div>
-            <div
-              className={clsx(
-                // view !== "create-moment" && "hidden",
-                "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
-              )}
-            >
-              <div className={clsx("container px-8 lg:max-w-4xl")}>
-                {/* CreateMomentView */}
-                <MomentForms
-                  variant="creating"
-                  destinationOptions={destinationOptions}
-                  setView={setView}
-                  setSubView={setSubView}
-                  createOrUpdateMoment={createOrUpdateMoment}
-                  now={now}
-                />
-              </div>
-            </div>
-          </motion.div>
-        </div>
+      {/* incredible, the overflow-hidden doesn't work with relative; but does without flex-1 */}
+      <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
+        <motion.div
+          className="flex"
+          // an error will return -1 if ever the screen shows empty
+          // this is the height I need to specify
+          animate={{
+            x: `-${views.indexOf(view) * 100}%`,
+          }}
+          initial={false}
+          transition={{
+            type: "spring",
+            bounce: isCRUDOpSuccessful ? 0.2 : 0,
+            duration: isCRUDOpSuccessful ? 0.4 : 0.2,
+          }}
+          onAnimationStart={() => setIsCRUDOpSuccessful(false)}
+          style={{
+            height: currentViewHeight,
+          }}
+        >
+          {/* putting motion on the div to prepare for animations */}
+          {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
+          {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
+          {/* each of you get your px-8 and container with lg:max-w-4xl */}
+          <ViewWrapper>
+            <ViewContainer id="update-moment">
+              {/* UpdateMomentView */}
+              <MomentForms
+                key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+                variant="updating"
+                moment={moment}
+                destinationOptions={destinationOptions}
+                setView={setView}
+                setSubView={setSubView}
+                createOrUpdateMoment={createOrUpdateMoment}
+                deleteMoment={deleteMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+          <ViewWrapper>
+            <ViewContainer id="read-moments">
+              <ReadMomentsView
+                allUserMomentsToCRUD={allUserMomentsToCRUD}
+                maxPages={maxPages}
+                view={view}
+                subView={subView}
+                setView={setView}
+                setSubView={setSubView}
+                setMoment={setMoment}
+                revalidateMoments={revalidateMoments}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+          <ViewWrapper>
+            <ViewContainer id="create-moment">
+              {/* CreateMomentView */}
+              <MomentForms
+                variant="creating"
+                destinationOptions={destinationOptions}
+                setView={setView}
+                setSubView={setSubView}
+                createOrUpdateMoment={createOrUpdateMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+        </motion.div>
       </div>
     </main>
+  );
+}
+
+function ViewWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]">
+      {children}
+    </div>
+  );
+}
+
+function ViewContainer({
+  id,
+  children,
+}: {
+  id: View;
+  children: React.ReactNode;
+}) {
+  return (
+    <div id={id} className="container px-8 lg:max-w-4xl">
+      {children}
+    </div>
   );
 }
 
@@ -546,6 +573,7 @@ function MomentForms({
   createOrUpdateMoment,
   deleteMoment,
   now,
+  setIsCRUDOpSuccessful,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
@@ -555,6 +583,7 @@ function MomentForms({
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
+  setIsCRUDOpSuccessful: SetState<boolean>;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
@@ -664,6 +693,7 @@ function MomentForms({
         startMomentDate,
         setSubView,
         setView,
+        setIsCRUDOpSuccessful,
       );
 
       setIsCreateOrUpdateMomentDone(false);
@@ -720,7 +750,12 @@ function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterflow(variant, createOrUpdateMomentState, setView);
+      deleteMomentAfterflow(
+        variant,
+        createOrUpdateMomentState,
+        setView,
+        setIsCRUDOpSuccessful,
+      );
 
       setIsDeleteMomentDone(false);
     }

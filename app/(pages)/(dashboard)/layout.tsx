@@ -27,8 +27,8 @@ export default function Layout({
           // container can coexist with max-w-4xl
           // removing all paddings then, px-8 pt-8 pb-12
           // and removing container, too, with that lg:max-w-4xl
-          // removed w-full overflow-clip
-          "min-h-screen",
+          // removed w-full
+          "min-h-screen overflow-clip",
           // "flex flex-col", // children is only one main tag
         )}
       >

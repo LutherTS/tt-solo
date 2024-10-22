@@ -22,7 +22,7 @@ export const createOrUpdateMomentAfterflow = (
   startMomentDate: string,
   setSubView: SetState<SubView>,
   setView: SetState<View>,
-  // setIsAnimationAllowed: SetState<boolean>
+  setIsCRUDOpSuccessful: SetState<boolean>,
 ) => {
   if (createOrUpdateMomentState) {
     switch (createOrUpdateMomentState.errorScrollPriority) {
@@ -43,7 +43,7 @@ export const createOrUpdateMomentAfterflow = (
       return s;
     });
   } else {
-    // setIsAnimationAllowed(true)
+    setIsCRUDOpSuccessful(true);
 
     // this now works thanks to export const dynamic = "force-dynamic";
     // ...I think
@@ -70,12 +70,12 @@ export const deleteMomentAfterflow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setView: SetState<View>,
-  // setIsAnimationAllowed: SetState<boolean>
+  setIsCRUDOpSuccessful: SetState<boolean>,
 ) => {
   if (createOrUpdateMomentState) {
     scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
   } else {
-    // setIsAnimationAllowed(true)
+    setIsCRUDOpSuccessful(true);
 
     setScrollToTop("read-moments", setView);
   }
