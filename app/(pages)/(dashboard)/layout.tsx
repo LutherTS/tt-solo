@@ -75,7 +75,7 @@ function Page({
     <div
       className={clsx(
         "min-h-screen overflow-clip",
-        // "flex flex-col", // children is only one main tag
+        "flex w-screen flex-col", // affects error pages, etc.
       )}
     >
       {children}
