@@ -64,8 +64,10 @@ export default async function MomentsPage({
 
   // PART READ (a.k.a database calls)
 
-  // params and searchParams are awaited in the RC 2
-  const username = params.username; // I need to see what happens if no params are provided here, like users//moments. // It just seems to be a global notFound because even the username console.log does not get triggered, like it doesn't even consider users//moments... Better even, the browser fixes the URL and considers it to be users/moments, an entirely different page. So that is indeed the "global" notFound page at the app level.
+  params = await params;
+
+  // params and searchParams are awaited in the RC 2 and in stable Next.js 15
+  const username = params.username;
   // console.log({ username });
 
   const userFound = await findUserIdByUsername(username);
@@ -77,6 +79,8 @@ export default async function MomentsPage({
   const user = userFound;
 
   const userId = user.id;
+
+  searchParams = await searchParams;
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
