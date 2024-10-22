@@ -29,7 +29,7 @@ export default function Layout({
           // and removing container, too, with that lg:max-w-4xl
           // removed w-full overflow-clip
           "min-h-screen",
-          "flex flex-col",
+          // "flex flex-col", // children is only one main tag
         )}
       >
         {/* Page Contents */}

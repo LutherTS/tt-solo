@@ -100,6 +100,7 @@ import {
   MOMENT_FORM_IDS,
   STEP_DURATION_ORIGINAL,
   INITIAL_PAGE,
+  views,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -191,38 +192,40 @@ export default function Main({
   const [isAnimationAllowed, setIsAnimationAllowed] = useState(false);
 
   return (
-    <main>
-      <div className="w-[calc(100vw_-_9rem)">
-        {/* you get the pt-8, but you also need to flex center */}
-        <div className="flex w-[calc(100vw_-_9rem)] flex-col items-center pt-8">
-          {/* you get your px-8 and container with lg:max-w-4xl */}
-          <div className="container flex justify-between px-8 pb-8 align-baseline lg:max-w-4xl">
-            <PageTitle title={viewTitles[view]} />
-            <SetViewButton
-              view={view}
-              setView={setView}
-              setMoment={setMoment}
-            />
-          </div>
-          <Divider />
+    // removed w-[calc(100vw_-_9rem)] for now
+    <main className="">
+      {/* you get the pt-8, but you also need to flex center */}
+      {/* and belowyou get your px-8 and container with lg:max-w-4xl */}
+      {/* hiding the header for now to focus on the carousel */}
+      <div className="flex w-[calc(100vw_-_9rem)] flex-col items-center pt-8">
+        <div className="container flex justify-between px-8 pb-8 align-baseline lg:max-w-4xl">
+          <PageTitle title={viewTitles[view]} />
+          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </div>
-        {/* IMPORTANT: ACTUALLY HERE'S WHAT NEEDS TO BE THE MOTION.DIV, animating along its x-axis with some className={`flex`} animate={{ x: `-${index * 100}%` }}. "UpdateMomentView" is index 0, ReadMomentsView is index 1, and "CreateMomentView" is index 2. Then with a parent div that has className="overflow-hidden".
+        <Divider />
+      </div>
+      {/* IMPORTANT: ACTUALLY HERE'S WHAT NEEDS TO BE THE MOTION.DIV, animating along its x-axis with some className={`flex`} animate={{ x: `-${index * 100}%` }}. "UpdateMomentView" is index 0, ReadMomentsView is index 1, and "CreateMomentView" is index 2. Then with a parent div that has className="overflow-hidden".
       Then a boolean will be needed so that animate only plays when createOrUpdate and delete are successful so that animate={{ x: isAllowed ? `-${index * 100}%` : undefined }}. And isAllowed will only be instantly be false as soon as the animation starts so onAnimationStart={() => setIsAllowed(false)}. isAllowed with be set to true in the successful paths (which currently are a null createOrUpdateMomentState) of createOrUpdateMomentAfterflow and deleteMomentAfterflow.
       So. when createOrUpdateMoment or deleteMoment are successful, setIsAllowed(true), and then immediately setIsAllowed(false) once the animation starts. */}
-        {/* you get the pb-12, but you also need to flex center (no) */}
-        <div className="w-[calc(100vw_-_9rem)] pb-12">
-          <div className="flex">
+      {/* you get the pb-12, but you also need to flex center (no) */}
+      <div className="pb-12">
+        {/* incredible, the overflow-hidden doesn't work with relative; but does without flex-1 */}
+        <div className="relative w-[calc(100vw_-_9rem)] overflow-hidden">
+          <motion.div
+            className="flex"
+            animate={{ x: `-${views.indexOf(view) * 100}%` }}
+          >
             {/* putting motion on the div to prepare for animations */}
             {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
             {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
             {/* each of you get your px-8 and container with lg:max-w-4xl */}
             <div
               className={clsx(
-                view !== "update-moment" && "hidden",
+                // view !== "update-moment" && "hidden",
                 "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
               )}
             >
-              <motion.div className={clsx("container px-8 lg:max-w-4xl")}>
+              <div className={clsx("container px-8 lg:max-w-4xl")}>
                 {/* UpdateMomentView */}
                 <MomentForms
                   key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
@@ -235,15 +238,15 @@ export default function Main({
                   deleteMoment={deleteMoment}
                   now={now}
                 />
-              </motion.div>
+              </div>
             </div>
             <div
               className={clsx(
-                view !== "read-moments" && "hidden",
+                // view !== "read-moments" && "hidden",
                 "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
               )}
             >
-              <motion.div className={clsx("container px-8 lg:max-w-4xl")}>
+              <div className={clsx("container px-8 lg:max-w-4xl")}>
                 <ReadMomentsView
                   allUserMomentsToCRUD={allUserMomentsToCRUD}
                   maxPages={maxPages}
@@ -254,15 +257,15 @@ export default function Main({
                   setMoment={setMoment}
                   revalidateMoments={revalidateMoments}
                 />
-              </motion.div>
+              </div>
             </div>
             <div
               className={clsx(
-                view !== "create-moment" && "hidden",
+                // view !== "create-moment" && "hidden",
                 "flex w-[calc(100vw_-_9rem)] shrink-0 flex-col items-center",
               )}
             >
-              <motion.div className={clsx("container px-8 lg:max-w-4xl")}>
+              <div className={clsx("container px-8 lg:max-w-4xl")}>
                 {/* CreateMomentView */}
                 <MomentForms
                   variant="creating"
@@ -272,9 +275,9 @@ export default function Main({
                   createOrUpdateMoment={createOrUpdateMoment}
                   now={now}
                 />
-              </motion.div>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </main>

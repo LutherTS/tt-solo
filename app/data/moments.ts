@@ -81,7 +81,6 @@ export const STEP_DURATION_ORIGINAL = "10";
 
 // views and subviews
 
-// currently unused
 export const views = [
   "update-moment",
   "read-moments",
