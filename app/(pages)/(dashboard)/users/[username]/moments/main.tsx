@@ -19,7 +19,6 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
-  // AnimatePresence,
   motion,
   Reorder,
   useDragControls,
@@ -202,19 +201,17 @@ export default function Main({
   }, [view]);
 
   return (
-    <main className="pb-12 pt-8">
+    <main>
+      {/* same "flex w-screen flex-col items-center md:w-[calc(100vw_-_9rem)]" as ViewWrapper (without the shrink-0) */}
       <div className="flex w-screen flex-col items-center md:w-[calc(100vw_-_9rem)]">
-        {/* and below you get your px-8 and container with lg:max-w-4xl */}
-        <div className="container flex justify-between px-8 pb-8 align-baseline lg:max-w-4xl">
+        {/* same "container px-8 lg:max-w-4xl" as ViewContainer (common classes problem yet to be solved) */}
+        <div className="container flex justify-between px-8 py-8 align-baseline lg:max-w-4xl">
           <PageTitle title={viewTitles[view]} />
           <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </div>
         <Divider />
       </div>
-      {/* IMPORTANT: ACTUALLY HERE'S WHAT NEEDS TO BE THE MOTION.DIV, animating along its x-axis with some className={`flex`} animate={{ x: `-${index * 100}%` }}. "UpdateMomentView" is index 0, ReadMomentsView is index 1, and "CreateMomentView" is index 2. Then with a parent div that has className="overflow-hidden".
-      Then a boolean will be needed so that animate only plays when createOrUpdate and delete are successful so that animate={{ x: isAllowed ? `-${index * 100}%` : undefined }}. And isAllowed will only be instantly be false as soon as the animation starts so onAnimationStart={() => setIsAllowed(false)}. isAllowed with be set to true in the successful paths (which currently are a null createOrUpdateMomentState) of createOrUpdateMomentAfterflow and deleteMomentAfterflow.
-      So. when createOrUpdateMoment or deleteMoment are successful, setIsAllowed(true), and then immediately setIsAllowed(false) once the animation starts. */}
-      {/* incredible, the overflow-hidden doesn't work with relative; but does without flex-1 */}
+      {/* incredible, the overflow-hidden just doesn't work with relative */}
       <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
         <motion.div
           className="flex"
@@ -234,10 +231,6 @@ export default function Main({
             height: currentViewHeight,
           }}
         >
-          {/* putting motion on the div to prepare for animations */}
-          {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
-          {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
-          {/* each of you get your px-8 and container with lg:max-w-4xl */}
           <ViewWrapper>
             <ViewContainer id="update-moment">
               {/* UpdateMomentView */}
@@ -305,7 +298,7 @@ function ViewContainer({
   children: React.ReactNode;
 }) {
   return (
-    <div id={id} className="container px-8 lg:max-w-4xl">
+    <div id={id} className={clsx("container px-8 lg:max-w-4xl", "pb-12")}>
       {children}
     </div>
   );
@@ -313,6 +306,7 @@ function ViewContainer({
 
 // Main Leading Components
 
+// some style work there left to be done at a later occasion
 function ReadMomentsView({
   allUserMomentsToCRUD,
   maxPages,
@@ -802,7 +796,6 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
-        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeCreate}
         setStepDuree={setStepDureeCreate}
@@ -817,7 +810,6 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
-        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeUpdate}
         setStepDuree={setStepDureeUpdate}
@@ -928,9 +920,6 @@ function MomentForms({
               />
             </>
           )}
-          {/* honestly not sure if animations are necessary now */}
-          {/* keeping the motion.div still in components though */}
-          {/* <AnimatePresence initial={false} mode="popLayout"> */}
           {(() => {
             switch (stepVisible) {
               case "creating":
@@ -962,7 +951,6 @@ function MomentForms({
                 return null;
             }
           })()}
-          {/* </AnimatePresence> */}
         </Section>
         <Divider />
         <Section>
@@ -1035,7 +1023,7 @@ function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
-        // SetViewButton is the only that does setMoment to undefined
+        // SetViewButton is the only one that does setMoment to undefined
         if (view === "update-moment") setMoment(undefined);
         setScrollToTop(desiredView, setView);
       }}
@@ -1335,7 +1323,6 @@ function StepForm({
   currentStepId,
   steps,
   setSteps,
-  stepVisible,
   setStepVisible,
   stepDuree,
   setStepDuree,
@@ -1349,7 +1336,6 @@ function StepForm({
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: SetState<StepFromCRUD[]>;
-  stepVisible: StepVisible;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;
@@ -1864,21 +1850,7 @@ function StepVisibleCreating({
 
   return (
     // was a form, but forms can't be nested
-    <motion.div
-      className="flex flex-col gap-y-8"
-      // If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
-
-      // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-      // animate={{
-      //   opacity: 1,
-      //   height: "auto",
-      //   transition: { duration: 0.2 },
-      // }}
-      // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-
-      // The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
-      // That's what it is: the two gap-y-8 remain stacked during animations.
-    >
+    <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Ajouter une étape
@@ -1941,7 +1913,7 @@ function StepVisibleCreating({
           </Button>
         </StepFormControlsDesktopWrapper>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -1953,17 +1925,7 @@ function StepVisibleCreate({
   isAddStepPending: boolean;
 }) {
   return (
-    <motion.div
-    // Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
-
-    // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-    // animate={{
-    //   opacity: 1,
-    //   height: "auto",
-    //   transition: { duration: 0.2 },
-    // }}
-    // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-    >
+    <div>
       <Button
         type="button"
         variant="neutral"
@@ -1972,7 +1934,7 @@ function StepVisibleCreate({
       >
         Ajouter une étape
       </Button>
-    </motion.div>
+    </div>
   );
 }
 
@@ -2456,4 +2418,27 @@ else
 // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
 // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below. // DONE.
 // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
+...
+// If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
+
+// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+// animate={{
+//   opacity: 1,
+//   height: "auto",
+//   transition: { duration: 0.2 },
+// }}
+// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+
+// The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
+// That's what it is: the two gap-y-8 remain stacked during animations.
+...
+// Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
+
+// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+// animate={{
+//   opacity: 1,
+//   height: "auto",
+//   transition: { duration: 0.2 },
+// }}
+// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
 */
