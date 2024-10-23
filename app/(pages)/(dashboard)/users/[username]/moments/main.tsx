@@ -792,7 +792,7 @@ function MomentForms({
   // step actions
   // to access step actions' isPending states from their parent component (MomentForms)
   // IMPORTANT deleteStepAction should be included // Done.
-  // (so one more week to completely complete the form and then I work on the keynote for my talk at React Paris Meetup november 2024)
+  // (so the rest of this week to completely complete the form and then I work on the keynote for my talk at React Paris Meetup November 2024)
 
   // addStepAction
 
@@ -830,6 +830,8 @@ function MomentForms({
   // deleteStepAction
 
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
+
+  // Should I be using capital F Form? I could try.
 
   return (
     <>
