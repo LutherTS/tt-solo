@@ -790,8 +790,8 @@ function MomentForms({
   }, [isDeleteMomentDone]);
 
   // step actions
-  // to access their isPending states from their parent component (MomentForms)
-  // IMPORTANT deleteStepAction should be included
+  // to access step actions' isPending states from their parent component (MomentForms)
+  // IMPORTANT deleteStepAction should be included // Done.
   // (so one more week to completely complete the form and then I work on the keynote for my talk at React Paris Meetup november 2024)
 
   // addStepAction
@@ -826,6 +826,10 @@ function MomentForms({
   // resetStepAction
 
   const [isResetStepPending, startResetStepTransition] = useTransition();
+
+  // deleteStepAction
+
+  const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
   return (
     <>
@@ -948,6 +952,8 @@ function MomentForms({
                         setCreateOrUpdateMomentState
                       }
                       stepsCompoundDurations={stepsCompoundDurations}
+                      isDeleteStepPending={isDeleteStepPending}
+                      startDeleteStepTransition={startDeleteStepTransition}
                     />
                   );
                 })}
@@ -1632,6 +1638,8 @@ function ReorderItem({
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
   stepsCompoundDurations,
+  isDeleteStepPending,
+  startDeleteStepTransition,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1651,6 +1659,8 @@ function ReorderItem({
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
   stepsCompoundDurations: number[];
+  isDeleteStepPending: boolean;
+  startDeleteStepTransition: TransitionStartFunction;
 }) {
   const controls = useDragControls();
 
@@ -1663,8 +1673,6 @@ function ReorderItem({
   const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
 
   // deleteStepAction
-
-  const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
