@@ -135,21 +135,21 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 // Main Component
 
 export default function Main({
+  now,
   allUserMomentsToCRUD,
   maxPages,
   destinationOptions,
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  now,
 }: {
+  now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  now: string;
 }) {
   console.log({ now });
 
@@ -198,21 +198,27 @@ export default function Main({
 
   return (
     <main>
-      {/* same "flex w-screen flex-col items-center md:w-[calc(100vw_-_9rem)]" as ViewWrapper (without the shrink-0) */}
-      <div className="flex w-screen flex-col items-center md:w-[calc(100vw_-_9rem)]">
-        {/* same "container px-8 lg:max-w-4xl" as ViewContainer (common classes problem yet to be solved) */}
-        <div className="container flex justify-between px-8 py-8 align-baseline lg:max-w-4xl">
+      <div
+        className={clsx(
+          "flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]", // same as ViewWrapper
+        )}
+      >
+        <div
+          className={clsx(
+            "container px-8 lg:max-w-4xl", // same as ViewContainer
+            "flex justify-between py-8 align-baseline",
+          )}
+        >
           <PageTitle title={viewTitles[view]} />
           <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </div>
         <Divider />
       </div>
-      {/* incredible, the overflow-hidden just doesn't work with relative */}
+      {/* incredible, the overflow-hidden just doesn't work without relative */}
       <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
         <motion.div
           className="flex"
-          // an error will return -1 if ever the screen shows empty
-          // this is the height I need to specify
+          // an error will return -1, if ever the screen shows empty
           animate={{
             x: `-${views.indexOf(view) * 100}%`,
           }}
@@ -318,8 +324,11 @@ function ViewContainer({
   return (
     <div
       id={id}
-      ref={reference} // it works actually
-      className={clsx("container px-8 lg:max-w-4xl", "pb-12")}
+      ref={reference}
+      className={clsx(
+        "container px-8 lg:max-w-4xl",
+        "pb-12", // ignored by useMeasure
+      )}
     >
       {children}
     </div>
@@ -720,9 +729,10 @@ function MomentForms({
     startResetMomentTransition(() => {
       const noConfirm =
         // @ts-ignore might not work on mobile but it's a bonus
-        event.nativeEvent.explicitOriginalTarget?.type !== "reset";
+        event.nativeEvent.explicitOriginalTarget?.type !== "reset"; // could be improved later in case an even upper reset buton triggers this reset action
 
       // retroactive high level JavaScript, but honestly this should be done on any action that uses a confirm, assuming that action can be triggered externally and automatically
+      // This allows that wherever I reset the form but triggering its HTML reset, it gets fully reset including controlled fields and default states, and even resets its cascading "children forms" since this resetMoment actually triggers the reset of stepFromCreating.
       if (
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
@@ -778,6 +788,11 @@ function MomentForms({
       setIsDeleteMomentDone(false);
     }
   }, [isDeleteMomentDone]);
+
+  // step actions
+  // to access their isPending states from their parent component (MomentForms)
+  // IMPORTANT deleteStepAction should be included
+  // (so one more week to completely complete the form and then I work on the keynote for my talk at React Paris Meetup november 2024)
 
   // addStepAction
 

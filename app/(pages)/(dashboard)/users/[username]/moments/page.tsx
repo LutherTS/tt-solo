@@ -64,9 +64,10 @@ export default async function MomentsPage({
 
   // PART READ (a.k.a database calls)
 
+  // params and searchParams are awaited in the RC 2 and in stable Next.js 15
+  // this simple line assigns the resolved params promise to the params variable already use in the code
   params = await params;
 
-  // params and searchParams are awaited in the RC 2 and in stable Next.js 15
   const username = params.username;
   // console.log({ username });
 
@@ -297,8 +298,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
-    // Haven't tested it yet, but it should be working.
-    // This is it. The action itself, its barebones, the action itself is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
+    // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
     return await createOrUpdateMomentFlow(
       formData,
       variant,
@@ -310,9 +310,10 @@ export default async function MomentsPage({
       user,
     );
 
-    // I need to emphasize what is magical about this.
-    // I don't need to authenticate the user in the action. Why? Because the action does not exist if the user is not authenticated. :D
-    // And this solve the issue of people crying that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
+    // I need to emphasize what is magical about this, if I'm correct.
+    // I don't need to authenticate the user in the action. Why? Because the action does or should not exist if the user is not authenticated. :D
+    // And this solves the issue of people saying that yeah, actions are dangerous because they go on the server and they need to be secure, etc... No. If the page is secure, the action is secure. Because the action is created with the page.
+    // The key takeaway is, the page handles authentication, the action handles authorization. Each entry point to the server, one by one, now has its own dedicated concern.
   }
 
   async function deleteMoment(
@@ -334,9 +335,20 @@ export default async function MomentsPage({
   // However, if the actions were obtained via import in a client component such as the one below, user data would have to be bound directly on the client component itself (which is insecure) or via a separate child server component (perhaps secure, but an exact step for that data) which would also have to pass these actions as props, doing the exact same thing.
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
-    // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. Loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
-    <Suspense fallback={<p>Loading...</p>}>
+    // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
+    <Suspense
+      fallback={
+        // no look at the styles, this is really just a placeholder
+        <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center">
+          <div className="space-y-4 text-center">
+            <p>Loading...</p>
+          </div>
+        </div>
+      }
+    >
       <Main
+        // time (aligned across server and client for hydration cases)
+        now={now}
         // reads
         allUserMomentsToCRUD={allUserMomentsToCRUD}
         maxPages={maxPages}
@@ -345,7 +357,6 @@ export default async function MomentsPage({
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
-        now={now}
       />
     </Suspense>
   );

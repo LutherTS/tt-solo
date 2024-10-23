@@ -706,6 +706,7 @@ export function Textarea({
         defaultValue={defaultValue}
         required={required}
         // No line breaks.
+        // ...But I'm sure it can still be circumvented by some copypasting. Something to explore.
         onKeyDown={(event) => {
           if (event.key === "Enter") event.preventDefault();
         }}
@@ -1191,6 +1192,7 @@ export function Button({
         variant === "confirm-step" && clsx(notDestroy, confirmStep),
         variant === "cancel-step" && clsx(notDestroy, cancelStep),
       )}
+      // yeah I'm not using that action/formAction prop anymore
       formAction={formAction}
       onClick={onClick}
     >

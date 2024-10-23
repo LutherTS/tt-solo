@@ -74,7 +74,8 @@ function Page({
   return (
     <div
       className={clsx(
-        "min-h-screen overflow-clip",
+        "min-h-screen",
+        "overflow-clip", // affects the divider
         "flex w-screen flex-col", // affects error pages, etc.
       )}
     >
