@@ -91,6 +91,7 @@ export function SideNavContents() {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // default for warning handling
           // https://nextjs.org/docs/pages/api-reference/components/image#sizes
           fill
+          priority // https://nextjs.org/docs/pages/api-reference/components/image#priority
         />
       </div>
     </div>
