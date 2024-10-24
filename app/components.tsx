@@ -1,5 +1,10 @@
 "use client";
 
+/* IMPORTANT
+I need to specify however, that the idea of going through every single component to decide whether it should explicitely be a Server Component or a Client Component should be done on the project is already getting shipped.
+But honestly, what ought to be the best is if React 19 ships with a way to do it automatically. React 19 would scan you code, find if a component (or better even, an HTML node but that would be magic at this point) utilizes any interactivity to decide whether it should be considered by React 19 as a Server Component or Client Component, without even needing to specify "use server" or "use client" anymore. 
+*/
+
 import { ComponentProps, MouseEventHandler } from "react";
 import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
