@@ -11,11 +11,3 @@
   display: none;
 }
 /* https://blog.logrocket.com/hide-scrollbar-without-impacting-scrolling-css/ */
-
-.view-wrapper {
-  @apply flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)];
-}
-
-.view-container {
-  @apply container px-8 lg:max-w-4xl;
-}

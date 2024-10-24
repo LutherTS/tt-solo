@@ -13,7 +13,7 @@ import {
   dateToInputDatetime,
   defineCurrentPage,
 } from "@/app/utilities/moments";
-import Main from "./main-server";
+import Main from "./main";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,

@@ -1151,6 +1151,8 @@ export function Button({
   const showDisabledStyles =
     isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled);
 
+  // add a disable that does not affect disable styles //
+
   const destroy =
     "w-fit px-1 text-sm text-blue-500 hover:text-blue-600 focus-visible:rounded focus-visible:outline-blue-500 active:text-blue-400";
   const destroyStep = clsx(

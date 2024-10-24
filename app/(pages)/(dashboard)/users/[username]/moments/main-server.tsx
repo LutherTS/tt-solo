@@ -139,7 +139,7 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 // Main Component
 
 // !! Client Component
-export default function Main({
+export default function Page({
   // time
   now,
   // reads
@@ -179,6 +179,77 @@ export default function Main({
   // starting directly with the create form for now
   let [view, setView] = useState<View>("create-moment");
 
+  // at an upper level for UpdateMomentView
+  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+
+  return (
+    <>
+      <Header view={view} setView={setView} setMoment={setMoment} />
+      <Divider />
+      <Main
+        now={now}
+        allUserMomentsToCRUD={allUserMomentsToCRUD}
+        maxPages={maxPages}
+        destinationOptions={destinationOptions}
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+        view={view}
+        setView={setView}
+        moment={moment}
+        setMoment={setMoment}
+      />
+    </>
+  );
+}
+
+function Header({
+  view,
+  setView,
+  setMoment,
+}: {
+  view: View;
+  setView: SetState<View>;
+  setMoment: SetState<MomentToCRUD | undefined>;
+}) {
+  return (
+    <header>
+      <PageSegment>
+        <HeaderSegment>
+          <PageTitle title={viewTitles[view]} />
+          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
+        </HeaderSegment>
+      </PageSegment>
+    </header>
+  );
+}
+
+// !! Client Component
+function Main({
+  now,
+  allUserMomentsToCRUD,
+  maxPages,
+  destinationOptions,
+  revalidateMoments,
+  createOrUpdateMoment,
+  deleteMoment,
+  view,
+  setView,
+  moment,
+  setMoment,
+}: {
+  now: string;
+  allUserMomentsToCRUD: UserMomentsToCRUD[];
+  maxPages: number[];
+  destinationOptions: Option[];
+  revalidateMoments: RevalidateMoments;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
+  view: View;
+  setView: SetState<View>;
+  moment: MomentToCRUD | undefined;
+  setMoment: SetState<MomentToCRUD | undefined>;
+}) {
   const [
     _realUserMoments,
     realPastMoments,
@@ -197,113 +268,78 @@ export default function Main({
 
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
-  // at an upper level for UpdateMomentView
-  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
-
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
 
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
-  // Think about it. The height thing is a Main thing. So it's only natural that the ref should... No. Because each of the views are supposed to have their own refs.
-
-  // Then it's ViewWrapper and ViewContainer container who are going to pass down the following, optional props, but instead of taking children. Better yet... Which are they two separate components?
-  // id,
-  // currentView,
-  // currentViewHeight,
-
-  // const [ref, { height }] = useMeasure();
-  // making TypeScript happy
-  // const reference = ref as Ref<HTMLDivElement>;
-
-  // if (id === currentView) currentViewHeight.set(height + 12 * 4); // 12 * 4 because height from useMeasure does not count self padding ("pb-12" below)
+  // penser à désactiver les boutons des vues cachées puisqu'elles existent toujours dans le DOM...
 
   return (
     <main>
-      <PageSegment>
-        <HeaderSegment>
-          <PageTitle title={viewTitles[view]} />
-          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
-        </HeaderSegment>
-      </PageSegment>
-      <Divider />
-      {/* incredible, the overflow-hidden just doesn't work without relative */}
-      <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
-        <motion.div
-          className="flex"
-          // an error will return -1, if ever the screen shows empty
-          animate={{
-            x: `-${views.indexOf(view) * 100}%`,
-          }}
-          initial={false}
-          transition={{
-            type: "spring",
-            bounce: isCRUDOpSuccessful ? 0.2 : 0,
-            duration: isCRUDOpSuccessful ? 0.4 : 0.2,
-          }}
-          onAnimationStart={() => setIsCRUDOpSuccessful(false)}
-          style={{
-            height: currentViewHeight,
-          }}
-        >
-          <PageSegment>
-            <ViewSegment
-              id="update-moment"
-              currentView={view}
-              currentViewHeight={currentViewHeight}
-            >
-              {/* UpdateMomentView */}
-              <MomentForms
-                key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
-                variant="updating"
-                moment={moment}
-                destinationOptions={destinationOptions}
-                setView={setView}
-                setSubView={setSubView}
-                createOrUpdateMoment={createOrUpdateMoment}
-                deleteMoment={deleteMoment}
-                now={now}
-                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-              />
-            </ViewSegment>
-          </PageSegment>
-          <PageSegment>
-            <ViewSegment
-              id="read-moments"
-              currentView={view}
-              currentViewHeight={currentViewHeight}
-            >
-              <ReadMomentsView
-                allUserMomentsToCRUD={allUserMomentsToCRUD}
-                maxPages={maxPages}
-                view={view}
-                subView={subView}
-                setView={setView}
-                setSubView={setSubView}
-                setMoment={setMoment}
-                revalidateMoments={revalidateMoments}
-              />
-            </ViewSegment>
-          </PageSegment>
-          <PageSegment>
-            <ViewSegment
-              id="create-moment"
-              currentView={view}
-              currentViewHeight={currentViewHeight}
-            >
-              {/* CreateMomentView */}
-              <MomentForms
-                variant="creating"
-                destinationOptions={destinationOptions}
-                setView={setView}
-                setSubView={setSubView}
-                createOrUpdateMoment={createOrUpdateMoment}
-                now={now}
-                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-              />
-            </ViewSegment>
-          </PageSegment>
-        </motion.div>
-      </div>
+      <ViewsCarousel
+        view={view}
+        isCRUDOpSuccessful={isCRUDOpSuccessful}
+        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+        currentViewHeight={currentViewHeight}
+      >
+        <PageSegment>
+          <ViewSegment
+            id="update-moment"
+            currentView={view}
+            currentViewHeight={currentViewHeight}
+          >
+            {/* UpdateMomentView */}
+            <MomentForms
+              key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+              variant="updating"
+              moment={moment}
+              destinationOptions={destinationOptions}
+              setView={setView}
+              setSubView={setSubView}
+              createOrUpdateMoment={createOrUpdateMoment}
+              deleteMoment={deleteMoment}
+              now={now}
+              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+            />
+          </ViewSegment>
+        </PageSegment>
+        <PageSegment>
+          <ViewSegment
+            id="read-moments"
+            currentView={view}
+            currentViewHeight={currentViewHeight}
+          >
+            <ReadMomentsView
+              allUserMomentsToCRUD={allUserMomentsToCRUD}
+              maxPages={maxPages}
+              view={view}
+              subView={subView}
+              setView={setView}
+              setSubView={setSubView}
+              setMoment={setMoment}
+              revalidateMoments={revalidateMoments}
+            />
+          </ViewSegment>
+        </PageSegment>
+        <PageSegment>
+          <ViewSegment
+            id="create-moment"
+            currentView={view}
+            currentViewHeight={currentViewHeight}
+          >
+            {/* CreateMomentView */}
+            <MomentForms
+              variant="creating"
+              destinationOptions={destinationOptions}
+              setView={setView}
+              setSubView={setSubView}
+              createOrUpdateMoment={createOrUpdateMoment}
+              now={now}
+              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+            />
+          </ViewSegment>
+        </PageSegment>
+      </ViewsCarousel>
     </main>
   );
 }
@@ -318,18 +354,14 @@ function PageSegment({ children }: { children: React.ReactNode }) {
 
 function SegmentWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className={clsx(
-        "flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]",
-      )}
-    >
+    <div className="flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]">
       {children}
     </div>
   );
 }
 
 function SegmentContainer({ children }: { children: React.ReactNode }) {
-  return <div className={clsx("container px-8 lg:max-w-4xl")}>{children}</div>;
+  return <div className="container px-8 lg:max-w-4xl">{children}</div>;
 }
 
 function HeaderSegment({ children }: { children: React.ReactNode }) {
@@ -338,6 +370,80 @@ function HeaderSegment({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ViewsCarousel({
+  view,
+  isCRUDOpSuccessful,
+  setIsCRUDOpSuccessful,
+  currentViewHeight,
+  children,
+}: {
+  view: View;
+  isCRUDOpSuccessful: boolean;
+  setIsCRUDOpSuccessful: SetState<boolean>;
+  currentViewHeight: MotionValue<number>;
+  children: React.ReactNode;
+}) {
+  return (
+    <ViewsCarouselWrapper>
+      <ViewsCarouselContainer
+        view={view}
+        isCRUDOpSuccessful={isCRUDOpSuccessful}
+        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+        currentViewHeight={currentViewHeight}
+      >
+        {children}
+      </ViewsCarouselContainer>
+    </ViewsCarouselWrapper>
+  );
+}
+
+function ViewsCarouselWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    // the overflow-hidden just doesn't work without relative
+    <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
+      {children}
+    </div>
+  );
+}
+
+// !! Client Component
+function ViewsCarouselContainer({
+  view,
+  isCRUDOpSuccessful,
+  setIsCRUDOpSuccessful,
+  currentViewHeight,
+  children,
+}: {
+  view: View;
+  isCRUDOpSuccessful: boolean;
+  setIsCRUDOpSuccessful: SetState<boolean>;
+  currentViewHeight: MotionValue<number>;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      className="flex"
+      // an error will return -1, if ever the screen shows empty
+      animate={{
+        x: `-${views.indexOf(view) * 100}%`,
+      }}
+      initial={false}
+      transition={{
+        type: "spring",
+        bounce: isCRUDOpSuccessful ? 0.2 : 0,
+        duration: isCRUDOpSuccessful ? 0.4 : 0.2,
+      }}
+      onAnimationStart={() => setIsCRUDOpSuccessful(false)}
+      style={{
+        height: currentViewHeight,
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// !! Client Component
 function ViewSegment({
   id,
   currentView,
@@ -360,50 +466,6 @@ function ViewSegment({
       {children}
       {/* spacer instead of padding for correct useMeasure calculations */}
       <div className="h-12"></div>
-    </div>
-  );
-}
-
-function ViewWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className={clsx(
-        "view-wrapper", // "flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]"
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-// !! Client Component
-function ViewContainer({
-  id,
-  currentView,
-  currentViewHeight,
-  children,
-}: {
-  id?: View;
-  currentView?: View;
-  currentViewHeight?: MotionValue<number>;
-  children: React.ReactNode;
-}) {
-  // const [ref, { height }] = useMeasure();
-  // making TypeScript happy
-  // const reference = ref as Ref<HTMLDivElement>;
-
-  // if (id === currentView) currentViewHeight.set(height + 12 * 4); // 12 * 4 because height from useMeasure does not count self padding ("pb-12" below)
-
-  return (
-    <div
-      // id={id}
-      // ref={reference}
-      className={clsx(
-        "view-container", // "container px-8 lg:max-w-4xl",
-        // "pb-12", // ignored by useMeasure
-      )}
-    >
-      {children}
     </div>
   );
 }
