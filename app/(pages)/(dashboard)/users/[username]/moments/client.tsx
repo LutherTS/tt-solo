@@ -237,6 +237,7 @@ export function Main({
               deleteMoment={deleteMoment}
               now={now}
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              allButtonsDisabled={view !== "update-moment"}
             />
           </ViewSegment>
         </LocalServerComponents.PageSegment>
@@ -255,6 +256,7 @@ export function Main({
               setSubView={setSubView}
               setMoment={setMoment}
               revalidateMoments={revalidateMoments}
+              allButtonsDisabled={view !== "read-moments"}
             />
           </ViewSegment>
         </LocalServerComponents.PageSegment>
@@ -273,6 +275,7 @@ export function Main({
               createOrUpdateMoment={createOrUpdateMoment}
               now={now}
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              allButtonsDisabled={view !== "create-moment"}
             />
           </ViewSegment>
         </LocalServerComponents.PageSegment>
@@ -352,6 +355,7 @@ export function ReadMomentsView({
   setSubView,
   setMoment,
   revalidateMoments,
+  allButtonsDisabled,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
@@ -361,6 +365,7 @@ export function ReadMomentsView({
   setSubView: SetState<SubView>;
   setMoment: SetState<MomentToCRUD | undefined>;
   revalidateMoments: RevalidateMoments;
+  allButtonsDisabled: boolean;
 }) {
   const [
     realAllMoments,
@@ -535,6 +540,7 @@ export function ReadMomentsView({
         ))}
         <RevalidateMomentsButton
           // I insist on specifying and sending all of my actions' booleans because they can be used for stylistic purposes with isDedicatedDisabled
+          allButtonsDisabled={allButtonsDisabled}
           revalidateMomentsAction={revalidateMomentsAction}
           isRevalidateMomentsPending={isRevalidateMomentsPending}
         />
@@ -576,15 +582,19 @@ export function ReadMomentsView({
               handlePagination={handlePagination}
               direction="left"
               subView={subView}
-              disabled={currentPage === 1}
+              disabled={allButtonsDisabled || currentPage === 1}
               icon="ArrowLeftSolid"
+              allButtonsDisabled={allButtonsDisabled}
             />
             <PaginationButton
               handlePagination={handlePagination}
               direction="right"
               subView={subView}
-              disabled={currentPage === subViewMaxPages[subView]}
+              disabled={
+                allButtonsDisabled || currentPage === subViewMaxPages[subView]
+              }
               icon="ArrowRightSolid"
+              allButtonsDisabled={allButtonsDisabled}
             />
           </div>
         </>
@@ -609,6 +619,7 @@ export function MomentForms({
   deleteMoment,
   now,
   setIsCRUDOpSuccessful,
+  allButtonsDisabled,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
@@ -619,6 +630,7 @@ export function MomentForms({
   deleteMoment?: DeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
+  allButtonsDisabled: boolean;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
@@ -966,6 +978,7 @@ export function MomentForms({
                       stepsCompoundDurations={stepsCompoundDurations}
                       isDeleteStepPending={isDeleteStepPending}
                       startDeleteStepTransition={startDeleteStepTransition}
+                      allButtonsDisabled={allButtonsDisabled}
                     />
                   );
                 })}
@@ -994,6 +1007,7 @@ export function MomentForms({
                     isCancelStepPending={isCancelStepPending}
                     stepsCompoundDurations={stepsCompoundDurations}
                     startMomentDate={startMomentDate}
+                    allButtonsDisabled={allButtonsDisabled}
                   />
                 );
               case "create":
@@ -1002,6 +1016,7 @@ export function MomentForms({
                     key={stepVisible}
                     addStepAction={addStepAction}
                     isAddStepPending={isAddStepPending}
+                    allButtonsDisabled={allButtonsDisabled}
                   />
                 );
               default:
@@ -1019,6 +1034,7 @@ export function MomentForms({
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
               <LocalServerComponents.ResetOrEraseMomentButton
                 variant={variant}
@@ -1026,6 +1042,7 @@ export function MomentForms({
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
             </div>
             {/* Desktop */}
@@ -1036,11 +1053,13 @@ export function MomentForms({
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
               <LocalServerComponents.ConfirmMomentButton
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
             </div>
           </div>
@@ -1105,17 +1124,19 @@ export function SetSubViewButton({
 export function RevalidateMomentsButton({
   revalidateMomentsAction,
   isRevalidateMomentsPending,
+  allButtonsDisabled,
 }: {
   revalidateMomentsAction: (
     event: MouseEvent<HTMLButtonElement>,
   ) => Promise<void>;
   isRevalidateMomentsPending: boolean;
+  allButtonsDisabled: boolean;
 }) {
   return (
     <button
       form={SEARCH_FORM_ID}
       onClick={revalidateMomentsAction}
-      disabled={isRevalidateMomentsPending}
+      disabled={allButtonsDisabled || isRevalidateMomentsPending}
       className={clsx(
         "flex h-9 items-center justify-center px-4 py-2",
         "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -1233,6 +1254,7 @@ export function PaginationButton({
   disabled,
   icon,
   iconClassName,
+  allButtonsDisabled,
 }: {
   handlePagination: (direction: "left" | "right", subView: SubView) => void;
   direction: "left" | "right";
@@ -1240,13 +1262,14 @@ export function PaginationButton({
   disabled: boolean;
   icon: Icons.IconName;
   iconClassName?: string;
+  allButtonsDisabled: boolean;
 }) {
   const Icon = Icons[icon];
 
   return (
     <button
       onClick={() => handlePagination(direction, subView)}
-      disabled={disabled}
+      disabled={allButtonsDisabled || disabled}
       className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
     >
       <div className="rounded-lg bg-white p-2 shadow">
@@ -1364,6 +1387,7 @@ export function ReorderItem({
   stepsCompoundDurations,
   isDeleteStepPending,
   startDeleteStepTransition,
+  allButtonsDisabled,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1385,6 +1409,7 @@ export function ReorderItem({
   stepsCompoundDurations: number[];
   isDeleteStepPending: boolean;
   startDeleteStepTransition: TransitionStartFunction;
+  allButtonsDisabled: boolean;
 }) {
   const controls = useDragControls();
 
@@ -1472,7 +1497,7 @@ export function ReorderItem({
               type="button"
               variant="destroy-step"
               onClick={restoreStepAction}
-              disabled={isRestoreStepPending}
+              disabled={allButtonsDisabled || isRestoreStepPending}
             >
               Restaurer l&apos;étape
             </GlobalClientComponents.Button>
@@ -1481,7 +1506,7 @@ export function ReorderItem({
               variant="destroy-step"
               type="button"
               onClick={modifyStepAction}
-              disabled={isModifyStepPending}
+              disabled={allButtonsDisabled || isModifyStepPending}
             >
               Modifier cette étape
             </GlobalClientComponents.Button>
@@ -1505,11 +1530,13 @@ export function ReorderItem({
                 <LocalServerComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
                 <LocalServerComponents.EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
               </LocalServerComponents.StepFormControlsMobileWrapper>
               {/* Desktop */}
@@ -1518,10 +1545,12 @@ export function ReorderItem({
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
                 <LocalServerComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
               </LocalServerComponents.StepFormControlsDesktopWrapper>
             </div>
