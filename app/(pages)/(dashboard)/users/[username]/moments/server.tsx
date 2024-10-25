@@ -8,16 +8,16 @@ import * as LocalClientComponents from "./client";
 import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import { Option, SetState } from "@/app/types/globals";
-import {
-  Button,
-  InputDatetimeLocalControlled,
-  InputNumberControlled,
-  InputSwitch,
-  InputText,
-  PageTitle,
-  SelectWithOptions,
-  Textarea,
-} from "@/app/components";
+// import {
+//   Button,
+//   InputDatetimeLocalControlled,
+//   InputNumberControlled,
+//   InputSwitch,
+//   InputText,
+//   PageTitle,
+//   SelectWithOptions,
+//   Textarea,
+// } from "@/app/components";
 import {
   activityOptions,
   MOMENT_FORM_IDS,
@@ -90,7 +90,7 @@ export function Header({
     <header>
       <PageSegment>
         <HeaderSegment>
-          <PageTitle title={viewTitles[view]} />
+          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
           <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </HeaderSegment>
       </PageSegment>
@@ -124,7 +124,7 @@ export function SetViewButton({
   const desiredView = defineDesiredView(view);
 
   return (
-    <Button
+    <GlobalClientComponents.Button
       type="button"
       variant="destroy-step"
       onClick={() => {
@@ -144,7 +144,7 @@ export function SetViewButton({
             return null;
         }
       })()}
-    </Button>
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -339,7 +339,7 @@ export function MomentInputs({
 
   return (
     <>
-      <InputText
+      <GlobalClientComponents.InputText
         label="Destination"
         name="destination"
         defaultValue={isVariantUpdatingMoment ? moment.destinationIdeal : ""}
@@ -361,8 +361,8 @@ export function MomentInputs({
             text={"Choisir la destination"}
           />
         )}
-      </InputText>
-      <SelectWithOptions
+      </GlobalClientComponents.InputText>
+      <GlobalServerComponents.SelectWithOptions
         label="Destination"
         description="Choisissez la destination que cherche à atteindre ce moment."
         addendum="Ou définissez-la vous-même via le bouton ci-dessus."
@@ -385,8 +385,8 @@ export function MomentInputs({
           setSelect={setDestinationSelect}
           text={"Définir la destination"}
         />
-      </SelectWithOptions>
-      <InputText
+      </GlobalServerComponents.SelectWithOptions>
+      <GlobalClientComponents.InputText
         label="Activité"
         description="Définissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
@@ -401,8 +401,8 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Choisir l'activité"}
         />
-      </InputText>
-      <SelectWithOptions
+      </GlobalClientComponents.InputText>
+      <GlobalServerComponents.SelectWithOptions
         label="Activité"
         description="Choisissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou définissez-le vous-même via le bouton ci-dessus."
@@ -423,8 +423,8 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Définir l'activité"}
         />
-      </SelectWithOptions>
-      <InputText
+      </GlobalServerComponents.SelectWithOptions>
+      <GlobalClientComponents.InputText
         label="Objectif"
         name="objectif"
         defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
@@ -432,7 +432,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentName}
       />
-      <InputSwitch
+      <GlobalServerComponents.InputSwitch
         key={inputSwitchKey}
         label="Indispensable ?"
         name="indispensable"
@@ -443,7 +443,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentIsIndispensable}
       />
-      <Textarea
+      <GlobalClientComponents.Textarea
         label="Contexte"
         name="contexte"
         defaultValue={isVariantUpdatingMoment ? moment.context : ""}
@@ -452,7 +452,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentDescription}
       />
-      <InputDatetimeLocalControlled
+      <GlobalClientComponents.InputDatetimeLocalControlled
         label="Date et heure"
         name="dateetheure"
         description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
@@ -473,13 +473,13 @@ export function SetSelectButton({
   text: string;
 }) {
   return (
-    <Button
+    <GlobalClientComponents.Button
       type="button"
       variant="destroy"
       onClick={() => setSelect((s) => !s)}
     >
       {text}
-    </Button>
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -572,7 +572,7 @@ export function StepVisibleCreating({
           Ajouter une étape
         </p>{" "}
         {/* I also could go the extra mile of componentizing the buttons as Client Components, but they're fine as children even if StepVisibleCreating is a Server Component... for now: I just don't know about importing raw buttons in a Server Component me personally. */}
-        <Button
+        <GlobalClientComponents.Button
           form={form}
           variant="destroy-step"
           type="button"
@@ -580,7 +580,7 @@ export function StepVisibleCreating({
           disabled={steps.length === 0 || isCancelStepPending}
         >
           Annuler l&apos;étape
-        </Button>
+        </GlobalClientComponents.Button>
       </div>
       <StepInputs
         form={form}
@@ -593,41 +593,41 @@ export function StepVisibleCreating({
       <div className="flex">
         {/* Mobile */}
         <StepFormControlsMobileWrapper>
-          <Button
+          <GlobalClientComponents.Button
             variant="confirm-step"
             form={form}
             type="submit"
             disabled={isCreateStepPending}
           >
             Confirmer l&apos;étape
-          </Button>
-          <Button
+          </GlobalClientComponents.Button>
+          <GlobalClientComponents.Button
             variant="cancel-step"
             form={form}
             type="reset"
             disabled={isResetStepPending}
           >
             Réinitialiser l&apos;étape
-          </Button>
+          </GlobalClientComponents.Button>
         </StepFormControlsMobileWrapper>
         {/* Desktop */}
         <StepFormControlsDesktopWrapper>
-          <Button
+          <GlobalClientComponents.Button
             variant="cancel-step"
             form={form}
             type="reset"
             disabled={isResetStepPending}
           >
             Réinitialiser l&apos;étape
-          </Button>
-          <Button
+          </GlobalClientComponents.Button>
+          <GlobalClientComponents.Button
             variant="confirm-step"
             form={form}
             type="submit"
             disabled={isCreateStepPending}
           >
             Confirmer l&apos;étape
-          </Button>
+          </GlobalClientComponents.Button>
         </StepFormControlsDesktopWrapper>
       </div>
     </div>
@@ -644,14 +644,14 @@ export function StepVisibleCreate({
   return (
     // This is complicated. This is a Server Component. Even though honestly the div could habe been removed and this would have been just Client Component. Yes. I can replace the div by a Fragment and keep it a Server Component. But I want to keep the div so that StepVisibleCreate is semantically aligned with StepVisibleCreating, and also because it is possible in the future that I add more content here, such as descriptions or anything, which can simply be server-side rendered.
     <div>
-      <Button
+      <GlobalClientComponents.Button
         type="button"
         variant="neutral"
         onClick={addStepAction}
         disabled={isAddStepPending}
       >
         Ajouter une étape
-      </Button>
+      </GlobalClientComponents.Button>
     </div>
   );
 }
@@ -666,7 +666,7 @@ export function ConfirmMomentButton({
   isDeleteMomentPending: boolean;
 }) {
   return (
-    <Button
+    <GlobalClientComponents.Button
       type="submit"
       variant="confirm"
       disabled={
@@ -677,7 +677,7 @@ export function ConfirmMomentButton({
       isDedicatedDisabled={isCreateOrUpdateMomentPending}
     >
       Confirmer le moment
-    </Button>
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -700,18 +700,18 @@ export function ResetOrEraseMomentButton({
         switch (variant) {
           case "creating":
             return (
-              <Button
+              <GlobalClientComponents.Button
                 type="reset"
                 variant="cancel"
                 disabled={isResetMomentPending || isCreateOrUpdateMomentPending}
                 isDedicatedDisabled={isResetMomentPending}
               >
                 Réinitialiser le moment
-              </Button>
+              </GlobalClientComponents.Button>
             );
           case "updating":
             return (
-              <Button
+              <GlobalClientComponents.Button
                 type="button"
                 onClick={deleteMomentAction}
                 variant="cancel"
@@ -721,7 +721,7 @@ export function ResetOrEraseMomentButton({
                 isDedicatedDisabled={isDeleteMomentPending}
               >
                 Effacer le moment
-              </Button>
+              </GlobalClientComponents.Button>
             );
           default:
             return null;
@@ -752,7 +752,7 @@ export function StepInputs({
 }) {
   return (
     <>
-      <InputText
+      <GlobalClientComponents.InputText
         form={form}
         label="Intitulé de l'étape"
         name="intituledeleetape"
@@ -761,7 +761,7 @@ export function StepInputs({
         required={false}
         errors={createOrUpdateMomentState?.stepsErrors?.stepName}
       />
-      <Textarea
+      <GlobalClientComponents.Textarea
         form={form}
         label="Détails de l'étape"
         name="detailsdeleetape"
@@ -771,7 +771,7 @@ export function StepInputs({
         required={false}
         errors={createOrUpdateMomentState?.stepsErrors?.stepDescription}
       />
-      <InputNumberControlled
+      <GlobalClientComponents.InputNumberControlled
         form={form}
         label="Durée de l'étape"
         name="dureedeletape"
@@ -799,7 +799,7 @@ export function StepInputs({
                 "HH:mm",
               )}
         </p>
-      </InputNumberControlled>
+      </GlobalClientComponents.InputNumberControlled>
     </>
   );
 }
@@ -832,14 +832,14 @@ export function UpdateStepButton({
   isUpdateStepPending: boolean;
 }) {
   return (
-    <Button
+    <GlobalClientComponents.Button
       form={form}
       type="submit"
       variant="confirm-step"
       disabled={isUpdateStepPending}
     >
       Actualiser l&apos;étape
-    </Button>
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -856,7 +856,7 @@ export function EraseStepButton({
     // And poof, with a Fragment you're no longer a Client Component.
     // So everywhere I see a custom button, since button itself already is a Client Component, their wrappers do not need to be one too.
     // <>
-    <Button
+    <GlobalClientComponents.Button
       form={form}
       type="button"
       onClick={deleteStepAction}
@@ -864,7 +864,7 @@ export function EraseStepButton({
       disabled={isDeleteStepPending}
     >
       Effacer l&apos;étape
-    </Button>
+    </GlobalClientComponents.Button>
     // </>
     // (No need for the Fragment, React understands on its own that the configuration of Button brought by EraseStepButton is a server shell.)
   );

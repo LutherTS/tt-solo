@@ -53,13 +53,13 @@ import {
   View,
 } from "@/app/types/moments";
 import { Option, SetState } from "@/app/types/globals";
-import {
-  Button,
-  Divider,
-  FieldTitle,
-  InputText,
-  Section,
-} from "@/app/components";
+// import {
+//   Button,
+//   Divider,
+//   FieldTitle,
+//   InputText,
+//   Section,
+// } from "@/app/components";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
@@ -151,7 +151,7 @@ export default function ClientPage({
         setView={setView}
         setMoment={setMoment}
       />
-      <Divider />
+      <GlobalServerComponents.Divider />
       <Main
         now={now}
         allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -597,7 +597,9 @@ export function ReadMomentsView({
         </>
       ) : (
         <LocalServerComponents.NoDateCard>
-          <FieldTitle title={"Pas de moment... pour le moment. 😅"} />
+          <GlobalServerComponents.FieldTitle
+            title={"Pas de moment... pour le moment. 😅"}
+          />
         </LocalServerComponents.NoDateCard>
       )}
     </div>
@@ -884,7 +886,7 @@ export function MomentForms({
         id={MOMENT_FORM_IDS[variant].momentForm}
         noValidate
       >
-        <Section
+        <GlobalServerComponents.Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
           id={MOMENT_FORM_IDS[variant].yourMoment}
@@ -908,9 +910,9 @@ export function MomentForms({
             startMomentDate={startMomentDate}
             setStartMomentDate={setStartMomentDate}
           />
-        </Section>
-        <Divider />
-        <Section
+        </GlobalServerComponents.Section>
+        <GlobalServerComponents.Divider />
+        <GlobalServerComponents.Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
           id={MOMENT_FORM_IDS[variant].itsSteps}
@@ -1013,9 +1015,9 @@ export function MomentForms({
                 return null;
             }
           })()}
-        </Section>
-        <Divider />
-        <Section>
+        </GlobalServerComponents.Section>
+        <GlobalServerComponents.Divider />
+        <GlobalServerComponents.Section>
           {/* Doubling up instead of reverse for accessibility */}
           <div className="flex">
             {/* Mobile */}
@@ -1049,7 +1051,7 @@ export function MomentForms({
               />
             </div>
           </div>
-        </Section>
+        </GlobalServerComponents.Section>
       </form>
     </>
   );
@@ -1161,7 +1163,7 @@ export function SearchForm({
 }) {
   return (
     <form id={SEARCH_FORM_ID} noValidate>
-      <InputText
+      <GlobalClientComponents.InputText
         id={CONTAINS}
         name={CONTAINS}
         placeholder="Cherchez parmi vos moments..."
@@ -1198,13 +1200,13 @@ export function MomentInDateCard({
       <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
         <p className="font-medium text-blue-950">{e3.objective}</p>
         <div className="invisible flex justify-end group-hover:visible">
-          <Button
+          <GlobalClientComponents.Button
             type="button"
             variant="destroy-step"
             onClick={setUpdateMomentView}
           >
             <Icons.PencilSquareSolid className="size-5" />
-          </Button>
+          </GlobalClientComponents.Button>
         </div>
       </div>
       <p>
@@ -1473,23 +1475,23 @@ export function ReorderItem({
             Étape <span>{toWordsing(index + 1)}</span>
           </p>{" "}
           {isCurrentStepUpdating ? (
-            <Button
+            <GlobalClientComponents.Button
               type="button"
               variant="destroy-step"
               onClick={restoreStepAction}
               disabled={isRestoreStepPending}
             >
               Restaurer l&apos;étape
-            </Button>
+            </GlobalClientComponents.Button>
           ) : (
-            <Button
+            <GlobalClientComponents.Button
               variant="destroy-step"
               type="button"
               onClick={modifyStepAction}
               disabled={isModifyStepPending}
             >
               Modifier cette étape
-            </Button>
+            </GlobalClientComponents.Button>
           )}
         </div>
         {isCurrentStepUpdating ? (
