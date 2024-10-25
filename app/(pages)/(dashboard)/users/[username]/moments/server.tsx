@@ -1,4 +1,4 @@
-"use server";
+// Got it for now, "use server" at the top implies for React 19 that these are Server Actions instead of components.
 
 import { MotionValue } from "framer-motion";
 import { add, format } from "date-fns";
