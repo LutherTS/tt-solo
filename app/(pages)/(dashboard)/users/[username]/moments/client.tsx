@@ -1,4 +1,5 @@
 "use client";
+// It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll throw the whole file, find that component, and manually export it.
 
 import {
   FormEvent,
@@ -33,6 +34,7 @@ import { fr } from "date-fns/locale";
 import useKeypress from "react-use-keypress";
 
 import * as Icons from "@/app/icons";
+import * as LocalServerComponents from "./server";
 import {
   CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
@@ -70,28 +72,6 @@ import {
   USERMOMENTSPAGE,
   views,
 } from "@/app/data/moments";
-import {
-  ConfirmMomentButton,
-  DateCard,
-  DestinationInDateCard,
-  EraseStepButton,
-  Header,
-  MomentInputs,
-  MomentsPageDetails,
-  NoDateCard,
-  PageSegment,
-  ResetOrEraseMomentButton,
-  StepContents,
-  StepFormControlsDesktopWrapper,
-  StepFormControlsMobileWrapper,
-  StepInDateCard,
-  StepInputs,
-  StepsSummaries,
-  StepVisibleCreate,
-  StepVisibleCreating,
-  UpdateStepButton,
-  ViewsCarousel,
-} from "./server";
 import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
@@ -164,7 +144,11 @@ export default function ClientPage({
 
   return (
     <>
-      <Header view={view} setView={setView} setMoment={setMoment} />
+      <LocalServerComponents.Header
+        view={view}
+        setView={setView}
+        setMoment={setMoment}
+      />
       <Divider />
       <Main
         now={now}
@@ -183,7 +167,7 @@ export default function ClientPage({
   );
 }
 
-function Main({
+export function Main({
   now,
   allUserMomentsToCRUD,
   maxPages,
@@ -234,13 +218,13 @@ function Main({
 
   return (
     <main>
-      <ViewsCarousel
+      <LocalServerComponents.ViewsCarousel
         view={view}
         isCRUDOpSuccessful={isCRUDOpSuccessful}
         setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
         currentViewHeight={currentViewHeight}
       >
-        <PageSegment>
+        <LocalServerComponents.PageSegment>
           <ViewSegment
             id="update-moment"
             currentView={view}
@@ -260,8 +244,8 @@ function Main({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
             />
           </ViewSegment>
-        </PageSegment>
-        <PageSegment>
+        </LocalServerComponents.PageSegment>
+        <LocalServerComponents.PageSegment>
           <ViewSegment
             id="read-moments"
             currentView={view}
@@ -278,8 +262,8 @@ function Main({
               revalidateMoments={revalidateMoments}
             />
           </ViewSegment>
-        </PageSegment>
-        <PageSegment>
+        </LocalServerComponents.PageSegment>
+        <LocalServerComponents.PageSegment>
           <ViewSegment
             id="create-moment"
             currentView={view}
@@ -296,8 +280,8 @@ function Main({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
             />
           </ViewSegment>
-        </PageSegment>
-      </ViewsCarousel>
+        </LocalServerComponents.PageSegment>
+      </LocalServerComponents.ViewsCarousel>
     </main>
   );
 }
@@ -338,7 +322,7 @@ export function ViewsCarouselContainer({
   );
 }
 
-function ViewSegment({
+export function ViewSegment({
   id,
   currentView,
   currentViewHeight,
@@ -364,7 +348,7 @@ function ViewSegment({
   );
 }
 
-function ReadMomentsView({
+export function ReadMomentsView({
   allUserMomentsToCRUD,
   maxPages,
   view,
@@ -569,14 +553,14 @@ function ReadMomentsView({
           {realDisplayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <div className="space-y-8">
-                <DateCard
+                <LocalServerComponents.DateCard
                   title={format(new Date(e.date), "eeee d MMMM", {
                     locale: fr,
                   })}
                 >
                   {e.destinations.map((e2) => {
                     return (
-                      <DestinationInDateCard
+                      <LocalServerComponents.DestinationInDateCard
                         key={e2.destinationIdeal}
                         e2={e2}
                         setMoment={setMoment}
@@ -585,9 +569,11 @@ function ReadMomentsView({
                       />
                     );
                   })}
-                </DateCard>
+                </LocalServerComponents.DateCard>
               </div>
-              {i === a.length - 1 && <MomentsPageDetails e={e} />}
+              {i === a.length - 1 && (
+                <LocalServerComponents.MomentsPageDetails e={e} />
+              )}
             </div>
           ))}
           <div className="flex justify-between">
@@ -608,15 +594,15 @@ function ReadMomentsView({
           </div>
         </>
       ) : (
-        <NoDateCard>
+        <LocalServerComponents.NoDateCard>
           <FieldTitle title={"Pas de moment... pour le moment. 😅"} />
-        </NoDateCard>
+        </LocalServerComponents.NoDateCard>
       )}
     </div>
   );
 }
 
-function MomentForms({
+export function MomentForms({
   variant,
   moment,
   destinationOptions,
@@ -907,7 +893,7 @@ function MomentForms({
             removeMomentMessagesAndErrorsCallback
           }
         >
-          <MomentInputs
+          <LocalServerComponents.MomentInputs
             variant={variant}
             moment={moment}
             destinationOptions={destinationOptions}
@@ -987,7 +973,7 @@ function MomentForms({
                   );
                 })}
               </Reorder.Group>
-              <StepsSummaries
+              <LocalServerComponents.StepsSummaries
                 stepVisible={stepVisible}
                 endMomentDate={endMomentDate}
                 momentAddingTime={momentAddingTime}
@@ -998,7 +984,7 @@ function MomentForms({
             switch (stepVisible) {
               case "creating":
                 return (
-                  <StepVisibleCreating
+                  <LocalServerComponents.StepVisibleCreating
                     key={stepVisible}
                     momentFormVariant={variant}
                     isResetStepPending={isResetStepPending}
@@ -1015,7 +1001,7 @@ function MomentForms({
                 );
               case "create":
                 return (
-                  <StepVisibleCreate
+                  <LocalServerComponents.StepVisibleCreate
                     key={stepVisible}
                     addStepAction={addStepAction}
                     isAddStepPending={isAddStepPending}
@@ -1032,12 +1018,12 @@ function MomentForms({
           <div className="flex">
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
-              <ConfirmMomentButton
+              <LocalServerComponents.ConfirmMomentButton
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
               />
-              <ResetOrEraseMomentButton
+              <LocalServerComponents.ResetOrEraseMomentButton
                 variant={variant}
                 deleteMomentAction={deleteMomentAction}
                 isResetMomentPending={isResetMomentPending}
@@ -1047,14 +1033,14 @@ function MomentForms({
             </div>
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-              <ResetOrEraseMomentButton
+              <LocalServerComponents.ResetOrEraseMomentButton
                 variant={variant}
                 deleteMomentAction={deleteMomentAction}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
               />
-              <ConfirmMomentButton
+              <LocalServerComponents.ConfirmMomentButton
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
@@ -1068,7 +1054,7 @@ function MomentForms({
 }
 
 // sure I can get the spans to be Server Components but this really is a whole
-function SetSubViewButton({
+export function SetSubViewButton({
   setSubView,
   e,
   subView,
@@ -1119,7 +1105,7 @@ function SetSubViewButton({
   );
 }
 
-function RevalidateMomentsButton({
+export function RevalidateMomentsButton({
   revalidateMomentsAction,
   isRevalidateMomentsPending,
 }: {
@@ -1164,7 +1150,7 @@ function RevalidateMomentsButton({
   );
 }
 
-function SearchForm({
+export function SearchForm({
   searchParams,
   debouncedHandleSearch,
 }: {
@@ -1236,14 +1222,14 @@ export function MomentInDateCard({
       </p>
       <ol className="">
         {e3.steps.map((e4) => (
-          <StepInDateCard key={e4.id} e4={e4} />
+          <LocalServerComponents.StepInDateCard key={e4.id} e4={e4} />
         ))}
       </ol>
     </div>
   );
 }
 
-function PaginationButton({
+export function PaginationButton({
   handlePagination,
   direction,
   subView,
@@ -1273,7 +1259,7 @@ function PaginationButton({
   );
 }
 
-function StepForm({
+export function StepForm({
   variant,
   momentFormVariant,
   currentStepId,
@@ -1360,7 +1346,7 @@ function StepForm({
   );
 }
 
-function ReorderItem({
+export function ReorderItem({
   step,
   index,
   isAfterCurrentStep,
@@ -1506,7 +1492,7 @@ function ReorderItem({
         </div>
         {isCurrentStepUpdating ? (
           <div className="flex flex-col gap-y-8">
-            <StepInputs
+            <LocalServerComponents.StepInputs
               form={form}
               createOrUpdateMomentState={createOrUpdateMomentState}
               stepDuree={stepDureeUpdate}
@@ -1518,33 +1504,33 @@ function ReorderItem({
             />
             <div>
               {/* Mobile */}
-              <StepFormControlsMobileWrapper>
-                <UpdateStepButton
+              <LocalServerComponents.StepFormControlsMobileWrapper>
+                <LocalServerComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
                 />
-                <EraseStepButton
+                <LocalServerComponents.EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                 />
-              </StepFormControlsMobileWrapper>
+              </LocalServerComponents.StepFormControlsMobileWrapper>
               {/* Desktop */}
-              <StepFormControlsDesktopWrapper>
-                <EraseStepButton
+              <LocalServerComponents.StepFormControlsDesktopWrapper>
+                <LocalServerComponents.EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                 />
-                <UpdateStepButton
+                <LocalServerComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
                 />
-              </StepFormControlsDesktopWrapper>
+              </LocalServerComponents.StepFormControlsDesktopWrapper>
             </div>
           </div>
         ) : (
-          <StepContents
+          <LocalServerComponents.StepContents
             step={step}
             index={index}
             hasAPreviousStepUpdating={hasAPreviousStepUpdating}
@@ -1556,3 +1542,21 @@ function ReorderItem({
     </Reorder.Item>
   );
 }
+
+const localClientComponents = {
+  ClientPage,
+  Main,
+  ViewsCarouselContainer,
+  ViewSegment,
+  ReadMomentsView,
+  MomentForms,
+  SetSubViewButton,
+  RevalidateMomentsButton,
+  SearchForm,
+  MomentInDateCard,
+  PaginationButton,
+  StepForm,
+  ReorderItem,
+} as const;
+
+export type LocalClientComponentsName = keyof typeof localClientComponents;

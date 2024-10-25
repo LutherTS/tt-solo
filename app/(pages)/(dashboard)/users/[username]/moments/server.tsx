@@ -4,6 +4,7 @@ import { MotionValue } from "framer-motion";
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
+import * as LocalClientComponents from "./client";
 import { Option, SetState } from "@/app/types/globals";
 import {
   Button,
@@ -35,7 +36,6 @@ import {
   UserMomentsToCRUD,
   View,
 } from "@/app/types/moments";
-import ClientPage, { MomentInDateCard, ViewsCarouselContainer } from "./client";
 import { numStringToTimeString, setScrollToTop } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
@@ -60,7 +60,7 @@ export default function ServerPage({
   deleteMoment: DeleteMoment;
 }) {
   return (
-    <ClientPage
+    <LocalClientComponents.default
       // time (aligned across server and client for hydration cases)
       now={now}
       // reads
@@ -96,7 +96,7 @@ export function Header({
   );
 }
 
-function SetViewButton({
+export function SetViewButton({
   view,
   setView,
   setMoment,
@@ -122,29 +122,27 @@ function SetViewButton({
   const desiredView = defineDesiredView(view);
 
   return (
-    <>
-      <Button
-        type="button"
-        variant="destroy-step"
-        onClick={() => {
-          // SetViewButton is the only one that sets moment to undefined
-          if (view === "update-moment") setMoment(undefined);
-          setScrollToTop(desiredView, setView);
-        }}
-      >
-        {(() => {
-          switch (desiredView) {
-            // no case "update-moment", since moment-specific
-            case "read-moments":
-              return <>Vos moments</>;
-            case "create-moment":
-              return <>Créez un moment</>;
-            default:
-              return null;
-          }
-        })()}
-      </Button>
-    </>
+    <Button
+      type="button"
+      variant="destroy-step"
+      onClick={() => {
+        // SetViewButton is the only one that sets moment to undefined
+        if (view === "update-moment") setMoment(undefined);
+        setScrollToTop(desiredView, setView);
+      }}
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </Button>
   );
 }
 
@@ -156,7 +154,7 @@ export function PageSegment({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SegmentWrapper({ children }: { children: React.ReactNode }) {
+export function SegmentWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]">
       {children}
@@ -164,11 +162,11 @@ function SegmentWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SegmentContainer({ children }: { children: React.ReactNode }) {
+export function SegmentContainer({ children }: { children: React.ReactNode }) {
   return <div className="container px-8 lg:max-w-4xl">{children}</div>;
 }
 
-function HeaderSegment({ children }: { children: React.ReactNode }) {
+export function HeaderSegment({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex justify-between py-8 align-baseline">{children}</div>
   );
@@ -189,19 +187,23 @@ export function ViewsCarousel({
 }) {
   return (
     <ViewsCarouselWrapper>
-      <ViewsCarouselContainer
+      <LocalClientComponents.ViewsCarouselContainer
         view={view}
         isCRUDOpSuccessful={isCRUDOpSuccessful}
         setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
         currentViewHeight={currentViewHeight}
       >
         {children}
-      </ViewsCarouselContainer>
+      </LocalClientComponents.ViewsCarouselContainer>
     </ViewsCarouselWrapper>
   );
 }
 
-function ViewsCarouselWrapper({ children }: { children: React.ReactNode }) {
+export function ViewsCarouselWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     // the overflow-hidden just doesn't work without relative
     <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
@@ -261,7 +263,7 @@ export function DestinationInDateCard({
         </p>
       </div>
       {e2.moments.map((e3, i3) => (
-        <MomentInDateCard
+        <LocalClientComponents.MomentInDateCard
           key={e3.id}
           e3={e3}
           i3={i3}
@@ -461,7 +463,7 @@ export function MomentInputs({
   );
 }
 
-function SetSelectButton({
+export function SetSelectButton({
   setSelect,
   text,
 }: {
@@ -904,3 +906,35 @@ export function StepContents({
     </div>
   );
 }
+
+const localServerComponents = {
+  ServerPage,
+  Header,
+  SetViewButton,
+  PageSegment,
+  SegmentWrapper,
+  SegmentContainer,
+  HeaderSegment,
+  ViewsCarousel,
+  ViewsCarouselWrapper,
+  DateCard,
+  NoDateCard,
+  DestinationInDateCard,
+  StepInDateCard,
+  MomentsPageDetails,
+  MomentInputs,
+  SetSelectButton,
+  StepsSummaries,
+  StepVisibleCreating,
+  StepVisibleCreate,
+  ConfirmMomentButton,
+  ResetOrEraseMomentButton,
+  StepInputs,
+  StepFormControlsMobileWrapper,
+  StepFormControlsDesktopWrapper,
+  UpdateStepButton,
+  EraseStepButton,
+  StepContents,
+} as const;
+
+export type LocalServerComponentsName = keyof typeof localServerComponents;
