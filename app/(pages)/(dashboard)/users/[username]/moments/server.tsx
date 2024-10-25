@@ -31,7 +31,7 @@ import {
 import { numStringToTimeString, setScrollToTop } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
-export default function ServerPage({
+export default function ServerCore({
   // time
   now,
   // reads
@@ -900,7 +900,7 @@ export function StepContents({
 }
 
 const localServerComponents = {
-  ServerPage,
+  ServerCore,
   Header,
   SetViewButton,
   PageSegment,

@@ -1,8 +1,14 @@
 import { FormEvent, MouseEvent } from "react";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { v4 as uuidv4 } from "uuid";
+import { compareAsc, compareDesc } from "date-fns";
 
-import { MOMENT_FORM_IDS, STEP_DURATION_ORIGINAL } from "@/app/data/moments";
+import {
+  DEFAULT_STEP_MESSAGE,
+  DEFAULT_STEP_SUBMESSAGE,
+  MOMENT_FORM_IDS,
+  STEP_DURATION_ORIGINAL,
+} from "@/app/data/moments";
 import {
   DeleteMoment,
   MomentFormVariant,
@@ -20,11 +26,6 @@ import {
 } from "@/app/utilities/moments";
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 import { SetState } from "@/app/types/globals";
-import { compareAsc, compareDesc } from "date-fns";
-
-const DEFAULT_STEP_MESSAGE =
-  "Erreurs sur le renseignement étapes du formulaire.";
-const DEFAULT_STEP_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
 
 export const revalidateMomentsActionflow = async (
   event: MouseEvent<HTMLButtonElement>,

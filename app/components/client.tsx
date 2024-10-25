@@ -15,7 +15,7 @@ import {
   focusVisibleTexts,
   notDatetimeLocalPadding,
   textareaPadding,
-} from "../data/globals";
+} from "@/app/data/globals";
 
 // Components
 

@@ -94,7 +94,7 @@ import {
 } from "@/app/flows/client/afterflows/moments";
 
 // the file between client and server that has the export default (and Page) is the one with the page component to be imported by page.tsx
-export default function ClientPage({
+export default function ClientCore({
   // time
   now,
   // reads
@@ -1541,7 +1541,7 @@ export function ReorderItem({
 }
 
 const localClientComponents = {
-  ClientPage,
+  ClientCore,
   Main,
   ViewsCarouselContainer,
   ViewSegment,

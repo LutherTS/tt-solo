@@ -1,5 +1,7 @@
 import clsx from "clsx";
 
+import { NavLink } from "../types/globals";
+
 // Grouped style classes
 
 // temporarily change variable name to className for Intellisense
@@ -19,3 +21,26 @@ export const textareaPadding = clsx("px-3 py-3");
 export const focusVisibleTexts = clsx(
   "focus-visible:border-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500",
 );
+
+// Nav links
+
+export const navLinks: NavLink[] = [
+  // {
+  //   id: 0,
+  //   label: "Paramètres",
+  //   href: "/settings",
+  //   icon: "Cog8ToothOutline",
+  // },
+  {
+    id: 1,
+    label: "Moments",
+    href: "/moments",
+    icon: "CalendarDaysOutline",
+  },
+  // {
+  //   id: 2,
+  //   label: "Destinations",
+  //   href: "/destinations",
+  //   icon: "PaperAirplaneOutline",
+  // },
+];

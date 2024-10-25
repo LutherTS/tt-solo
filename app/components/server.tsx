@@ -9,7 +9,7 @@ import {
   baseInputTexts,
   focusVisibleTexts,
   notDatetimeLocalPadding,
-} from "../data/globals";
+} from "@/app/data/globals";
 
 // Components
 

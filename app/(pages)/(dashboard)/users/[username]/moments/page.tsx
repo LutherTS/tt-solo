@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
+import Core from "./server";
 import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
@@ -38,7 +39,6 @@ import {
   revalidateMomentsFlow,
   createOrUpdateMomentFlow,
 } from "@/app/flows/server/moments";
-import Page from "./server";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still it says I'm on a static route...
@@ -353,7 +353,7 @@ export default async function MomentsPage({
         </div>
       }
     >
-      <Page
+      <Core
         // time (aligned across server and client for hydration cases)
         now={now}
         // reads

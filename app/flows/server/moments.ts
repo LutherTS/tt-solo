@@ -4,34 +4,33 @@ import { add, compareDesc, isValid, roundToNearestHours, sub } from "date-fns";
 import {
   dateToInputDatetime,
   makeStepsCompoundDurationsArray,
-} from "../../utilities/moments";
-import { CreateOrUpdateMomentSchema } from "../../validations/moments";
-import { findMomentByNameAndUserId } from "../../reads/moments";
-import { findDestinationIdByNameAndUserId } from "../../reads/destinations";
+} from "@/app/utilities/moments";
+import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
+import { findMomentByNameAndUserId } from "@/app/reads/moments";
+import { findDestinationIdByNameAndUserId } from "@/app/reads/destinations";
 import {
   createMomentAndDestination,
   createMomentFromFormData,
   deleteMomentByMomentId,
   updateMomentAndDestination,
   updateMomentFromFormData,
-} from "../../writes/moments";
+} from "@/app/writes/moments";
 import {
   createStepFromSteps,
   deleteMomentStepsByMomentId,
-} from "../../writes/steps";
+} from "@/app/writes/steps";
 import {
   CreateOrUpdateMomentState,
   MomentFormVariant,
   MomentToCRUD,
   SelectMomentId,
   StepFromCRUD,
-} from "../../types/moments";
-import { SelectUserIdAndUsername } from "../../types/users";
-
-// could be in data, but error moment messages are all server-side
-const DEFAULT_MOMENT_MESSAGE =
-  "Erreurs sur le renseignement moment du formulaire.";
-const DEFAULT_MOMENT_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
+} from "@/app/types/moments";
+import { SelectUserIdAndUsername } from "@/app/types/users";
+import {
+  DEFAULT_MOMENT_MESSAGE,
+  DEFAULT_MOMENT_SUBMESSAGE,
+} from "@/app/data/moments";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
 

@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 
-import { selectMomentId } from "../reads/subreads/moments";
+import { selectMomentId } from "@/app/reads/subreads/moments";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
