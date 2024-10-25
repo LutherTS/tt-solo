@@ -1,5 +1,5 @@
 "use client";
-// It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll throw the whole file, find that component, and manually export it.
+// It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll through the whole file, find that component, and manually export it.
 
 import {
   FormEvent,
@@ -208,8 +208,6 @@ export function Main({
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
 
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
-
-  // penser à désactiver les boutons des vues cachées puisqu'elles existent toujours dans le DOM...
 
   return (
     <main>
