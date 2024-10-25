@@ -8,6 +8,7 @@ import {
   MouseEvent,
   FormEvent,
   TransitionStartFunction,
+  Ref,
 } from "react";
 import {
   ReadonlyURLSearchParams,
@@ -15,20 +16,23 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
+// import Form from "next/form"; // I'm good. But let's defy TypeScript on this.
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
-  // AnimatePresence,
   motion,
+  MotionValue,
   Reorder,
   useDragControls,
+  useMotionValue,
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
 import debounce from "debounce";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
+import { useMeasure } from "react-use";
 // import { useTimer } from "react-use-precision-timer";
 
 import { Option, SetState } from "@/app/types/globals";
@@ -63,7 +67,7 @@ import {
 } from "@/app/utilities/moments";
 import {
   Button,
-  DateCard,
+  // DateCard,
   Divider,
   FieldTitle,
   InputDatetimeLocalControlled,
@@ -71,11 +75,11 @@ import {
   InputText,
   PageTitle,
   Section,
-  NoDateCard,
+  // NoDateCard,
   InputSwitch,
   SelectWithOptions,
   Textarea,
-} from "@/app/components";
+} from "@/app/components_old";
 import * as Icons from "@/app/icons";
 import {
   createOrUpdateStepActionflow,
@@ -99,6 +103,8 @@ import {
   subViews,
   MOMENT_FORM_IDS,
   STEP_DURATION_ORIGINAL,
+  INITIAL_PAGE,
+  views,
 } from "@/app/data/moments";
 import {
   createOrUpdateMomentAfterflow,
@@ -130,21 +136,24 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 // Main Component
 
 export default function Main({
+  // time
+  now,
+  // reads
   allUserMomentsToCRUD,
   maxPages,
   destinationOptions,
+  // writes
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  now,
 }: {
+  now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  now: string;
 }) {
   console.log({ now });
 
@@ -163,7 +172,7 @@ export default function Main({
   */
 
   // let [view, setView] = useState<View>("read-moments");
-  // starting directly with the form for now
+  // starting directly with the create form for now
   let [view, setView] = useState<View>("create-moment");
 
   const [
@@ -185,65 +194,154 @@ export default function Main({
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
   // at an upper level for UpdateMomentView
-  let [moment, setMoment] = useState<MomentToCRUD>();
+  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+
+  const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
+
+  let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
   return (
     <main>
-      <div>
-        <div className="flex justify-between pb-8 align-baseline">
+      <div
+        className={clsx(
+          "flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]", // same as ViewWrapper
+        )}
+      >
+        <div
+          className={clsx(
+            "container px-8 lg:max-w-4xl", // same as ViewContainer
+            "flex justify-between py-8 align-baseline",
+          )}
+        >
           <PageTitle title={viewTitles[view]} />
-          <SetViewButton view={view} setView={setView} />
+          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </div>
-        <Divider />
       </div>
-      <div>
-        {/* putting motion on the div to prepare for animations */}
-        {/* The goal is to align all the core views on the x axis, just like a carousel, and to animate then to the left and the right when view changes only if a moment is created (left to ReadMomentsView), or updated/deleted (right to ReadMomentsView). The animations will act as visual confirmations that CRUD operations worked smoothly. */}
-        {/* For this the padding of the core views will have to be on the core views themselves and not on the parents component, so I assume this to be on the core view div below itself. */}
-        <motion.div className={clsx(view !== "update-moment" && "hidden")}>
-          {/* UpdateMomentView */}
-          <MomentForms
-            key={view} // to remount every time the view changes
-            variant="updating"
-            moment={moment}
-            destinationOptions={destinationOptions}
-            setView={setView}
-            setSubView={setSubView}
-            createOrUpdateMoment={createOrUpdateMoment}
-            deleteMoment={deleteMoment}
-            now={now}
-          />
-        </motion.div>
-        <motion.div className={clsx(view !== "read-moments" && "hidden")}>
-          <ReadMomentsView
-            allUserMomentsToCRUD={allUserMomentsToCRUD}
-            maxPages={maxPages}
-            view={view}
-            subView={subView}
-            setView={setView}
-            setSubView={setSubView}
-            setMoment={setMoment}
-            revalidateMoments={revalidateMoments}
-          />
-        </motion.div>
-        <motion.div className={clsx(view !== "create-moment" && "hidden")}>
-          {/* CreateMomentView */}
-          <MomentForms
-            variant="creating"
-            destinationOptions={destinationOptions}
-            setView={setView}
-            setSubView={setSubView}
-            createOrUpdateMoment={createOrUpdateMoment}
-            now={now}
-          />
+      <Divider />
+      {/* incredible, the overflow-hidden just doesn't work without relative */}
+      <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
+        <motion.div
+          className="flex"
+          // an error will return -1, if ever the screen shows empty
+          animate={{
+            x: `-${views.indexOf(view) * 100}%`,
+          }}
+          initial={false}
+          transition={{
+            type: "spring",
+            bounce: isCRUDOpSuccessful ? 0.2 : 0,
+            duration: isCRUDOpSuccessful ? 0.4 : 0.2,
+          }}
+          onAnimationStart={() => setIsCRUDOpSuccessful(false)}
+          style={{
+            height: currentViewHeight,
+          }}
+        >
+          <ViewWrapper>
+            <ViewContainer
+              id="update-moment"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
+              {/* UpdateMomentView */}
+              <MomentForms
+                key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+                variant="updating"
+                moment={moment}
+                destinationOptions={destinationOptions}
+                setView={setView}
+                setSubView={setSubView}
+                createOrUpdateMoment={createOrUpdateMoment}
+                deleteMoment={deleteMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+          <ViewWrapper>
+            <ViewContainer
+              id="read-moments"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
+              <ReadMomentsView
+                allUserMomentsToCRUD={allUserMomentsToCRUD}
+                maxPages={maxPages}
+                view={view}
+                subView={subView}
+                setView={setView}
+                setSubView={setSubView}
+                setMoment={setMoment}
+                revalidateMoments={revalidateMoments}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+          <ViewWrapper>
+            <ViewContainer
+              id="create-moment"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
+              {/* CreateMomentView */}
+              <MomentForms
+                variant="creating"
+                destinationOptions={destinationOptions}
+                setView={setView}
+                setSubView={setSubView}
+                createOrUpdateMoment={createOrUpdateMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              />
+            </ViewContainer>
+          </ViewWrapper>
         </motion.div>
       </div>
     </main>
   );
 }
 
+function ViewWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]">
+      {children}
+    </div>
+  );
+}
+
+function ViewContainer({
+  id,
+  currentView,
+  currentViewHeight,
+  children,
+}: {
+  id: View;
+  currentView: View;
+  currentViewHeight: MotionValue<number>;
+  children: React.ReactNode;
+}) {
+  const [ref, { height }] = useMeasure();
+  // making TypeScript happy
+  const reference = ref as Ref<HTMLDivElement>;
+
+  if (id === currentView) currentViewHeight.set(height + 12 * 4); // 12 * 4 because height from useMeasure does not count self padding ("pb-12" below)
+
+  return (
+    <div
+      id={id}
+      ref={reference}
+      className={clsx(
+        "container px-8 lg:max-w-4xl",
+        "pb-12", // ignored by useMeasure
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 // Main Leading Components
 
+// some style work there left to be done at a later occasion
 function ReadMomentsView({
   allUserMomentsToCRUD,
   maxPages,
@@ -330,9 +428,8 @@ function ReadMomentsView({
     "future-moments": maxPageFutureMoments,
   };
 
-  let initialPage = 1;
   const currentPage = defineCurrentPage(
-    initialPage,
+    INITIAL_PAGE,
     Number(searchParams.get(subViewSearchParams[subView])),
     subViewMaxPages[subView],
   );
@@ -343,7 +440,7 @@ function ReadMomentsView({
     if (direction === "left")
       params.set(
         subViewSearchParams[subView],
-        Math.max(1, currentPage - 1).toString(),
+        Math.max(INITIAL_PAGE, currentPage - 1).toString(),
       );
     else
       params.set(
@@ -351,7 +448,7 @@ function ReadMomentsView({
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
-    if (params.get(subViewSearchParams[subView]) === initialPage.toString())
+    if (params.get(subViewSearchParams[subView]) === INITIAL_PAGE.toString())
       params.delete(subViewSearchParams[subView]);
 
     replace(`${pathname}?${params.toString()}`);
@@ -436,6 +533,7 @@ function ReadMomentsView({
           />
         ))}
         <RevalidateMomentsButton
+          // I insist on specifying and sending all of my actions' booleans because they can be used for stylistic purposes with isDedicatedDisabled
           revalidateMomentsAction={revalidateMomentsAction}
           isRevalidateMomentsPending={isRevalidateMomentsPending}
         />
@@ -505,6 +603,7 @@ function MomentForms({
   createOrUpdateMoment,
   deleteMoment,
   now,
+  setIsCRUDOpSuccessful,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
@@ -514,6 +613,7 @@ function MomentForms({
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
+  setIsCRUDOpSuccessful: SetState<boolean>;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
@@ -599,11 +699,9 @@ function MomentForms({
         moment,
         destinationSelect,
         activitySelect,
-        setStartMomentDate,
-        nowRoundedUpTenMinutes,
-        setSteps,
-        setStepVisible,
         createOrUpdateMomentState,
+        endMomentDate,
+        setSubView,
       );
 
       setCreateOrUpdateMomentState(state);
@@ -618,11 +716,8 @@ function MomentForms({
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
-        endMomentDate,
-        now,
-        startMomentDate,
-        setSubView,
         setView,
+        setIsCRUDOpSuccessful,
       );
 
       setIsCreateOrUpdateMomentDone(false);
@@ -637,7 +732,16 @@ function MomentForms({
 
   const resetMomentAction = (event: FormEvent<HTMLFormElement>) => {
     startResetMomentTransition(() => {
-      if (confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")) {
+      const noConfirm =
+        // @ts-ignore might not work on mobile but it's a bonus
+        event.nativeEvent.explicitOriginalTarget?.type !== "reset"; // could be improved later in case an even upper reset buton triggers this reset action
+
+      // retroactive high level JavaScript, but honestly this should be done on any action that uses a confirm, assuming that action can be triggered externally and automatically
+      // This allows that wherever I reset the form but triggering its HTML reset, it gets fully reset including controlled fields and default states, and even resets its cascading "children forms" since this resetMoment actually triggers the reset of stepFromCreating.
+      if (
+        noConfirm ||
+        confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
+      ) {
         const state = resetMomentActionflow(
           setStartMomentDate,
           setSteps,
@@ -679,11 +783,21 @@ function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterflow(variant, createOrUpdateMomentState, setView);
+      deleteMomentAfterflow(
+        variant,
+        createOrUpdateMomentState,
+        setView,
+        setIsCRUDOpSuccessful,
+      );
 
       setIsDeleteMomentDone(false);
     }
   }, [isDeleteMomentDone]);
+
+  // step actions
+  // to access step actions' isPending states from their parent component (MomentForms)
+  // IMPORTANT deleteStepAction should be included // Done.
+  // (so the rest of this week to completely complete the form and then I work on the keynote for my talk at React Paris Meetup November 2024)
 
   // addStepAction
 
@@ -718,6 +832,10 @@ function MomentForms({
 
   const [isResetStepPending, startResetStepTransition] = useTransition();
 
+  // deleteStepAction
+
+  const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
+
   return (
     <>
       <StepForm
@@ -726,7 +844,6 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
-        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeCreate}
         setStepDuree={setStepDureeCreate}
@@ -741,7 +858,6 @@ function MomentForms({
         currentStepId={currentStepId}
         steps={steps}
         setSteps={setSteps}
-        stepVisible={stepVisible}
         setStepVisible={setStepVisible}
         stepDuree={stepDureeUpdate}
         setStepDuree={setStepDureeUpdate}
@@ -750,6 +866,8 @@ function MomentForms({
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
+      {/* <Form */}
+      {/* action={createOrUpdateMomentAction} // It still works despite the TypeScript error, but I don't know where it will break and I don't need it right now. Again, regular HTML/CSS/JS and regular React should always be prioritized if they do the work and don't significantly hinder the developer experience. */}
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentAction}
@@ -800,15 +918,30 @@ function MomentForms({
                 as="ol"
               >
                 {steps.map((step, index) => {
-                  // this needs to stay up there because it depends from an information obtained in MomentForms
+                  // this needs to stay up there because it depends from an information obtained in MomentForms (even though I am now passing it down as a property)
                   let stepAddingTime =
                     index === 0 ? 0 : stepsCompoundDurations[index - 1];
+
+                  const currentStepIndex = steps.findIndex(
+                    (e) => e.id === currentStepId,
+                  );
+                  const isAfterCurrentStep = index > currentStepIndex;
+
+                  if (
+                    currentStep &&
+                    currentStepIndex > -1 &&
+                    isAfterCurrentStep
+                  ) {
+                    stepAddingTime =
+                      stepAddingTime - +currentStep.duree + +stepDureeUpdate;
+                  }
 
                   return (
                     <ReorderItem // step
                       key={step.id}
                       step={step}
                       index={index}
+                      isAfterCurrentStep={isAfterCurrentStep}
                       momentFormVariant={variant}
                       steps={steps}
                       stepVisible={stepVisible}
@@ -825,6 +958,9 @@ function MomentForms({
                       setCreateOrUpdateMomentState={
                         setCreateOrUpdateMomentState
                       }
+                      stepsCompoundDurations={stepsCompoundDurations}
+                      isDeleteStepPending={isDeleteStepPending}
+                      startDeleteStepTransition={startDeleteStepTransition}
                     />
                   );
                 })}
@@ -836,9 +972,6 @@ function MomentForms({
               />
             </>
           )}
-          {/* honestly not sure if animations are necessary now */}
-          {/* keeping the motion.div still in components though */}
-          {/* <AnimatePresence initial={false} mode="popLayout"> */}
           {(() => {
             switch (stepVisible) {
               case "creating":
@@ -854,6 +987,8 @@ function MomentForms({
                     cancelStepAction={cancelStepAction}
                     steps={steps}
                     isCancelStepPending={isCancelStepPending}
+                    stepsCompoundDurations={stepsCompoundDurations}
+                    startMomentDate={startMomentDate}
                   />
                 );
               case "create":
@@ -868,7 +1003,6 @@ function MomentForms({
                 return null;
             }
           })()}
-          {/* </AnimatePresence> */}
         </Section>
         <Divider />
         <Section>
@@ -877,29 +1011,31 @@ function MomentForms({
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
               <ConfirmMomentButton
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
-                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
               />
               <ResetOrEraseMomentButton
                 variant={variant}
-                isResetMomentPending={isResetMomentPending}
                 deleteMomentAction={deleteMomentAction}
+                isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
               />
             </div>
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
               <ResetOrEraseMomentButton
                 variant={variant}
-                isResetMomentPending={isResetMomentPending}
                 deleteMomentAction={deleteMomentAction}
-                isDeleteMomentPending={isDeleteMomentPending}
-              />
-              <ConfirmMomentButton
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+              />
+              <ConfirmMomentButton
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                isResetMomentPending={isResetMomentPending}
+                isDeleteMomentPending={isDeleteMomentPending}
               />
             </div>
           </div>
@@ -914,9 +1050,11 @@ function MomentForms({
 function SetViewButton({
   view,
   setView,
+  setMoment,
 }: {
   view: View;
   setView: SetState<View>;
+  setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   // though the function below could be a utility, it is very specific to this component at this time
   function defineDesiredView(view: View) {
@@ -938,7 +1076,11 @@ function SetViewButton({
     <Button
       type="button"
       variant="destroy-step"
-      onClick={() => setScrollToTop(desiredView, setView)}
+      onClick={() => {
+        // SetViewButton is the only one that sets moment to undefined
+        if (view === "update-moment") setMoment(undefined);
+        setScrollToTop(desiredView, setView);
+      }}
     >
       {(() => {
         switch (desiredView) {
@@ -1073,6 +1215,34 @@ function SearchForm({
       />
     </form>
   );
+}
+
+export function DateCard({
+  title,
+  id,
+  children,
+}: {
+  title: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+      <section
+        className="grid items-baseline gap-8 md:grid-cols-[1fr_2fr]"
+        id={id}
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
+        </div>
+        <div className="flex flex-col gap-y-8">{children}</div>
+      </section>
+    </div>
+  );
+}
+
+export function NoDateCard({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
 }
 
 function DestinationInDateCard({
@@ -1235,7 +1405,6 @@ function StepForm({
   currentStepId,
   steps,
   setSteps,
-  stepVisible,
   setStepVisible,
   stepDuree,
   setStepDuree,
@@ -1249,7 +1418,6 @@ function StepForm({
   currentStepId: string;
   steps: StepFromCRUD[];
   setSteps: SetState<StepFromCRUD[]>;
-  stepVisible: StepVisible;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;
@@ -1457,7 +1625,7 @@ function MomentInputs({
       />
       <InputSwitch
         key={inputSwitchKey}
-        label="Indispensable"
+        label="Indispensable ?"
         name="indispensable"
         defaultChecked={
           isVariantUpdatingMoment ? moment.isIndispensable : false
@@ -1491,6 +1659,7 @@ function MomentInputs({
 function ReorderItem({
   step,
   index,
+  isAfterCurrentStep,
   momentFormVariant,
   steps,
   stepVisible,
@@ -1505,9 +1674,13 @@ function ReorderItem({
   setStepDureeUpdate,
   createOrUpdateMomentState,
   setCreateOrUpdateMomentState,
+  stepsCompoundDurations,
+  isDeleteStepPending,
+  startDeleteStepTransition,
 }: {
   step: StepFromCRUD;
   index: number;
+  isAfterCurrentStep: boolean;
   momentFormVariant: MomentFormVariant;
   steps: StepFromCRUD[];
   stepVisible: StepVisible;
@@ -1522,17 +1695,21 @@ function ReorderItem({
   setStepDureeUpdate: SetState<string>;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
+  stepsCompoundDurations: number[];
+  isDeleteStepPending: boolean;
+  startDeleteStepTransition: TransitionStartFunction;
 }) {
   const controls = useDragControls();
 
   const isCurrentStepUpdating =
     currentStepId === step.id && stepVisible === "updating";
 
+  const hasAPreviousStepUpdating =
+    isAfterCurrentStep && stepVisible === "updating";
+
   const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
 
   // deleteStepAction
-
-  const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
@@ -1593,9 +1770,12 @@ function ReorderItem({
           <p
             className={clsx(
               "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-              "transition-colors hover:text-neutral-400",
+              "transition-colors",
+              stepVisible !== "updating" && "hover:text-neutral-400",
             )}
-            onPointerDown={(event) => controls.start(event)}
+            onPointerDown={(event) => {
+              if (stepVisible !== "updating") controls.start(event);
+            }}
             style={{ touchAction: "none" }}
           >
             Étape <span>{toWordsing(index + 1)}</span>
@@ -1628,6 +1808,9 @@ function ReorderItem({
               stepDuree={stepDureeUpdate}
               setStepDuree={setStepDureeUpdate}
               step={step}
+              startMomentDate={startMomentDate}
+              stepAddingTime={stepAddingTime}
+              stepsCompoundDurations={stepsCompoundDurations}
             />
             <div>
               {/* Mobile */}
@@ -1660,6 +1843,7 @@ function ReorderItem({
           <StepContents
             step={step}
             index={index}
+            hasAPreviousStepUpdating={hasAPreviousStepUpdating}
             startMomentDate={startMomentDate}
             stepAddingTime={stepAddingTime}
           />
@@ -1731,6 +1915,8 @@ function StepVisibleCreating({
   cancelStepAction,
   steps,
   isCancelStepPending,
+  stepsCompoundDurations,
+  startMomentDate,
 }: {
   momentFormVariant: MomentFormVariant;
   isResetStepPending: boolean;
@@ -1741,26 +1927,14 @@ function StepVisibleCreating({
   cancelStepAction: () => void;
   steps: StepFromCRUD[];
   isCancelStepPending: boolean;
+  stepsCompoundDurations: number[];
+  startMomentDate: string;
 }) {
   const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
   return (
     // was a form, but forms can't be nested
-    <motion.div
-      className="flex flex-col gap-y-8"
-      // If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
-
-      // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-      // animate={{
-      //   opacity: 1,
-      //   height: "auto",
-      //   transition: { duration: 0.2 },
-      // }}
-      // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-
-      // The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
-      // That's what it is: the two gap-y-8 remain stacked during animations.
-    >
+    <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Ajouter une étape
@@ -1780,6 +1954,8 @@ function StepVisibleCreating({
         createOrUpdateMomentState={createOrUpdateMomentState}
         stepDuree={stepDureeCreate}
         setStepDuree={setStepDureeCreate}
+        startMomentDate={startMomentDate}
+        stepsCompoundDurations={stepsCompoundDurations}
       />
       <div className="flex">
         {/* Mobile */}
@@ -1821,7 +1997,7 @@ function StepVisibleCreating({
           </Button>
         </StepFormControlsDesktopWrapper>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -1833,17 +2009,7 @@ function StepVisibleCreate({
   isAddStepPending: boolean;
 }) {
   return (
-    <motion.div
-    // Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
-
-    // initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-    // animate={{
-    //   opacity: 1,
-    //   height: "auto",
-    //   transition: { duration: 0.2 },
-    // }}
-    // exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-    >
+    <div>
       <Button
         type="button"
         variant="neutral"
@@ -1852,27 +2018,27 @@ function StepVisibleCreate({
       >
         Ajouter une étape
       </Button>
-    </motion.div>
+    </div>
   );
 }
 
 function ConfirmMomentButton({
+  isCreateOrUpdateMomentPending,
   isResetMomentPending,
   isDeleteMomentPending,
-  isCreateOrUpdateMomentPending,
 }: {
+  isCreateOrUpdateMomentPending: boolean;
   isResetMomentPending: boolean;
   isDeleteMomentPending: boolean;
-  isCreateOrUpdateMomentPending: boolean;
 }) {
   return (
     <Button
       type="submit"
       variant="confirm"
       disabled={
+        isCreateOrUpdateMomentPending ||
         isResetMomentPending ||
-        isDeleteMomentPending ||
-        isCreateOrUpdateMomentPending
+        isDeleteMomentPending
       }
       isDedicatedDisabled={isCreateOrUpdateMomentPending}
     >
@@ -1883,14 +2049,16 @@ function ConfirmMomentButton({
 
 function ResetOrEraseMomentButton({
   variant,
-  isResetMomentPending,
   deleteMomentAction,
+  isResetMomentPending,
   isDeleteMomentPending,
+  isCreateOrUpdateMomentPending,
 }: {
   variant: string;
-  isResetMomentPending: boolean;
   deleteMomentAction: () => Promise<void>;
+  isResetMomentPending: boolean;
   isDeleteMomentPending: boolean;
+  isCreateOrUpdateMomentPending: boolean;
 }) {
   return (
     <>
@@ -1901,7 +2069,8 @@ function ResetOrEraseMomentButton({
               <Button
                 type="reset"
                 variant="cancel"
-                disabled={isResetMomentPending}
+                disabled={isResetMomentPending || isCreateOrUpdateMomentPending}
+                isDedicatedDisabled={isResetMomentPending}
               >
                 Réinitialiser le moment
               </Button>
@@ -1912,7 +2081,10 @@ function ResetOrEraseMomentButton({
                 type="button"
                 onClick={deleteMomentAction}
                 variant="cancel"
-                disabled={isDeleteMomentPending}
+                disabled={
+                  isDeleteMomentPending || isCreateOrUpdateMomentPending
+                }
+                isDedicatedDisabled={isDeleteMomentPending}
               >
                 Effacer le moment
               </Button>
@@ -1931,12 +2103,18 @@ function StepInputs({
   stepDuree,
   setStepDuree,
   step,
+  startMomentDate,
+  stepAddingTime,
+  stepsCompoundDurations,
 }: {
   form: string;
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
+  startMomentDate: string;
+  stepsCompoundDurations: number[];
   step?: StepFromCRUD;
+  stepAddingTime?: number;
 }) {
   return (
     <>
@@ -1970,7 +2148,24 @@ function StepInputs({
         required={false}
         errors={createOrUpdateMomentState?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
-      />
+      >
+        <p className="text-sm font-medium text-blue-900">
+          commence à{" "}
+          {step // && stepAddingTime (can equal 0 which is falsy)
+            ? format(
+                add(startMomentDate, {
+                  minutes: stepAddingTime,
+                }),
+                "HH:mm",
+              )
+            : format(
+                add(startMomentDate, {
+                  minutes: stepsCompoundDurations.at(-1),
+                }),
+                "HH:mm",
+              )}
+        </p>
+      </InputNumberControlled>
     </>
   );
 }
@@ -2039,11 +2234,13 @@ function EraseStepButton({
 function StepContents({
   step,
   index,
+  hasAPreviousStepUpdating,
   startMomentDate,
   stepAddingTime,
 }: {
   step: StepFromCRUD;
   index: number;
+  hasAPreviousStepUpdating: boolean;
   startMomentDate: string;
   stepAddingTime: number;
 }) {
@@ -2051,7 +2248,13 @@ function StepContents({
     <div className="space-y-2">
       <p className="font-medium text-blue-950">{step.intitule}</p>
       <p>
-        <span className={clsx(index === 0 && "font-semibold text-neutral-800")}>
+        <span
+          className={clsx(
+            index === 0 && "font-semibold",
+            hasAPreviousStepUpdating && "text-neutral-400",
+            !hasAPreviousStepUpdating && "text-neutral-800",
+          )}
+        >
           {format(
             add(startMomentDate, {
               minutes: stepAddingTime,
@@ -2305,4 +2508,27 @@ else
 // A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
 // But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below. // DONE.
 // Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
+...
+// If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
+
+// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+// animate={{
+//   opacity: 1,
+//   height: "auto",
+//   transition: { duration: 0.2 },
+// }}
+// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+
+// The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
+// That's what it is: the two gap-y-8 remain stacked during animations.
+...
+// Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
+
+// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
+// animate={{
+//   opacity: 1,
+//   height: "auto",
+//   transition: { duration: 0.2 },
+// }}
+// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
 */

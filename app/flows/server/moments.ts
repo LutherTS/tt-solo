@@ -4,39 +4,38 @@ import { add, compareDesc, isValid, roundToNearestHours, sub } from "date-fns";
 import {
   dateToInputDatetime,
   makeStepsCompoundDurationsArray,
-} from "../../utilities/moments";
-import { CreateOrUpdateMomentSchema } from "../../validations/moments";
-import { findMomentByNameAndUserId } from "../../reads/moments";
-import { findDestinationIdByNameAndUserId } from "../../reads/destinations";
+} from "@/app/utilities/moments";
+import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
+import { findMomentByNameAndUserId } from "@/app/reads/moments";
+import { findDestinationIdByNameAndUserId } from "@/app/reads/destinations";
 import {
   createMomentAndDestination,
   createMomentFromFormData,
   deleteMomentByMomentId,
   updateMomentAndDestination,
   updateMomentFromFormData,
-} from "../../writes/moments";
+} from "@/app/writes/moments";
 import {
   createStepFromSteps,
   deleteMomentStepsByMomentId,
-} from "../../writes/steps";
+} from "@/app/writes/steps";
 import {
   CreateOrUpdateMomentState,
   MomentFormVariant,
   MomentToCRUD,
   SelectMomentId,
   StepFromCRUD,
-} from "../../types/moments";
-import { SelectUserIdAndUsername } from "../../types/users";
-
-const DEFAULT_MOMENT_MESSAGE =
-  "Erreurs sur le renseignement moment du formulaire.";
-const DEFAULT_MOMENT_SUBMESSAGE = "Veuillez vérifier les champs concernés.";
+} from "@/app/types/moments";
+import { SelectUserIdAndUsername } from "@/app/types/users";
+import {
+  DEFAULT_MOMENT_MESSAGE,
+  DEFAULT_MOMENT_SUBMESSAGE,
+} from "@/app/data/moments";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
 
-// commencer par dupliquer en momentErrors et stepsErrors
-// the one function so far where errorScrollPriority is needed
-// some (most) errors to me are like showstoppers, they eraser all other errors to single-handedly focus on themselves
+// Some errors to me are like showstoppers, they erase all other errors to single-handedly focus on themselves.
+
 export const createOrUpdateMomentFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
@@ -47,6 +46,8 @@ export const createOrUpdateMomentFlow = async (
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
 ): Promise<CreateOrUpdateMomentState> => {
+  const currentNow = dateToInputDatetime(new Date());
+
   // in case somehow startMomentDate is not sent correctly
   if (!isValid(new Date(startMomentDate)))
     return {
@@ -61,7 +62,6 @@ export const createOrUpdateMomentFlow = async (
     };
 
   if (variant === "creating") {
-    const currentNow = dateToInputDatetime(new Date());
     const minFromCurrentNow = dateToInputDatetime(
       roundToNearestHours(sub(currentNow, { hours: 1 }), {
         roundingMethod: "floor",
@@ -91,9 +91,6 @@ export const createOrUpdateMomentFlow = async (
     ? formData.getAll("destination")[0]
     : formData.getAll("destination")[1];
   if (destination === null) {
-    // what if, it's at the setting that I do:
-    // ((s) => {return {...s, ...state}})?
-    // One way or the other I can do everything inside the above function of the setter.
     return {
       momentMessages: {
         message: DEFAULT_MOMENT_MESSAGE,
@@ -177,10 +174,8 @@ export const createOrUpdateMomentFlow = async (
     };
   }
 
-  // le scroll to step est propre à NO_STEPS_ERROR_MESSAGE, du coup oui, il me faudra error scroll priority
   if (steps.length === 0) {
     return {
-      // The empty string works but it's still not undefined
       momentMessages: {},
       momentErrors: {},
       stepsMessages: {
@@ -212,7 +207,7 @@ export const createOrUpdateMomentFlow = async (
   // For this reason below alone I thing actions should be inline and passed as props instead of housed inside dedicated files. Here, this means data from the user literally never makes it to the client. Sensitive data from a user database entry (and even insensitive data) never even reaches any outside computer. Not even the user's id.
   // So what should be in separated files are not the actions, but rather the methods that make the action, (! or even the flows of these methods !) which therefore can be used in any action. The methods should be the commonalities, not the actions themselves. Actions can and I believe should be directly link to the actual pages where they're meant to be triggered, like temporary APIs only available within their own contexts.
 
-  // I insist on the flows because what is currently below could be just be an entire flow that could be plugged in anywhere an action needs it. (Actually I effectively turned the entire flow into a function.)
+  // I insist on the flows because what is currently below could just be an entire flow that could be plugged in any action needs it. (Actually I effectively turned the entire flow into a function.)
 
   if (!user)
     return {
@@ -227,7 +222,7 @@ export const createOrUpdateMomentFlow = async (
       errorScrollPriority: "moment",
     };
 
-  // That being said though, once authentication is in place I will still need to check if the user is valid at time of the action, if the action mutates the data. (Which honestly is always a prerequisite.)
+  // That being said though, once authentication is in place I will still need to check if the user is valid a.k.a. authorized at time of the action, if the action mutates the data. (Which honestly is always a prerequisite.)
 
   const userId = user.id;
 
@@ -423,7 +418,9 @@ export const deleteMomentFlow = async (
   return null;
 };
 
-export const revalidateMomentsFlow = async (user: SelectUserIdAndUsername) => {
+export const revalidateMomentsFlow = async (
+  user: SelectUserIdAndUsername,
+): Promise<void> => {
   const username = user.username;
 
   revalidatePath(`/users/${username}/moments`);

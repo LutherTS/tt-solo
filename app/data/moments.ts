@@ -1,5 +1,5 @@
 import { Option } from "@/app/types/globals";
-import { MomentFormIds, MomentFormVariant } from "../types/moments";
+import { MomentFormIds, MomentFormVariant } from "@/app/types/moments";
 
 // searchParams keys
 
@@ -16,6 +16,9 @@ export const SEARCH_PARAMS_KEYS = [
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
 ] as const;
+
+// initial and lowest moments page number
+export const INITIAL_PAGE = 1;
 
 // HTML ids
 
@@ -78,7 +81,6 @@ export const STEP_DURATION_ORIGINAL = "10";
 
 // views and subviews
 
-// currently unused
 export const views = [
   "update-moment",
   "read-moments",
@@ -104,3 +106,15 @@ export const subViewTitles = {
   "current-moments": "Actuels",
   "future-moments": "Futurs",
 };
+
+// default error messages
+
+export const DEFAULT_MOMENT_MESSAGE =
+  "Erreurs sur le renseignement moment du formulaire.";
+export const DEFAULT_MOMENT_SUBMESSAGE =
+  "Veuillez vérifier les champs concernés.";
+
+export const DEFAULT_STEP_MESSAGE =
+  "Erreurs sur le renseignement étapes du formulaire.";
+export const DEFAULT_STEP_SUBMESSAGE =
+  "Veuillez vérifier les champs concernés.";

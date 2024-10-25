@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/app/components";
+import * as GlobalClientComponents from "@/app/components/client";
 
 export default function NotFound() {
   const { back } = useRouter();
@@ -13,9 +13,13 @@ export default function NotFound() {
       <div className="space-y-4 text-center">
         <p>Mince. Il n'y a personne.</p>
         <p>L'utilisateur demandé n'a pas été trouvé en base de données.</p>
-        <Button type="button" variant="confirm" onClick={() => back()}>
+        <GlobalClientComponents.Button
+          type="button"
+          variant="confirm"
+          onClick={() => back()}
+        >
           Revenir en arrière
-        </Button>
+        </GlobalClientComponents.Button>
       </div>
     </div>
   );

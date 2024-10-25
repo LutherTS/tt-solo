@@ -1,8 +1,8 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
-import { CreateOrUpdateMomentState, StepFromCRUD } from "../types/moments";
-import { SetState } from "../types/globals";
+import { CreateOrUpdateMomentState, StepFromCRUD } from "@/app/types/moments";
+import { SetState } from "@/app/types/globals";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>

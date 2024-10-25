@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
+import Core from "./server";
 import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
@@ -13,11 +14,11 @@ import {
   dateToInputDatetime,
   defineCurrentPage,
 } from "@/app/utilities/moments";
-import Main from "./main";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
+  INITIAL_PAGE,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
 } from "@/app/data/moments";
@@ -40,7 +41,7 @@ import {
 } from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
-// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still it says I'm on a static route...
 
 export default async function MomentsPage({
   params,
@@ -61,22 +62,26 @@ export default async function MomentsPage({
   let now = dateToInputDatetime(new Date());
   console.log({ now });
 
-  // PART READ
+  // PART READ (a.k.a database calls)
 
-  // params and searchParams are awaited in the RC 2
-  const username = params.username; // I need to see what happens if no params are provided here, like users//moments. // It just seems to be a global notFound because even the username console.log does not get triggered, like it doesn't even consider users//moments... Better even, the browser fixes the URL and considers it to be users/moments, an entirely different page. So that is indeed the "global" notFound page at the app level.
+  // params and searchParams are awaited in the RC 2 and in stable Next.js 15
+  // this simple line assigns the resolved params promise to the params variable already use in the code
+  params = await params;
+
+  const username = params.username;
   // console.log({ username });
 
   const userFound = await findUserIdByUsername(username);
   // console.log({ userFound });
 
-  // (I also need to do the default for notFound)
   if (!userFound) return notFound();
 
   // extremely important in order to use user in server actions without null
   const user = userFound;
 
   const userId = user.id;
+
+  searchParams = await searchParams;
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
@@ -107,7 +112,7 @@ export default async function MomentsPage({
   ] as const;
   // console.log({ totals })
 
-  // TAKE is page-dependent here. So the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
+  // TAKE is page-dependent here. Therefore the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
   const TAKE = 2;
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
@@ -122,7 +127,7 @@ export default async function MomentsPage({
 
   const pages = searchParamsPageKeys.map((e, i) =>
     defineCurrentPage(
-      1,
+      INITIAL_PAGE,
       // I had never seen that TypeScript syntax before.
       // And it is not valid JavaScript.
       Number(searchParams?.[e]),
@@ -191,13 +196,18 @@ export default async function MomentsPage({
               ...new Set(
                 e
                   .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                  .map((moment) => moment.destination.name),
+                  .map((moment) => {
+                    return {
+                      id: moment.destinationId,
+                      destinationIdeal: moment.destination.name,
+                    };
+                  }),
               ),
             ]
               // organizes destinations per day alphabetically
               .sort((a, b) => {
-                const destinationA = a.toLowerCase();
-                const destinationB = b.toLowerCase();
+                const destinationA = a.destinationIdeal.toLowerCase();
+                const destinationB = b.destinationIdeal.toLowerCase();
                 if (destinationA < destinationB) return -1;
                 if (destinationB > destinationA) return 1;
                 return 0;
@@ -205,11 +215,12 @@ export default async function MomentsPage({
               })
               .map((e5) => {
                 return {
-                  destinationIdeal: e5,
+                  id: e5.id,
+                  destinationIdeal: e5.destinationIdeal,
                   moments: e
                     .filter(
                       (moment) =>
-                        moment.destination.name === e5 &&
+                        moment.destination.name === e5.destinationIdeal &&
                         moment.startDateAndTime.startsWith(e3),
                     )
                     // organizes moments per destination chronologically
@@ -241,7 +252,7 @@ export default async function MomentsPage({
                             endDateAndTime: e7.endDateAndTime,
                           };
                         }),
-                        destinationIdeal: e5,
+                        destinationIdeal: e5.destinationIdeal,
                       };
                     }),
                 };
@@ -280,7 +291,7 @@ export default async function MomentsPage({
     });
   // console.logs on demand...
 
-  // PART WRITE
+  // PART WRITE (a.k.a. server actions)
 
   async function createOrUpdateMoment(
     formData: FormData,
@@ -293,8 +304,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
-    // Haven't tested it yet, but it should be working.
-    // This is it. The action itself, its barebones, the action itself is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, its flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (It works by the way.)
+    // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
     return await createOrUpdateMomentFlow(
       formData,
       variant,
@@ -306,9 +316,10 @@ export default async function MomentsPage({
       user,
     );
 
-    // I need to emphasize what is magical about this.
-    // I don't need to authenticate the user in the action. Why? Because the action does not exist if the user is not authenticated. :D
-    // And this solve the issue of people crying that yeah, actions are dangerous because they go on the server and they need to be secure, blablabla... No. If the page is secure, the action is secure. Because the action is created with the page.
+    // I need to emphasize what is magical about this, if I'm correct.
+    // I don't need to authenticate the user in the action. Why? Because the action does or should not exist if the user is not authenticated. :D
+    // And this solves the issue of people saying that yeah, actions are dangerous because they go on the server and they need to be secure, etc... No. If the page is secure, the action is secure. Because the action is created with the page.
+    // The key takeaway is, the page handles authentication, the action handles authorization. Each entry point to the server, one by one, now has its own dedicated concern.
   }
 
   async function deleteMoment(
@@ -330,20 +341,39 @@ export default async function MomentsPage({
   // However, if the actions were obtained via import in a client component such as the one below, user data would have to be bound directly on the client component itself (which is insecure) or via a separate child server component (perhaps secure, but an exact step for that data) which would also have to pass these actions as props, doing the exact same thing.
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
-    // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. Loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
-    <Suspense fallback={<p>Loading...</p>}>
-      <Main
+    // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
+    // <StillServer>
+    <Suspense
+      fallback={
+        // no look at the styles, this is really just a placeholder
+        <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center">
+          <div className="space-y-4 text-center">
+            <p>Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <Core
+        // time (aligned across server and client for hydration cases)
+        now={now}
+        // reads
         allUserMomentsToCRUD={allUserMomentsToCRUD}
         maxPages={maxPages}
         destinationOptions={destinationOptions}
+        // writes
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
-        now={now}
       />
     </Suspense>
+    // </StillServer>
   );
 }
+
+// function StillServer({ children }: { children: React.ReactNode }) {
+//   return <>{children}</>;
+// }
+// While Next.js allows Server Components to wrap Client Components, Client Components can’t wrap Server Components without converting the entire wrapped portion to run on the client. -- ChatGPT
 
 /* Notes
 Connection closed is unrelated to setView("read-moments");
