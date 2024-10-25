@@ -138,10 +138,18 @@ export function SetViewButton({
   );
 }
 
-export function PageSegment({ children }: { children: React.ReactNode }) {
+export function PageSegment({
+  isSegmentContainerInvisible,
+  children,
+}: {
+  isSegmentContainerInvisible?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <SegmentWrapper>
-      <SegmentContainer>{children}</SegmentContainer>
+      <SegmentContainer isInvisible={isSegmentContainerInvisible}>
+        {children}
+      </SegmentContainer>
     </SegmentWrapper>
   );
 }
@@ -154,8 +162,23 @@ export function SegmentWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function SegmentContainer({ children }: { children: React.ReactNode }) {
-  return <div className="container px-8 lg:max-w-4xl">{children}</div>;
+export function SegmentContainer({
+  isInvisible,
+  children,
+}: {
+  isInvisible?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={clsx(
+        "container px-8 lg:max-w-4xl",
+        isInvisible && "invisible",
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 export function HeaderSegment({ children }: { children: React.ReactNode }) {

@@ -219,7 +219,9 @@ export function Main({
         setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
         currentViewHeight={currentViewHeight}
       >
-        <LocalServerComponents.PageSegment>
+        <LocalServerComponents.PageSegment
+          isSegmentContainerInvisible={view !== "update-moment"}
+        >
           <ViewSegment
             id="update-moment"
             currentView={view}
@@ -241,7 +243,9 @@ export function Main({
             />
           </ViewSegment>
         </LocalServerComponents.PageSegment>
-        <LocalServerComponents.PageSegment>
+        <LocalServerComponents.PageSegment
+          isSegmentContainerInvisible={view !== "read-moments"}
+        >
           <ViewSegment
             id="read-moments"
             currentView={view}
@@ -260,7 +264,9 @@ export function Main({
             />
           </ViewSegment>
         </LocalServerComponents.PageSegment>
-        <LocalServerComponents.PageSegment>
+        <LocalServerComponents.PageSegment
+          isSegmentContainerInvisible={view !== "create-moment"}
+        >
           <ViewSegment
             id="create-moment"
             currentView={view}
