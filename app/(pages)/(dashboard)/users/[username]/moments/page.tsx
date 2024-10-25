@@ -38,7 +38,7 @@ import {
   revalidateMomentsFlow,
   createOrUpdateMomentFlow,
 } from "@/app/flows/server/moments";
-import Main from "./server";
+import Page from "./server";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still it says I'm on a static route...
@@ -269,7 +269,6 @@ export default async function MomentsPage({
     },
   );
   // console.logs on demand...
-  console.log(allUserMomentsToCRUD[0].dates[0].destinations);
 
   const userDestinations = await findDestinationsByUserId(userId);
   // console.log({ userDestinations });
@@ -354,7 +353,7 @@ export default async function MomentsPage({
         </div>
       }
     >
-      <Main
+      <Page
         // time (aligned across server and client for hydration cases)
         now={now}
         // reads
