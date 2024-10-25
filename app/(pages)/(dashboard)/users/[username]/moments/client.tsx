@@ -563,7 +563,7 @@ export function ReadMomentsView({
                   {e.destinations.map((e2) => {
                     return (
                       <LocalServerComponents.DestinationInDateCard
-                        key={e2.destinationIdeal}
+                        key={e2.id}
                         e2={e2}
                         setMoment={setMoment}
                         realMoments={realMoments}

@@ -40,6 +40,7 @@ export type MomentToCRUD = {
 };
 
 export type MomentsDestinationToCRUD = {
+  id: string;
   destinationIdeal: string;
   moments: MomentToCRUD[];
 };

@@ -196,13 +196,18 @@ export default async function MomentsPage({
               ...new Set(
                 e
                   .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                  .map((moment) => moment.destination.name),
+                  .map((moment) => {
+                    return {
+                      id: moment.destinationId,
+                      destinationIdeal: moment.destination.name,
+                    };
+                  }),
               ),
             ]
               // organizes destinations per day alphabetically
               .sort((a, b) => {
-                const destinationA = a.toLowerCase();
-                const destinationB = b.toLowerCase();
+                const destinationA = a.destinationIdeal.toLowerCase();
+                const destinationB = b.destinationIdeal.toLowerCase();
                 if (destinationA < destinationB) return -1;
                 if (destinationB > destinationA) return 1;
                 return 0;
@@ -210,11 +215,12 @@ export default async function MomentsPage({
               })
               .map((e5) => {
                 return {
-                  destinationIdeal: e5,
+                  id: e5.id,
+                  destinationIdeal: e5.destinationIdeal,
                   moments: e
                     .filter(
                       (moment) =>
-                        moment.destination.name === e5 &&
+                        moment.destination.name === e5.destinationIdeal &&
                         moment.startDateAndTime.startsWith(e3),
                     )
                     // organizes moments per destination chronologically
@@ -246,7 +252,7 @@ export default async function MomentsPage({
                             endDateAndTime: e7.endDateAndTime,
                           };
                         }),
-                        destinationIdeal: e5,
+                        destinationIdeal: e5.destinationIdeal,
                       };
                     }),
                 };
@@ -263,6 +269,7 @@ export default async function MomentsPage({
     },
   );
   // console.logs on demand...
+  console.log(allUserMomentsToCRUD[0].dates[0].destinations);
 
   const userDestinations = await findDestinationsByUserId(userId);
   // console.log({ userDestinations });
