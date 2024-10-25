@@ -1,7 +1,4 @@
 "use client";
-// In this, I'm going to go through my components one-by-one and decide whether they should be Client Components, since without "use client" they're all Server Components by default. Watch.
-// Let's start by marking all obligatorily Client Components as such with comments on top of their functions.
-// Here's the thing though. The goal is to have the least amount of Client Components possible. So if you can use HTML for forms, like submit and reset types in your buttons, then these buttons don't even need to be client components.
 
 import {
   // useCallback,
@@ -70,7 +67,7 @@ import {
 } from "@/app/utilities/moments";
 import {
   Button,
-  DateCard,
+  // DateCard,
   Divider,
   FieldTitle,
   InputDatetimeLocalControlled,
@@ -78,7 +75,7 @@ import {
   InputText,
   PageTitle,
   Section,
-  NoDateCard,
+  // NoDateCard,
   InputSwitch,
   SelectWithOptions,
   Textarea,
@@ -138,8 +135,7 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 
 // Main Component
 
-// !! Client Component
-export default function Page({
+export default function Main({
   // time
   now,
   // reads
@@ -179,77 +175,6 @@ export default function Page({
   // starting directly with the create form for now
   let [view, setView] = useState<View>("create-moment");
 
-  // at an upper level for UpdateMomentView
-  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
-
-  return (
-    <>
-      <Header view={view} setView={setView} setMoment={setMoment} />
-      <Divider />
-      <Main
-        now={now}
-        allUserMomentsToCRUD={allUserMomentsToCRUD}
-        maxPages={maxPages}
-        destinationOptions={destinationOptions}
-        revalidateMoments={revalidateMoments}
-        createOrUpdateMoment={createOrUpdateMoment}
-        deleteMoment={deleteMoment}
-        view={view}
-        setView={setView}
-        moment={moment}
-        setMoment={setMoment}
-      />
-    </>
-  );
-}
-
-function Header({
-  view,
-  setView,
-  setMoment,
-}: {
-  view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
-}) {
-  return (
-    <header>
-      <PageSegment>
-        <HeaderSegment>
-          <PageTitle title={viewTitles[view]} />
-          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
-        </HeaderSegment>
-      </PageSegment>
-    </header>
-  );
-}
-
-// !! Client Component
-function Main({
-  now,
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
-  revalidateMoments,
-  createOrUpdateMoment,
-  deleteMoment,
-  view,
-  setView,
-  moment,
-  setMoment,
-}: {
-  now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
-  revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
-  view: View;
-  setView: SetState<View>;
-  moment: MomentToCRUD | undefined;
-  setMoment: SetState<MomentToCRUD | undefined>;
-}) {
   const [
     _realUserMoments,
     realPastMoments,
@@ -268,91 +193,114 @@ function Main({
 
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
+  // at an upper level for UpdateMomentView
+  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
 
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
-  // penser à désactiver les boutons des vues cachées puisqu'elles existent toujours dans le DOM...
-
   return (
     <main>
-      <ViewsCarousel
-        view={view}
-        isCRUDOpSuccessful={isCRUDOpSuccessful}
-        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-        currentViewHeight={currentViewHeight}
+      <div
+        className={clsx(
+          "flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]", // same as ViewWrapper
+        )}
       >
-        <PageSegment>
-          <ViewSegment
-            id="update-moment"
-            currentView={view}
-            currentViewHeight={currentViewHeight}
-          >
-            {/* UpdateMomentView */}
-            <MomentForms
-              key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
-              variant="updating"
-              moment={moment}
-              destinationOptions={destinationOptions}
-              setView={setView}
-              setSubView={setSubView}
-              createOrUpdateMoment={createOrUpdateMoment}
-              deleteMoment={deleteMoment}
-              now={now}
-              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            />
-          </ViewSegment>
-        </PageSegment>
-        <PageSegment>
-          <ViewSegment
-            id="read-moments"
-            currentView={view}
-            currentViewHeight={currentViewHeight}
-          >
-            <ReadMomentsView
-              allUserMomentsToCRUD={allUserMomentsToCRUD}
-              maxPages={maxPages}
-              view={view}
-              subView={subView}
-              setView={setView}
-              setSubView={setSubView}
-              setMoment={setMoment}
-              revalidateMoments={revalidateMoments}
-            />
-          </ViewSegment>
-        </PageSegment>
-        <PageSegment>
-          <ViewSegment
-            id="create-moment"
-            currentView={view}
-            currentViewHeight={currentViewHeight}
-          >
-            {/* CreateMomentView */}
-            <MomentForms
-              variant="creating"
-              destinationOptions={destinationOptions}
-              setView={setView}
-              setSubView={setSubView}
-              createOrUpdateMoment={createOrUpdateMoment}
-              now={now}
-              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            />
-          </ViewSegment>
-        </PageSegment>
-      </ViewsCarousel>
+        <div
+          className={clsx(
+            "container px-8 lg:max-w-4xl", // same as ViewContainer
+            "flex justify-between py-8 align-baseline",
+          )}
+        >
+          <PageTitle title={viewTitles[view]} />
+          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
+        </div>
+      </div>
+      <Divider />
+      {/* incredible, the overflow-hidden just doesn't work without relative */}
+      <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
+        <motion.div
+          className="flex"
+          // an error will return -1, if ever the screen shows empty
+          animate={{
+            x: `-${views.indexOf(view) * 100}%`,
+          }}
+          initial={false}
+          transition={{
+            type: "spring",
+            bounce: isCRUDOpSuccessful ? 0.2 : 0,
+            duration: isCRUDOpSuccessful ? 0.4 : 0.2,
+          }}
+          onAnimationStart={() => setIsCRUDOpSuccessful(false)}
+          style={{
+            height: currentViewHeight,
+          }}
+        >
+          <ViewWrapper>
+            <ViewContainer
+              id="update-moment"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
+              {/* UpdateMomentView */}
+              <MomentForms
+                key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+                variant="updating"
+                moment={moment}
+                destinationOptions={destinationOptions}
+                setView={setView}
+                setSubView={setSubView}
+                createOrUpdateMoment={createOrUpdateMoment}
+                deleteMoment={deleteMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+          <ViewWrapper>
+            <ViewContainer
+              id="read-moments"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
+              <ReadMomentsView
+                allUserMomentsToCRUD={allUserMomentsToCRUD}
+                maxPages={maxPages}
+                view={view}
+                subView={subView}
+                setView={setView}
+                setSubView={setSubView}
+                setMoment={setMoment}
+                revalidateMoments={revalidateMoments}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+          <ViewWrapper>
+            <ViewContainer
+              id="create-moment"
+              currentView={view}
+              currentViewHeight={currentViewHeight}
+            >
+              {/* CreateMomentView */}
+              <MomentForms
+                variant="creating"
+                destinationOptions={destinationOptions}
+                setView={setView}
+                setSubView={setSubView}
+                createOrUpdateMoment={createOrUpdateMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              />
+            </ViewContainer>
+          </ViewWrapper>
+        </motion.div>
+      </div>
     </main>
   );
 }
 
-function PageSegment({ children }: { children: React.ReactNode }) {
-  return (
-    <SegmentWrapper>
-      <SegmentContainer>{children}</SegmentContainer>
-    </SegmentWrapper>
-  );
-}
-
-function SegmentWrapper({ children }: { children: React.ReactNode }) {
+function ViewWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]">
       {children}
@@ -360,91 +308,7 @@ function SegmentWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SegmentContainer({ children }: { children: React.ReactNode }) {
-  return <div className="container px-8 lg:max-w-4xl">{children}</div>;
-}
-
-function HeaderSegment({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex justify-between py-8 align-baseline">{children}</div>
-  );
-}
-
-function ViewsCarousel({
-  view,
-  isCRUDOpSuccessful,
-  setIsCRUDOpSuccessful,
-  currentViewHeight,
-  children,
-}: {
-  view: View;
-  isCRUDOpSuccessful: boolean;
-  setIsCRUDOpSuccessful: SetState<boolean>;
-  currentViewHeight: MotionValue<number>;
-  children: React.ReactNode;
-}) {
-  return (
-    <ViewsCarouselWrapper>
-      <ViewsCarouselContainer
-        view={view}
-        isCRUDOpSuccessful={isCRUDOpSuccessful}
-        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-        currentViewHeight={currentViewHeight}
-      >
-        {children}
-      </ViewsCarouselContainer>
-    </ViewsCarouselWrapper>
-  );
-}
-
-function ViewsCarouselWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    // the overflow-hidden just doesn't work without relative
-    <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
-      {children}
-    </div>
-  );
-}
-
-// !! Client Component
-function ViewsCarouselContainer({
-  view,
-  isCRUDOpSuccessful,
-  setIsCRUDOpSuccessful,
-  currentViewHeight,
-  children,
-}: {
-  view: View;
-  isCRUDOpSuccessful: boolean;
-  setIsCRUDOpSuccessful: SetState<boolean>;
-  currentViewHeight: MotionValue<number>;
-  children: React.ReactNode;
-}) {
-  return (
-    <motion.div
-      className="flex"
-      // an error will return -1, if ever the screen shows empty
-      animate={{
-        x: `-${views.indexOf(view) * 100}%`,
-      }}
-      initial={false}
-      transition={{
-        type: "spring",
-        bounce: isCRUDOpSuccessful ? 0.2 : 0,
-        duration: isCRUDOpSuccessful ? 0.4 : 0.2,
-      }}
-      onAnimationStart={() => setIsCRUDOpSuccessful(false)}
-      style={{
-        height: currentViewHeight,
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-// !! Client Component
-function ViewSegment({
+function ViewContainer({
   id,
   currentView,
   currentViewHeight,
@@ -459,20 +323,24 @@ function ViewSegment({
   // making TypeScript happy
   const reference = ref as Ref<HTMLDivElement>;
 
-  if (id === currentView) currentViewHeight.set(height);
+  if (id === currentView) currentViewHeight.set(height + 12 * 4); // 12 * 4 because height from useMeasure does not count self padding ("pb-12" below)
 
   return (
-    <div id={id} ref={reference}>
+    <div
+      id={id}
+      ref={reference}
+      className={clsx(
+        "container px-8 lg:max-w-4xl",
+        "pb-12", // ignored by useMeasure
+      )}
+    >
       {children}
-      {/* spacer instead of padding for correct useMeasure calculations */}
-      <div className="h-12"></div>
     </div>
   );
 }
 
 // Main Leading Components
 
-// !! Client Component
 // some style work there left to be done at a later occasion
 function ReadMomentsView({
   allUserMomentsToCRUD,
@@ -726,7 +594,6 @@ function ReadMomentsView({
   );
 }
 
-// !! Client Component
 function MomentForms({
   variant,
   moment,
@@ -1206,35 +1073,32 @@ function SetViewButton({
   const desiredView = defineDesiredView(view);
 
   return (
-    <>
-      <Button
-        type="button"
-        variant="destroy-step"
-        onClick={() => {
-          // SetViewButton is the only one that sets moment to undefined
-          if (view === "update-moment") setMoment(undefined);
-          setScrollToTop(desiredView, setView);
-        }}
-      >
-        {(() => {
-          switch (desiredView) {
-            // no case "update-moment", since moment-specific
-            case "read-moments":
-              return <>Vos moments</>;
-            case "create-moment":
-              return <>Créez un moment</>;
-            default:
-              return null;
-          }
-        })()}
-      </Button>
-    </>
+    <Button
+      type="button"
+      variant="destroy-step"
+      onClick={() => {
+        // SetViewButton is the only one that sets moment to undefined
+        if (view === "update-moment") setMoment(undefined);
+        setScrollToTop(desiredView, setView);
+      }}
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </Button>
   );
 }
 
 // ReadMomentsView Supporting Components
 
-// !! Client Component
 function SetSubViewButton({
   setSubView,
   e,
@@ -1286,7 +1150,6 @@ function SetSubViewButton({
   );
 }
 
-// !! Client Component
 function RevalidateMomentsButton({
   revalidateMomentsAction,
   isRevalidateMomentsPending,
@@ -1332,7 +1195,6 @@ function RevalidateMomentsButton({
   );
 }
 
-// !! Client Component
 function SearchForm({
   searchParams,
   debouncedHandleSearch,
@@ -1353,6 +1215,34 @@ function SearchForm({
       />
     </form>
   );
+}
+
+export function DateCard({
+  title,
+  id,
+  children,
+}: {
+  title: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+      <section
+        className="grid items-baseline gap-8 md:grid-cols-[1fr_2fr]"
+        id={id}
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
+        </div>
+        <div className="flex flex-col gap-y-8">{children}</div>
+      </section>
+    </div>
+  );
+}
+
+export function NoDateCard({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
 }
 
 function DestinationInDateCard({
@@ -1391,7 +1281,6 @@ function DestinationInDateCard({
   );
 }
 
-// !! Client Component
 function MomentInDateCard({
   e3,
   i3,
@@ -1478,7 +1367,6 @@ function MomentsPageDetails({ e }: { e: MomentsDateToCRUD }) {
   );
 }
 
-// !! Client Component
 function PaginationButton({
   handlePagination,
   direction,
@@ -1511,7 +1399,6 @@ function PaginationButton({
 
 // MomentForms Supporting Components
 
-// !! Client Component
 function StepForm({
   variant,
   momentFormVariant,
@@ -1648,18 +1535,13 @@ function MomentInputs({
         hidden={destinationSelect}
       >
         {destinationOptions.length > 0 && (
-          <SetSelectButton
-            setSelect={setDestinationSelect}
-            text={"Choisir la destination"}
-          />
-          // In fact, these could have actually stayed as they were.
-          // <Button
-          //   type="button"
-          //   variant="destroy"
-          //   onClick={() => setDestinationSelect(true)}
-          // >
-          //   Choisir la destination
-          // </Button>
+          <Button
+            type="button"
+            variant="destroy"
+            onClick={() => setDestinationSelect(true)}
+          >
+            Choisir la destination
+          </Button>
         )}
       </InputText>
       <SelectWithOptions
@@ -1681,17 +1563,13 @@ function MomentInputs({
         errors={createOrUpdateMomentState?.momentErrors?.destinationName}
         hidden={!destinationSelect}
       >
-        <SetSelectButton
-          setSelect={setDestinationSelect}
-          text={"Définir la destination"}
-        />
-        {/* <Button
+        <Button
           type="button"
           variant="destroy"
           onClick={() => setDestinationSelect(false)}
         >
           Définir la destination
-        </Button> */}
+        </Button>
       </SelectWithOptions>
       <InputText
         label="Activité"
@@ -1704,17 +1582,13 @@ function MomentInputs({
         errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
         hidden={activitySelect}
       >
-        <SetSelectButton
-          setSelect={setActivitySelect}
-          text={"Choisir l'activité"}
-        />
-        {/* <Button
+        <Button
           type="button"
           variant="destroy"
           onClick={() => setActivitySelect(true)}
         >
           Choisir l&apos;activité
-        </Button> */}
+        </Button>
       </InputText>
       <SelectWithOptions
         label="Activité"
@@ -1733,17 +1607,13 @@ function MomentInputs({
         errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
         hidden={!activitySelect}
       >
-        <SetSelectButton
-          setSelect={setActivitySelect}
-          text={"Définir l'activité"}
-        />
-        {/* <Button
+        <Button
           type="button"
           variant="destroy"
           onClick={() => setActivitySelect(false)}
         >
           Définir l&apos;activité
-        </Button> */}
+        </Button>
       </SelectWithOptions>
       <InputText
         label="Objectif"
@@ -1786,26 +1656,6 @@ function MomentInputs({
   );
 }
 
-// !! Client Component
-function SetSelectButton({
-  setSelect,
-  text,
-}: {
-  setSelect: SetState<boolean>;
-  text: string;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="destroy"
-      onClick={() => setSelect((s) => !s)}
-    >
-      {text}
-    </Button>
-  );
-}
-
-// !! Client Component
 function ReorderItem({
   step,
   index,
@@ -2084,14 +1934,11 @@ function StepVisibleCreating({
 
   return (
     // was a form, but forms can't be nested
-
-    // I really could go the extra mile with the disabled props here but since these are entirely synchronous client actions it's objectively an overkill... for now.
     <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Ajouter une étape
         </p>{" "}
-        {/* I also could go the extra mile of componentizing the buttons as Client Components, but they're fine as children even if StepVisibleCreating is a Server Component... for now: I just don't know about importing raw buttons in a Server Component me personally. */}
         <Button
           form={form}
           variant="destroy-step"
@@ -2162,7 +2009,6 @@ function StepVisibleCreate({
   isAddStepPending: boolean;
 }) {
   return (
-    // This is complicated. This is a Server Component. Even though honestly the div could habe been removed and this would have been just Client Component. Yes. I can replace the div by a Fragment and keep it a Server Component. But I want to keep the div so that StepVisibleCreate is semantically aligned with StepVisibleCreating, and also because it is possible in the future that I add more content here, such as descriptions or anything, which can simply be server-side rendered.
     <div>
       <Button
         type="button"
@@ -2373,19 +2219,15 @@ function EraseStepButton({
   isDeleteStepPending: boolean;
 }) {
   return (
-    // And poof, with a Fragment you're no longer a Client Component.
-    // So everywhere I see a custom button, since button itself already is a Client Component, their wrappers do not need to be one too.
-    <>
-      <Button
-        form={form}
-        type="button"
-        onClick={deleteStepAction}
-        variant="cancel-step"
-        disabled={isDeleteStepPending}
-      >
-        Effacer l&apos;étape
-      </Button>
-    </>
+    <Button
+      form={form}
+      type="button"
+      onClick={deleteStepAction}
+      variant="cancel-step"
+      disabled={isDeleteStepPending}
+    >
+      Effacer l&apos;étape
+    </Button>
   );
 }
 

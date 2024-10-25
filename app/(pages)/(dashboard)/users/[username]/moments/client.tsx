@@ -51,11 +51,9 @@ import {
 import { Option, SetState } from "@/app/types/globals";
 import {
   Button,
-  DateCard,
   Divider,
   FieldTitle,
   InputText,
-  NoDateCard,
   Section,
 } from "@/app/components";
 import {
@@ -74,11 +72,13 @@ import {
 } from "@/app/data/moments";
 import {
   ConfirmMomentButton,
+  DateCard,
   DestinationInDateCard,
   EraseStepButton,
   Header,
   MomentInputs,
   MomentsPageDetails,
+  NoDateCard,
   PageSegment,
   ResetOrEraseMomentButton,
   StepContents,
@@ -119,7 +119,7 @@ import {
 } from "@/app/flows/client/afterflows/moments";
 
 // the file between client and server that has the export default (and Page) is the one with the page component to be imported by page.tsx
-export default function Page({
+export default function ClientPage({
   // time
   now,
   // reads
@@ -1357,24 +1357,6 @@ function StepForm({
       onReset={resetStepAction}
       noValidate
     ></form>
-  );
-}
-
-export function SetSelectButton({
-  setSelect,
-  text,
-}: {
-  setSelect: SetState<boolean>;
-  text: string;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="destroy"
-      onClick={() => setSelect((s) => !s)}
-    >
-      {text}
-    </Button>
   );
 }
 

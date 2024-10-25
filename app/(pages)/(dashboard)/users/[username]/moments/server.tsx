@@ -1,4 +1,4 @@
-// Got it for now, "use server" at the top implies for React 19 that these are Server Actions instead of components.
+// "use server" at the top implies for React 19 that the file is made of Server Actions, NOT Server Components. It's only for "use client" that it means the file is made exclusively of strictly Client Components.
 
 import { MotionValue } from "framer-motion";
 import { add, format } from "date-fns";
@@ -21,23 +21,59 @@ import {
   viewTitles,
 } from "@/app/data/moments";
 import {
+  CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
+  DeleteMoment,
   MomentFormVariant,
   MomentsDateToCRUD,
   MomentsDestinationToCRUD,
   MomentToCRUD,
+  RevalidateMoments,
   StepFromCRUD,
   StepToCRUD,
   StepVisible,
+  UserMomentsToCRUD,
   View,
 } from "@/app/types/moments";
-import {
-  MomentInDateCard,
-  SetSelectButton,
-  ViewsCarouselContainer,
-} from "./client";
+import ClientPage, { MomentInDateCard, ViewsCarouselContainer } from "./client";
 import { numStringToTimeString, setScrollToTop } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
+
+export default function ServerPage({
+  // time
+  now,
+  // reads
+  allUserMomentsToCRUD,
+  maxPages,
+  destinationOptions,
+  // writes
+  revalidateMoments,
+  createOrUpdateMoment,
+  deleteMoment,
+}: {
+  now: string;
+  allUserMomentsToCRUD: UserMomentsToCRUD[];
+  maxPages: number[];
+  destinationOptions: Option[];
+  revalidateMoments: RevalidateMoments;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
+}) {
+  return (
+    <ClientPage
+      // time (aligned across server and client for hydration cases)
+      now={now}
+      // reads
+      allUserMomentsToCRUD={allUserMomentsToCRUD}
+      maxPages={maxPages}
+      destinationOptions={destinationOptions}
+      // writes
+      revalidateMoments={revalidateMoments}
+      createOrUpdateMoment={createOrUpdateMoment}
+      deleteMoment={deleteMoment}
+    />
+  );
+}
 
 export function Header({
   view,
@@ -174,6 +210,34 @@ function ViewsCarouselWrapper({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function DateCard({
+  title,
+  id,
+  children,
+}: {
+  title: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl bg-white p-5 shadow-sm">
+      <section
+        className="grid items-baseline gap-8 md:grid-cols-[1fr_2fr]"
+        id={id}
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
+        </div>
+        <div className="flex flex-col gap-y-8">{children}</div>
+      </section>
+    </div>
+  );
+}
+
+export function NoDateCard({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
+}
+
 export function DestinationInDateCard({
   e2,
   setMoment,
@@ -292,14 +356,6 @@ export function MomentInputs({
             setSelect={setDestinationSelect}
             text={"Choisir la destination"}
           />
-          // In fact, these could have actually stayed as they were.
-          // <Button
-          //   type="button"
-          //   variant="destroy"
-          //   onClick={() => setDestinationSelect(true)}
-          // >
-          //   Choisir la destination
-          // </Button>
         )}
       </InputText>
       <SelectWithOptions
@@ -325,13 +381,6 @@ export function MomentInputs({
           setSelect={setDestinationSelect}
           text={"Définir la destination"}
         />
-        {/* <Button
-          type="button"
-          variant="destroy"
-          onClick={() => setDestinationSelect(false)}
-        >
-          Définir la destination
-        </Button> */}
       </SelectWithOptions>
       <InputText
         label="Activité"
@@ -348,13 +397,6 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Choisir l'activité"}
         />
-        {/* <Button
-          type="button"
-          variant="destroy"
-          onClick={() => setActivitySelect(true)}
-        >
-          Choisir l&apos;activité
-        </Button> */}
       </InputText>
       <SelectWithOptions
         label="Activité"
@@ -377,13 +419,6 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Définir l'activité"}
         />
-        {/* <Button
-          type="button"
-          variant="destroy"
-          onClick={() => setActivitySelect(false)}
-        >
-          Définir l&apos;activité
-        </Button> */}
       </SelectWithOptions>
       <InputText
         label="Objectif"
@@ -423,6 +458,24 @@ export function MomentInputs({
         errors={createOrUpdateMomentState?.momentErrors?.momentStartDateAndTime}
       />
     </>
+  );
+}
+
+function SetSelectButton({
+  setSelect,
+  text,
+}: {
+  setSelect: SetState<boolean>;
+  text: string;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="destroy"
+      onClick={() => setSelect((s) => !s)}
+    >
+      {text}
+    </Button>
   );
 }
 
@@ -798,17 +851,18 @@ export function EraseStepButton({
   return (
     // And poof, with a Fragment you're no longer a Client Component.
     // So everywhere I see a custom button, since button itself already is a Client Component, their wrappers do not need to be one too.
-    <>
-      <Button
-        form={form}
-        type="button"
-        onClick={deleteStepAction}
-        variant="cancel-step"
-        disabled={isDeleteStepPending}
-      >
-        Effacer l&apos;étape
-      </Button>
-    </>
+    // <>
+    <Button
+      form={form}
+      type="button"
+      onClick={deleteStepAction}
+      variant="cancel-step"
+      disabled={isDeleteStepPending}
+    >
+      Effacer l&apos;étape
+    </Button>
+    // </>
+    // (No need for the Fragment, React understands on its own that the configuration of Button brought by EraseStepButton is a server shell.)
   );
 }
 

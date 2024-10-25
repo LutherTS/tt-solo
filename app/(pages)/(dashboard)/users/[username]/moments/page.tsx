@@ -13,7 +13,6 @@ import {
   dateToInputDatetime,
   defineCurrentPage,
 } from "@/app/utilities/moments";
-import Main from "./client";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
@@ -39,6 +38,7 @@ import {
   revalidateMomentsFlow,
   createOrUpdateMomentFlow,
 } from "@/app/flows/server/moments";
+import Main from "./server";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still it says I'm on a static route...
@@ -336,6 +336,7 @@ export default async function MomentsPage({
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
+    // <StillServer>
     <Suspense
       fallback={
         // no look at the styles, this is really just a placeholder
@@ -359,8 +360,14 @@ export default async function MomentsPage({
         deleteMoment={deleteMoment}
       />
     </Suspense>
+    // </StillServer>
   );
 }
+
+// function StillServer({ children }: { children: React.ReactNode }) {
+//   return <>{children}</>;
+// }
+// While Next.js allows Server Components to wrap Client Components, Client Components can’t wrap Server Components without converting the entire wrapped portion to run on the client. -- ChatGPT
 
 /* Notes
 Connection closed is unrelated to setView("read-moments");
