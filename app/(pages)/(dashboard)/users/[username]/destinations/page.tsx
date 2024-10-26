@@ -5,6 +5,8 @@ import prisma from "@/prisma/db";
 import { DestinationToCRUD } from "@/app/types/destinations";
 import { dateToInputDatetime } from "@/app/utilities/moments";
 
+import * as GlobalServerComponents from "@/app/components/server";
+import { HeaderSegment, PageSegment } from "../moments/server";
 import { CRUD } from "./crud";
 
 // the time at rendering as a stable foundation for all time operations
@@ -20,6 +22,8 @@ export default async function DestinationsPage({
     username: string;
   };
 }) {
+  params = await params;
+
   const username = params.username;
 
   const user = await prisma.user.findUnique({
@@ -225,12 +229,20 @@ export default async function DestinationsPage({
   }
 
   return (
-    <CRUD
-      destinationsToCRUD={destinationsToCRUD}
-      createOrUpdateDestination={createOrUpdateDestination}
-      deleteDestination={deleteDestination}
-      revalidateDestinations={revalidateDestinations}
-    />
+    // <CRUD
+    //   destinationsToCRUD={destinationsToCRUD}
+    //   createOrUpdateDestination={createOrUpdateDestination}
+    //   deleteDestination={deleteDestination}
+    //   revalidateDestinations={revalidateDestinations}
+    // />
+    <>
+      <PageSegment>
+        <HeaderSegment>
+          <GlobalServerComponents.PageTitle title="Mes destinations" />
+        </HeaderSegment>
+      </PageSegment>
+      <GlobalServerComponents.Divider />
+    </>
   );
 }
 

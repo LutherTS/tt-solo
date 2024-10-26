@@ -25,22 +25,22 @@ export const focusVisibleTexts = clsx(
 // Nav links
 
 export const navLinks: NavLink[] = [
-  // {
-  //   id: 0,
-  //   label: "Paramètres",
-  //   href: "/settings",
-  //   icon: "Cog8ToothOutline",
-  // },
+  {
+    id: 0,
+    label: "Paramètres",
+    href: "/settings",
+    icon: "Cog8ToothOutline",
+  },
   {
     id: 1,
     label: "Moments",
     href: "/moments",
     icon: "CalendarDaysOutline",
   },
-  // {
-  //   id: 2,
-  //   label: "Destinations",
-  //   href: "/destinations",
-  //   icon: "PaperAirplaneOutline",
-  // },
+  {
+    id: 2,
+    label: "Destinations",
+    href: "/destinations",
+    icon: "PaperAirplaneOutline",
+  },
 ];
