@@ -28,7 +28,11 @@ import {
   UserMomentsToCRUD,
   View,
 } from "@/app/types/moments";
-import { numStringToTimeString, setScrollToTop } from "@/app/utilities/moments";
+import {
+  defineDesiredView,
+  numStringToTimeString,
+  setScrollToTop,
+} from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
 export default function ServerCore({
@@ -97,20 +101,6 @@ export function SetViewButton({
   setView: SetState<View>;
   setMoment: SetState<MomentToCRUD | undefined>;
 }) {
-  // though the function below could be a utility, it is very specific to this component at this time
-  function defineDesiredView(view: View) {
-    switch (view) {
-      case "update-moment":
-        return "read-moments";
-      case "read-moments":
-        return "create-moment";
-      case "create-moment":
-        return "read-moments";
-      default:
-        return "read-moments";
-    }
-  }
-
   const desiredView = defineDesiredView(view);
 
   return (

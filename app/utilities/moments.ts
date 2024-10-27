@@ -1,7 +1,11 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
-import { CreateOrUpdateMomentState, StepFromCRUD } from "@/app/types/moments";
+import {
+  CreateOrUpdateMomentState,
+  StepFromCRUD,
+  View,
+} from "@/app/types/moments";
 import { SetState } from "@/app/types/globals";
 
 // changes a Date object into a input datetime-local string
@@ -145,4 +149,33 @@ export const removeMomentMessagesAndErrorsCallback = (
   s: CreateOrUpdateMomentState,
 ) => {
   return { ...s, momentMessages: {}, momentErrors: {} };
+};
+
+// defines the desired view to shift to from a view depending on that original view
+export const defineDesiredView = (view: View) => {
+  switch (view) {
+    case "update-moment":
+      return "read-moments";
+    case "read-moments":
+      return "create-moment";
+    case "create-moment":
+      return "read-moments";
+    default:
+      return view;
+  }
+};
+
+// defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
+export const defineView = (rawView: string | undefined) => {
+  switch (rawView) {
+    case "update-moment":
+      return "update-moment";
+    case "read-moments":
+      return "read-moments";
+    case "create-moment":
+      return "create-moment";
+
+    default:
+      return "create-moment";
+  }
 };
