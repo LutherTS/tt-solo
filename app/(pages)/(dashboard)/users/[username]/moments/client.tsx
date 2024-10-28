@@ -134,14 +134,17 @@ export default function ClientCore({
   let [view, setView] = useState<View>("create-moment");
 
   // at an upper level for UpdateMomentView
-  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  // IMPORTANT
+  // Now that LocalServerComponents.Header no longer needs setMoment, I can shift moment and setMoment to Main, so that only view and setView remain in ClientCore. Then I can replace them by params at the RSC page level, and thus turn and replace LocalServerComponents.Header by a server component instead, doing away entirely with ClientCore and having the header be server)rendered.
+  // And noticing this is all thanks to my new way of organizing components.
 
   return (
     <>
       <LocalServerComponents.Header
         view={view}
         setView={setView}
-        setMoment={setMoment}
+        // setMoment={setMoment}
       />
       <GlobalServerComponents.Divider />
       <Main

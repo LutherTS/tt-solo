@@ -74,18 +74,22 @@ export default function ServerCore({
 export function Header({
   view,
   setView,
-  setMoment,
+  // setMoment, // and now Header no longer needs setMoment
 }: {
   view: View;
   setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  // setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
           <GlobalServerComponents.PageTitle title={viewTitles[view]} />
-          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
+          <SetViewButton
+            view={view}
+            setView={setView}
+            // setMoment={setMoment}
+          />
         </HeaderSegment>
       </PageSegment>
     </header>
@@ -95,11 +99,11 @@ export function Header({
 export function SetViewButton({
   view,
   setView,
-  setMoment,
+  // setMoment, // SetViewButton no longer needs setMoment
 }: {
   view: View;
   setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  // setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   const desiredView = defineDesiredView(view);
 
@@ -108,8 +112,11 @@ export function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
-        // SetViewButton is the only one that sets moment to undefined
-        if (view === "update-moment") setMoment(undefined);
+        // SetViewButton is the only one that sets moment to undefined. NO.
+        // if (view === "update-moment") setMoment(undefined);
+        // IMPORTANT
+        // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
+
         setScrollToTop(desiredView, setView);
       }}
     >
