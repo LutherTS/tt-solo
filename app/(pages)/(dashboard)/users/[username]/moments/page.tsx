@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { ErrorBoundary } from "react-error-boundary";
 
+import * as GlobalServerComponents from "@/app/components/server";
 import Core from "./server";
 import { Option } from "@/app/types/globals";
 import {
@@ -343,29 +345,34 @@ export default async function MomentsPage({
   return (
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
     // <StillServer>
-    <Suspense
+    <ErrorBoundary
       fallback={
-        // no look at the styles, this is really just a placeholder
-        <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center">
-          <div className="space-y-4 text-center">
-            <p>Loading...</p>
-          </div>
-        </div>
+        <GlobalServerComponents.FallbackFlex>
+          <p>Une erreur est survenue.</p>
+        </GlobalServerComponents.FallbackFlex>
       }
     >
-      <Core
-        // time (aligned across server and client for hydration cases)
-        now={now}
-        // reads
-        allUserMomentsToCRUD={allUserMomentsToCRUD}
-        maxPages={maxPages}
-        destinationOptions={destinationOptions}
-        // writes
-        revalidateMoments={revalidateMoments}
-        createOrUpdateMoment={createOrUpdateMoment}
-        deleteMoment={deleteMoment}
-      />
-    </Suspense>
+      <Suspense
+        fallback={
+          <GlobalServerComponents.FallbackFlex>
+            <p>Loading...</p>
+          </GlobalServerComponents.FallbackFlex>
+        }
+      >
+        <Core
+          // time (aligned across server and client for hydration cases)
+          now={now}
+          // reads
+          allUserMomentsToCRUD={allUserMomentsToCRUD}
+          maxPages={maxPages}
+          destinationOptions={destinationOptions}
+          // writes
+          revalidateMoments={revalidateMoments}
+          createOrUpdateMoment={createOrUpdateMoment}
+          deleteMoment={deleteMoment}
+        />
+      </Suspense>
+    </ErrorBoundary>
     // </StillServer>
   );
 }
@@ -374,6 +381,8 @@ export default async function MomentsPage({
 //   return <>{children}</>;
 // }
 // While Next.js allows Server Components to wrap Client Components, Client Components can’t wrap Server Components without converting the entire wrapped portion to run on the client. -- ChatGPT
+
+// Also it is my belief that there shouldn't be ANY Suspense boundary without a parent Error boundary to go along.
 
 /* Notes
 Connection closed is unrelated to setView("read-moments");

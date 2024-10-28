@@ -1,12 +1,11 @@
+import * as GlobalServerComponents from "@/app/components/server";
+
 export default function Loading() {
   // Or a custom loading skeleton component
   return (
-    // no look at the styles, this is really just a placeholder
-    <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center">
-      <div className="space-y-4 text-center">
-        <p>Loading...</p>
-      </div>
-    </div>
+    <GlobalServerComponents.FallbackFlex>
+      <p>Loading...</p>
+    </GlobalServerComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/loading
 
