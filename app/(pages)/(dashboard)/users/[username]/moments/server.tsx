@@ -55,6 +55,10 @@ export default function ServerCore({
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
 }) {
+  // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
+  // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
+  // So I really can't go any further. I can just inform them that this is what I could do from then on in order to allow my Header below to be rendered on the server.
+
   return (
     <LocalClientComponents.default
       // time (aligned across server and client for hydration cases)

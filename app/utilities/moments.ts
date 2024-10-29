@@ -115,9 +115,13 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   desiredView: DesiredView,
   setDesiredView: SetState<DesiredViews>,
 ) => {
+  // setDesiredView will need to be replace by something replacing the URL.
+  // But since the arguments are going to different it's also going to be different function altogether.
   setDesiredView(desiredView);
   scrollTo({ top: 0 });
 };
+
+export const scrollToTopOfDesiredView = () => {};
 
 // scrolls back to the desired section (usually yourMoment or itsSteps in the Moment forms)
 export const scrollToSection = (sectionId: string) => {
