@@ -389,6 +389,9 @@ export default async function MomentsPage({
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
+          // to separe view and moment from the ones I'm getting here, I'm going for now with pageView and pageMomentId
+          pageView={view}
+          pageMomentId={momentId}
         />
       </Suspense>
     </ErrorBoundary>

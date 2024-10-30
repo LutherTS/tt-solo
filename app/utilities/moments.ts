@@ -8,6 +8,7 @@ import {
 } from "@/app/types/moments";
 import { SetState } from "@/app/types/globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
+import { ReadonlyURLSearchParams } from "next/navigation";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -115,10 +116,14 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   // https://www.bajorunas.tech/blog/typescript-generics-inheritance
   desiredView: DesiredView,
   setDesiredView: SetState<DesiredViews>,
+  searchParams?: ReadonlyURLSearchParams,
 ) => {
   // setDesiredView will need to be replace by something replacing the URL.
   // But since the arguments are going to different it's also going to be different function altogether.
   setDesiredView(desiredView);
+  let newSearchParams: URLSearchParams;
+  newSearchParams = new URLSearchParams(searchParams);
+  console.log({ newSearchParams });
   scrollTo({ top: 0 });
 };
 

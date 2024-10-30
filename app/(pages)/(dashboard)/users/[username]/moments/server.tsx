@@ -46,6 +46,8 @@ export default function ServerCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
+  pageView,
+  pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -54,6 +56,8 @@ export default function ServerCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
+  pageView: View;
+  pageMomentId: string | undefined;
 }) {
   // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
   // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
