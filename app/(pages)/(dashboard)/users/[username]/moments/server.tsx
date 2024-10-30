@@ -75,6 +75,8 @@ export default function ServerCore({
       revalidateMoments={revalidateMoments}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
+      pageView={pageView}
+      pageMomentId={pageMomentId}
     />
   );
 }
@@ -83,20 +85,26 @@ export function Header({
   view,
   setView,
   // setMoment, // and now Header no longer needs setMoment
+  pageView,
+  pageMomentId,
 }: {
   view: View;
   setView: SetState<View>;
   // setMoment: SetState<MomentToCRUD | undefined>;
+  pageView: View;
+  pageMomentId: string | undefined;
 }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
           <GlobalServerComponents.PageTitle title={viewTitles[view]} />
-          <SetViewButton
+          <LocalClientComponents.SetViewButton
             view={view}
             setView={setView}
             // setMoment={setMoment}
+            pageView={pageView}
+            pageMomentId={pageMomentId}
           />
         </HeaderSegment>
       </PageSegment>

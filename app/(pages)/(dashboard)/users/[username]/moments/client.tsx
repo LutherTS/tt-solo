@@ -69,6 +69,7 @@ import {
 } from "@/app/data/moments";
 import {
   defineCurrentPage,
+  defineDesiredView,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
   removeMomentMessagesAndErrorsCallback,
@@ -104,6 +105,8 @@ export default function ClientCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
+  pageView,
+  pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -112,6 +115,8 @@ export default function ClientCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
+  pageView: View;
+  pageMomentId: string | undefined;
 }) {
   console.log({ now });
 
@@ -145,6 +150,8 @@ export default function ClientCore({
         view={view}
         setView={setView}
         // setMoment={setMoment}
+        pageView={pageView}
+        pageMomentId={pageMomentId}
       />
       <GlobalServerComponents.Divider />
       <Main
@@ -161,6 +168,53 @@ export default function ClientCore({
         // setMoment={setMoment}
       />
     </>
+  );
+}
+
+export function SetViewButton({
+  view,
+  setView,
+  // setMoment, // SetViewButton no longer needs setMoment
+  pageView,
+  pageMomentId,
+}: {
+  view: View;
+  setView: SetState<View>;
+  // setMoment: SetState<MomentToCRUD | undefined>;
+  pageView: View;
+  pageMomentId: string | undefined;
+}) {
+  const desiredView = defineDesiredView(pageView);
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
+  return (
+    <GlobalClientComponents.Button
+      type="button"
+      variant="destroy-step"
+      onClick={() => {
+        // SetViewButton is the only one that sets moment to undefined. NO.
+        // if (view === "update-moment") setMoment(undefined);
+        // IMPORTANT
+        // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
+        // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.
+
+        setScrollToTop(desiredView, setView, searchParams, push, pathname);
+      }}
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -1580,6 +1634,7 @@ export function ReorderItem({
 
 const localClientComponents = {
   ClientCore,
+  SetViewButton,
   Main,
   ViewsCarouselContainer,
   ViewSegment,

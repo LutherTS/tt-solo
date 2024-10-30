@@ -9,6 +9,7 @@ import {
 import { SetState } from "@/app/types/globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
 import { ReadonlyURLSearchParams } from "next/navigation";
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -117,14 +118,27 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   desiredView: DesiredView,
   setDesiredView: SetState<DesiredViews>,
   searchParams?: ReadonlyURLSearchParams,
+  push?: (href: string, options?: NavigateOptions) => void,
+  pathname?: string,
 ) => {
   // setDesiredView will need to be replace by something replacing the URL.
   // But since the arguments are going to different it's also going to be different function altogether.
   setDesiredView(desiredView);
+
   let newSearchParams: URLSearchParams;
   newSearchParams = new URLSearchParams(searchParams);
-  console.log({ newSearchParams });
+  // this needs type safety, the replacing function will not be so broad
+  if (desiredView !== "update-moment") newSearchParams.delete("momentId");
+  newSearchParams.set("view", desiredView as string);
+
+  console.log({ newSearchParams, push, pathname });
+  console.log(newSearchParams.toString());
+
+  if (push && pathname) push(pathname + "?" + newSearchParams.toString());
+
   scrollTo({ top: 0 });
+
+  // Since subView is going to be below motion.div and will have no other choice than to be the child of a Client Component, I don't see a point in having it in the URL just yet. But so far, on the client SetViewButton, I'm reading the view from the URL.
 };
 
 // incoming to navigate from the URL
