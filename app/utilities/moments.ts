@@ -7,6 +7,7 @@ import {
   View,
 } from "@/app/types/moments";
 import { SetState } from "@/app/types/globals";
+import { findMomentByIdAndUserId } from "../reads/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -121,6 +122,7 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   scrollTo({ top: 0 });
 };
 
+// incoming to navigate from the URL
 export const scrollToTopOfDesiredView = () => {};
 
 // scrolls back to the desired section (usually yourMoment or itsSteps in the Moment forms)
@@ -170,7 +172,7 @@ export const defineDesiredView = (view: View) => {
 };
 
 // defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
-export const defineView = (rawView: string | undefined) => {
+export const defineView = (rawView: string | undefined): View => {
   switch (rawView) {
     case "update-moment":
       return "update-moment";
@@ -183,3 +185,39 @@ export const defineView = (rawView: string | undefined) => {
       return "create-moment";
   }
 };
+
+// defines the current moment id from the view searchParam whether it is specified (as a string) or not (as undefined)
+export const defineMomentId = async (
+  rawMomentId: string | undefined,
+  userId: string,
+): Promise<string | undefined> => {
+  if (!rawMomentId) return undefined;
+
+  const moment = await findMomentByIdAndUserId(rawMomentId, userId);
+
+  if (moment) return moment.id;
+  else return undefined;
+};
+
+// defines both the view and momentId depending on one another, so that the "update-moment" cannot be shown if there is no momentId
+export const defineWithViewAndMomentId = (
+  view: View,
+  momentId: string | undefined,
+): { view: View; momentId: string | undefined } => {
+  switch (view) {
+    case "update-moment":
+      if (momentId) return { view, momentId };
+      else return { view: "read-moments", momentId };
+    case "read-moments":
+      return { view, momentId: undefined };
+    case "create-moment":
+      return { view, momentId: undefined };
+
+    default:
+      return { view, momentId };
+  }
+};
+
+/* Notes
+I personally hate when a backend modifies the URL I've personally entered in the browser. So my idea is, the user is free to enter and keep whatever URL they want, while I am free to interpret that URL however it is that I want.
+*/

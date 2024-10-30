@@ -15,6 +15,9 @@ import {
 import {
   dateToInputDatetime,
   defineCurrentPage,
+  defineMomentId,
+  defineView,
+  defineWithViewAndMomentId,
 } from "@/app/utilities/moments";
 import {
   CONTAINS,
@@ -58,6 +61,9 @@ export default async function MomentsPage({
     [PASTUSERMOMENTSPAGE]?: string;
     [CURRENTUSERMOMENTSPAGE]?: string;
     [FUTUREUSERMOMENTSPAGE]?: string;
+    // now in the URL
+    view?: string;
+    momentId?: string;
   };
 }) {
   // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.
@@ -69,6 +75,7 @@ export default async function MomentsPage({
   // params and searchParams are awaited in the RC 2 and in stable Next.js 15
   // this simple line assigns the resolved params promise to the params variable already use in the code
   params = await params;
+  searchParams = await searchParams;
 
   const username = params.username;
   // console.log({ username });
@@ -83,7 +90,19 @@ export default async function MomentsPage({
 
   const userId = user.id;
 
-  searchParams = await searchParams;
+  // obtaining and interpreting view and momentId
+
+  let definedView = defineView(searchParams?.view);
+  // console.log({ definedView });
+
+  let definedMomentId = await defineMomentId(searchParams?.momentId, userId);
+  // console.log({ definedMomentId });
+
+  const { view, momentId } = defineWithViewAndMomentId(
+    definedView,
+    definedMomentId,
+  );
+  console.log({ view, momentId });
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";

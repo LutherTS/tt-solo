@@ -6,7 +6,10 @@ import {
   makeStepsCompoundDurationsArray,
 } from "@/app/utilities/moments";
 import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
-import { findMomentByNameAndUserId } from "@/app/reads/moments";
+import {
+  findMomentByIdAndUserId,
+  findMomentByNameAndUserId,
+} from "@/app/reads/moments";
 import { findDestinationIdByNameAndUserId } from "@/app/reads/destinations";
 import {
   createMomentAndDestination,
@@ -409,7 +412,21 @@ export const deleteMomentFlow = async (
 
   const momentId = momentFromCRUD.id;
 
-  await deleteMomentByMomentId(momentId);
+  // verify if the moment still exists at time of deletion
+  const moment = await findMomentByIdAndUserId(momentId, user.id);
+
+  if (!moment)
+    return {
+      momentMessages: {
+        message: "Erreur.",
+        subMessage: "Le moment que vous souhaitez effacer n'existe déjà plus.",
+      },
+      momentErrors: {},
+      stepsMessages: {},
+      stepsErrors: {},
+    };
+
+  await deleteMomentByMomentId(moment.id);
 
   const username = user.username;
 

@@ -81,6 +81,16 @@ export function whereByNameAndUserId(
   };
 }
 
+export function whereMomentIdAndUserId(
+  id: string,
+  userId: string,
+): Prisma.MomentWhereUniqueInput {
+  return {
+    id,
+    userId,
+  };
+}
+
 // OrderBys
 
 export const momentsOrderByStartDesc = {
