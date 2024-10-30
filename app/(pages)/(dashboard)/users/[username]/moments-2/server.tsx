@@ -78,22 +78,18 @@ export default function ServerCore({
 export function Header({
   view,
   setView,
-  // setMoment, // and now Header no longer needs setMoment
+  setMoment, // and now Header no longer needs setMoment
 }: {
   view: View;
   setView: SetState<View>;
-  // setMoment: SetState<MomentToCRUD | undefined>;
+  setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
           <GlobalServerComponents.PageTitle title={viewTitles[view]} />
-          <SetViewButton
-            view={view}
-            setView={setView}
-            // setMoment={setMoment}
-          />
+          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </HeaderSegment>
       </PageSegment>
     </header>
@@ -103,11 +99,11 @@ export function Header({
 export function SetViewButton({
   view,
   setView,
-  // setMoment, // SetViewButton no longer needs setMoment
+  setMoment, // SetViewButton no longer needs setMoment
 }: {
   view: View;
   setView: SetState<View>;
-  // setMoment: SetState<MomentToCRUD | undefined>;
+  setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   const desiredView = defineDesiredView(view);
 
@@ -117,7 +113,7 @@ export function SetViewButton({
       variant="destroy-step"
       onClick={() => {
         // SetViewButton is the only one that sets moment to undefined. NO.
-        // if (view === "update-moment") setMoment(undefined);
+        if (view === "update-moment") setMoment(undefined);
         // IMPORTANT
         // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
         // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.

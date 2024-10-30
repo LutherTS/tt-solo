@@ -2,20 +2,25 @@
 
 import { useRouter } from "next/navigation";
 
-import { Button, FallbackFlex } from "@/app/components/__components__";
+import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalClientComponents from "@/app/components/client";
 
 export default function NotFound() {
   const { back } = useRouter();
 
   return (
     // no look at the styles, this is really just a placeholder
-    <FallbackFlex>
+    <GlobalServerComponents.FallbackFlex>
       <p>Mince. Il n'y a personne.</p>
       <p>L'utilisateur demandé n'a pas été trouvé en base de données.</p>
-      <Button type="button" variant="confirm" onClick={() => back()}>
+      <GlobalClientComponents.Button
+        type="button"
+        variant="confirm"
+        onClick={() => back()}
+      >
         Revenir en arrière
-      </Button>
-    </FallbackFlex>
+      </GlobalClientComponents.Button>
+    </GlobalServerComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/not-found
 

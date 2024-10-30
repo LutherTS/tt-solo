@@ -1,4 +1,4 @@
-import { PageTitle } from "@/app/components_old";
+import { PageTitle } from "@/app/components/__components__";
 
 export function CRUD() {
   return (

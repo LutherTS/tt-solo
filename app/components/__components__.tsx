@@ -13,8 +13,8 @@ import { isValid } from "date-fns";
 
 import * as Icons from "@/app/icons";
 import { SetState } from "@/app/types/globals";
-import { EventStepDurationSchema } from "./validations/steps";
-import { CreateOrUpdateMomentState } from "./types/moments";
+import { EventStepDurationSchema } from "../validations/steps";
+import { CreateOrUpdateMomentState } from "../types/moments";
 
 // Variables
 

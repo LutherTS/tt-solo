@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-import { Button, FallbackFlex } from "@/app/components/__components__";
+import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalClientComponents from "@/app/components/client";
 
 export default function MomentsError({
   error,
@@ -17,9 +18,9 @@ export default function MomentsError({
   }, [error]);
 
   return (
-    <FallbackFlex>
+    <GlobalServerComponents.FallbackFlex>
       <p>Oups. Ça ne devait pas se passer comme ça.</p>
-      <Button
+      <GlobalClientComponents.Button
         type="button"
         variant="confirm"
         onClick={
@@ -28,9 +29,9 @@ export default function MomentsError({
         }
       >
         Essayer encore
-      </Button>
+      </GlobalClientComponents.Button>
       <p>Ou essayez simplement de rafraîchir la page.</p>
-    </FallbackFlex>
+    </GlobalServerComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/error
 

@@ -77,7 +77,7 @@ import {
   InputSwitch,
   SelectWithOptions,
   Textarea,
-} from "@/app/components_old";
+} from "@/app/components/__components__";
 import * as Icons from "@/app/icons";
 import {
   createOrUpdateStepActionflow,

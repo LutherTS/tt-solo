@@ -1,11 +1,11 @@
-import { FallbackFlex } from "@/app/components/__components__";
+import * as GlobalServerComponents from "@/app/components/server";
 
 export default function Loading() {
   // Or a custom loading skeleton component
   return (
-    <FallbackFlex>
+    <GlobalServerComponents.FallbackFlex>
       <p>Loading...</p>
-    </FallbackFlex>
+    </GlobalServerComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/loading
 
