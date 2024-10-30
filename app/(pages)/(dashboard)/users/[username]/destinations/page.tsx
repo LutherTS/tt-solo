@@ -7,7 +7,6 @@ import { dateToInputDatetime } from "@/app/utilities/moments";
 
 import * as GlobalServerComponents from "@/app/components/server";
 import { HeaderSegment, PageSegment } from "../moments/server";
-import { CRUD } from "./crud";
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -294,4 +293,6 @@ const destinationsForCRUD: DestinationForCRUD[] = userDestinationsOld.map(
     };
   },
 );
+...
+Suspense actually works as intended here. It was acting weird when I was refreshing the page because of cache on MomentsPage, but in reality the entire page does resolve at the same time. The goal is, indeed and eventually, for all promises to resolve concurrently meaning the header will naturally resolve first (since it's lighter) and the rest second.
 */
