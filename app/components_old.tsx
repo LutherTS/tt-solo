@@ -1180,6 +1180,14 @@ export function Button({
   );
 }
 
+export function FallbackFlex({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center text-center">
+      <div className="space-y-4">{children}</div>
+    </div>
+  );
+}
+
 /* Notes
 For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.
 */
