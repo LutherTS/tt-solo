@@ -44,7 +44,7 @@ import {
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
-  SearchParamsKey,
+  MomentsSearchParamsKey,
   StepFormVariant,
   StepFromCRUD,
   StepVisible,
@@ -409,7 +409,7 @@ export function ReadMomentsView({
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
-  const subViewSearchParams: { [K in SubView]: SearchParamsKey } = {
+  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
     "all-moments": USERMOMENTSPAGE,
     "past-moments": PASTUSERMOMENTSPAGE,
     "current-moments": CURRENTUSERMOMENTSPAGE,

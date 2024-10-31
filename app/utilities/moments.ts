@@ -2,14 +2,16 @@ import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
 import {
+  MomentsSearchParams,
   CreateOrUpdateMomentState,
   StepFromCRUD,
   View,
 } from "@/app/types/moments";
-import { SetState } from "@/app/types/globals";
+import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { MOMENTID, VIEW } from "../data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -133,6 +135,7 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
 // incoming to navigate from the URL
 // ...
 // if you're going to do it from the URL, all redirects needs to be from the URL in order to be awaited and to have the scrollToTop synchronized.
+// ...and that's where I elected not to go deeper on the server because here the client is instantaneous and therefore faster
 export const scrollToTopOfDesiredView = (
   desiredView: View,
   searchParams: ReadonlyURLSearchParams,
@@ -140,16 +143,16 @@ export const scrollToTopOfDesiredView = (
   pathname: string,
   momentId?: string,
 ) => {
-  const newSearchParams = new URLSearchParams(searchParams);
+  const newSearchParams = new URLSearchParams(
+    searchParams,
+  ) as TypedURLSearchParams<MomentsSearchParams>;
 
-  if (desiredView !== "update-moment") newSearchParams.delete("momentId");
-  // under my control but not entirely sure this is perfectly safe
-  else if (momentId) newSearchParams.set("momentId", momentId);
+  if (desiredView !== "update-moment") newSearchParams.delete(MOMENTID);
+  else if (momentId) newSearchParams.set(MOMENTID, momentId);
 
-  // "momentId" and "view" will need to be variables
-  newSearchParams.set("view", desiredView);
+  newSearchParams.set(VIEW, desiredView);
 
-  push(pathname + "?" + newSearchParams.toString());
+  push(`${pathname}?${newSearchParams.toString()}`);
 
   scrollTo({ top: 0 });
 };

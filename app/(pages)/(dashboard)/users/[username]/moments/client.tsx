@@ -44,15 +44,16 @@ import {
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
-  SearchParamsKey,
+  MomentsSearchParamsKey,
   StepFormVariant,
   StepFromCRUD,
   StepVisible,
   SubView,
   UserMomentsToCRUD,
   View,
+  MomentsSearchParams,
 } from "@/app/types/moments";
-import { Option, SetState } from "@/app/types/globals";
+import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
@@ -453,22 +454,24 @@ export function ReadMomentsView({
 
   // because of debounce I'm exceptionally not turning this handler into an action
   function handleSearch(term: string) {
-    const params = new URLSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(
+      searchParams,
+    ) as TypedURLSearchParams<MomentsSearchParams>;
 
-    if (term) params.set(CONTAINS, term);
-    else params.delete(CONTAINS);
+    if (term) newSearchParams.set(CONTAINS, term);
+    else newSearchParams.delete(CONTAINS);
 
-    params.delete(USERMOMENTSPAGE);
-    params.delete(PASTUSERMOMENTSPAGE);
-    params.delete(CURRENTUSERMOMENTSPAGE);
-    params.delete(FUTUREUSERMOMENTSPAGE);
+    newSearchParams.delete(USERMOMENTSPAGE);
+    newSearchParams.delete(PASTUSERMOMENTSPAGE);
+    newSearchParams.delete(CURRENTUSERMOMENTSPAGE);
+    newSearchParams.delete(FUTUREUSERMOMENTSPAGE);
 
-    replace(`${pathname}?${params.toString()}`);
+    replace(`${pathname}?${newSearchParams.toString()}`);
   } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
-  const subViewSearchParams: { [K in SubView]: SearchParamsKey } = {
+  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
     "all-moments": USERMOMENTSPAGE,
     "past-moments": PASTUSERMOMENTSPAGE,
     "current-moments": CURRENTUSERMOMENTSPAGE,
@@ -497,22 +500,28 @@ export function ReadMomentsView({
 
   // for now search and pagination will remain handlers
   function handlePagination(direction: "left" | "right", subView: SubView) {
-    const params = new URLSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(
+      searchParams,
+    ) as TypedURLSearchParams<MomentsSearchParams>;
+
     if (direction === "left")
-      params.set(
+      newSearchParams.set(
         subViewSearchParams[subView],
         Math.max(INITIAL_PAGE, currentPage - 1).toString(),
       );
     else
-      params.set(
+      newSearchParams.set(
         subViewSearchParams[subView],
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
-    if (params.get(subViewSearchParams[subView]) === INITIAL_PAGE.toString())
-      params.delete(subViewSearchParams[subView]);
+    if (
+      newSearchParams.get(subViewSearchParams[subView]) ===
+      INITIAL_PAGE.toString()
+    )
+      newSearchParams.delete(subViewSearchParams[subView]);
 
-    replace(`${pathname}?${params.toString()}`);
+    replace(`${pathname}?${newSearchParams.toString()}`);
   }
 
   const rotateSubView = (direction: "left" | "right") =>
