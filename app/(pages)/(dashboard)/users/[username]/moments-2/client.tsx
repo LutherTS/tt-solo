@@ -79,19 +79,19 @@ import {
   toWordsing,
 } from "@/app/utilities/moments";
 import {
-  createOrUpdateMomentActionflow,
-  createOrUpdateStepActionflow,
-  deleteMomentActionflow,
-  deleteStepActionflow,
-  resetMomentActionflow,
-  resetStepActionflow,
-  revalidateMomentsActionflow,
+  createOrUpdateMomentClientFlow,
+  createOrUpdateStepClientFlow,
+  deleteMomentClientFlow,
+  deleteStepClientFlow,
+  resetMomentClientFlow,
+  resetStepClientFlow,
+  revalidateMomentsClientFlow,
 } from "@/app/flows/client/moments";
 import {
-  createOrUpdateMomentAfterflow,
-  deleteMomentAfterflow,
-  resetMomentAfterflow,
-} from "@/app/flows/client/afterflows/moments";
+  createOrUpdateMomentAfterFlow,
+  deleteMomentAfterFlow,
+  resetMomentAfterFlow,
+} from "@/app/flows/after/moments";
 
 export default function ClientCore({
   // time
@@ -511,7 +511,7 @@ export function ReadMomentsView({
     event: MouseEvent<HTMLButtonElement>,
   ) => {
     startRevalidateMomentsTransition(async () => {
-      await revalidateMomentsActionflow(
+      await revalidateMomentsClientFlow(
         event,
         revalidateMoments,
         replace,
@@ -703,7 +703,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentActionflow(
+      const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -725,7 +725,7 @@ export function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
       // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
-      createOrUpdateMomentAfterflow(
+      createOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
@@ -755,7 +755,7 @@ export function MomentForms({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
       ) {
-        const state = resetMomentActionflow(
+        const state = resetMomentClientFlow(
           setStartMomentDate,
           setSteps,
           setStepVisible,
@@ -771,7 +771,7 @@ export function MomentForms({
 
   useEffect(() => {
     if (isResetMomentDone) {
-      resetMomentAfterflow(variant);
+      resetMomentAfterFlow(variant);
 
       setIsResetMomentDone(false);
     }
@@ -786,7 +786,7 @@ export function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentActionflow(deleteMoment, moment);
+        const state = await deleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -796,7 +796,7 @@ export function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterflow(
+      deleteMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setView,
@@ -1311,7 +1311,7 @@ export function StepForm({
 
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
     startCreateOrUpdateStepTransition(() => {
-      const state = createOrUpdateStepActionflow(
+      const state = createOrUpdateStepClientFlow(
         event,
         stepDuree,
         steps,
@@ -1342,7 +1342,7 @@ export function StepForm({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        const state = resetStepActionflow(
+        const state = resetStepClientFlow(
           setStepDuree,
           createOrUpdateMomentState,
         );
@@ -1422,7 +1422,7 @@ export function ReorderItem({
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
-        deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
+        deleteStepClientFlow(steps, currentStepId, setSteps, setStepVisible);
         setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       }
     });

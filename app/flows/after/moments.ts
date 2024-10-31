@@ -16,7 +16,7 @@ import { ReadonlyURLSearchParams } from "next/navigation";
 // scrolls back to the section of the form that possesses new errors
 // or to the correct subView when successfully submitted
 // (every time createOrUpdateMomentAction is done)
-export const createOrUpdateMomentAfterflow = (
+export const createOrUpdateMomentAfterFlow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
@@ -59,13 +59,13 @@ export const createOrUpdateMomentAfterflow = (
 
 // scrolls back to yourMoment's section at the top after resetting the form
 // (every time resetMomentFormAction is done)
-export const resetMomentAfterflow = (variant: MomentFormVariant) => {
+export const resetMomentAfterFlow = (variant: MomentFormVariant) => {
   scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
 };
 
 // scrolls back to yourMoment's section if there's a mistake, or leads to the top of "read-moments" after the moment is successfully deleted
 // (every time deleteMomentAction is done)
-export const deleteMomentAfterflow = (
+export const deleteMomentAfterFlow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setView: SetState<View>,

@@ -36,9 +36,9 @@ import {
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
-  deleteMomentFlow,
-  revalidateMomentsFlow,
-  createOrUpdateMomentFlow,
+  deleteMomentServerFlow,
+  revalidateMomentsServerFlow,
+  createOrUpdateMomentServerFlow,
 } from "@/app/flows/server/moments";
 import { FallbackFlex } from "@/app/components/__components__";
 
@@ -309,7 +309,7 @@ export default async function MomentsPage({
     "use server";
 
     // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
-    return await createOrUpdateMomentFlow(
+    return await createOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -331,14 +331,14 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentState> {
     "use server";
 
-    return await deleteMomentFlow(momentFromCRUD, user);
+    return await deleteMomentServerFlow(momentFromCRUD, user);
   }
 
   // insisting on : Promise<void> to keep in sync with the flow
   async function revalidateMoments(): Promise<void> {
     "use server";
 
-    return await revalidateMomentsFlow(user);
+    return await revalidateMomentsServerFlow(user);
   }
 
   // The magic here is that no data directly from the User model ever leaves the server, since the actions reuse the verified User data obtained at the top of the function.

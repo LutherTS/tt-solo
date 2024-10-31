@@ -27,7 +27,7 @@ import {
 import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 import { SetState } from "@/app/types/globals";
 
-export const revalidateMomentsActionflow = async (
+export const revalidateMomentsClientFlow = async (
   event: MouseEvent<HTMLButtonElement>,
   revalidateMoments: () => Promise<void>,
   replace: (href: string, options?: NavigateOptions) => void,
@@ -40,7 +40,7 @@ export const revalidateMomentsActionflow = async (
 };
 
 // best be to prepare the state right here
-export const createOrUpdateMomentActionflow = async (
+export const createOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
   createOrUpdateMoment: CreateOrUpdateMoment,
   variant: MomentFormVariant,
@@ -92,7 +92,7 @@ export const createOrUpdateMomentActionflow = async (
 };
 
 // reset is only on the creating variant of MomentForms
-export const resetMomentActionflow = (
+export const resetMomentClientFlow = (
   setStartMomentDate: SetState<string>,
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
@@ -125,7 +125,7 @@ export const resetMomentActionflow = (
 };
 
 // delete is only on the updating variant of MomentForms
-export const deleteMomentActionflow = async (
+export const deleteMomentClientFlow = async (
   deleteMoment: DeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
 ): Promise<CreateOrUpdateMomentState> => {
@@ -148,7 +148,7 @@ export const deleteMomentActionflow = async (
   }
 };
 
-export const createOrUpdateStepActionflow = (
+export const createOrUpdateStepClientFlow = (
   event: FormEvent<HTMLFormElement>,
   duree: string,
   steps: StepFromCRUD[],
@@ -268,7 +268,7 @@ export const createOrUpdateStepActionflow = (
   return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };
 };
 
-export const resetStepActionflow = (
+export const resetStepClientFlow = (
   setStepDuree: SetState<string>,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
 ): CreateOrUpdateMomentState => {
@@ -277,7 +277,7 @@ export const resetStepActionflow = (
   return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };
 };
 
-export const deleteStepActionflow = (
+export const deleteStepClientFlow = (
   steps: StepFromCRUD[],
   currentStepId: string,
   setSteps: SetState<StepFromCRUD[]>,

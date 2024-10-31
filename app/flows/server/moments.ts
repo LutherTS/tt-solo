@@ -36,10 +36,11 @@ import {
 } from "@/app/data/moments";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
+// Now shifting to ServerFlow, ClientFlow, AfterFlow.
 
 // Some errors to me are like showstoppers, they erase all other errors to single-handedly focus on themselves.
 
-export const createOrUpdateMomentFlow = async (
+export const createOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -284,7 +285,7 @@ export const createOrUpdateMomentFlow = async (
 
     const momentId = moment.id;
 
-    await createStepsInCreateOrUpdateMomentFlow(
+    await createStepsInCreateOrUpdateMomentServerFlow(
       steps,
       startMomentDate,
       momentId,
@@ -345,7 +346,7 @@ export const createOrUpdateMomentFlow = async (
 
     await deleteMomentStepsByMomentId(momentId);
 
-    await createStepsInCreateOrUpdateMomentFlow(
+    await createStepsInCreateOrUpdateMomentServerFlow(
       steps,
       startMomentDate,
       momentId,
@@ -370,7 +371,7 @@ export const createOrUpdateMomentFlow = async (
   return null;
 };
 
-const createStepsInCreateOrUpdateMomentFlow = async (
+const createStepsInCreateOrUpdateMomentServerFlow = async (
   steps: StepFromCRUD[],
   momentDate: string,
   momentId: string,
@@ -407,7 +408,7 @@ const createStepsInCreateOrUpdateMomentFlow = async (
   }
 };
 
-export const deleteMomentFlow = async (
+export const deleteMomentServerFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
   version?: "v3",
@@ -450,7 +451,7 @@ export const deleteMomentFlow = async (
   return null;
 };
 
-export const revalidateMomentsFlow = async (
+export const revalidateMomentsServerFlow = async (
   user: SelectUserIdAndUsername,
 ): Promise<void> => {
   const username = user.username;
