@@ -46,8 +46,8 @@ export default function ServerCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  pageView,
-  pageMomentId,
+  // pageView,
+  // pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -56,8 +56,8 @@ export default function ServerCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  pageView: View;
-  pageMomentId: string | undefined;
+  // pageView: View;
+  // pageMomentId: string | undefined;
 }) {
   // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
   // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
@@ -75,8 +75,8 @@ export default function ServerCore({
       revalidateMoments={revalidateMoments}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
-      pageView={pageView}
-      pageMomentId={pageMomentId}
+      // pageView={pageView}
+      // pageMomentId={pageMomentId}
     />
   );
 }
@@ -84,28 +84,30 @@ export default function ServerCore({
 export function Header({
   view,
   setView,
-  // setMoment, // and now Header no longer needs setMoment
-  pageView,
-  pageMomentId,
+  setMoment, // and now Header no longer needs setMoment // not anymore
+  // pageView,
+  // pageMomentId,
 }: {
   view: View;
   setView: SetState<View>;
-  // setMoment: SetState<MomentToCRUD | undefined>;
-  pageView: View;
-  pageMomentId: string | undefined;
+  setMoment: SetState<MomentToCRUD | undefined>;
+  // pageView: View;
+  // pageMomentId: string | undefined;
 }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewTitles[pageView]} />
+          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
+          {/* <GlobalServerComponents.PageTitle title={viewTitles[pageView]} /> */}
           {/* now it's mostly main that needs to read the view from the URL */}
-          <LocalClientComponents.SetViewButton
+          <SetViewButton
+            // <LocalClientComponents.SetViewButton
             view={view}
             setView={setView}
-            // setMoment={setMoment}
-            pageView={pageView}
-            pageMomentId={pageMomentId}
+            setMoment={setMoment}
+            // pageView={pageView}
+            // pageMomentId={pageMomentId}
           />
         </HeaderSegment>
       </PageSegment>
@@ -116,11 +118,11 @@ export function Header({
 export function SetViewButton({
   view,
   setView,
-  // setMoment, // SetViewButton no longer needs setMoment
+  setMoment, // SetViewButton no longer needs setMoment // not anymore
 }: {
   view: View;
   setView: SetState<View>;
-  // setMoment: SetState<MomentToCRUD | undefined>;
+  setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   const desiredView = defineDesiredView(view);
 
@@ -130,7 +132,7 @@ export function SetViewButton({
       variant="destroy-step"
       onClick={() => {
         // SetViewButton is the only one that sets moment to undefined. NO.
-        // if (view === "update-moment") setMoment(undefined);
+        if (view === "update-moment") setMoment(undefined);
         // IMPORTANT
         // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
         // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.

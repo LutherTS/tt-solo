@@ -4,7 +4,11 @@ import {
   View,
   MomentFormVariant,
 } from "@/app/types/moments";
-import { scrollToSection, setScrollToTop } from "@/app/utilities/moments";
+import {
+  scrollToSection,
+  scrollToTopOfDesiredView,
+  setScrollToTop,
+} from "@/app/utilities/moments";
 import { SetState } from "@/app/types/globals";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { ReadonlyURLSearchParams } from "next/navigation";
@@ -45,17 +49,9 @@ export const createOrUpdateMomentAfterflow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    // Error: Invalid hook call. Hooks can only be called inside of the body of a function component.
-    // This means I need to get these three produced within their relevant MomentForms, and pass them as (currently optional) arguments to this afterflow.
-    // Same for deleteMomentAfterflow.
-    // Then I can devise the new setScrollToTop (with a different name) that will only be used on moments-3+ which is currently moments itself.
-    // const searchParams = useSearchParams();
-    // const { push } = useRouter();
-    // const pathname = usePathname();
-
-    // the bug is that it redirects first to the same 'update-moment' view before it does the thing
     if (searchParams && push && pathname)
-      setScrollToTop("read-moments", setView, searchParams, push, pathname);
+      scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
+    // original below
     else setScrollToTop("read-moments", setView);
     // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
   }
@@ -84,7 +80,8 @@ export const deleteMomentAfterflow = (
     setIsCRUDOpSuccessful(true);
 
     if (searchParams && push && pathname)
-      setScrollToTop("read-moments", setView, searchParams, push, pathname);
+      scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
+    // original below
     else setScrollToTop("read-moments", setView);
   }
 };

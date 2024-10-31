@@ -363,6 +363,8 @@ export const createOrUpdateMomentFlow = async (
   // now that I'm using the URL and the page is dynamic I don't need to revalidate. So perhaps now I need to do the redirect from the server and leave the scroll to top to the afterflow
   // actually now it worked... but without scroll to top
   // that's why I need to do the redirect from the action and level the scroll to top only to the afterflow
+
+  // original below
   else revalidatePath(`/users/${username}/moments`);
 
   return null;
@@ -442,7 +444,8 @@ export const deleteMomentFlow = async (
   const username = user.username;
 
   if (version === "v3") {
-  } else revalidatePath(`/users/${username}/moments`);
+  } // original below
+  else revalidatePath(`/users/${username}/moments`);
 
   return null;
 };

@@ -106,8 +106,8 @@ export default function ClientCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  pageView,
-  pageMomentId,
+  // pageView,
+  // pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -116,8 +116,8 @@ export default function ClientCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  pageView: View;
-  pageMomentId: string | undefined;
+  // pageView: View;
+  // pageMomentId: string | undefined;
 }) {
   console.log({ now });
 
@@ -140,7 +140,7 @@ export default function ClientCore({
   let [view, setView] = useState<View>("create-moment");
 
   // at an upper level for UpdateMomentView
-  // const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
   // IMPORTANT
   // Now that LocalServerComponents.Header no longer needs setMoment, I can shift moment and setMoment to Main, so that only view and setView remain in ClientCore. Then I can replace them by params at the RSC page level, and thus turn and replace LocalServerComponents.Header by a server component instead, doing away entirely with ClientCore and having the header be server)rendered.
   // And noticing this is all thanks to my new way of organizing components.
@@ -150,9 +150,9 @@ export default function ClientCore({
       <LocalServerComponents.Header
         view={view}
         setView={setView}
-        // setMoment={setMoment}
-        pageView={pageView}
-        pageMomentId={pageMomentId}
+        setMoment={setMoment}
+        // pageView={pageView}
+        // pageMomentId={pageMomentId}
       />
       <GlobalServerComponents.Divider />
       <Main
@@ -163,29 +163,18 @@ export default function ClientCore({
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
-        // view={view}
-        view={pageView}
+        view={view}
+        // view={pageView}
         setView={setView}
-        // moment={moment}
-        // setMoment={setMoment}
+        moment={moment}
+        setMoment={setMoment}
       />
     </>
   );
 }
 
-export function SetViewButton({
-  view,
-  setView,
-  // setMoment, // SetViewButton no longer needs setMoment
-  pageView,
-  pageMomentId,
-}: {
-  view: View;
-  setView: SetState<View>;
-  // setMoment: SetState<MomentToCRUD | undefined>;
-  pageView: View;
-  pageMomentId: string | undefined;
-}) {
+// exclusive to the attempted version 3
+export function SetViewButton({ pageView }: { pageView: View }) {
   const desiredView = defineDesiredView(pageView);
   const searchParams = useSearchParams();
   const { push } = useRouter();
@@ -230,8 +219,8 @@ export function Main({
   deleteMoment,
   view,
   setView,
-  // moment,
-  // setMoment,
+  moment,
+  setMoment,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -242,8 +231,8 @@ export function Main({
   deleteMoment: DeleteMoment;
   view: View;
   setView: SetState<View>;
-  // moment: MomentToCRUD | undefined;
-  // setMoment: SetState<MomentToCRUD | undefined>;
+  moment: MomentToCRUD | undefined;
+  setMoment: SetState<MomentToCRUD | undefined>;
 }) {
   const [
     _realUserMoments,
@@ -267,8 +256,8 @@ export function Main({
 
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
-  // shifted from ClientCore to Main
-  const [moment, setMoment] = useState<MomentToCRUD>();
+  // shifted from ClientCore to Main // not anymore
+  // const [moment, setMoment] = useState<MomentToCRUD>();
 
   return (
     <main>
@@ -406,7 +395,8 @@ export function ViewSegment({
     <div id={id} ref={reference}>
       {children}
       {/* spacer instead of padding for correct useMeasure calculations */}
-      <div className="h-12"></div>
+      {/* boosted from h-12 to h-24 */}
+      <div className="h-24"></div>
     </div>
   );
 }
@@ -756,9 +746,9 @@ export function MomentForms({
   // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-  const pathname = usePathname();
+  // const searchParams = useSearchParams();
+  // const { push } = useRouter();
+  // const pathname = usePathname();
 
   // createOrUpdateMomentAction
 
@@ -804,9 +794,9 @@ export function MomentForms({
         setCreateOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
-        searchParams,
-        push,
-        pathname,
+        // searchParams,
+        // push,
+        // pathname,
       );
 
       setIsCreateOrUpdateMomentDone(false);
@@ -877,9 +867,9 @@ export function MomentForms({
         createOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
-        searchParams,
-        push,
-        pathname,
+        // searchParams,
+        // push,
+        // pathname,
       );
 
       setIsDeleteMomentDone(false);
@@ -1278,22 +1268,23 @@ export function MomentInDateCard({
   realMoments: MomentToCRUD[];
   setView: SetState<View>;
 }) {
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-  const pathname = usePathname();
+  // const searchParams = useSearchParams();
+  // const { push } = useRouter();
+  // const pathname = usePathname();
 
   // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
   function setUpdateMomentView() {
     const moment = realMoments.find((e0) => e0.id === e3.id);
     setMoment(moment);
 
-    scrollToTopOfDesiredView(
-      "update-moment",
-      searchParams,
-      push,
-      pathname,
-      moment?.id,
-    );
+    setScrollToTop("update-moment", setView);
+    // scrollToTopOfDesiredView(
+    //   "update-moment",
+    //   searchParams,
+    //   push,
+    //   pathname,
+    //   moment?.id,
+    // );
   }
 
   return (
