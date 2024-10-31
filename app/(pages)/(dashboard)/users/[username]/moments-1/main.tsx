@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  // useCallback,
   useEffect,
   useState,
   useTransition,
@@ -9,6 +8,7 @@ import {
   FormEvent,
   TransitionStartFunction,
   Ref,
+  // useCallback,
 } from "react";
 import {
   ReadonlyURLSearchParams,
@@ -30,9 +30,9 @@ import {
   useScroll,
 } from "framer-motion";
 import debounce from "debounce";
+import { useMeasure } from "react-use";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
-import { useMeasure } from "react-use";
 // import { useTimer } from "react-use-precision-timer";
 
 import { Option, SetState } from "@/app/types/globals";
@@ -52,7 +52,7 @@ import {
   MomentsDestinationToCRUD,
   StepToCRUD,
   MomentsDateToCRUD,
-  SearchParamsKey,
+  MomentsSearchParamsKey,
 } from "@/app/types/moments";
 import {
   defineCurrentPage,
@@ -67,7 +67,6 @@ import {
 } from "@/app/utilities/moments";
 import {
   Button,
-  // DateCard,
   Divider,
   FieldTitle,
   InputDatetimeLocalControlled,
@@ -75,20 +74,19 @@ import {
   InputText,
   PageTitle,
   Section,
-  // NoDateCard,
   InputSwitch,
   SelectWithOptions,
   Textarea,
-} from "@/app/components_old";
+} from "@/app/components/__components__";
 import * as Icons from "@/app/icons";
 import {
-  createOrUpdateStepActionflow,
-  resetStepActionflow,
-  deleteStepActionflow,
-  revalidateMomentsActionflow,
-  createOrUpdateMomentActionflow,
-  resetMomentActionflow,
-  deleteMomentActionflow,
+  createOrUpdateStepClientFlow,
+  resetStepClientFlow,
+  deleteStepClientFlow,
+  revalidateMomentsClientFlow,
+  createOrUpdateMomentClientFlow,
+  resetMomentClientFlow,
+  deleteMomentClientFlow,
 } from "@/app/flows/client/moments";
 import {
   CONTAINS,
@@ -107,10 +105,10 @@ import {
   views,
 } from "@/app/data/moments";
 import {
-  createOrUpdateMomentAfterflow,
-  deleteMomentAfterflow,
-  resetMomentAfterflow,
-} from "@/app/flows/client/afterflows/moments";
+  createOrUpdateMomentAfterFlow,
+  deleteMomentAfterFlow,
+  resetMomentAfterFlow,
+} from "@/app/flows/after/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
 /* Dummy Form Presenting Data 
@@ -407,7 +405,7 @@ function ReadMomentsView({
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
-  const subViewSearchParams: { [K in SubView]: SearchParamsKey } = {
+  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
     "all-moments": USERMOMENTSPAGE,
     "past-moments": PASTUSERMOMENTSPAGE,
     "current-moments": CURRENTUSERMOMENTSPAGE,
@@ -509,7 +507,7 @@ function ReadMomentsView({
     event: MouseEvent<HTMLButtonElement>,
   ) => {
     startRevalidateMomentsTransition(async () => {
-      await revalidateMomentsActionflow(
+      await revalidateMomentsClientFlow(
         event,
         revalidateMoments,
         replace,
@@ -690,7 +688,7 @@ function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentActionflow(
+      const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -712,7 +710,7 @@ function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
       // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
-      createOrUpdateMomentAfterflow(
+      createOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
@@ -742,7 +740,7 @@ function MomentForms({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
       ) {
-        const state = resetMomentActionflow(
+        const state = resetMomentClientFlow(
           setStartMomentDate,
           setSteps,
           setStepVisible,
@@ -758,7 +756,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isResetMomentDone) {
-      resetMomentAfterflow(variant);
+      resetMomentAfterFlow(variant);
 
       setIsResetMomentDone(false);
     }
@@ -773,7 +771,7 @@ function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentActionflow(deleteMoment, moment);
+        const state = await deleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -783,7 +781,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterflow(
+      deleteMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setView,
@@ -1435,7 +1433,7 @@ function StepForm({
 
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
     startCreateOrUpdateStepTransition(() => {
-      const state = createOrUpdateStepActionflow(
+      const state = createOrUpdateStepClientFlow(
         event,
         stepDuree,
         steps,
@@ -1466,7 +1464,7 @@ function StepForm({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        const state = resetStepActionflow(
+        const state = resetStepClientFlow(
           setStepDuree,
           createOrUpdateMomentState,
         );
@@ -1714,7 +1712,7 @@ function ReorderItem({
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
-        deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
+        deleteStepClientFlow(steps, currentStepId, setSteps, setStepVisible);
         setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       }
     });

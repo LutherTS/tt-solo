@@ -44,15 +44,16 @@ import {
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
-  SearchParamsKey,
+  MomentsSearchParamsKey,
   StepFormVariant,
   StepFromCRUD,
   StepVisible,
   SubView,
   UserMomentsToCRUD,
   View,
+  MomentsSearchParams,
 } from "@/app/types/moments";
-import { Option, SetState } from "@/app/types/globals";
+import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
@@ -69,31 +70,32 @@ import {
 } from "@/app/data/moments";
 import {
   defineCurrentPage,
+  defineDesiredView,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
   rotateStates,
   roundTimeUpTenMinutes,
+  scrollToTopOfDesiredView,
   setScrollToTop,
   toWordsing,
 } from "@/app/utilities/moments";
 import {
-  createOrUpdateMomentActionflow,
-  createOrUpdateStepActionflow,
-  deleteMomentActionflow,
-  deleteStepActionflow,
-  resetMomentActionflow,
-  resetStepActionflow,
-  revalidateMomentsActionflow,
+  createOrUpdateMomentClientFlow,
+  createOrUpdateStepClientFlow,
+  deleteMomentClientFlow,
+  deleteStepClientFlow,
+  resetMomentClientFlow,
+  resetStepClientFlow,
+  revalidateMomentsClientFlow,
 } from "@/app/flows/client/moments";
 import {
-  createOrUpdateMomentAfterflow,
-  deleteMomentAfterflow,
-  resetMomentAfterflow,
-} from "@/app/flows/client/afterflows/moments";
+  createOrUpdateMomentAfterFlow,
+  deleteMomentAfterFlow,
+  resetMomentAfterFlow,
+} from "@/app/flows/after/moments";
 
-// the file between client and server that has the export default (and Page) is the one with the page component to be imported by page.tsx
 export default function ClientCore({
   // time
   now,
@@ -105,6 +107,8 @@ export default function ClientCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
+  // pageView,
+  // pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -113,6 +117,8 @@ export default function ClientCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
+  // pageView: View;
+  // pageMomentId: string | undefined;
 }) {
   console.log({ now });
 
@@ -135,7 +141,10 @@ export default function ClientCore({
   let [view, setView] = useState<View>("create-moment");
 
   // at an upper level for UpdateMomentView
-  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  // IMPORTANT
+  // Now that LocalServerComponents.Header no longer needs setMoment, I can shift moment and setMoment to Main, so that only view and setView remain in ClientCore. Then I can replace them by params at the RSC page level, and thus turn and replace LocalServerComponents.Header by a server component instead, doing away entirely with ClientCore and having the header be server)rendered.
+  // And noticing this is all thanks to my new way of organizing components.
 
   return (
     <>
@@ -143,6 +152,8 @@ export default function ClientCore({
         view={view}
         setView={setView}
         setMoment={setMoment}
+        // pageView={pageView}
+        // pageMomentId={pageMomentId}
       />
       <GlobalServerComponents.Divider />
       <Main
@@ -154,11 +165,49 @@ export default function ClientCore({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
         view={view}
+        // view={pageView}
         setView={setView}
         moment={moment}
         setMoment={setMoment}
       />
     </>
+  );
+}
+
+// exclusive to the attempted version 3
+export function SetViewButton({ pageView }: { pageView: View }) {
+  const desiredView = defineDesiredView(pageView);
+
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
+  return (
+    <GlobalClientComponents.Button
+      type="button"
+      variant="destroy-step"
+      onClick={() => {
+        // SetViewButton is the only one that sets moment to undefined. NO.
+        // if (view === "update-moment") setMoment(undefined);
+        // IMPORTANT
+        // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
+        // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.
+
+        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname);
+      }}
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -208,6 +257,9 @@ export function Main({
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
 
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
+
+  // shifted from ClientCore to Main // not anymore
+  // const [moment, setMoment] = useState<MomentToCRUD>();
 
   return (
     <main>
@@ -345,7 +397,8 @@ export function ViewSegment({
     <div id={id} ref={reference}>
       {children}
       {/* spacer instead of padding for correct useMeasure calculations */}
-      <div className="h-12"></div>
+      {/* boosted from h-12 to h-24 */}
+      <div className="h-24"></div>
     </div>
   );
 }
@@ -402,22 +455,24 @@ export function ReadMomentsView({
 
   // because of debounce I'm exceptionally not turning this handler into an action
   function handleSearch(term: string) {
-    const params = new URLSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(
+      searchParams,
+    ) as TypedURLSearchParams<MomentsSearchParams>;
 
-    if (term) params.set(CONTAINS, term);
-    else params.delete(CONTAINS);
+    if (term) newSearchParams.set(CONTAINS, term);
+    else newSearchParams.delete(CONTAINS);
 
-    params.delete(USERMOMENTSPAGE);
-    params.delete(PASTUSERMOMENTSPAGE);
-    params.delete(CURRENTUSERMOMENTSPAGE);
-    params.delete(FUTUREUSERMOMENTSPAGE);
+    newSearchParams.delete(USERMOMENTSPAGE);
+    newSearchParams.delete(PASTUSERMOMENTSPAGE);
+    newSearchParams.delete(CURRENTUSERMOMENTSPAGE);
+    newSearchParams.delete(FUTUREUSERMOMENTSPAGE);
 
-    replace(`${pathname}?${params.toString()}`);
+    replace(`${pathname}?${newSearchParams.toString()}`);
   } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
-  const subViewSearchParams: { [K in SubView]: SearchParamsKey } = {
+  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
     "all-moments": USERMOMENTSPAGE,
     "past-moments": PASTUSERMOMENTSPAGE,
     "current-moments": CURRENTUSERMOMENTSPAGE,
@@ -446,22 +501,28 @@ export function ReadMomentsView({
 
   // for now search and pagination will remain handlers
   function handlePagination(direction: "left" | "right", subView: SubView) {
-    const params = new URLSearchParams(searchParams);
+    const newSearchParams = new URLSearchParams(
+      searchParams,
+    ) as TypedURLSearchParams<MomentsSearchParams>;
+
     if (direction === "left")
-      params.set(
+      newSearchParams.set(
         subViewSearchParams[subView],
         Math.max(INITIAL_PAGE, currentPage - 1).toString(),
       );
     else
-      params.set(
+      newSearchParams.set(
         subViewSearchParams[subView],
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
-    if (params.get(subViewSearchParams[subView]) === INITIAL_PAGE.toString())
-      params.delete(subViewSearchParams[subView]);
+    if (
+      newSearchParams.get(subViewSearchParams[subView]) ===
+      INITIAL_PAGE.toString()
+    )
+      newSearchParams.delete(subViewSearchParams[subView]);
 
-    replace(`${pathname}?${params.toString()}`);
+    replace(`${pathname}?${newSearchParams.toString()}`);
   }
 
   const rotateSubView = (direction: "left" | "right") =>
@@ -519,7 +580,7 @@ export function ReadMomentsView({
     event: MouseEvent<HTMLButtonElement>,
   ) => {
     startRevalidateMomentsTransition(async () => {
-      await revalidateMomentsActionflow(
+      await revalidateMomentsClientFlow(
         event,
         revalidateMoments,
         replace,
@@ -695,6 +756,11 @@ export function MomentForms({
   // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
+  // not anymore
+  // const searchParams = useSearchParams();
+  // const { push } = useRouter();
+  // const pathname = usePathname();
+
   // createOrUpdateMomentAction
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
@@ -711,7 +777,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentActionflow(
+      const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -733,12 +799,15 @@ export function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
       // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
-      createOrUpdateMomentAfterflow(
+      createOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
+        // searchParams,
+        // push,
+        // pathname,
       );
 
       setIsCreateOrUpdateMomentDone(false);
@@ -763,7 +832,7 @@ export function MomentForms({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
       ) {
-        const state = resetMomentActionflow(
+        const state = resetMomentClientFlow(
           setStartMomentDate,
           setSteps,
           setStepVisible,
@@ -779,7 +848,7 @@ export function MomentForms({
 
   useEffect(() => {
     if (isResetMomentDone) {
-      resetMomentAfterflow(variant);
+      resetMomentAfterFlow(variant);
 
       setIsResetMomentDone(false);
     }
@@ -794,7 +863,7 @@ export function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentActionflow(deleteMoment, moment);
+        const state = await deleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -804,11 +873,14 @@ export function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterflow(
+      deleteMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
+        // searchParams,
+        // push,
+        // pathname,
       );
 
       setIsDeleteMomentDone(false);
@@ -1207,10 +1279,23 @@ export function MomentInDateCard({
   realMoments: MomentToCRUD[];
   setView: SetState<View>;
 }) {
+  // const searchParams = useSearchParams();
+  // const { push } = useRouter();
+  // const pathname = usePathname();
+
   // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
   function setUpdateMomentView() {
-    setMoment(realMoments.find((e0) => e0.id === e3.id));
+    const moment = realMoments.find((e0) => e0.id === e3.id);
+    setMoment(moment);
+
     setScrollToTop("update-moment", setView);
+    // scrollToTopOfDesiredView(
+    //   "update-moment",
+    //   searchParams,
+    //   push,
+    //   pathname,
+    //   moment?.id,
+    // );
   }
 
   return (
@@ -1319,7 +1404,7 @@ export function StepForm({
 
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
     startCreateOrUpdateStepTransition(() => {
-      const state = createOrUpdateStepActionflow(
+      const state = createOrUpdateStepClientFlow(
         event,
         stepDuree,
         steps,
@@ -1350,7 +1435,7 @@ export function StepForm({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        const state = resetStepActionflow(
+        const state = resetStepClientFlow(
           setStepDuree,
           createOrUpdateMomentState,
         );
@@ -1430,7 +1515,7 @@ export function ReorderItem({
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
-        deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
+        deleteStepClientFlow(steps, currentStepId, setSteps, setStepVisible);
         setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       }
     });
@@ -1575,6 +1660,7 @@ export function ReorderItem({
 
 const localClientComponents = {
   ClientCore,
+  SetViewButton,
   Main,
   ViewsCarouselContainer,
   ViewSegment,

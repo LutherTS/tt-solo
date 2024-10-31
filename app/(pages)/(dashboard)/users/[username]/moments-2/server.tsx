@@ -46,8 +46,6 @@ export default function ServerCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  // pageView,
-  // pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -56,8 +54,6 @@ export default function ServerCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  // pageView: View;
-  // pageMomentId: string | undefined;
 }) {
   // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
   // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
@@ -75,8 +71,6 @@ export default function ServerCore({
       revalidateMoments={revalidateMoments}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
-      // pageView={pageView}
-      // pageMomentId={pageMomentId}
     />
   );
 }
@@ -84,30 +78,18 @@ export default function ServerCore({
 export function Header({
   view,
   setView,
-  setMoment, // and now Header no longer needs setMoment // not anymore
-  // pageView,
-  // pageMomentId,
+  setMoment, // and now Header no longer needs setMoment
 }: {
   view: View;
   setView: SetState<View>;
   setMoment: SetState<MomentToCRUD | undefined>;
-  // pageView: View;
-  // pageMomentId: string | undefined;
 }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
           <GlobalServerComponents.PageTitle title={viewTitles[view]} />
-          {/* <GlobalServerComponents.PageTitle title={viewTitles[pageView]} /> */}
-          <SetViewButton
-            // <LocalClientComponents.SetViewButton
-            view={view}
-            setView={setView}
-            setMoment={setMoment}
-            // pageView={pageView}
-            // pageMomentId={pageMomentId}
-          />
+          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </HeaderSegment>
       </PageSegment>
     </header>
@@ -117,7 +99,7 @@ export function Header({
 export function SetViewButton({
   view,
   setView,
-  setMoment, // SetViewButton no longer needs setMoment // not anymore
+  setMoment, // SetViewButton no longer needs setMoment
 }: {
   view: View;
   setView: SetState<View>;

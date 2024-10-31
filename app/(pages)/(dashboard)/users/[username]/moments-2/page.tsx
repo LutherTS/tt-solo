@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { notFound } from "next/navigation";
+import { ErrorBoundary } from "react-error-boundary";
 
 import * as GlobalServerComponents from "@/app/components/server";
 import Core from "./server";
@@ -15,9 +15,6 @@ import {
 import {
   dateToInputDatetime,
   defineCurrentPage,
-  // defineMomentId,
-  // defineView,
-  // defineWithViewAndMomentId,
 } from "@/app/utilities/moments";
 import {
   CONTAINS,
@@ -46,7 +43,7 @@ import {
 } from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
-// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still sometimes it says static route...
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still it says I'm on a static route...
 
 export default async function MomentsPage({
   params,
@@ -61,9 +58,6 @@ export default async function MomentsPage({
     [PASTUSERMOMENTSPAGE]?: string;
     [CURRENTUSERMOMENTSPAGE]?: string;
     [FUTUREUSERMOMENTSPAGE]?: string;
-    // now in the URL // not anymore
-    // view?: string;
-    // momentId?: string;
   };
 }) {
   // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.
@@ -75,7 +69,6 @@ export default async function MomentsPage({
   // params and searchParams are awaited in the RC 2 and in stable Next.js 15
   // this simple line assigns the resolved params promise to the params variable already use in the code
   params = await params;
-  searchParams = await searchParams;
 
   const username = params.username;
   // console.log({ username });
@@ -90,19 +83,7 @@ export default async function MomentsPage({
 
   const userId = user.id;
 
-  // obtaining and interpreting view and momentId
-
-  // let definedView = defineView(searchParams?.view);
-  // console.log({ definedView });
-
-  // let definedMomentId = await defineMomentId(searchParams?.momentId, userId);
-  // console.log({ definedMomentId });
-
-  // const { view, momentId } = defineWithViewAndMomentId(
-  //   definedView,
-  //   definedMomentId,
-  // );
-  // console.log({ view, momentId });
+  searchParams = await searchParams;
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
@@ -389,9 +370,6 @@ export default async function MomentsPage({
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
-          // to separe view and moment from the ones I'm getting here, I'm going for now with pageView and pageMomentId
-          // pageView={view}
-          // pageMomentId={momentId}
         />
       </Suspense>
     </ErrorBoundary>

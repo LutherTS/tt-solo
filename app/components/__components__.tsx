@@ -13,8 +13,8 @@ import { isValid } from "date-fns";
 
 import * as Icons from "@/app/icons";
 import { SetState } from "@/app/types/globals";
-import { EventStepDurationSchema } from "./validations/steps";
-import { CreateOrUpdateMomentState } from "./types/moments";
+import { EventStepDurationSchema } from "../validations/steps";
+import { CreateOrUpdateMomentState } from "../types/moments";
 
 // Variables
 
@@ -1177,6 +1177,14 @@ export function Button({
     >
       {children}
     </button>
+  );
+}
+
+export function FallbackFlex({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center text-center">
+      <div className="space-y-4">{children}</div>
+    </div>
   );
 }
 

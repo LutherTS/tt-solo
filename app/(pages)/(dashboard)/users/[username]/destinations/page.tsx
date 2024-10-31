@@ -5,7 +5,8 @@ import prisma from "@/prisma/db";
 import { DestinationToCRUD } from "@/app/types/destinations";
 import { dateToInputDatetime } from "@/app/utilities/moments";
 
-import { CRUD } from "./crud";
+import * as GlobalServerComponents from "@/app/components/server";
+import { HeaderSegment, PageSegment } from "../moments/server";
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -20,6 +21,8 @@ export default async function DestinationsPage({
     username: string;
   };
 }) {
+  params = await params;
+
   const username = params.username;
 
   const user = await prisma.user.findUnique({
@@ -225,12 +228,20 @@ export default async function DestinationsPage({
   }
 
   return (
-    <CRUD
-      destinationsToCRUD={destinationsToCRUD}
-      createOrUpdateDestination={createOrUpdateDestination}
-      deleteDestination={deleteDestination}
-      revalidateDestinations={revalidateDestinations}
-    />
+    // <CRUD
+    //   destinationsToCRUD={destinationsToCRUD}
+    //   createOrUpdateDestination={createOrUpdateDestination}
+    //   deleteDestination={deleteDestination}
+    //   revalidateDestinations={revalidateDestinations}
+    // />
+    <>
+      <PageSegment>
+        <HeaderSegment>
+          <GlobalServerComponents.PageTitle title="Mes destinations" />
+        </HeaderSegment>
+      </PageSegment>
+      <GlobalServerComponents.Divider />
+    </>
   );
 }
 
@@ -282,4 +293,6 @@ const destinationsForCRUD: DestinationForCRUD[] = userDestinationsOld.map(
     };
   },
 );
+...
+Suspense actually works as intended here. It was acting weird when I was refreshing the page because of cache on MomentsPage, but in reality the entire page does resolve at the same time. The goal is, indeed and eventually, for all promises to resolve concurrently meaning the header will naturally resolve first (since it's lighter) and the rest second.
 */

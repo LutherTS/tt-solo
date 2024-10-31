@@ -8,13 +8,18 @@ export const USERMOMENTSPAGE = "usermomentspage" as const;
 export const PASTUSERMOMENTSPAGE = "pastusermomentspage" as const;
 export const CURRENTUSERMOMENTSPAGE = "currentusermomentspage" as const;
 export const FUTUREUSERMOMENTSPAGE = "futureusermomentspage" as const;
+export const VIEW = "view" as const;
+export const MOMENTID = "momentId" as const;
 
-export const SEARCH_PARAMS_KEYS = [
+// currently unused
+export const MOMENTS_SEARCH_PARAMS_KEYS = [
   CONTAINS,
   USERMOMENTSPAGE,
   PASTUSERMOMENTSPAGE,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
+  VIEW,
+  MOMENTID,
 ] as const;
 
 // initial and lowest moments page number

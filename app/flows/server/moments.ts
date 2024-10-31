@@ -6,7 +6,10 @@ import {
   makeStepsCompoundDurationsArray,
 } from "@/app/utilities/moments";
 import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
-import { findMomentByNameAndUserId } from "@/app/reads/moments";
+import {
+  findMomentByIdAndUserId,
+  findMomentByNameAndUserId,
+} from "@/app/reads/moments";
 import { findDestinationIdByNameAndUserId } from "@/app/reads/destinations";
 import {
   createMomentAndDestination,
@@ -33,10 +36,11 @@ import {
 } from "@/app/data/moments";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
+// Now shifting to ServerFlow, ClientFlow, AfterFlow.
 
 // Some errors to me are like showstoppers, they erase all other errors to single-handedly focus on themselves.
 
-export const createOrUpdateMomentFlow = async (
+export const createOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -45,6 +49,7 @@ export const createOrUpdateMomentFlow = async (
   destinationSelect: boolean,
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
+  version?: "v3",
 ): Promise<CreateOrUpdateMomentState> => {
   const currentNow = dateToInputDatetime(new Date());
 
@@ -280,7 +285,7 @@ export const createOrUpdateMomentFlow = async (
 
     const momentId = moment.id;
 
-    await createStepsInCreateOrUpdateMomentFlow(
+    await createStepsInCreateOrUpdateMomentServerFlow(
       steps,
       startMomentDate,
       momentId,
@@ -341,7 +346,7 @@ export const createOrUpdateMomentFlow = async (
 
     await deleteMomentStepsByMomentId(momentId);
 
-    await createStepsInCreateOrUpdateMomentFlow(
+    await createStepsInCreateOrUpdateMomentServerFlow(
       steps,
       startMomentDate,
       momentId,
@@ -350,12 +355,23 @@ export const createOrUpdateMomentFlow = async (
 
   const username = user.username;
 
-  revalidatePath(`/users/${username}/moments`);
+  if (version === "v3") {
+    // redirect directly from the flow
+  }
+  // Here's the culprit of the second GET
+  // but that has no effect on the issue
+  // it's been a combo of both
+  // now that I'm using the URL and the page is dynamic I don't need to revalidate. So perhaps now I need to do the redirect from the server and leave the scroll to top to the afterflow
+  // actually now it worked... but without scroll to top
+  // that's why I need to do the redirect from the action and level the scroll to top only to the afterflow
+
+  // original below
+  else revalidatePath(`/users/${username}/moments`);
 
   return null;
 };
 
-const createStepsInCreateOrUpdateMomentFlow = async (
+const createStepsInCreateOrUpdateMomentServerFlow = async (
   steps: StepFromCRUD[],
   momentDate: string,
   momentId: string,
@@ -392,9 +408,10 @@ const createStepsInCreateOrUpdateMomentFlow = async (
   }
 };
 
-export const deleteMomentFlow = async (
+export const deleteMomentServerFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
+  version?: "v3",
 ): Promise<CreateOrUpdateMomentState> => {
   if (!momentFromCRUD)
     return {
@@ -409,16 +426,32 @@ export const deleteMomentFlow = async (
 
   const momentId = momentFromCRUD.id;
 
-  await deleteMomentByMomentId(momentId);
+  // verify if the moment still exists at time of deletion
+  const moment = await findMomentByIdAndUserId(momentId, user.id);
+
+  if (!moment)
+    return {
+      momentMessages: {
+        message: "Erreur.",
+        subMessage: "Le moment que vous souhaitez effacer n'existe déjà plus.",
+      },
+      momentErrors: {},
+      stepsMessages: {},
+      stepsErrors: {},
+    };
+
+  await deleteMomentByMomentId(moment.id);
 
   const username = user.username;
 
-  revalidatePath(`/users/${username}/moments`);
+  if (version === "v3") {
+  } // original below
+  else revalidatePath(`/users/${username}/moments`);
 
   return null;
 };
 
-export const revalidateMomentsFlow = async (
+export const revalidateMomentsServerFlow = async (
   user: SelectUserIdAndUsername,
 ): Promise<void> => {
   const username = user.username;

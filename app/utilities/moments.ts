@@ -1,8 +1,17 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
 
-import { CreateOrUpdateMomentState, StepFromCRUD } from "@/app/types/moments";
-import { SetState } from "@/app/types/globals";
+import {
+  MomentsSearchParams,
+  CreateOrUpdateMomentState,
+  StepFromCRUD,
+  View,
+} from "@/app/types/moments";
+import { SetState, TypedURLSearchParams } from "@/app/types/globals";
+import { findMomentByIdAndUserId } from "../reads/moments";
+import { ReadonlyURLSearchParams } from "next/navigation";
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { MOMENTID, VIEW } from "../data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -110,8 +119,41 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   // https://www.bajorunas.tech/blog/typescript-generics-inheritance
   desiredView: DesiredView,
   setDesiredView: SetState<DesiredViews>,
+  searchParams?: ReadonlyURLSearchParams,
+  push?: (href: string, options?: NavigateOptions) => void,
+  pathname?: string,
+  momentId?: string,
 ) => {
+  // setDesiredView will need to be replace by something replacing the URL.
+  // But since the arguments are going to different it's also going to be different function altogether.
   setDesiredView(desiredView);
+  scrollTo({ top: 0 });
+
+  // Since subView is going to be below motion.div and will have no other choice than to be the child of a Client Component, I don't see a point in having it in the URL just yet. But so far, on the client SetViewButton, I'm reading the view from the URL.
+};
+
+// incoming to navigate from the URL
+// ...
+// if you're going to do it from the URL, all redirects needs to be from the URL in order to be awaited and to have the scrollToTop synchronized.
+// ...and that's where I elected not to go deeper on the server because here the client is instantaneous and therefore faster
+export const scrollToTopOfDesiredView = (
+  desiredView: View,
+  searchParams: ReadonlyURLSearchParams,
+  push: (href: string, options?: NavigateOptions) => void,
+  pathname: string,
+  momentId?: string,
+) => {
+  const newSearchParams = new URLSearchParams(
+    searchParams,
+  ) as TypedURLSearchParams<MomentsSearchParams>;
+
+  if (desiredView !== "update-moment") newSearchParams.delete(MOMENTID);
+  else if (momentId) newSearchParams.set(MOMENTID, momentId);
+
+  newSearchParams.set(VIEW, desiredView);
+
+  push(`${pathname}?${newSearchParams.toString()}`);
+
   scrollTo({ top: 0 });
 };
 
@@ -121,7 +163,7 @@ export const scrollToSection = (sectionId: string) => {
   section?.scrollIntoView({ behavior: "smooth" });
 };
 
-// makes an array of all the adding times of a step up to that step (step 0 has the coumpound duration of step 0, step 1 has the compound duration of steps 0 and 1, etc.)
+// makes an array of all the adding times of a step up to that step (step 0 has the compound duration of step 0, step 1 has the compound duration of steps 0 and 1, etc.)
 export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
   const stepsCompoundDurationsArray: number[] = [];
   let compoundDuration = 0;
@@ -146,3 +188,68 @@ export const removeMomentMessagesAndErrorsCallback = (
 ) => {
   return { ...s, momentMessages: {}, momentErrors: {} };
 };
+
+// defines the desired view to shift to from a view depending on that original view
+export const defineDesiredView = (view: View) => {
+  switch (view) {
+    case "update-moment":
+      return "read-moments";
+    case "read-moments":
+      return "create-moment";
+    case "create-moment":
+      return "read-moments";
+    default:
+      return view;
+  }
+};
+
+// defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
+export const defineView = (rawView: string | undefined): View => {
+  switch (rawView) {
+    case "update-moment":
+      return "update-moment";
+    case "read-moments":
+      return "read-moments";
+    case "create-moment":
+      return "create-moment";
+
+    default:
+      return "create-moment";
+  }
+};
+
+// defines the current moment id from the view searchParam whether it is specified (as a string) or not (as undefined)
+export const defineMomentId = async (
+  rawMomentId: string | undefined,
+  userId: string,
+): Promise<string | undefined> => {
+  if (!rawMomentId) return undefined;
+
+  const moment = await findMomentByIdAndUserId(rawMomentId, userId);
+
+  if (moment) return moment.id;
+  else return undefined;
+};
+
+// defines both the view and momentId depending on one another, so that the "update-moment" cannot be shown if there is no momentId
+export const defineWithViewAndMomentId = (
+  view: View,
+  momentId: string | undefined,
+): { view: View; momentId: string | undefined } => {
+  switch (view) {
+    case "update-moment":
+      if (momentId) return { view, momentId };
+      else return { view: "read-moments", momentId };
+    case "read-moments":
+      return { view, momentId: undefined };
+    case "create-moment":
+      return { view, momentId: undefined };
+
+    default:
+      return { view, momentId };
+  }
+};
+
+/* Notes
+I personally hate when a backend modifies the URL I've personally entered in the browser. So my idea is, the user is free to enter and keep whatever URL they want, while I am free to interpret that URL however it is that I want.
+*/

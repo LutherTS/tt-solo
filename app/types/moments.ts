@@ -5,8 +5,10 @@ import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
+  MOMENTID,
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
+  VIEW,
 } from "@/app/data/moments";
 
 export type StepFromCRUD = {
@@ -146,9 +148,21 @@ export type MomentFormIds = {
   stepFormUpdating: string;
 };
 
-export type SearchParamsKey =
+export type MomentsSearchParamsKey =
   | typeof CONTAINS
   | typeof USERMOMENTSPAGE
   | typeof PASTUSERMOMENTSPAGE
   | typeof CURRENTUSERMOMENTSPAGE
-  | typeof FUTUREUSERMOMENTSPAGE;
+  | typeof FUTUREUSERMOMENTSPAGE
+  | typeof VIEW
+  | typeof MOMENTID;
+
+export type MomentsSearchParams = {
+  [CONTAINS]: string;
+  [USERMOMENTSPAGE]: string;
+  [PASTUSERMOMENTSPAGE]: string;
+  [CURRENTUSERMOMENTSPAGE]: string;
+  [FUTUREUSERMOMENTSPAGE]: string;
+  [VIEW]: string;
+  [MOMENTID]: string;
+};

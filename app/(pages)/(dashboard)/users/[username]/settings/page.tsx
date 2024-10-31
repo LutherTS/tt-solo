@@ -1,5 +1,8 @@
 import { CRUD } from "./crud";
 
+import * as GlobalServerComponents from "@/app/components/server";
+import { HeaderSegment, PageSegment } from "../moments/server";
+
 export default function SettingsPage({
   params,
 }: {
@@ -7,5 +10,14 @@ export default function SettingsPage({
     username: string;
   };
 }) {
-  return <CRUD />;
+  return (
+    <>
+      <PageSegment>
+        <HeaderSegment>
+          <GlobalServerComponents.PageTitle title="Mes paramètres" />
+        </HeaderSegment>
+      </PageSegment>
+      <GlobalServerComponents.Divider />
+    </>
+  );
 }

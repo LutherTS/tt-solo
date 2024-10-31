@@ -7,6 +7,8 @@ import {
   whereByNameAndUserId,
   whereCurrentMoments,
   whereFutureMoments,
+  whereMomentId,
+  whereMomentIdAndUserId,
   wherePastMoments,
   whereUserMomentsWithContains,
 } from "./subreads/moments";
@@ -163,6 +165,14 @@ export async function findFutureUserMomentsWithContains(
 
 export async function findMomentByNameAndUserId(name: string, userId: string) {
   const where = whereByNameAndUserId(name, userId);
+
+  return await prisma.moment.findUnique({
+    where,
+  });
+}
+
+export async function findMomentByIdAndUserId(id: string, userId: string) {
+  const where = whereMomentIdAndUserId(id, userId);
 
   return await prisma.moment.findUnique({
     where,

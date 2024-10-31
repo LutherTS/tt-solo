@@ -1,17 +1,14 @@
 "use client";
-// In this, I'm going to go through my components one-by-one and decide whether they should be Client Components, since without "use client" they're all Server Components by default. Watch.
-// Let's start by marking all obligatorily Client Components as such with comments on top of their functions.
-// Here's the thing though. The goal is to have the least amount of Client Components possible. So if you can use HTML for forms, like submit and reset types in your buttons, then these buttons don't even need to be client components.
+// It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll through the whole file, find that component, and manually export it.
 
 import {
-  // useCallback,
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
   useEffect,
   useState,
   useTransition,
-  MouseEvent,
-  FormEvent,
-  TransitionStartFunction,
-  Ref,
 } from "react";
 import {
   ReadonlyURLSearchParams,
@@ -19,10 +16,6 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-// import Form from "next/form"; // I'm good. But let's defy TypeScript on this.
-import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
-import { add, format } from "date-fns";
-import { fr } from "date-fns/locale";
 import {
   motion,
   MotionValue,
@@ -32,31 +25,48 @@ import {
   useMotionValueEvent,
   useScroll,
 } from "framer-motion";
+import { useMeasure } from "react-use";
 import debounce from "debounce";
+import clsx from "clsx";
+import { add, format } from "date-fns";
+import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
-import { useMeasure } from "react-use";
-// import { useTimer } from "react-use-precision-timer";
 
-import { Option, SetState } from "@/app/types/globals";
+import * as Icons from "@/app/icons";
+import * as LocalServerComponents from "./server";
+import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalClientComponents from "@/app/components/client";
 import {
-  UserMomentsToCRUD,
-  MomentToCRUD,
-  StepFromCRUD,
-  DeleteMoment,
-  RevalidateMoments,
-  MomentFormVariant,
-  StepFormVariant,
-  StepVisible,
-  View,
-  SubView,
   CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
-  MomentsDestinationToCRUD,
-  StepToCRUD,
-  MomentsDateToCRUD,
-  SearchParamsKey,
+  DeleteMoment,
+  MomentFormVariant,
+  MomentToCRUD,
+  RevalidateMoments,
+  MomentsSearchParamsKey,
+  StepFormVariant,
+  StepFromCRUD,
+  StepVisible,
+  SubView,
+  UserMomentsToCRUD,
+  View,
 } from "@/app/types/moments";
+import { Option, SetState } from "@/app/types/globals";
+import {
+  CONTAINS,
+  CURRENTUSERMOMENTSPAGE,
+  FUTUREUSERMOMENTSPAGE,
+  INITIAL_PAGE,
+  MOMENT_FORM_IDS,
+  PASTUSERMOMENTSPAGE,
+  SEARCH_FORM_ID,
+  STEP_DURATION_ORIGINAL,
+  subViews,
+  subViewTitles,
+  USERMOMENTSPAGE,
+  views,
+} from "@/app/data/moments";
 import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
@@ -69,77 +79,21 @@ import {
   toWordsing,
 } from "@/app/utilities/moments";
 import {
-  Button,
-  // DateCard,
-  Divider,
-  FieldTitle,
-  InputDatetimeLocalControlled,
-  InputNumberControlled,
-  InputText,
-  PageTitle,
-  Section,
-  // NoDateCard,
-  InputSwitch,
-  SelectWithOptions,
-  Textarea,
-} from "@/app/components_old";
-import * as Icons from "@/app/icons";
-import {
-  createOrUpdateStepActionflow,
-  resetStepActionflow,
-  deleteStepActionflow,
-  revalidateMomentsActionflow,
-  createOrUpdateMomentActionflow,
-  resetMomentActionflow,
-  deleteMomentActionflow,
+  createOrUpdateMomentClientFlow,
+  createOrUpdateStepClientFlow,
+  deleteMomentClientFlow,
+  deleteStepClientFlow,
+  resetMomentClientFlow,
+  resetStepClientFlow,
+  revalidateMomentsClientFlow,
 } from "@/app/flows/client/moments";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
-  PASTUSERMOMENTSPAGE,
-  USERMOMENTSPAGE,
-  SEARCH_FORM_ID,
-  activityOptions,
-  subViewTitles,
-  viewTitles,
-  subViews,
-  MOMENT_FORM_IDS,
-  STEP_DURATION_ORIGINAL,
-  INITIAL_PAGE,
-  views,
-} from "@/app/data/moments";
-import {
-  createOrUpdateMomentAfterflow,
-  deleteMomentAfterflow,
-  resetMomentAfterflow,
-} from "@/app/flows/client/afterflows/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+  createOrUpdateMomentAfterFlow,
+  deleteMomentAfterFlow,
+  resetMomentAfterFlow,
+} from "@/app/flows/after/moments";
 
-/* Dummy Form Presenting Data 
-Devenir tech lead sur TekTIME. 
-Développement de feature
-Faire un formulaire indéniable pour TekTIME.
-
-De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice. 
-
-Réaliser la div d'une étape
-S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.
-10 minutes
-
-Implémenter le système de coulissement des étapes
-Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.
-20 minutes
-
-Finir de vérifier le formulaire
-S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.
-30 minutes
-*/
-
-// Main Component
-
-// !! Client Component
-export default function Page({
+export default function ClientCore({
   // time
   now,
   // reads
@@ -161,31 +115,24 @@ export default function Page({
 }) {
   console.log({ now });
 
-  /* Functioning timer logic, with useTimer
-  // The callback function to fire every step of the timer.
-  const callback = useCallback(
-    (overdueCallCount: number) => console.log("Boom", overdueCallCount),
-    // https://justinmahar.github.io/react-use-precision-timer/iframe.html?viewMode=docs&id=docs-usetimer--docs&args=#low-delays-expensive-callbacks-and-overdue-calls
-    [],
-  );
-  // The callback will be called every 1000 milliseconds.
-  const timer = useTimer({ delay: 1000, startImmediately: true }, callback);
-  // The callback is where the whole moment logic will operate, with a mix of
-  // states, calls to update the database every minute, etc. The orchestration
-  // here on its own is going to be worth an entire file.
-  */
-
   // let [view, setView] = useState<View>("read-moments");
   // starting directly with the create form for now
   let [view, setView] = useState<View>("create-moment");
 
   // at an upper level for UpdateMomentView
-  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  // IMPORTANT
+  // Now that LocalServerComponents.Header no longer needs setMoment, I can shift moment and setMoment to Main, so that only view and setView remain in ClientCore. Then I can replace them by params at the RSC page level, and thus turn and replace LocalServerComponents.Header by a server component instead, doing away entirely with ClientCore and having the header be server)rendered.
+  // And noticing this is all thanks to my new way of organizing components.
 
   return (
     <>
-      <Header view={view} setView={setView} setMoment={setMoment} />
-      <Divider />
+      <LocalServerComponents.Header
+        view={view}
+        setView={setView}
+        setMoment={setMoment}
+      />
+      <GlobalServerComponents.Divider />
       <Main
         now={now}
         allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -203,29 +150,7 @@ export default function Page({
   );
 }
 
-function Header({
-  view,
-  setView,
-  setMoment,
-}: {
-  view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
-}) {
-  return (
-    <header>
-      <PageSegment>
-        <HeaderSegment>
-          <PageTitle title={viewTitles[view]} />
-          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
-        </HeaderSegment>
-      </PageSegment>
-    </header>
-  );
-}
-
-// !! Client Component
-function Main({
+export function Main({
   now,
   allUserMomentsToCRUD,
   maxPages,
@@ -272,17 +197,20 @@ function Main({
 
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
-  // penser à désactiver les boutons des vues cachées puisqu'elles existent toujours dans le DOM...
+  // shifted from ClientCore to Main // not yet
+  // const [moment, setMoment] = useState<MomentToCRUD>();
 
   return (
     <main>
-      <ViewsCarousel
+      <LocalServerComponents.ViewsCarousel
         view={view}
         isCRUDOpSuccessful={isCRUDOpSuccessful}
         setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
         currentViewHeight={currentViewHeight}
       >
-        <PageSegment>
+        <LocalServerComponents.PageSegment
+          isSegmentContainerInvisible={view !== "update-moment"}
+        >
           <ViewSegment
             id="update-moment"
             currentView={view}
@@ -300,10 +228,13 @@ function Main({
               deleteMoment={deleteMoment}
               now={now}
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              allButtonsDisabled={view !== "update-moment"}
             />
           </ViewSegment>
-        </PageSegment>
-        <PageSegment>
+        </LocalServerComponents.PageSegment>
+        <LocalServerComponents.PageSegment
+          isSegmentContainerInvisible={view !== "read-moments"}
+        >
           <ViewSegment
             id="read-moments"
             currentView={view}
@@ -318,10 +249,13 @@ function Main({
               setSubView={setSubView}
               setMoment={setMoment}
               revalidateMoments={revalidateMoments}
+              allButtonsDisabled={view !== "read-moments"}
             />
           </ViewSegment>
-        </PageSegment>
-        <PageSegment>
+        </LocalServerComponents.PageSegment>
+        <LocalServerComponents.PageSegment
+          isSegmentContainerInvisible={view !== "create-moment"}
+        >
           <ViewSegment
             id="create-moment"
             currentView={view}
@@ -336,78 +270,16 @@ function Main({
               createOrUpdateMoment={createOrUpdateMoment}
               now={now}
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              allButtonsDisabled={view !== "create-moment"}
             />
           </ViewSegment>
-        </PageSegment>
-      </ViewsCarousel>
+        </LocalServerComponents.PageSegment>
+      </LocalServerComponents.ViewsCarousel>
     </main>
   );
 }
 
-function PageSegment({ children }: { children: React.ReactNode }) {
-  return (
-    <SegmentWrapper>
-      <SegmentContainer>{children}</SegmentContainer>
-    </SegmentWrapper>
-  );
-}
-
-function SegmentWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]">
-      {children}
-    </div>
-  );
-}
-
-function SegmentContainer({ children }: { children: React.ReactNode }) {
-  return <div className="container px-8 lg:max-w-4xl">{children}</div>;
-}
-
-function HeaderSegment({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex justify-between py-8 align-baseline">{children}</div>
-  );
-}
-
-function ViewsCarousel({
-  view,
-  isCRUDOpSuccessful,
-  setIsCRUDOpSuccessful,
-  currentViewHeight,
-  children,
-}: {
-  view: View;
-  isCRUDOpSuccessful: boolean;
-  setIsCRUDOpSuccessful: SetState<boolean>;
-  currentViewHeight: MotionValue<number>;
-  children: React.ReactNode;
-}) {
-  return (
-    <ViewsCarouselWrapper>
-      <ViewsCarouselContainer
-        view={view}
-        isCRUDOpSuccessful={isCRUDOpSuccessful}
-        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-        currentViewHeight={currentViewHeight}
-      >
-        {children}
-      </ViewsCarouselContainer>
-    </ViewsCarouselWrapper>
-  );
-}
-
-function ViewsCarouselWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    // the overflow-hidden just doesn't work without relative
-    <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
-      {children}
-    </div>
-  );
-}
-
-// !! Client Component
-function ViewsCarouselContainer({
+export function ViewsCarouselContainer({
   view,
   isCRUDOpSuccessful,
   setIsCRUDOpSuccessful,
@@ -443,8 +315,7 @@ function ViewsCarouselContainer({
   );
 }
 
-// !! Client Component
-function ViewSegment({
+export function ViewSegment({
   id,
   currentView,
   currentViewHeight,
@@ -465,16 +336,13 @@ function ViewSegment({
     <div id={id} ref={reference}>
       {children}
       {/* spacer instead of padding for correct useMeasure calculations */}
-      <div className="h-12"></div>
+      {/* boosted from h-12 to h-24 */}
+      <div className="h-24"></div>
     </div>
   );
 }
 
-// Main Leading Components
-
-// !! Client Component
-// some style work there left to be done at a later occasion
-function ReadMomentsView({
+export function ReadMomentsView({
   allUserMomentsToCRUD,
   maxPages,
   view,
@@ -483,6 +351,7 @@ function ReadMomentsView({
   setSubView,
   setMoment,
   revalidateMoments,
+  allButtonsDisabled,
 }: {
   allUserMomentsToCRUD: UserMomentsToCRUD[];
   maxPages: number[];
@@ -492,6 +361,7 @@ function ReadMomentsView({
   setSubView: SetState<SubView>;
   setMoment: SetState<MomentToCRUD | undefined>;
   revalidateMoments: RevalidateMoments;
+  allButtonsDisabled: boolean;
 }) {
   const [
     realAllMoments,
@@ -539,7 +409,7 @@ function ReadMomentsView({
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
-  const subViewSearchParams: { [K in SubView]: SearchParamsKey } = {
+  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
     "all-moments": USERMOMENTSPAGE,
     "past-moments": PASTUSERMOMENTSPAGE,
     "current-moments": CURRENTUSERMOMENTSPAGE,
@@ -641,7 +511,7 @@ function ReadMomentsView({
     event: MouseEvent<HTMLButtonElement>,
   ) => {
     startRevalidateMomentsTransition(async () => {
-      await revalidateMomentsActionflow(
+      await revalidateMomentsClientFlow(
         event,
         revalidateMoments,
         replace,
@@ -666,6 +536,7 @@ function ReadMomentsView({
         ))}
         <RevalidateMomentsButton
           // I insist on specifying and sending all of my actions' booleans because they can be used for stylistic purposes with isDedicatedDisabled
+          allButtonsDisabled={allButtonsDisabled}
           revalidateMomentsAction={revalidateMomentsAction}
           isRevalidateMomentsPending={isRevalidateMomentsPending}
         />
@@ -679,15 +550,15 @@ function ReadMomentsView({
           {realDisplayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <div className="space-y-8">
-                <DateCard
+                <LocalServerComponents.DateCard
                   title={format(new Date(e.date), "eeee d MMMM", {
                     locale: fr,
                   })}
                 >
                   {e.destinations.map((e2) => {
                     return (
-                      <DestinationInDateCard
-                        key={e2.destinationIdeal}
+                      <LocalServerComponents.DestinationInDateCard
+                        key={e2.id}
                         e2={e2}
                         setMoment={setMoment}
                         realMoments={realMoments}
@@ -695,9 +566,11 @@ function ReadMomentsView({
                       />
                     );
                   })}
-                </DateCard>
+                </LocalServerComponents.DateCard>
               </div>
-              {i === a.length - 1 && <MomentsPageDetails e={e} />}
+              {i === a.length - 1 && (
+                <LocalServerComponents.MomentsPageDetails e={e} />
+              )}
             </div>
           ))}
           <div className="flex justify-between">
@@ -705,29 +578,34 @@ function ReadMomentsView({
               handlePagination={handlePagination}
               direction="left"
               subView={subView}
-              disabled={currentPage === 1}
+              disabled={allButtonsDisabled || currentPage === 1}
               icon="ArrowLeftSolid"
+              allButtonsDisabled={allButtonsDisabled}
             />
             <PaginationButton
               handlePagination={handlePagination}
               direction="right"
               subView={subView}
-              disabled={currentPage === subViewMaxPages[subView]}
+              disabled={
+                allButtonsDisabled || currentPage === subViewMaxPages[subView]
+              }
               icon="ArrowRightSolid"
+              allButtonsDisabled={allButtonsDisabled}
             />
           </div>
         </>
       ) : (
-        <NoDateCard>
-          <FieldTitle title={"Pas de moment... pour le moment. 😅"} />
-        </NoDateCard>
+        <LocalServerComponents.NoDateCard>
+          <GlobalServerComponents.FieldTitle
+            title={"Pas de moment... pour le moment. 😅"}
+          />
+        </LocalServerComponents.NoDateCard>
       )}
     </div>
   );
 }
 
-// !! Client Component
-function MomentForms({
+export function MomentForms({
   variant,
   moment,
   destinationOptions,
@@ -737,6 +615,7 @@ function MomentForms({
   deleteMoment,
   now,
   setIsCRUDOpSuccessful,
+  allButtonsDisabled,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
@@ -747,6 +626,7 @@ function MomentForms({
   deleteMoment?: DeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
+  allButtonsDisabled: boolean;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
@@ -823,7 +703,7 @@ function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentActionflow(
+      const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -845,7 +725,7 @@ function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
       // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
-      createOrUpdateMomentAfterflow(
+      createOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
@@ -875,7 +755,7 @@ function MomentForms({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
       ) {
-        const state = resetMomentActionflow(
+        const state = resetMomentClientFlow(
           setStartMomentDate,
           setSteps,
           setStepVisible,
@@ -891,7 +771,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isResetMomentDone) {
-      resetMomentAfterflow(variant);
+      resetMomentAfterFlow(variant);
 
       setIsResetMomentDone(false);
     }
@@ -906,7 +786,7 @@ function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentActionflow(deleteMoment, moment);
+        const state = await deleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -916,7 +796,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterflow(
+      deleteMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setView,
@@ -1007,7 +887,7 @@ function MomentForms({
         id={MOMENT_FORM_IDS[variant].momentForm}
         noValidate
       >
-        <Section
+        <GlobalServerComponents.Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
           id={MOMENT_FORM_IDS[variant].yourMoment}
@@ -1018,7 +898,7 @@ function MomentForms({
             removeMomentMessagesAndErrorsCallback
           }
         >
-          <MomentInputs
+          <LocalServerComponents.MomentInputs
             variant={variant}
             moment={moment}
             destinationOptions={destinationOptions}
@@ -1031,9 +911,9 @@ function MomentForms({
             startMomentDate={startMomentDate}
             setStartMomentDate={setStartMomentDate}
           />
-        </Section>
-        <Divider />
-        <Section
+        </GlobalServerComponents.Section>
+        <GlobalServerComponents.Divider />
+        <GlobalServerComponents.Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
           id={MOMENT_FORM_IDS[variant].itsSteps}
@@ -1094,11 +974,12 @@ function MomentForms({
                       stepsCompoundDurations={stepsCompoundDurations}
                       isDeleteStepPending={isDeleteStepPending}
                       startDeleteStepTransition={startDeleteStepTransition}
+                      allButtonsDisabled={allButtonsDisabled}
                     />
                   );
                 })}
               </Reorder.Group>
-              <StepsSummaries
+              <LocalServerComponents.StepsSummaries
                 stepVisible={stepVisible}
                 endMomentDate={endMomentDate}
                 momentAddingTime={momentAddingTime}
@@ -1109,7 +990,7 @@ function MomentForms({
             switch (stepVisible) {
               case "creating":
                 return (
-                  <StepVisibleCreating
+                  <LocalServerComponents.StepVisibleCreating
                     key={stepVisible}
                     momentFormVariant={variant}
                     isResetStepPending={isResetStepPending}
@@ -1122,120 +1003,70 @@ function MomentForms({
                     isCancelStepPending={isCancelStepPending}
                     stepsCompoundDurations={stepsCompoundDurations}
                     startMomentDate={startMomentDate}
+                    allButtonsDisabled={allButtonsDisabled}
                   />
                 );
               case "create":
                 return (
-                  <StepVisibleCreate
+                  <LocalServerComponents.StepVisibleCreate
                     key={stepVisible}
                     addStepAction={addStepAction}
                     isAddStepPending={isAddStepPending}
+                    allButtonsDisabled={allButtonsDisabled}
                   />
                 );
               default:
                 return null;
             }
           })()}
-        </Section>
-        <Divider />
-        <Section>
+        </GlobalServerComponents.Section>
+        <GlobalServerComponents.Divider />
+        <GlobalServerComponents.Section>
           {/* Doubling up instead of reverse for accessibility */}
           <div className="flex">
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
-              <ConfirmMomentButton
+              <LocalServerComponents.ConfirmMomentButton
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
-              <ResetOrEraseMomentButton
+              <LocalServerComponents.ResetOrEraseMomentButton
                 variant={variant}
                 deleteMomentAction={deleteMomentAction}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
             </div>
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-              <ResetOrEraseMomentButton
+              <LocalServerComponents.ResetOrEraseMomentButton
                 variant={variant}
                 deleteMomentAction={deleteMomentAction}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
-              <ConfirmMomentButton
+              <LocalServerComponents.ConfirmMomentButton
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
               />
             </div>
           </div>
-        </Section>
+        </GlobalServerComponents.Section>
       </form>
     </>
   );
 }
 
-// Main Supporting Components
-
-function SetViewButton({
-  view,
-  setView,
-  setMoment,
-}: {
-  view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
-}) {
-  // though the function below could be a utility, it is very specific to this component at this time
-  function defineDesiredView(view: View) {
-    switch (view) {
-      case "update-moment":
-        return "read-moments";
-      case "read-moments":
-        return "create-moment";
-      case "create-moment":
-        return "read-moments";
-      default:
-        return "read-moments";
-    }
-  }
-
-  const desiredView = defineDesiredView(view);
-
-  return (
-    <>
-      <Button
-        type="button"
-        variant="destroy-step"
-        onClick={() => {
-          // SetViewButton is the only one that sets moment to undefined
-          if (view === "update-moment") setMoment(undefined);
-          setScrollToTop(desiredView, setView);
-        }}
-      >
-        {(() => {
-          switch (desiredView) {
-            // no case "update-moment", since moment-specific
-            case "read-moments":
-              return <>Vos moments</>;
-            case "create-moment":
-              return <>Créez un moment</>;
-            default:
-              return null;
-          }
-        })()}
-      </Button>
-    </>
-  );
-}
-
-// ReadMomentsView Supporting Components
-
-// !! Client Component
-function SetSubViewButton({
+// sure I can get the spans to be Server Components but this really is a whole
+export function SetSubViewButton({
   setSubView,
   e,
   subView,
@@ -1286,21 +1117,22 @@ function SetSubViewButton({
   );
 }
 
-// !! Client Component
-function RevalidateMomentsButton({
+export function RevalidateMomentsButton({
   revalidateMomentsAction,
   isRevalidateMomentsPending,
+  allButtonsDisabled,
 }: {
   revalidateMomentsAction: (
     event: MouseEvent<HTMLButtonElement>,
   ) => Promise<void>;
   isRevalidateMomentsPending: boolean;
+  allButtonsDisabled: boolean;
 }) {
   return (
     <button
       form={SEARCH_FORM_ID}
       onClick={revalidateMomentsAction}
-      disabled={isRevalidateMomentsPending}
+      disabled={allButtonsDisabled || isRevalidateMomentsPending}
       className={clsx(
         "flex h-9 items-center justify-center px-4 py-2",
         "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
@@ -1332,8 +1164,7 @@ function RevalidateMomentsButton({
   );
 }
 
-// !! Client Component
-function SearchForm({
+export function SearchForm({
   searchParams,
   debouncedHandleSearch,
 }: {
@@ -1342,7 +1173,7 @@ function SearchForm({
 }) {
   return (
     <form id={SEARCH_FORM_ID} noValidate>
-      <InputText
+      <GlobalClientComponents.InputText
         id={CONTAINS}
         name={CONTAINS}
         placeholder="Cherchez parmi vos moments..."
@@ -1355,72 +1186,7 @@ function SearchForm({
   );
 }
 
-export function DateCard({
-  title,
-  id,
-  children,
-}: {
-  title: string;
-  id?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl bg-white p-5 shadow-sm">
-      <section
-        className="grid items-baseline gap-8 md:grid-cols-[1fr_2fr]"
-        id={id}
-      >
-        <div>
-          <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
-        </div>
-        <div className="flex flex-col gap-y-8">{children}</div>
-      </section>
-    </div>
-  );
-}
-
-export function NoDateCard({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl bg-white p-5 shadow-sm">{children}</div>;
-}
-
-function DestinationInDateCard({
-  e2,
-  setMoment,
-  realMoments,
-  setView,
-}: {
-  e2: MomentsDestinationToCRUD;
-  setMoment: SetState<MomentToCRUD | undefined>;
-  realMoments: MomentToCRUD[];
-  setView: SetState<View>;
-}) {
-  return (
-    <div className="flex flex-col gap-y-8">
-      <div className="flex select-none items-baseline justify-between">
-        <p
-          className={clsx(
-            "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-          )}
-        >
-          {e2.destinationIdeal}
-        </p>
-      </div>
-      {e2.moments.map((e3, i3) => (
-        <MomentInDateCard
-          key={e3.id}
-          e3={e3}
-          i3={i3}
-          setMoment={setMoment}
-          realMoments={realMoments}
-          setView={setView}
-        />
-      ))}
-    </div>
-  );
-}
-
-// !! Client Component
-function MomentInDateCard({
+export function MomentInDateCard({
   e3,
   i3,
   setMoment,
@@ -1444,13 +1210,13 @@ function MomentInDateCard({
       <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
         <p className="font-medium text-blue-950">{e3.objective}</p>
         <div className="invisible flex justify-end group-hover:visible">
-          <Button
+          <GlobalClientComponents.Button
             type="button"
             variant="destroy-step"
             onClick={setUpdateMomentView}
           >
             <Icons.PencilSquareSolid className="size-5" />
-          </Button>
+          </GlobalClientComponents.Button>
         </div>
       </div>
       <p>
@@ -1470,50 +1236,21 @@ function MomentInDateCard({
       </p>
       <ol className="">
         {e3.steps.map((e4) => (
-          <StepInDateCard key={e4.id} e4={e4} />
+          <LocalServerComponents.StepInDateCard key={e4.id} e4={e4} />
         ))}
       </ol>
     </div>
   );
 }
 
-function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
-  return (
-    <li className="text-sm font-light leading-loose text-neutral-500">
-      <p className="">
-        {e4.startDateAndTime.split("T")[1]} - {e4.endDateAndTime.split("T")[1]}{" "}
-        : {e4.title}
-      </p>
-    </li>
-  );
-}
-
-function MomentsPageDetails({ e }: { e: MomentsDateToCRUD }) {
-  return (
-    <p className="font-extralight text-neutral-800">
-      <span className="font-normal">{e.momentsTotal}</span> moment(s) affiché(s){" "}
-      <span className="font-normal">
-        (
-        {e.momentFirstIndex !== e.momentLastIndex
-          ? `${e.momentFirstIndex}-${e.momentLastIndex}`
-          : `${e.momentFirstIndex}`}
-        )
-      </span>{" "}
-      sur <span className="font-normal">{e.allMomentsTotal}</span> à la page{" "}
-      <span className="font-normal">{e.currentPage}</span> sur{" "}
-      <span className="font-normal">{e.totalPage}</span>
-    </p>
-  );
-}
-
-// !! Client Component
-function PaginationButton({
+export function PaginationButton({
   handlePagination,
   direction,
   subView,
   disabled,
   icon,
   iconClassName,
+  allButtonsDisabled,
 }: {
   handlePagination: (direction: "left" | "right", subView: SubView) => void;
   direction: "left" | "right";
@@ -1521,13 +1258,14 @@ function PaginationButton({
   disabled: boolean;
   icon: Icons.IconName;
   iconClassName?: string;
+  allButtonsDisabled: boolean;
 }) {
   const Icon = Icons[icon];
 
   return (
     <button
       onClick={() => handlePagination(direction, subView)}
-      disabled={disabled}
+      disabled={allButtonsDisabled || disabled}
       className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
     >
       <div className="rounded-lg bg-white p-2 shadow">
@@ -1537,10 +1275,7 @@ function PaginationButton({
   );
 }
 
-// MomentForms Supporting Components
-
-// !! Client Component
-function StepForm({
+export function StepForm({
   variant,
   momentFormVariant,
   currentStepId,
@@ -1576,7 +1311,7 @@ function StepForm({
 
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
     startCreateOrUpdateStepTransition(() => {
-      const state = createOrUpdateStepActionflow(
+      const state = createOrUpdateStepClientFlow(
         event,
         stepDuree,
         steps,
@@ -1607,7 +1342,7 @@ function StepForm({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        const state = resetStepActionflow(
+        const state = resetStepClientFlow(
           setStepDuree,
           createOrUpdateMomentState,
         );
@@ -1627,214 +1362,7 @@ function StepForm({
   );
 }
 
-function MomentInputs({
-  variant,
-  moment,
-  destinationOptions,
-  createOrUpdateMomentState,
-  destinationSelect,
-  setDestinationSelect,
-  activitySelect,
-  setActivitySelect,
-  inputSwitchKey,
-  startMomentDate,
-  setStartMomentDate,
-}: {
-  variant: MomentFormVariant;
-  moment?: MomentToCRUD;
-  destinationOptions: Option[];
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  destinationSelect: boolean;
-  setDestinationSelect: SetState<boolean>;
-  activitySelect: boolean;
-  setActivitySelect: SetState<boolean>;
-  inputSwitchKey: string;
-  startMomentDate: string;
-  setStartMomentDate: SetState<string>;
-}) {
-  const isVariantUpdatingMoment = variant === "updating" && moment;
-
-  const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = activityOptions.map((e) => e.value);
-
-  return (
-    <>
-      <InputText
-        label="Destination"
-        name="destination"
-        defaultValue={isVariantUpdatingMoment ? moment.destinationIdeal : ""}
-        description="Votre projet vise à atteindre quel idéal ?"
-        addendum={
-          destinationOptions.length > 0
-            ? "Ou choissisez parmi vos destinations précédemment instanciées."
-            : undefined
-        }
-        fieldFlexIsNotLabel
-        tekTime
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
-        hidden={destinationSelect}
-      >
-        {destinationOptions.length > 0 && (
-          <SetSelectButton
-            setSelect={setDestinationSelect}
-            text={"Choisir la destination"}
-          />
-          // In fact, these could have actually stayed as they were.
-          // <Button
-          //   type="button"
-          //   variant="destroy"
-          //   onClick={() => setDestinationSelect(true)}
-          // >
-          //   Choisir la destination
-          // </Button>
-        )}
-      </InputText>
-      <SelectWithOptions
-        label="Destination"
-        description="Choisissez la destination que cherche à atteindre ce moment."
-        addendum="Ou définissez-la vous-même via le bouton ci-dessus."
-        name="destination"
-        defaultValue={
-          isVariantUpdatingMoment &&
-          destinationValues.includes(moment.destinationIdeal)
-            ? moment.destinationIdeal
-            : ""
-        }
-        placeholder="Choisissez..."
-        options={destinationOptions}
-        fieldFlexIsNotLabel
-        tekTime
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
-        hidden={!destinationSelect}
-      >
-        <SetSelectButton
-          setSelect={setDestinationSelect}
-          text={"Définir la destination"}
-        />
-        {/* <Button
-          type="button"
-          variant="destroy"
-          onClick={() => setDestinationSelect(false)}
-        >
-          Définir la destination
-        </Button> */}
-      </SelectWithOptions>
-      <InputText
-        label="Activité"
-        description="Définissez le type d'activité qui va correspondre à votre problématique."
-        addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
-        name="activite"
-        defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
-        fieldFlexIsNotLabel
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
-        hidden={activitySelect}
-      >
-        <SetSelectButton
-          setSelect={setActivitySelect}
-          text={"Choisir l'activité"}
-        />
-        {/* <Button
-          type="button"
-          variant="destroy"
-          onClick={() => setActivitySelect(true)}
-        >
-          Choisir l&apos;activité
-        </Button> */}
-      </InputText>
-      <SelectWithOptions
-        label="Activité"
-        description="Choisissez le type d'activité qui va correspondre à votre problématique."
-        addendum="Ou définissez-le vous-même via le bouton ci-dessus."
-        name="activite"
-        defaultValue={
-          isVariantUpdatingMoment && activityValues.includes(moment.activity)
-            ? moment.activity
-            : ""
-        }
-        placeholder="Choisissez..."
-        options={activityOptions}
-        fieldFlexIsNotLabel
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
-        hidden={!activitySelect}
-      >
-        <SetSelectButton
-          setSelect={setActivitySelect}
-          text={"Définir l'activité"}
-        />
-        {/* <Button
-          type="button"
-          variant="destroy"
-          onClick={() => setActivitySelect(false)}
-        >
-          Définir l&apos;activité
-        </Button> */}
-      </SelectWithOptions>
-      <InputText
-        label="Objectif"
-        name="objectif"
-        defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
-        description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentName}
-      />
-      <InputSwitch
-        key={inputSwitchKey}
-        label="Indispensable ?"
-        name="indispensable"
-        defaultChecked={
-          isVariantUpdatingMoment ? moment.isIndispensable : false
-        }
-        description="Activez l'interrupteur si ce moment est d'une importance incontournable."
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentIsIndispensable}
-      />
-      <Textarea
-        label="Contexte"
-        name="contexte"
-        defaultValue={isVariantUpdatingMoment ? moment.context : ""}
-        description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
-        rows={6}
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentDescription}
-      />
-      <InputDatetimeLocalControlled
-        label="Date et heure"
-        name="dateetheure"
-        description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
-        definedValue={startMomentDate}
-        definedOnValueChange={setStartMomentDate}
-        required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentStartDateAndTime}
-      />
-    </>
-  );
-}
-
-// !! Client Component
-function SetSelectButton({
-  setSelect,
-  text,
-}: {
-  setSelect: SetState<boolean>;
-  text: string;
-}) {
-  return (
-    <Button
-      type="button"
-      variant="destroy"
-      onClick={() => setSelect((s) => !s)}
-    >
-      {text}
-    </Button>
-  );
-}
-
-// !! Client Component
-function ReorderItem({
+export function ReorderItem({
   step,
   index,
   isAfterCurrentStep,
@@ -1855,6 +1383,7 @@ function ReorderItem({
   stepsCompoundDurations,
   isDeleteStepPending,
   startDeleteStepTransition,
+  allButtonsDisabled,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1876,6 +1405,7 @@ function ReorderItem({
   stepsCompoundDurations: number[];
   isDeleteStepPending: boolean;
   startDeleteStepTransition: TransitionStartFunction;
+  allButtonsDisabled: boolean;
 }) {
   const controls = useDragControls();
 
@@ -1892,7 +1422,7 @@ function ReorderItem({
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
-        deleteStepActionflow(steps, currentStepId, setSteps, setStepVisible);
+        deleteStepClientFlow(steps, currentStepId, setSteps, setStepVisible);
         setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       }
     });
@@ -1959,28 +1489,28 @@ function ReorderItem({
             Étape <span>{toWordsing(index + 1)}</span>
           </p>{" "}
           {isCurrentStepUpdating ? (
-            <Button
+            <GlobalClientComponents.Button
               type="button"
               variant="destroy-step"
               onClick={restoreStepAction}
-              disabled={isRestoreStepPending}
+              disabled={allButtonsDisabled || isRestoreStepPending}
             >
               Restaurer l&apos;étape
-            </Button>
+            </GlobalClientComponents.Button>
           ) : (
-            <Button
+            <GlobalClientComponents.Button
               variant="destroy-step"
               type="button"
               onClick={modifyStepAction}
-              disabled={isModifyStepPending}
+              disabled={allButtonsDisabled || isModifyStepPending}
             >
               Modifier cette étape
-            </Button>
+            </GlobalClientComponents.Button>
           )}
         </div>
         {isCurrentStepUpdating ? (
           <div className="flex flex-col gap-y-8">
-            <StepInputs
+            <LocalServerComponents.StepInputs
               form={form}
               createOrUpdateMomentState={createOrUpdateMomentState}
               stepDuree={stepDureeUpdate}
@@ -1992,33 +1522,37 @@ function ReorderItem({
             />
             <div>
               {/* Mobile */}
-              <StepFormControlsMobileWrapper>
-                <UpdateStepButton
+              <LocalServerComponents.StepFormControlsMobileWrapper>
+                <LocalServerComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
-                <EraseStepButton
+                <LocalServerComponents.EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
-              </StepFormControlsMobileWrapper>
+              </LocalServerComponents.StepFormControlsMobileWrapper>
               {/* Desktop */}
-              <StepFormControlsDesktopWrapper>
-                <EraseStepButton
+              <LocalServerComponents.StepFormControlsDesktopWrapper>
+                <LocalServerComponents.EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
-                <UpdateStepButton
+                <LocalServerComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
+                  allButtonsDisabled={allButtonsDisabled}
                 />
-              </StepFormControlsDesktopWrapper>
+              </LocalServerComponents.StepFormControlsDesktopWrapper>
             </div>
           </div>
         ) : (
-          <StepContents
+          <LocalServerComponents.StepContents
             step={step}
             index={index}
             hasAPreviousStepUpdating={hasAPreviousStepUpdating}
@@ -2031,690 +1565,20 @@ function ReorderItem({
   );
 }
 
-function StepsSummaries({
-  stepVisible,
-  endMomentDate,
-  momentAddingTime,
-}: {
-  stepVisible: StepVisible;
-  endMomentDate: string;
-  momentAddingTime: number;
-}) {
-  return (
-    <>
-      <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
-          Récapitulatifs
-        </p>
-      </div>
-      <div className="grid grid-cols-[1fr_1.5fr] gap-4 md:grid md:grid-cols-[1fr_1fr]">
-        <div className="space-y-2">
-          <p className="font-medium text-blue-950">Fin attendue</p>
-          <p className="font-semibold">
-            <span className="font-medium text-neutral-800">à</span>{" "}
-            <span
-              className={clsx(
-                (stepVisible === "updating" || stepVisible === "creating") &&
-                  "text-neutral-400",
-              )}
-            >
-              {format(endMomentDate, "HH:mm")}
-            </span>
-          </p>
-        </div>
-        <div className="space-y-2">
-          <p className="font-medium text-blue-950">Durée totale</p>
-          <p className="font-semibold">
-            <span className="font-medium text-neutral-800">de </span>
-            <span>
-              <span
-                className={clsx(
-                  (stepVisible === "updating" || stepVisible === "creating") &&
-                    "text-neutral-400",
-                )}
-              >
-                {numStringToTimeString(momentAddingTime.toString())}
-              </span>
-            </span>
-          </p>
-        </div>
-      </div>
-    </>
-  );
-}
+const localClientComponents = {
+  ClientCore,
+  Main,
+  ViewsCarouselContainer,
+  ViewSegment,
+  ReadMomentsView,
+  MomentForms,
+  SetSubViewButton,
+  RevalidateMomentsButton,
+  SearchForm,
+  MomentInDateCard,
+  PaginationButton,
+  StepForm,
+  ReorderItem,
+} as const;
 
-function StepVisibleCreating({
-  momentFormVariant,
-  isResetStepPending,
-  createOrUpdateMomentState,
-  stepDureeCreate,
-  setStepDureeCreate,
-  isCreateStepPending,
-  cancelStepAction,
-  steps,
-  isCancelStepPending,
-  stepsCompoundDurations,
-  startMomentDate,
-}: {
-  momentFormVariant: MomentFormVariant;
-  isResetStepPending: boolean;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  stepDureeCreate: string;
-  setStepDureeCreate: SetState<string>;
-  isCreateStepPending: boolean;
-  cancelStepAction: () => void;
-  steps: StepFromCRUD[];
-  isCancelStepPending: boolean;
-  stepsCompoundDurations: number[];
-  startMomentDate: string;
-}) {
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
-
-  return (
-    // was a form, but forms can't be nested
-
-    // I really could go the extra mile with the disabled props here but since these are entirely synchronous client actions it's objectively an overkill... for now.
-    <div className="flex flex-col gap-y-8">
-      <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
-          Ajouter une étape
-        </p>{" "}
-        {/* I also could go the extra mile of componentizing the buttons as Client Components, but they're fine as children even if StepVisibleCreating is a Server Component... for now: I just don't know about importing raw buttons in a Server Component me personally. */}
-        <Button
-          form={form}
-          variant="destroy-step"
-          type="button"
-          onClick={cancelStepAction}
-          disabled={steps.length === 0 || isCancelStepPending}
-        >
-          Annuler l&apos;étape
-        </Button>
-      </div>
-      <StepInputs
-        form={form}
-        createOrUpdateMomentState={createOrUpdateMomentState}
-        stepDuree={stepDureeCreate}
-        setStepDuree={setStepDureeCreate}
-        startMomentDate={startMomentDate}
-        stepsCompoundDurations={stepsCompoundDurations}
-      />
-      <div className="flex">
-        {/* Mobile */}
-        <StepFormControlsMobileWrapper>
-          <Button
-            variant="confirm-step"
-            form={form}
-            type="submit"
-            disabled={isCreateStepPending}
-          >
-            Confirmer l&apos;étape
-          </Button>
-          <Button
-            variant="cancel-step"
-            form={form}
-            type="reset"
-            disabled={isResetStepPending}
-          >
-            Réinitialiser l&apos;étape
-          </Button>
-        </StepFormControlsMobileWrapper>
-        {/* Desktop */}
-        <StepFormControlsDesktopWrapper>
-          <Button
-            variant="cancel-step"
-            form={form}
-            type="reset"
-            disabled={isResetStepPending}
-          >
-            Réinitialiser l&apos;étape
-          </Button>
-          <Button
-            variant="confirm-step"
-            form={form}
-            type="submit"
-            disabled={isCreateStepPending}
-          >
-            Confirmer l&apos;étape
-          </Button>
-        </StepFormControlsDesktopWrapper>
-      </div>
-    </div>
-  );
-}
-
-function StepVisibleCreate({
-  addStepAction,
-  isAddStepPending,
-}: {
-  addStepAction: () => void;
-  isAddStepPending: boolean;
-}) {
-  return (
-    // This is complicated. This is a Server Component. Even though honestly the div could habe been removed and this would have been just Client Component. Yes. I can replace the div by a Fragment and keep it a Server Component. But I want to keep the div so that StepVisibleCreate is semantically aligned with StepVisibleCreating, and also because it is possible in the future that I add more content here, such as descriptions or anything, which can simply be server-side rendered.
-    <div>
-      <Button
-        type="button"
-        variant="neutral"
-        onClick={addStepAction}
-        disabled={isAddStepPending}
-      >
-        Ajouter une étape
-      </Button>
-    </div>
-  );
-}
-
-function ConfirmMomentButton({
-  isCreateOrUpdateMomentPending,
-  isResetMomentPending,
-  isDeleteMomentPending,
-}: {
-  isCreateOrUpdateMomentPending: boolean;
-  isResetMomentPending: boolean;
-  isDeleteMomentPending: boolean;
-}) {
-  return (
-    <Button
-      type="submit"
-      variant="confirm"
-      disabled={
-        isCreateOrUpdateMomentPending ||
-        isResetMomentPending ||
-        isDeleteMomentPending
-      }
-      isDedicatedDisabled={isCreateOrUpdateMomentPending}
-    >
-      Confirmer le moment
-    </Button>
-  );
-}
-
-function ResetOrEraseMomentButton({
-  variant,
-  deleteMomentAction,
-  isResetMomentPending,
-  isDeleteMomentPending,
-  isCreateOrUpdateMomentPending,
-}: {
-  variant: string;
-  deleteMomentAction: () => Promise<void>;
-  isResetMomentPending: boolean;
-  isDeleteMomentPending: boolean;
-  isCreateOrUpdateMomentPending: boolean;
-}) {
-  return (
-    <>
-      {(() => {
-        switch (variant) {
-          case "creating":
-            return (
-              <Button
-                type="reset"
-                variant="cancel"
-                disabled={isResetMomentPending || isCreateOrUpdateMomentPending}
-                isDedicatedDisabled={isResetMomentPending}
-              >
-                Réinitialiser le moment
-              </Button>
-            );
-          case "updating":
-            return (
-              <Button
-                type="button"
-                onClick={deleteMomentAction}
-                variant="cancel"
-                disabled={
-                  isDeleteMomentPending || isCreateOrUpdateMomentPending
-                }
-                isDedicatedDisabled={isDeleteMomentPending}
-              >
-                Effacer le moment
-              </Button>
-            );
-          default:
-            return null;
-        }
-      })()}
-    </>
-  );
-}
-
-function StepInputs({
-  form,
-  createOrUpdateMomentState,
-  stepDuree,
-  setStepDuree,
-  step,
-  startMomentDate,
-  stepAddingTime,
-  stepsCompoundDurations,
-}: {
-  form: string;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  stepDuree: string;
-  setStepDuree: SetState<string>;
-  startMomentDate: string;
-  stepsCompoundDurations: number[];
-  step?: StepFromCRUD;
-  stepAddingTime?: number;
-}) {
-  return (
-    <>
-      <InputText
-        form={form}
-        label="Intitulé de l'étape"
-        name="intituledeleetape"
-        defaultValue={step?.intitule}
-        description="Définissez simplement le sujet de l'étape."
-        required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.stepName}
-      />
-      <Textarea
-        form={form}
-        label="Détails de l'étape"
-        name="detailsdeleetape"
-        defaultValue={step?.details}
-        description="Expliquez en détails le déroulé de l'étape."
-        rows={4}
-        required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.stepDescription}
-      />
-      <InputNumberControlled
-        form={form}
-        label="Durée de l'étape"
-        name="dureedeletape"
-        definedValue={stepDuree}
-        definedOnValueChange={setStepDuree}
-        description="Renseignez en minutes la longueur de l'étape."
-        min="5"
-        required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.realStepDuration}
-        schema={EventStepDurationSchema}
-      >
-        <p className="text-sm font-medium text-blue-900">
-          commence à{" "}
-          {step // && stepAddingTime (can equal 0 which is falsy)
-            ? format(
-                add(startMomentDate, {
-                  minutes: stepAddingTime,
-                }),
-                "HH:mm",
-              )
-            : format(
-                add(startMomentDate, {
-                  minutes: stepsCompoundDurations.at(-1),
-                }),
-                "HH:mm",
-              )}
-        </p>
-      </InputNumberControlled>
-    </>
-  );
-}
-
-function StepFormControlsMobileWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <div className="flex w-full flex-col gap-4 md:hidden">{children}</div>;
-}
-
-function StepFormControlsDesktopWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="hidden pt-2 md:ml-auto md:grid md:w-full md:grow md:grid-cols-2 md:gap-4">
-      {children}
-    </div>
-  );
-}
-
-function UpdateStepButton({
-  form,
-  isUpdateStepPending,
-}: {
-  form: string;
-  isUpdateStepPending: boolean;
-}) {
-  return (
-    <Button
-      form={form}
-      type="submit"
-      variant="confirm-step"
-      disabled={isUpdateStepPending}
-    >
-      Actualiser l&apos;étape
-    </Button>
-  );
-}
-
-function EraseStepButton({
-  form,
-  deleteStepAction,
-  isDeleteStepPending,
-}: {
-  form: string;
-  deleteStepAction: () => void;
-  isDeleteStepPending: boolean;
-}) {
-  return (
-    // And poof, with a Fragment you're no longer a Client Component.
-    // So everywhere I see a custom button, since button itself already is a Client Component, their wrappers do not need to be one too.
-    <>
-      <Button
-        form={form}
-        type="button"
-        onClick={deleteStepAction}
-        variant="cancel-step"
-        disabled={isDeleteStepPending}
-      >
-        Effacer l&apos;étape
-      </Button>
-    </>
-  );
-}
-
-function StepContents({
-  step,
-  index,
-  hasAPreviousStepUpdating,
-  startMomentDate,
-  stepAddingTime,
-}: {
-  step: StepFromCRUD;
-  index: number;
-  hasAPreviousStepUpdating: boolean;
-  startMomentDate: string;
-  stepAddingTime: number;
-}) {
-  return (
-    <div className="space-y-2">
-      <p className="font-medium text-blue-950">{step.intitule}</p>
-      <p>
-        <span
-          className={clsx(
-            index === 0 && "font-semibold",
-            hasAPreviousStepUpdating && "text-neutral-400",
-            !hasAPreviousStepUpdating && "text-neutral-800",
-          )}
-        >
-          {format(
-            add(startMomentDate, {
-              minutes: stepAddingTime,
-            }),
-            "HH:mm",
-          )}
-        </span>
-        <> • </>
-        {numStringToTimeString(step.duree)}
-      </p>
-      <p className="text-sm text-neutral-500">{step.details}</p>
-    </div>
-  );
-}
-
-/* Notes
-No longer in use since submitting on Enter is not prevented all around:
-// forcing with "!" because AFAIK there will always be a form.
-// event.currentTarget.form!.requestSubmit();
-Required supercedes display none. After all required is HTML, while display-none is CSS.
-*/
-
-/* Obsolete endeavors
-
-// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
-let createOrUpdateMomentInitialState: {
-  errors?: {
-    zod1?: string;
-    zod2?: string;
-    zod3?: string;
-  };
-  message: string;
-} | null = null;
-
-let [
-  createOrUpdateMomentState,
-  createOrUpdateMomentAction,
-  createOrUpdateMomentIsPending,
-] = useActionState(
-  createOrUpdateMomentBound,
-  createOrUpdateMomentInitialState,
-); // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
-
-// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
-let deleteMomentInitialState: {
-  message: string;
-} | null = null;
-
-let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
-  useActionState(deleteMomentBound, deleteMomentInitialState); // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
-
-// action={async (formData) => {
-//   await createOrUpdateMomentBound(formData);
-
-//   if (variant === "creating") {
-//     setIndispensable(false);
-//     setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-//     setSteps([]);
-//     setStepVisible("creating");
-//   }
-
-//   setView("read-moments");
-//   // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-// }}
-
-// onClick={async () => {
-//   if (!moment)
-//     return console.error("Somehow a moment was not found.");
-
-//   if (
-//     confirm(
-//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
-//     )
-//   ) {
-//     if (deleteMomentBound) await deleteMomentBound();
-//     else
-//       return console.error(
-//         "Somehow deleteMomentBound was not a thing.",
-//       );
-
-//     setView("read-moments");
-//   }
-// }}
-
-// onClick={async () => {
-//   if (!moment)
-//     return console.error("Somehow a moment was not found.");
-
-//   if (
-//     confirm(
-//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
-//     )
-//   ) {
-//     if (deleteMomentBound) await deleteMomentBound();
-//     else
-//       return console.error(
-//         "Somehow deleteMomentBound was not a thing.",
-//       );
-
-//     setView("read-moments");
-//   }
-// }}
- 
-onClick before useTransition
-// // this, is looking like an action to make on Friday
-// onClick={async (event) => {
-//   const button = event.currentTarget;
-//   button.disabled = true;
-//   await revalidateMoments();
-//   replace(`${pathname}`);
-//   button.form!.reset(); // EXACTLY.
-//   button.disabled = false;
-// }}
-
-// // I'm sure there's a way to optimize this with an array or an object for scale.
-// const rotatingSubView = () => {
-//   switch (subView) {
-//     case "all-moments":
-//       setSubView("past-moments");
-//       break;
-//     case "past-moments":
-//       setSubView("current-moments");
-//       break;
-//     case "current-moments":
-//       setSubView("future-moments");
-//       break;
-//     case "future-moments":
-//       setSubView("all-moments");
-//       break;
-//     default:
-//       break;
-//   }
-// };
-
-// const reverseRotatingSubView = () => {
-//   switch (subView) {
-//     case "all-moments":
-//       setSubView("future-moments");
-//       break;
-//     case "future-moments":
-//       setSubView("current-moments");
-//       break;
-//     case "current-moments":
-//       setSubView("past-moments");
-//       break;
-//     case "past-moments":
-//       setSubView("all-moments");
-//       break;
-//     default:
-//       break;
-//   }
-// };
-
-// This below is the wrong approach. I think... I should accept having to manually change the type of my action's typing so that as the action changes, I'm constantly reminded that everything should fall together.
-type TrueCreateOrUpdateMoment<T extends unknown[]> = (
-  ...args: T[]
-) => Promise<CreateOrUpdateMomentState>;
-
-// In case – which is likely – the components using the server actions are in other files, these types should be in their respective type file
-type CreateOrUpdateMoment = (
-  variant: "creating" | "updating",
-  indispensable: boolean,
-  momentDate: string,
-  steps: StepFromCRUD[],
-  momentFromCRUD: MomentToCRUD | undefined,
-  formData: FormData,
-) => Promise<CreateOrUpdateMomentState>;
-
-type DeleteMoment = (momentFromCRUD?: MomentToCRUD) => Promise<
-  | {
-      message: string;
-    }
-  | undefined
->;
-
-type RevalidateMoments = () => Promise<void>;
-
-// This needs to be an action. // DONE.
-// And this needs a confirm. // DONE.
-// I didn't know at the time that action could be use on pretty much anything. // DONE.
-
-// masking the React 19 bug...
-// OR, this should be on the server after validating fields from Votre moment
-// if (steps.length === 0) {
-//   if (destinationSelect) {
-//     setDestinationTextControlled(destinationOptionControlled);
-//     setDestinationSelect(false);
-//   }
-//   if (activitySelect) {
-//     setActiviteTextControlled(activiteOptionControlled);
-//     setActivitySelect(false);
-//   }
-//   return setCreateOrUpdateMomentState({
-//     stepsMessage:
-//       "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
-//   });
-// }
-
-Test in surfacing server-side and client-side errors.
-The connection to the server (and client!) has been established.
-
-OLDEN COMMENTS
-  // now to see if I can do all this in the action without the useEffect...
-  // it can't work in the action, probably again due to the way they're batched
-  // this means the scrolling information will have to be inferred from createOrUpdateMomentState inside the useEffect, making the useEffect an extension of the action (until actions are hopefully improved)
-  useEffect(() => {
-    // console.log("changed");
-    // This is going to need its own stateful boolean or rather enum once I'll know exactly what I want to do here.
-    if (view === "create-moment" && createOrUpdateMomentState) {
-      // console.log("activated");
-      // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setCreateOrUpdateMomentState.
-      if (createOrUpdateMomentState.momentMessage) {
-        const votreMoment = document.getElementById("votre-moment");
-        return votreMoment?.scrollIntoView({ behavior: "smooth" });
-      }
-      if (createOrUpdateMomentState.stepsMessage) {
-        const sesEtapes = document.getElementById("ses-etapes");
-        return sesEtapes?.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-    // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8 // done but keeping the comment as a reminder to never rely on Tailwind's space- in the long run, it's a kickstarting feature
-  }, [createOrUpdateMomentState]);
-  // Avec ça je vais impressionner Mohamed et renégocier avec lui. Je pense que les client ET server validations sont le différenciateur clair d'un usage indispensable entre l'ancien et le nouveau React.
-
-// no need for RevalidateMomentsState, revalidateMomentsState and setRevalidateMomentsState for now since no error message is planned for this
-// type RevalidateMomentsState = { message: string } | void;
-// const [revalidateMomentsState, setRevalidateMomentsState] =
-//   useState<RevalidateMomentsState>();
-
-NO NEED, deleteMomentAction should only fire if there is deleteMomentBound.
-else
-  return setCreateOrUpdateMomentState({
-    momentMessage: "Erreur.",
-    momentSubMessage:
-      "Il semble que deleteMomentBound est inexistant en interne.",
-  }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
-
-// Is the wrapping necessary if no default argument is to be provided?
-// It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
-
-// and another state for that useEffect
-// ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormState at this time... no, they're not that related so isResetMomentDone it is
-// const [isResetMomentDone, setIsResetMomentDone] = useState(false);
-
-// test
-// return setCreateOrUpdateStepState({ message: "It works though." });
-// It does. But the formData goes away again. :')
-// Works both for create and update separately.
-
-// It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here. // (Actually... No.) :')
-// A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
-// But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below. // DONE.
-// Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
-...
-// If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
-
-// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-// animate={{
-//   opacity: 1,
-//   height: "auto",
-//   transition: { duration: 0.2 },
-// }}
-// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-
-// The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
-// That's what it is: the two gap-y-8 remain stacked during animations.
-...
-// Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
-
-// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-// animate={{
-//   opacity: 1,
-//   height: "auto",
-//   transition: { duration: 0.2 },
-// }}
-// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-*/
+export type LocalClientComponentsName = keyof typeof localClientComponents;

@@ -397,6 +397,14 @@ export function FieldTitle({ title }: { title: string }) {
   return <p className="font-medium text-blue-950">{title}</p>;
 }
 
+export function FallbackFlex({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center text-center">
+      <div className="space-y-4">{children}</div>
+    </div>
+  );
+}
+
 /* Notes
 For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.
 */
@@ -413,6 +421,7 @@ const globalServerComponents = {
   InputSwitchControlled,
   FieldFlex,
   FieldTitle,
+  FallbackFlex,
 } as const;
 
 export type GlobalServerComponentsName = keyof typeof globalServerComponents;
