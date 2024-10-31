@@ -177,6 +177,7 @@ export default function ClientCore({
 // exclusive to the attempted version 3
 export function SetViewButton({ pageView }: { pageView: View }) {
   const desiredView = defineDesiredView(pageView);
+
   const searchParams = useSearchParams();
   const { push } = useRouter();
   const pathname = usePathname();
@@ -755,6 +756,7 @@ export function MomentForms({
   // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
+  // not anymore
   // const searchParams = useSearchParams();
   // const { push } = useRouter();
   // const pathname = usePathname();

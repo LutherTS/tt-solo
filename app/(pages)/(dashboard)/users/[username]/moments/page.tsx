@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
+import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/server";
 import Core from "./server";
@@ -46,7 +46,7 @@ import {
 } from "@/app/flows/server/moments";
 
 export const dynamic = "force-dynamic";
-// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still it says I'm on a static route...
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still sometimes it says static route...
 
 export default async function MomentsPage({
   params,

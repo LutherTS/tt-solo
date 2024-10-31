@@ -22,6 +22,7 @@ export const createOrUpdateMomentAfterFlow = (
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
+  // version 3 attempt bonuses
   searchParams?: ReadonlyURLSearchParams,
   push?: (href: string, options?: NavigateOptions) => void,
   pathname?: string,
@@ -70,6 +71,7 @@ export const deleteMomentAfterFlow = (
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
+  // version 3 attempt bonuses
   searchParams?: ReadonlyURLSearchParams,
   push?: (href: string, options?: NavigateOptions) => void,
   pathname?: string,

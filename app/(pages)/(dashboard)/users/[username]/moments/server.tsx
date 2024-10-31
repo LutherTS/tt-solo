@@ -100,7 +100,6 @@ export function Header({
         <HeaderSegment>
           <GlobalServerComponents.PageTitle title={viewTitles[view]} />
           {/* <GlobalServerComponents.PageTitle title={viewTitles[pageView]} /> */}
-          {/* now it's mostly main that needs to read the view from the URL */}
           <SetViewButton
             // <LocalClientComponents.SetViewButton
             view={view}
