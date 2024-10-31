@@ -98,7 +98,8 @@ export function Header({
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
+          <GlobalServerComponents.PageTitle title={viewTitles[pageView]} />
+          {/* now it's mostly main that needs to read the view from the URL */}
           <LocalClientComponents.SetViewButton
             view={view}
             setView={setView}

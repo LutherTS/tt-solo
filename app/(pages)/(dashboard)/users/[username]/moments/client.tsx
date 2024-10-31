@@ -76,6 +76,7 @@ import {
   removeStepsMessagesAndErrorsCallback,
   rotateStates,
   roundTimeUpTenMinutes,
+  scrollToTopOfDesiredView,
   setScrollToTop,
   toWordsing,
 } from "@/app/utilities/moments";
@@ -162,7 +163,8 @@ export default function ClientCore({
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
-        view={view}
+        // view={view}
+        view={pageView}
         setView={setView}
         // moment={moment}
         // setMoment={setMoment}
@@ -200,7 +202,7 @@ export function SetViewButton({
         // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
         // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.
 
-        setScrollToTop(desiredView, setView, searchParams, push, pathname);
+        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname);
       }}
     >
       {(() => {
@@ -754,6 +756,10 @@ export function MomentForms({
   // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
   // createOrUpdateMomentAction
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
@@ -798,6 +804,9 @@ export function MomentForms({
         setCreateOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
+        searchParams,
+        push,
+        pathname,
       );
 
       setIsCreateOrUpdateMomentDone(false);
@@ -868,6 +877,9 @@ export function MomentForms({
         createOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
+        searchParams,
+        push,
+        pathname,
       );
 
       setIsDeleteMomentDone(false);
@@ -1266,10 +1278,22 @@ export function MomentInDateCard({
   realMoments: MomentToCRUD[];
   setView: SetState<View>;
 }) {
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
   // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
   function setUpdateMomentView() {
-    setMoment(realMoments.find((e0) => e0.id === e3.id));
-    setScrollToTop("update-moment", setView);
+    const moment = realMoments.find((e0) => e0.id === e3.id);
+    setMoment(moment);
+
+    scrollToTopOfDesiredView(
+      "update-moment",
+      searchParams,
+      push,
+      pathname,
+      moment?.id,
+    );
   }
 
   return (

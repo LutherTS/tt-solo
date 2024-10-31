@@ -336,7 +336,8 @@ export function ViewSegment({
     <div id={id} ref={reference}>
       {children}
       {/* spacer instead of padding for correct useMeasure calculations */}
-      <div className="h-12"></div>
+      {/* boosted from h-12 to h-24 */}
+      <div className="h-24"></div>
     </div>
   );
 }

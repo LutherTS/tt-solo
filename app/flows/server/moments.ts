@@ -48,6 +48,7 @@ export const createOrUpdateMomentFlow = async (
   destinationSelect: boolean,
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
+  version?: "v3",
 ): Promise<CreateOrUpdateMomentState> => {
   const currentNow = dateToInputDatetime(new Date());
 
@@ -353,7 +354,16 @@ export const createOrUpdateMomentFlow = async (
 
   const username = user.username;
 
-  revalidatePath(`/users/${username}/moments`);
+  if (version === "v3") {
+    // redirect directly from the flow
+  }
+  // Here's the culprit of the second GET
+  // but that has no effect on the issue
+  // it's been a combo of both
+  // now that I'm using the URL and the page is dynamic I don't need to revalidate. So perhaps now I need to do the redirect from the server and leave the scroll to top to the afterflow
+  // actually now it worked... but without scroll to top
+  // that's why I need to do the redirect from the action and level the scroll to top only to the afterflow
+  else revalidatePath(`/users/${username}/moments`);
 
   return null;
 };
@@ -398,6 +408,7 @@ const createStepsInCreateOrUpdateMomentFlow = async (
 export const deleteMomentFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
+  version?: "v3",
 ): Promise<CreateOrUpdateMomentState> => {
   if (!momentFromCRUD)
     return {
@@ -430,7 +441,8 @@ export const deleteMomentFlow = async (
 
   const username = user.username;
 
-  revalidatePath(`/users/${username}/moments`);
+  if (version === "v3") {
+  } else revalidatePath(`/users/${username}/moments`);
 
   return null;
 };

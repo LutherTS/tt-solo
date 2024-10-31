@@ -120,29 +120,39 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   searchParams?: ReadonlyURLSearchParams,
   push?: (href: string, options?: NavigateOptions) => void,
   pathname?: string,
+  momentId?: string,
 ) => {
   // setDesiredView will need to be replace by something replacing the URL.
   // But since the arguments are going to different it's also going to be different function altogether.
   setDesiredView(desiredView);
-
-  let newSearchParams: URLSearchParams;
-  newSearchParams = new URLSearchParams(searchParams);
-  // this needs type safety, the replacing function will not be so broad
-  if (desiredView !== "update-moment") newSearchParams.delete("momentId");
-  newSearchParams.set("view", desiredView as string);
-
-  console.log({ newSearchParams, push, pathname });
-  console.log(newSearchParams.toString());
-
-  if (push && pathname) push(pathname + "?" + newSearchParams.toString());
-
   scrollTo({ top: 0 });
 
   // Since subView is going to be below motion.div and will have no other choice than to be the child of a Client Component, I don't see a point in having it in the URL just yet. But so far, on the client SetViewButton, I'm reading the view from the URL.
 };
 
 // incoming to navigate from the URL
-export const scrollToTopOfDesiredView = () => {};
+// ...
+// if you're going to do it from the URL, all redirects needs to be from the URL in order to be awaited and to have the scrollToTop synchronized.
+export const scrollToTopOfDesiredView = (
+  desiredView: View,
+  searchParams: ReadonlyURLSearchParams,
+  push: (href: string, options?: NavigateOptions) => void,
+  pathname: string,
+  momentId?: string,
+) => {
+  const newSearchParams = new URLSearchParams(searchParams);
+
+  if (desiredView !== "update-moment") newSearchParams.delete("momentId");
+  // under my control but not entirely sure this is perfectly safe
+  else if (momentId) newSearchParams.set("momentId", momentId);
+
+  // "momentId" and "view" will need to be variables
+  newSearchParams.set("view", desiredView);
+
+  push(pathname + "?" + newSearchParams.toString());
+
+  scrollTo({ top: 0 });
+};
 
 // scrolls back to the desired section (usually yourMoment or itsSteps in the Moment forms)
 export const scrollToSection = (sectionId: string) => {
@@ -150,7 +160,7 @@ export const scrollToSection = (sectionId: string) => {
   section?.scrollIntoView({ behavior: "smooth" });
 };
 
-// makes an array of all the adding times of a step up to that step (step 0 has the coumpound duration of step 0, step 1 has the compound duration of steps 0 and 1, etc.)
+// makes an array of all the adding times of a step up to that step (step 0 has the compound duration of step 0, step 1 has the compound duration of steps 0 and 1, etc.)
 export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
   const stepsCompoundDurationsArray: number[] = [];
   let compoundDuration = 0;
