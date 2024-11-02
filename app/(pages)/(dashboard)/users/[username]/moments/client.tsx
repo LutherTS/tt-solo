@@ -6,6 +6,7 @@ import {
   MouseEvent,
   Ref,
   TransitionStartFunction,
+  // useCallback,
   useEffect,
   useState,
   useTransition,
@@ -32,6 +33,7 @@ import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
+// import { useTimer } from "react-use-precision-timer";
 
 import * as Icons from "@/app/icons";
 import * as LocalServerComponents from "./server";
@@ -124,7 +126,7 @@ export default function ClientCore({
 
   /* Functioning timer logic, with useTimer
   // The callback function to fire every step of the timer.
-  const callback = useCallback(
+  // const callback = useCallback(
     (overdueCallCount: number) => console.log("Boom", overdueCallCount),
     // https://justinmahar.github.io/react-use-precision-timer/iframe.html?viewMode=docs&id=docs-usetimer--docs&args=#low-delays-expensive-callbacks-and-overdue-calls
     [],
