@@ -1479,6 +1479,7 @@ export function ReorderItem({
               stepsCompoundDurations={stepsCompoundDurations}
             />
             <div>
+              {/* Mobile */}
               <LocalServerComponents.StepFormControlsMobileWrapper>
                 <LocalServerComponents.UpdateStepButton
                   form={form}
@@ -1492,6 +1493,7 @@ export function ReorderItem({
                   allButtonsDisabled={allButtonsDisabled}
                 />
               </LocalServerComponents.StepFormControlsMobileWrapper>
+              {/* Desktop */}
               <LocalServerComponents.StepFormControlsDesktopWrapper>
                 <LocalServerComponents.EraseStepButton
                   form={form}

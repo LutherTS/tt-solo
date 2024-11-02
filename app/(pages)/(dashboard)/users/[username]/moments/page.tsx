@@ -106,6 +106,7 @@ export default async function MomentsPage({
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
+  // console.log({ contains });
 
   const [
     userMomentsTotal,

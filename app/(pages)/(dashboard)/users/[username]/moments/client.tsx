@@ -778,7 +778,7 @@ export function MomentForms({
     event: FormEvent<HTMLFormElement>,
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
-      // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
+      // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
       const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
@@ -800,7 +800,7 @@ export function MomentForms({
 
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
-      // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
+      // an "after flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
       createOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
@@ -1556,7 +1556,7 @@ export function ReorderItem({
       dragListener={false}
       dragControls={controls}
       transition={{ layout: { duration: 0 } }}
-      // layout="position" // or ""preserve-aspect""
+      // layout="position" // or "preserve-aspect"
       dragTransition={{
         bounceStiffness: 900,
         bounceDamping: 50,

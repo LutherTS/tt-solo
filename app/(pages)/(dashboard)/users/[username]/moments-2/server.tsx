@@ -583,6 +583,7 @@ export function StepVisibleCreating({
         stepsCompoundDurations={stepsCompoundDurations}
       />
       <div className="flex">
+        {/* Mobile */}
         <StepFormControlsMobileWrapper>
           <GlobalClientComponents.Button
             variant="confirm-step"
@@ -601,6 +602,7 @@ export function StepVisibleCreating({
             Réinitialiser l&apos;étape
           </GlobalClientComponents.Button>
         </StepFormControlsMobileWrapper>
+        {/* Desktop */}
         <StepFormControlsDesktopWrapper>
           <GlobalClientComponents.Button
             variant="cancel-step"

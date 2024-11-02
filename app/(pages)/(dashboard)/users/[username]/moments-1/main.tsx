@@ -1756,6 +1756,7 @@ function ReorderItem({
               stepsCompoundDurations={stepsCompoundDurations}
             />
             <div>
+              {/* Mobile */}
               <StepFormControlsMobileWrapper>
                 <UpdateStepButton
                   form={form}
@@ -1767,6 +1768,7 @@ function ReorderItem({
                   isDeleteStepPending={isDeleteStepPending}
                 />
               </StepFormControlsMobileWrapper>
+              {/* Desktop */}
               <StepFormControlsDesktopWrapper>
                 <EraseStepButton
                   form={form}
@@ -1899,6 +1901,7 @@ function StepVisibleCreating({
         stepsCompoundDurations={stepsCompoundDurations}
       />
       <div className="flex">
+        {/* Mobile */}
         <StepFormControlsMobileWrapper>
           <Button
             variant="confirm-step"
@@ -1917,6 +1920,7 @@ function StepVisibleCreating({
             Réinitialiser l&apos;étape
           </Button>
         </StepFormControlsMobileWrapper>
+        {/* Desktop */}
         <StepFormControlsDesktopWrapper>
           <Button
             variant="cancel-step"
