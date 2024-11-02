@@ -6,6 +6,7 @@ import {
   MouseEvent,
   Ref,
   TransitionStartFunction,
+  // useCallback,
   useEffect,
   useState,
   useTransition,
@@ -32,6 +33,7 @@ import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
+// import { useTimer } from "react-use-precision-timer";
 
 import * as Icons from "@/app/icons";
 import * as LocalServerComponents from "./server";
@@ -124,7 +126,7 @@ export default function ClientCore({
 
   /* Functioning timer logic, with useTimer
   // The callback function to fire every step of the timer.
-  const callback = useCallback(
+  // const callback = useCallback(
     (overdueCallCount: number) => console.log("Boom", overdueCallCount),
     // https://justinmahar.github.io/react-use-precision-timer/iframe.html?viewMode=docs&id=docs-usetimer--docs&args=#low-delays-expensive-callbacks-and-overdue-calls
     [],
@@ -776,7 +778,7 @@ export function MomentForms({
     event: FormEvent<HTMLFormElement>,
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
-      // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
+      // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
       const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
@@ -798,7 +800,7 @@ export function MomentForms({
 
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
-      // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
+      // an "after flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
       createOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
@@ -1554,7 +1556,7 @@ export function ReorderItem({
       dragListener={false}
       dragControls={controls}
       transition={{ layout: { duration: 0 } }}
-      // layout="position" // or ""preserve-aspect""
+      // layout="position" // or "preserve-aspect"
       dragTransition={{
         bounceStiffness: 900,
         bounceDamping: 50,

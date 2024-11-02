@@ -8,7 +8,6 @@ import {
   FormEvent,
   TransitionStartFunction,
   Ref,
-  // useCallback,
 } from "react";
 import {
   ReadonlyURLSearchParams,
@@ -16,7 +15,6 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-// import Form from "next/form"; // I'm good. But let's defy TypeScript on this.
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -33,7 +31,6 @@ import debounce from "debounce";
 import { useMeasure } from "react-use";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
-// import { useTimer } from "react-use-precision-timer";
 
 import { Option, SetState } from "@/app/types/globals";
 import {
@@ -134,13 +131,10 @@ S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une fu
 // Main Component
 
 export default function Main({
-  // time
   now,
-  // reads
   allUserMomentsToCRUD,
   maxPages,
   destinationOptions,
-  // writes
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
@@ -154,20 +148,6 @@ export default function Main({
   deleteMoment: DeleteMoment;
 }) {
   console.log({ now });
-
-  /* Functioning timer logic, with useTimer
-  // The callback function to fire every step of the timer.
-  const callback = useCallback(
-    (overdueCallCount: number) => console.log("Boom", overdueCallCount),
-    // https://justinmahar.github.io/react-use-precision-timer/iframe.html?viewMode=docs&id=docs-usetimer--docs&args=#low-delays-expensive-callbacks-and-overdue-calls
-    [],
-  );
-  // The callback will be called every 1000 milliseconds.
-  const timer = useTimer({ delay: 1000, startImmediately: true }, callback);
-  // The callback is where the whole moment logic will operate, with a mix of
-  // states, calls to update the database every minute, etc. The orchestration
-  // here on its own is going to be worth an entire file.
-  */
 
   // let [view, setView] = useState<View>("read-moments");
   // starting directly with the create form for now
@@ -191,23 +171,22 @@ export default function Main({
 
   const [subView, setSubView] = useState<SubView>(initialSubView);
 
-  // at an upper level for UpdateMomentView
-  const [moment, setMoment] = useState<MomentToCRUD | undefined>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+  const [moment, setMoment] = useState<MomentToCRUD | undefined>();
 
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
 
-  let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
+  let currentViewHeight = useMotionValue(0);
 
   return (
     <main>
       <div
         className={clsx(
-          "flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]", // same as ViewWrapper
+          "flex w-screen shrink-0 flex-col items-center md:w-[calc(100vw_-_9rem)]",
         )}
       >
         <div
           className={clsx(
-            "container px-8 lg:max-w-4xl", // same as ViewContainer
+            "container px-8 lg:max-w-4xl",
             "flex justify-between py-8 align-baseline",
           )}
         >
@@ -216,11 +195,9 @@ export default function Main({
         </div>
       </div>
       <Divider />
-      {/* incredible, the overflow-hidden just doesn't work without relative */}
       <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
         <motion.div
           className="flex"
-          // an error will return -1, if ever the screen shows empty
           animate={{
             x: `-${views.indexOf(view) * 100}%`,
           }}
@@ -243,7 +220,7 @@ export default function Main({
             >
               {/* UpdateMomentView */}
               <MomentForms
-                key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+                key={view}
                 variant="updating"
                 moment={moment}
                 destinationOptions={destinationOptions}
@@ -318,10 +295,9 @@ function ViewContainer({
   children: React.ReactNode;
 }) {
   const [ref, { height }] = useMeasure();
-  // making TypeScript happy
   const reference = ref as Ref<HTMLDivElement>;
 
-  if (id === currentView) currentViewHeight.set(height + 12 * 4); // 12 * 4 because height from useMeasure does not count self padding ("pb-12" below)
+  if (id === currentView) currentViewHeight.set(height + 24 * 4); // 24 * 4 because height from useMeasure does not count self padding ("pb-24" below)
 
   return (
     <div
@@ -329,7 +305,7 @@ function ViewContainer({
       ref={reference}
       className={clsx(
         "container px-8 lg:max-w-4xl",
-        "pb-12", // ignored by useMeasure
+        "pb-24", // ignored by useMeasure
       )}
     >
       {children}
@@ -339,7 +315,6 @@ function ViewContainer({
 
 // Main Leading Components
 
-// some style work there left to be done at a later occasion
 function ReadMomentsView({
   allUserMomentsToCRUD,
   maxPages,
@@ -388,7 +363,6 @@ function ReadMomentsView({
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  // because of debounce I'm exceptionally not turning this handler into an action
   function handleSearch(term: string) {
     const params = new URLSearchParams(searchParams);
 
@@ -401,7 +375,7 @@ function ReadMomentsView({
     params.delete(FUTUREUSERMOMENTSPAGE);
 
     replace(`${pathname}?${params.toString()}`);
-  } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
+  }
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
@@ -432,7 +406,6 @@ function ReadMomentsView({
     subViewMaxPages[subView],
   );
 
-  // for now search and pagination will remain handlers
   function handlePagination(direction: "left" | "right", subView: SubView) {
     const params = new URLSearchParams(searchParams);
     if (direction === "left")
@@ -460,9 +433,9 @@ function ReadMomentsView({
       event.preventDefault();
 
       if (event.altKey) {
-        rotateSubView("left"); // does not update the time because it speaks exclusively to the client
+        rotateSubView("left");
       } else {
-        if (currentPage !== 1) handlePagination("left", subView); // updates the time because it speaks to the server (and the database)
+        if (currentPage !== 1) handlePagination("left", subView);
       }
     }
   });
@@ -472,10 +445,10 @@ function ReadMomentsView({
       event.preventDefault();
 
       if (event.altKey) {
-        rotateSubView("right"); // does not update the time because it speaks exclusively to the client
+        rotateSubView("right");
       } else {
         if (currentPage !== subViewMaxPages[subView])
-          handlePagination("right", subView); // updates the time because it speaks to the server (and the database)
+          handlePagination("right", subView);
       }
     }
   });
@@ -484,7 +457,6 @@ function ReadMomentsView({
 
   const { scrollY } = useScroll();
 
-  // again, debounce-bound so not turned into an action
   const settingScrollPosition = (latest: number) => setScrollPosition(latest);
 
   const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
@@ -531,7 +503,6 @@ function ReadMomentsView({
           />
         ))}
         <RevalidateMomentsButton
-          // I insist on specifying and sending all of my actions' booleans because they can be used for stylistic purposes with isDedicatedDisabled
           revalidateMomentsAction={revalidateMomentsAction}
           isRevalidateMomentsPending={isRevalidateMomentsPending}
         />
@@ -617,7 +588,6 @@ function MomentForms({
 
   const isVariantUpdatingMoment = variant === "updating" && moment;
 
-  // datetime-local input is now controlled for dynamic moment and steps times
   let [startMomentDate, setStartMomentDate] = useState(
     isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
@@ -644,14 +614,12 @@ function MomentForms({
     !isVariantUpdatingMoment ? "creating" : "create",
   );
 
-  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
   let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_ORIGINAL);
   let [stepDureeUpdate, setStepDureeUpdate] = useState(
     currentStep ? currentStep.duree : STEP_DURATION_ORIGINAL,
   );
 
   let momentAddingTime = steps.reduce((acc, curr) => {
-    // it is understood that curr.id === currentStepId can only happen when stepVisible === "updating"
     if (curr.id === currentStepId && stepVisible === "updating")
       return acc + +stepDureeUpdate;
     else return acc + +curr.duree;
@@ -687,7 +655,7 @@ function MomentForms({
     event: FormEvent<HTMLFormElement>,
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
-      // an "action-flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
+      // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
       const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
@@ -709,7 +677,7 @@ function MomentForms({
 
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
-      // an "after-flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
+      // an "after flow" is the set of subsequent client impacts that follow the end of the preceding "action flow" based on its side effects
       createOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
@@ -732,10 +700,7 @@ function MomentForms({
     startResetMomentTransition(() => {
       const noConfirm =
         // @ts-ignore might not work on mobile but it's a bonus
-        event.nativeEvent.explicitOriginalTarget?.type !== "reset"; // could be improved later in case an even upper reset buton triggers this reset action
-
-      // retroactive high level JavaScript, but honestly this should be done on any action that uses a confirm, assuming that action can be triggered externally and automatically
-      // This allows that wherever I reset the form but triggering its HTML reset, it gets fully reset including controlled fields and default states, and even resets its cascading "children forms" since this resetMoment actually triggers the reset of stepFromCreating.
+        event.nativeEvent.explicitOriginalTarget?.type !== "reset";
       if (
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
@@ -791,11 +756,6 @@ function MomentForms({
       setIsDeleteMomentDone(false);
     }
   }, [isDeleteMomentDone]);
-
-  // step actions
-  // to access step actions' isPending states from their parent component (MomentForms)
-  // IMPORTANT deleteStepAction should be included // Done.
-  // (so the rest of this week to completely complete the form and then I work on the keynote for my talk at React Paris Meetup November 2024)
 
   // addStepAction
 
@@ -864,8 +824,6 @@ function MomentForms({
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
-      {/* <Form */}
-      {/* action={createOrUpdateMomentAction} // It still works despite the TypeScript error, but I don't know where it will break and I don't need it right now. Again, regular HTML/CSS/JS and regular React should always be prioritized if they do the work and don't significantly hinder the developer experience. */}
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentAction}
@@ -916,7 +874,6 @@ function MomentForms({
                 as="ol"
               >
                 {steps.map((step, index) => {
-                  // this needs to stay up there because it depends from an information obtained in MomentForms (even though I am now passing it down as a property)
                   let stepAddingTime =
                     index === 0 ? 0 : stepsCompoundDurations[index - 1];
 
@@ -1054,7 +1011,6 @@ function SetViewButton({
   setView: SetState<View>;
   setMoment: SetState<MomentToCRUD | undefined>;
 }) {
-  // though the function below could be a utility, it is very specific to this component at this time
   function defineDesiredView(view: View) {
     switch (view) {
       case "update-moment":
@@ -1075,14 +1031,12 @@ function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
-        // SetViewButton is the only one that sets moment to undefined
         if (view === "update-moment") setMoment(undefined);
         setScrollToTop(desiredView, setView);
       }}
     >
       {(() => {
         switch (desiredView) {
-          // no case "update-moment", since moment-specific
           case "read-moments":
             return <>Vos moments</>;
           case "create-moment":
@@ -1106,7 +1060,6 @@ function SetSubViewButton({
   e: SubView;
   subView: SubView;
 }) {
-  // this needs to be inside the component because its entirely specific to the component
   const className = "px-4 py-2 h-9 flex items-center justify-center";
 
   return (
@@ -1292,7 +1245,6 @@ function MomentInDateCard({
   realMoments: MomentToCRUD[];
   setView: SetState<View>;
 }) {
-  // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
   function setUpdateMomentView() {
     setMoment(realMoments.find((e0) => e0.id === e3.id));
     setScrollToTop("update-moment", setView);
@@ -1452,15 +1404,12 @@ function StepForm({
 
   const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
     startResetStepTransition(() => {
-      // do not confirm if reset is not triggered by stepFormCreating
       const noConfirm =
         // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
         event.nativeEvent.explicitOriginalTarget?.form?.id !==
-        // triggers confirm only if original intent is from stepFormCreating
         MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
       if (
-        // Attention please: this right here HARD LEVEL JAVASCRIPT.
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
@@ -1722,7 +1671,6 @@ function ReorderItem({
 
   const [isRestoreStepPending, startRestoreStepTransition] = useTransition();
 
-  // the jumping is simply due to a current lack of animations
   const restoreStepAction = () => {
     startRestoreStepTransition(() => {
       setStepVisible("create");
@@ -1735,7 +1683,6 @@ function ReorderItem({
 
   const [isModifyStepPending, startModifyStepTransition] = useTransition();
 
-  // just like restoreStepAction, there's no need to import this action from an external file (at least at this time) since it is very specific to ReorderItem
   const modifyStepAction = () => {
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);
@@ -1751,17 +1698,15 @@ function ReorderItem({
       dragListener={false}
       dragControls={controls}
       transition={{ layout: { duration: 0 } }}
-      // layout="position" // or ""preserve-aspect""
       dragTransition={{
         bounceStiffness: 900,
         bounceDamping: 50,
       }}
-      // whileDrag={{ opacity: 0.5 }} // buggy though
     >
       <div
         className={clsx(
           "flex flex-col gap-y-8",
-          index !== steps.length - 1 && "pb-8", // I remember I did that specifically for animations
+          index !== steps.length - 1 && "pb-8",
         )}
       >
         <div className="flex select-none items-baseline justify-between">
@@ -2149,7 +2094,7 @@ function StepInputs({
       >
         <p className="text-sm font-medium text-blue-900">
           commence à{" "}
-          {step // && stepAddingTime (can equal 0 which is falsy)
+          {step
             ? format(
                 add(startMomentDate, {
                   minutes: stepAddingTime,
@@ -2267,266 +2212,3 @@ function StepContents({
     </div>
   );
 }
-
-/* Notes
-No longer in use since submitting on Enter is not prevented all around:
-// forcing with "!" because AFAIK there will always be a form.
-// event.currentTarget.form!.requestSubmit();
-Required supercedes display none. After all required is HTML, while display-none is CSS.
-*/
-
-/* Obsolete endeavors
-
-// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
-let createOrUpdateMomentInitialState: {
-  errors?: {
-    zod1?: string;
-    zod2?: string;
-    zod3?: string;
-  };
-  message: string;
-} | null = null;
-
-let [
-  createOrUpdateMomentState,
-  createOrUpdateMomentAction,
-  createOrUpdateMomentIsPending,
-] = useActionState(
-  createOrUpdateMomentBound,
-  createOrUpdateMomentInitialState,
-); // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
-
-// !!! THE PROBLEM HERE IS THAT SINCE THE SERVER ACTION IS NESTED IN THE MOMENTS PAGE, THERE IS NO TYPE SAFETY TO GUIDE ME THROUGH HERE.
-let deleteMomentInitialState: {
-  message: string;
-} | null = null;
-
-let [deleteMomentState, deleteMomentAction, deleteMomentIsPending] =
-  useActionState(deleteMomentBound, deleteMomentInitialState); // USEACTIONSTATE IS NO LONGER ON MY LEVEL.
-
-// action={async (formData) => {
-//   await createOrUpdateMomentBound(formData);
-
-//   if (variant === "creating") {
-//     setIndispensable(false);
-//     setMomentDate(format(nowRoundedUpTenMinutes, "yyyy-MM-dd'T'HH:mm"));
-//     setSteps([]);
-//     setStepVisible("creating");
-//   }
-
-//   setView("read-moments");
-//   // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-// }}
-
-// onClick={async () => {
-//   if (!moment)
-//     return console.error("Somehow a moment was not found.");
-
-//   if (
-//     confirm(
-//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
-//     )
-//   ) {
-//     if (deleteMomentBound) await deleteMomentBound();
-//     else
-//       return console.error(
-//         "Somehow deleteMomentBound was not a thing.",
-//       );
-
-//     setView("read-moments");
-//   }
-// }}
-
-// onClick={async () => {
-//   if (!moment)
-//     return console.error("Somehow a moment was not found.");
-
-//   if (
-//     confirm(
-//       "Êtes-vous sûr que vous voulez effacer ce moment ?",
-//     )
-//   ) {
-//     if (deleteMomentBound) await deleteMomentBound();
-//     else
-//       return console.error(
-//         "Somehow deleteMomentBound was not a thing.",
-//       );
-
-//     setView("read-moments");
-//   }
-// }}
- 
-onClick before useTransition
-// // this, is looking like an action to make on Friday
-// onClick={async (event) => {
-//   const button = event.currentTarget;
-//   button.disabled = true;
-//   await revalidateMoments();
-//   replace(`${pathname}`);
-//   button.form!.reset(); // EXACTLY.
-//   button.disabled = false;
-// }}
-
-// // I'm sure there's a way to optimize this with an array or an object for scale.
-// const rotatingSubView = () => {
-//   switch (subView) {
-//     case "all-moments":
-//       setSubView("past-moments");
-//       break;
-//     case "past-moments":
-//       setSubView("current-moments");
-//       break;
-//     case "current-moments":
-//       setSubView("future-moments");
-//       break;
-//     case "future-moments":
-//       setSubView("all-moments");
-//       break;
-//     default:
-//       break;
-//   }
-// };
-
-// const reverseRotatingSubView = () => {
-//   switch (subView) {
-//     case "all-moments":
-//       setSubView("future-moments");
-//       break;
-//     case "future-moments":
-//       setSubView("current-moments");
-//       break;
-//     case "current-moments":
-//       setSubView("past-moments");
-//       break;
-//     case "past-moments":
-//       setSubView("all-moments");
-//       break;
-//     default:
-//       break;
-//   }
-// };
-
-// This below is the wrong approach. I think... I should accept having to manually change the type of my action's typing so that as the action changes, I'm constantly reminded that everything should fall together.
-type TrueCreateOrUpdateMoment<T extends unknown[]> = (
-  ...args: T[]
-) => Promise<CreateOrUpdateMomentState>;
-
-// In case – which is likely – the components using the server actions are in other files, these types should be in their respective type file
-type CreateOrUpdateMoment = (
-  variant: "creating" | "updating",
-  indispensable: boolean,
-  momentDate: string,
-  steps: StepFromCRUD[],
-  momentFromCRUD: MomentToCRUD | undefined,
-  formData: FormData,
-) => Promise<CreateOrUpdateMomentState>;
-
-type DeleteMoment = (momentFromCRUD?: MomentToCRUD) => Promise<
-  | {
-      message: string;
-    }
-  | undefined
->;
-
-type RevalidateMoments = () => Promise<void>;
-
-// This needs to be an action. // DONE.
-// And this needs a confirm. // DONE.
-// I didn't know at the time that action could be use on pretty much anything. // DONE.
-
-// masking the React 19 bug...
-// OR, this should be on the server after validating fields from Votre moment
-// if (steps.length === 0) {
-//   if (destinationSelect) {
-//     setDestinationTextControlled(destinationOptionControlled);
-//     setDestinationSelect(false);
-//   }
-//   if (activitySelect) {
-//     setActiviteTextControlled(activiteOptionControlled);
-//     setActivitySelect(false);
-//   }
-//   return setCreateOrUpdateMomentState({
-//     stepsMessage:
-//       "Vous ne pouvez pas créer de moment sans la moindre étape. Veuillez créer au minimum une étape.",
-//   });
-// }
-
-Test in surfacing server-side and client-side errors.
-The connection to the server (and client!) has been established.
-
-OLDEN COMMENTS
-  // now to see if I can do all this in the action without the useEffect...
-  // it can't work in the action, probably again due to the way they're batched
-  // this means the scrolling information will have to be inferred from createOrUpdateMomentState inside the useEffect, making the useEffect an extension of the action (until actions are hopefully improved)
-  useEffect(() => {
-    // console.log("changed");
-    // This is going to need its own stateful boolean or rather enum once I'll know exactly what I want to do here.
-    if (view === "create-moment" && createOrUpdateMomentState) {
-      // console.log("activated");
-      // To be fair, createOrUpdateMomentState is enough of a trigger. If it's null, I let the useEffect from reset do the thing. If it's not, then that means createOrUpdate has return a setCreateOrUpdateMomentState.
-      if (createOrUpdateMomentState.momentMessage) {
-        const votreMoment = document.getElementById("votre-moment");
-        return votreMoment?.scrollIntoView({ behavior: "smooth" });
-      }
-      if (createOrUpdateMomentState.stepsMessage) {
-        const sesEtapes = document.getElementById("ses-etapes");
-        return sesEtapes?.scrollIntoView({ behavior: "smooth" });
-      }
-    }
-    // now I just need this to incorporate its own padding instead of having it be from the form's space-y-8 // done but keeping the comment as a reminder to never rely on Tailwind's space- in the long run, it's a kickstarting feature
-  }, [createOrUpdateMomentState]);
-  // Avec ça je vais impressionner Mohamed et renégocier avec lui. Je pense que les client ET server validations sont le différenciateur clair d'un usage indispensable entre l'ancien et le nouveau React.
-
-// no need for RevalidateMomentsState, revalidateMomentsState and setRevalidateMomentsState for now since no error message is planned for this
-// type RevalidateMomentsState = { message: string } | void;
-// const [revalidateMomentsState, setRevalidateMomentsState] =
-//   useState<RevalidateMomentsState>();
-
-NO NEED, deleteMomentAction should only fire if there is deleteMomentBound.
-else
-  return setCreateOrUpdateMomentState({
-    momentMessage: "Erreur.",
-    momentSubMessage:
-      "Il semble que deleteMomentBound est inexistant en interne.",
-  }); // this one is very specific to the client since deleteMomentBound is optional, passed as a prop only on the updating variant of MomentForms
-
-// Is the wrapping necessary if no default argument is to be provided?
-// It's actually necessary because that's where the event is located. The prop receiving this requires at least an undefined, but not a void.
-
-// and another state for that useEffect
-// ...or you could argue, that this is the state for resetMomentFormAction, so I'm renaming it from resetMomentFormActionDone to resetMomentFormState at this time... no, they're not that related so isResetMomentDone it is
-// const [isResetMomentDone, setIsResetMomentDone] = useState(false);
-
-// test
-// return setCreateOrUpdateStepState({ message: "It works though." });
-// It does. But the formData goes away again. :')
-// Works both for create and update separately.
-
-// It's the sole circumstance where I'm OK with this using the formData since I don't do server-side validations here. // (Actually... No.) :')
-// A next thought could be on thinking about how client-side errors could be surfaced since the form is on its own. Simple. Instantiate the state and the setState in the parent component that needs it, and pass them here as prop (just the setState maybe) to StepForm to be used in returns from createStepAction. // DONE.
-// But then that means I'm also going to have to do away with the formData when that happens, and use controlled inputs so that they don't get reset when there's an error. Which also means a parent component where the "true nested form" lives will have to follow these states and pass them to StepForm to be somehow bound to a createStep above... But since it's all in the client, bind won't be needed and the states will be directly accessible from the action below. // DONE.
-// Bonus: If isCreateStepPending is needed, that too will need to be instantiated in the parent component where the "true nested form" lives, with startCreateStepTransition passed as props here to create the action below. // DONE.
-...
-// If we're honest I need to learn more about animations before moving on, but I've already been able to apply a whole lot. Only one conditional can be wrapped by AnimatePresence, so when things get complicated go for the self-firing switch case. Also don't forget about "auto" to animate height to 100%. And so far gaps are the ban of sibling animations.
-
-// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-// animate={{
-//   opacity: 1,
-//   height: "auto",
-//   transition: { duration: 0.2 },
-// }}
-// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-
-// The jump is due to space-y, actually the gap-y-8 from Section. I'll need to fix it. (Like I actually already did with ReorderItem.)
-// That's what it is: the two gap-y-8 remain stacked during animations.
-...
-// Something else when it comes to animations that is very important. Preferring dropdowns. From just my experience, dynamic spaces that reach the edge of the page behave differently on my computer than on my mobile. So when it comes to adding a step, if I'd want the navigation to not move I'd need the step form to toggle from a button, not to replace the button.
-
-// initial={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-// animate={{
-//   opacity: 1,
-//   height: "auto",
-//   transition: { duration: 0.2 },
-// }}
-// exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-*/

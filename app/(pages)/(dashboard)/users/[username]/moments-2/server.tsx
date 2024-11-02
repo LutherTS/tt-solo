@@ -1,5 +1,3 @@
-// "use server" at the top implies for React 19 that the file is made of Server Actions, NOT Server Components. It's only for "use client" that it means the file is made exclusively of strictly Client Components.
-
 import { MotionValue } from "framer-motion";
 import { add, format } from "date-fns";
 import clsx from "clsx";
@@ -36,13 +34,10 @@ import {
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
 export default function ServerCore({
-  // time
   now,
-  // reads
   allUserMomentsToCRUD,
   maxPages,
   destinationOptions,
-  // writes
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
@@ -55,19 +50,12 @@ export default function ServerCore({
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
 }) {
-  // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
-  // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
-  // So I really can't go any further. I can just inform them that this is what I could do from then on in order to allow my Header below to be rendered on the server.
-
   return (
     <LocalClientComponents.default
-      // time (aligned across server and client for hydration cases)
       now={now}
-      // reads
       allUserMomentsToCRUD={allUserMomentsToCRUD}
       maxPages={maxPages}
       destinationOptions={destinationOptions}
-      // writes
       revalidateMoments={revalidateMoments}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
@@ -78,7 +66,7 @@ export default function ServerCore({
 export function Header({
   view,
   setView,
-  setMoment, // and now Header no longer needs setMoment
+  setMoment,
 }: {
   view: View;
   setView: SetState<View>;
@@ -99,7 +87,7 @@ export function Header({
 export function SetViewButton({
   view,
   setView,
-  setMoment, // SetViewButton no longer needs setMoment
+  setMoment,
 }: {
   view: View;
   setView: SetState<View>;
@@ -112,18 +100,12 @@ export function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
-        // SetViewButton is the only one that sets moment to undefined. NO.
         if (view === "update-moment") setMoment(undefined);
-        // IMPORTANT
-        // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
-        // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.
-
         setScrollToTop(desiredView, setView);
       }}
     >
       {(() => {
         switch (desiredView) {
-          // no case "update-moment", since moment-specific
           case "read-moments":
             return <>Vos moments</>;
           case "create-moment":
@@ -218,7 +200,6 @@ export function ViewsCarouselWrapper({
   children: React.ReactNode;
 }) {
   return (
-    // the overflow-hidden just doesn't work without relative
     <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
       {children}
     </div>
@@ -576,15 +557,11 @@ export function StepVisibleCreating({
   const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
   return (
-    // was a form, but forms can't be nested
-
-    // I really could go the extra mile with the disabled props here but since these are entirely synchronous client actions it's objectively an overkill... for now.
     <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Ajouter une étape
         </p>{" "}
-        {/* I also could go the extra mile of componentizing the buttons as Client Components, but they're fine as children even if StepVisibleCreating is a Server Component... for now: I just don't know about importing raw buttons in a Server Component me personally. */}
         <GlobalClientComponents.Button
           form={form}
           variant="destroy-step"
@@ -659,7 +636,6 @@ export function StepVisibleCreate({
   allButtonsDisabled: boolean;
 }) {
   return (
-    // This is complicated. This is a Server Component. Even though honestly the div could habe been removed and this would have been just Client Component. Yes. I can replace the div by a Fragment and keep it a Server Component. But I want to keep the div so that StepVisibleCreate is semantically aligned with StepVisibleCreating, and also because it is possible in the future that I add more content here, such as descriptions or anything, which can simply be server-side rendered.
     <div>
       <GlobalClientComponents.Button
         type="button"
@@ -813,7 +789,7 @@ export function StepInputs({
       >
         <p className="text-sm font-medium text-blue-900">
           commence à{" "}
-          {step // && stepAddingTime (can equal 0 which is falsy)
+          {step
             ? format(
                 add(startMomentDate, {
                   minutes: stepAddingTime,
@@ -885,9 +861,6 @@ export function EraseStepButton({
   allButtonsDisabled: boolean;
 }) {
   return (
-    // And poof, with a Fragment you're no longer a Client Component.
-    // So everywhere I see a custom button, since button itself already is a Client Component, their wrappers do not need to be one too.
-    // <>
     <GlobalClientComponents.Button
       form={form}
       type="button"
@@ -897,8 +870,6 @@ export function EraseStepButton({
     >
       Effacer l&apos;étape
     </GlobalClientComponents.Button>
-    // </>
-    // (No need for the Fragment, React understands on its own that the configuration of Button brought by EraseStepButton is a server shell.)
   );
 }
 
