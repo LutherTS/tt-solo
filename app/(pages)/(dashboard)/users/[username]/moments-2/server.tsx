@@ -258,7 +258,7 @@ export function DestinationInDateCard({
       </div>
       {e2.moments.map((e3, i3) => (
         <LocalClientComponents.MomentInDateCard
-          key={e3.id}
+          key={e3.id + e2.id}
           e3={e3}
           i3={i3}
           setMoment={setMoment}

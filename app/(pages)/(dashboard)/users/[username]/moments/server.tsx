@@ -46,8 +46,8 @@ export default function ServerCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  // pageView,
-  // pageMomentId,
+  pageView,
+  pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -56,8 +56,8 @@ export default function ServerCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  // pageView: View;
-  // pageMomentId: string | undefined;
+  pageView: View;
+  pageMomentId: string | undefined;
 }) {
   // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
   // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
@@ -75,8 +75,8 @@ export default function ServerCore({
       revalidateMoments={revalidateMoments}
       createOrUpdateMoment={createOrUpdateMoment}
       deleteMoment={deleteMoment}
-      // pageView={pageView}
-      // pageMomentId={pageMomentId}
+      pageView={pageView}
+      pageMomentId={pageMomentId}
     />
   );
 }
@@ -85,27 +85,27 @@ export function Header({
   view,
   setView,
   setMoment, // and now Header no longer needs setMoment // not anymore
-  // pageView,
-  // pageMomentId,
+  pageView,
+  pageMomentId,
 }: {
   view: View;
   setView: SetState<View>;
   setMoment: SetState<MomentToCRUD | undefined>;
-  // pageView: View;
-  // pageMomentId: string | undefined;
+  pageView: View;
+  pageMomentId: string | undefined;
 }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
-          {/* <GlobalServerComponents.PageTitle title={viewTitles[pageView]} /> */}
-          <SetViewButton
-            // <LocalClientComponents.SetViewButton
-            view={view}
-            setView={setView}
-            setMoment={setMoment}
-            // pageView={pageView}
+          {/* <GlobalServerComponents.PageTitle title={viewTitles[view]} /> */}
+          <GlobalServerComponents.PageTitle title={viewTitles[pageView]} />
+          {/* <SetViewButton */}
+          <LocalClientComponents.SetViewButton
+            // view={view}
+            // setView={setView}
+            // setMoment={setMoment}
+            pageView={pageView}
             // pageMomentId={pageMomentId}
           />
         </HeaderSegment>
@@ -295,7 +295,7 @@ export function DestinationInDateCard({
       </div>
       {e2.moments.map((e3, i3) => (
         <LocalClientComponents.MomentInDateCard
-          key={e3.id}
+          key={e3.id + e2.id} // because of userMoments duplicates
           e3={e3}
           i3={i3}
           setMoment={setMoment}

@@ -98,6 +98,8 @@ export const resetMomentClientFlow = (
   setStepVisible: SetState<StepVisible>,
   variant: MomentFormVariant,
   setInputSwitchKey: SetState<string>,
+  setDestinationSelect: SetState<boolean>,
+  setActivitySelect: SetState<boolean>,
 ): CreateOrUpdateMomentState => {
   // if (revalidateMoments) await revalidateMoments();
   // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
@@ -111,6 +113,8 @@ export const resetMomentClientFlow = (
   // in complement to HTML reset
   setSteps([]);
   setStepVisible("creating");
+  setDestinationSelect(false);
+  setActivitySelect(false);
 
   // resetting the create step form along
   const stepFormCreating = document.getElementById(

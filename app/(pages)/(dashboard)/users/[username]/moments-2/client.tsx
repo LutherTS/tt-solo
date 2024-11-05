@@ -737,6 +737,8 @@ export function MomentForms({
           setStepVisible,
           variant,
           setInputSwitchKey,
+          setDestinationSelect,
+          setActivitySelect,
         );
 
         setCreateOrUpdateMomentState(state);

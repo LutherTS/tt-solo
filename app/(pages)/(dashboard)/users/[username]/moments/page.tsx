@@ -15,9 +15,9 @@ import {
 import {
   dateToInputDatetime,
   defineCurrentPage,
-  // defineMomentId,
-  // defineView,
-  // defineWithViewAndMomentId,
+  defineMomentId,
+  defineView,
+  defineWithViewAndMomentId,
 } from "@/app/utilities/moments";
 import {
   CONTAINS,
@@ -62,8 +62,8 @@ export default async function MomentsPage({
     [CURRENTUSERMOMENTSPAGE]?: string;
     [FUTUREUSERMOMENTSPAGE]?: string;
     // now in the URL // not anymore
-    // view?: string;
-    // momentId?: string;
+    view?: string;
+    momentId?: string;
   };
 }) {
   // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.
@@ -92,16 +92,16 @@ export default async function MomentsPage({
 
   // obtaining and interpreting view and momentId
 
-  // let definedView = defineView(searchParams?.view);
+  let definedView = defineView(searchParams?.view);
   // console.log({ definedView });
 
-  // let definedMomentId = await defineMomentId(searchParams?.momentId, userId);
+  let definedMomentId = await defineMomentId(searchParams?.momentId, userId);
   // console.log({ definedMomentId });
 
-  // const { view, momentId } = defineWithViewAndMomentId(
-  //   definedView,
-  //   definedMomentId,
-  // );
+  const { view, momentId } = defineWithViewAndMomentId(
+    definedView,
+    definedMomentId,
+  );
   // console.log({ view, momentId });
 
   // that is one chill searchParam right here
@@ -391,8 +391,8 @@ export default async function MomentsPage({
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
           // to separe view and moment from the ones I'm getting here, I'm going for now with pageView and pageMomentId
-          // pageView={view}
-          // pageMomentId={momentId}
+          pageView={view}
+          pageMomentId={momentId}
         />
       </Suspense>
     </ErrorBoundary>

@@ -109,8 +109,8 @@ export default function ClientCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  // pageView,
-  // pageMomentId,
+  pageView,
+  pageMomentId,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -119,8 +119,8 @@ export default function ClientCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  // pageView: View;
-  // pageMomentId: string | undefined;
+  pageView: View;
+  pageMomentId: string | undefined;
 }) {
   console.log({ now });
 
@@ -154,8 +154,8 @@ export default function ClientCore({
         view={view}
         setView={setView}
         setMoment={setMoment}
-        // pageView={pageView}
-        // pageMomentId={pageMomentId}
+        pageView={pageView}
+        pageMomentId={pageMomentId}
       />
       <GlobalServerComponents.Divider />
       <Main
@@ -166,8 +166,8 @@ export default function ClientCore({
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
-        view={view}
-        // view={pageView}
+        // view={view}
+        view={pageView}
         setView={setView}
         moment={moment}
         setMoment={setMoment}
@@ -759,9 +759,9 @@ export function MomentForms({
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
   // not anymore
-  // const searchParams = useSearchParams();
-  // const { push } = useRouter();
-  // const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
 
   // createOrUpdateMomentAction
 
@@ -807,9 +807,9 @@ export function MomentForms({
         setCreateOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
-        // searchParams,
-        // push,
-        // pathname,
+        searchParams,
+        push,
+        pathname,
       );
 
       setIsCreateOrUpdateMomentDone(false);
@@ -840,6 +840,8 @@ export function MomentForms({
           setStepVisible,
           variant,
           setInputSwitchKey,
+          setDestinationSelect,
+          setActivitySelect,
         );
 
         setCreateOrUpdateMomentState(state);
@@ -880,9 +882,9 @@ export function MomentForms({
         createOrUpdateMomentState,
         setView,
         setIsCRUDOpSuccessful,
-        // searchParams,
-        // push,
-        // pathname,
+        searchParams,
+        push,
+        pathname,
       );
 
       setIsDeleteMomentDone(false);
@@ -1281,23 +1283,23 @@ export function MomentInDateCard({
   realMoments: MomentToCRUD[];
   setView: SetState<View>;
 }) {
-  // const searchParams = useSearchParams();
-  // const { push } = useRouter();
-  // const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
 
   // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
   function setUpdateMomentView() {
     const moment = realMoments.find((e0) => e0.id === e3.id);
     setMoment(moment);
 
-    setScrollToTop("update-moment", setView);
-    // scrollToTopOfDesiredView(
-    //   "update-moment",
-    //   searchParams,
-    //   push,
-    //   pathname,
-    //   moment?.id,
-    // );
+    // setScrollToTop("update-moment", setView);
+    scrollToTopOfDesiredView(
+      "update-moment",
+      searchParams,
+      push,
+      pathname,
+      moment?.id,
+    );
   }
 
   return (
