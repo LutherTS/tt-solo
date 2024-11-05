@@ -57,7 +57,8 @@ const Carousel = ({
     <>
       <div className="carousel">
         <div
-          className="carousel-container"
+          // it works, I can actually get this done in CSS and it's not even complicated, even with transform being on the style prop
+          className="carousel-container transition-all duration-1000"
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {items.map((item, index) => (
