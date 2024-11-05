@@ -96,6 +96,8 @@ import {
   createOrUpdateMomentAfterFlow,
   deleteMomentAfterFlow,
   resetMomentAfterFlow,
+  trueCreateOrUpdateMomentAfterFlow,
+  trueDeleteMomentAfterFlow,
 } from "@/app/flows/after/moments";
 
 export default function ClientCore({
@@ -149,8 +151,9 @@ export default function ClientCore({
   // And noticing this is all thanks to my new way of organizing components.
 
   return (
+    // now obsolete
     <>
-      <LocalServerComponents.Header
+      {/* <LocalServerComponents.Header
         view={view}
         setView={setView}
         setMoment={setMoment}
@@ -169,9 +172,9 @@ export default function ClientCore({
         // view={view}
         view={pageView}
         setView={setView}
-        moment={moment}
-        setMoment={setMoment}
-      />
+        // moment={moment}
+        // setMoment={setMoment}
+      /> */}
     </>
   );
 }
@@ -194,6 +197,8 @@ export function SetViewButton({ pageView }: { pageView: View }) {
         // IMPORTANT
         // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
         // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.
+        // Reagreement: now it's actually indispensable to not setMoment to undefined so that clicking the back button still yields the right moment for default values without needing to wait on the database.
+        // But then it doesn't work on page refresh because the state is reinitialized.
 
         scrollToTopOfDesiredView(desiredView, searchParams, push, pathname);
       }}
@@ -222,9 +227,10 @@ export function Main({
   createOrUpdateMoment,
   deleteMoment,
   view,
-  setView,
-  moment,
-  setMoment,
+  // setView,
+  // moment,
+  // setMoment,
+  pageMoment,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -234,9 +240,10 @@ export function Main({
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
   view: View;
-  setView: SetState<View>;
-  moment: MomentToCRUD | undefined;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  // setView: SetState<View>;
+  // moment: MomentToCRUD | undefined;
+  // setMoment: SetState<MomentToCRUD | undefined>;
+  pageMoment: MomentToCRUD | undefined;
 }) {
   const [
     _realUserMoments,
@@ -261,7 +268,12 @@ export function Main({
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
   // shifted from ClientCore to Main // not anymore
-  // const [moment, setMoment] = useState<MomentToCRUD>();
+  // const [moment, setMoment] = useState<MomentToCRUD>(); // setMoment is going to have to go, it's all going to come down to the URL
+  const moment = pageMoment;
+
+  // ...We're staying on the moment that you can see, so on the moments that have been retrieved by the page. If you want to modify any moment, there'll be a moment page for that.
+  // ...I need to send from the server a list of all the unique moments that are being set at all times.
+  let trueMoment: MomentToCRUD | undefined;
 
   return (
     <main>
@@ -285,7 +297,7 @@ export function Main({
               variant="updating"
               moment={moment}
               destinationOptions={destinationOptions}
-              setView={setView}
+              // setView={setView}
               setSubView={setSubView}
               createOrUpdateMoment={createOrUpdateMoment}
               deleteMoment={deleteMoment}
@@ -308,9 +320,9 @@ export function Main({
               maxPages={maxPages}
               view={view}
               subView={subView}
-              setView={setView}
+              // setView={setView}
               setSubView={setSubView}
-              setMoment={setMoment}
+              // setMoment={setMoment}
               revalidateMoments={revalidateMoments}
               allButtonsDisabled={view !== "read-moments"}
             />
@@ -328,7 +340,7 @@ export function Main({
             <MomentForms
               variant="creating"
               destinationOptions={destinationOptions}
-              setView={setView}
+              // setView={setView}
               setSubView={setSubView}
               createOrUpdateMoment={createOrUpdateMoment}
               now={now}
@@ -410,9 +422,9 @@ export function ReadMomentsView({
   maxPages,
   view,
   subView,
-  setView,
+  // setView,
   setSubView,
-  setMoment,
+  // setMoment,
   revalidateMoments,
   allButtonsDisabled,
 }: {
@@ -420,9 +432,9 @@ export function ReadMomentsView({
   maxPages: number[];
   view: View;
   subView: SubView;
-  setView: SetState<View>;
+  // setView: SetState<View>;
   setSubView: SetState<SubView>;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  // setMoment: SetState<MomentToCRUD | undefined>;
   revalidateMoments: RevalidateMoments;
   allButtonsDisabled: boolean;
 }) {
@@ -629,11 +641,11 @@ export function ReadMomentsView({
                   {e.destinations.map((e2) => {
                     return (
                       <LocalServerComponents.DestinationInDateCard
-                        key={e2.id}
+                        key={e2.id + i.toString()}
                         e2={e2}
-                        setMoment={setMoment}
+                        // setMoment={setMoment}
                         realMoments={realMoments}
-                        setView={setView}
+                        // setView={setView}
                       />
                     );
                   })}
@@ -680,24 +692,26 @@ export function MomentForms({
   variant,
   moment,
   destinationOptions,
-  setView,
+  // setView,
   setSubView,
   createOrUpdateMoment,
   deleteMoment,
   now,
   setIsCRUDOpSuccessful,
   allButtonsDisabled,
+  pageMomentId,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  setView: SetState<View>;
+  // setView: SetState<View>;
   setSubView: SetState<SubView>;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
   allButtonsDisabled: boolean;
+  pageMomentId?: string;
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
@@ -801,11 +815,10 @@ export function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
       // an "after flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
-      createOrUpdateMomentAfterFlow(
+      trueCreateOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
-        setView,
         setIsCRUDOpSuccessful,
         searchParams,
         push,
@@ -877,10 +890,9 @@ export function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterFlow(
+      trueDeleteMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
-        setView,
         setIsCRUDOpSuccessful,
         searchParams,
         push,
@@ -1273,15 +1285,15 @@ export function SearchForm({
 export function MomentInDateCard({
   e3,
   i3,
-  setMoment,
+  // setMoment,
   realMoments,
-  setView,
+  // setView,
 }: {
   e3: MomentToCRUD;
   i3: number;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  // setMoment: SetState<MomentToCRUD | undefined>;
   realMoments: MomentToCRUD[];
-  setView: SetState<View>;
+  // setView: SetState<View>;
 }) {
   const searchParams = useSearchParams();
   const { push } = useRouter();
@@ -1290,7 +1302,7 @@ export function MomentInDateCard({
   // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
   function setUpdateMomentView() {
     const moment = realMoments.find((e0) => e0.id === e3.id);
-    setMoment(moment);
+    // setMoment(moment); // still using setMoment because I'm basing my modifications from moments already in the client, not from those on the server, which is better because it allows the user to base their modifications on what they've seen with their own eyes
 
     // setScrollToTop("update-moment", setView);
     scrollToTopOfDesiredView(

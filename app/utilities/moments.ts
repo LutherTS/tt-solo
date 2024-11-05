@@ -6,6 +6,7 @@ import {
   CreateOrUpdateMomentState,
   StepFromCRUD,
   View,
+  MomentToCRUD,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
@@ -247,6 +248,32 @@ export const defineWithViewAndMomentId = (
 
     default:
       return { view, momentId };
+  }
+};
+
+export const defineMoment = async (
+  rawMomentId: string | undefined,
+  uniqueShownMoments: MomentToCRUD[],
+): Promise<MomentToCRUD | undefined> => {
+  if (!rawMomentId) return undefined;
+  else return uniqueShownMoments.find((e) => e.id === rawMomentId);
+};
+
+export const defineWithViewAndMoment = (
+  view: View,
+  moment: MomentToCRUD | undefined,
+): { view: View; moment: MomentToCRUD | undefined } => {
+  switch (view) {
+    case "update-moment":
+      if (moment) return { view, moment };
+      else return { view: "read-moments", moment };
+    case "read-moments":
+      return { view, moment: undefined };
+    case "create-moment":
+      return { view, moment: undefined };
+
+    default:
+      return { view, moment };
   }
 };
 

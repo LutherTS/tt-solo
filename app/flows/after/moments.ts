@@ -58,6 +58,43 @@ export const createOrUpdateMomentAfterFlow = (
   }
 };
 
+export const trueCreateOrUpdateMomentAfterFlow = (
+  variant: MomentFormVariant,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
+  setIsCRUDOpSuccessful: SetState<boolean>,
+  // version 3 attempt bonuses
+  searchParams: ReadonlyURLSearchParams,
+  push: (href: string, options?: NavigateOptions) => void,
+  pathname: string,
+) => {
+  // now = dateToInputDatetime(new Date());
+
+  if (createOrUpdateMomentState) {
+    switch (createOrUpdateMomentState.errorScrollPriority) {
+      case "moment":
+        scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+        break;
+      case "steps":
+        scrollToSection(MOMENT_FORM_IDS[variant].itsSteps);
+        break;
+
+      default:
+        break;
+    }
+
+    setCreateOrUpdateMomentState((s) => {
+      delete s?.errorScrollPriority;
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete
+      return s;
+    });
+  } else {
+    setIsCRUDOpSuccessful(true);
+
+    scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
+  }
+};
+
 // scrolls back to yourMoment's section at the top after resetting the form
 // (every time resetMomentFormAction is done)
 export const resetMomentAfterFlow = (variant: MomentFormVariant) => {
@@ -85,5 +122,23 @@ export const deleteMomentAfterFlow = (
       scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
     // original below
     else setScrollToTop("read-moments", setView);
+  }
+};
+
+export const trueDeleteMomentAfterFlow = (
+  variant: MomentFormVariant,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+  setIsCRUDOpSuccessful: SetState<boolean>,
+  // version 3 attempt bonuses
+  searchParams: ReadonlyURLSearchParams,
+  push: (href: string, options?: NavigateOptions) => void,
+  pathname: string,
+) => {
+  if (createOrUpdateMomentState) {
+    scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+  } else {
+    setIsCRUDOpSuccessful(true);
+
+    scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
   }
 };

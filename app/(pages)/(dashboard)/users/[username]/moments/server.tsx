@@ -47,7 +47,7 @@ export default function ServerCore({
   createOrUpdateMoment,
   deleteMoment,
   pageView,
-  pageMomentId,
+  pageMoment,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -57,42 +57,67 @@ export default function ServerCore({
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
   pageView: View;
-  pageMomentId: string | undefined;
+  pageMoment: MomentToCRUD | undefined;
 }) {
   // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
   // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
   // So I really can't go any further. I can just inform them that this is what I could do from then on in order to allow my Header below to be rendered on the server.
 
   return (
-    <LocalClientComponents.default
-      // time (aligned across server and client for hydration cases)
-      now={now}
-      // reads
-      allUserMomentsToCRUD={allUserMomentsToCRUD}
-      maxPages={maxPages}
-      destinationOptions={destinationOptions}
-      // writes
-      revalidateMoments={revalidateMoments}
-      createOrUpdateMoment={createOrUpdateMoment}
-      deleteMoment={deleteMoment}
-      pageView={pageView}
-      pageMomentId={pageMomentId}
-    />
+    // <LocalClientComponents.default
+    //   // time (aligned across server and client for hydration cases)
+    //   now={now}
+    //   // reads
+    //   allUserMomentsToCRUD={allUserMomentsToCRUD}
+    //   maxPages={maxPages}
+    //   destinationOptions={destinationOptions}
+    //   // writes
+    //   revalidateMoments={revalidateMoments}
+    //   createOrUpdateMoment={createOrUpdateMoment}
+    //   deleteMoment={deleteMoment}
+    //   pageView={pageView}
+    //   pageMomentId={pageMomentId}
+    // />
+    <>
+      <Header
+        // view={view}
+        // setView={setView}
+        // setMoment={setMoment}
+        pageView={pageView}
+        // pageMomentId={pageMomentId}
+      />
+      <GlobalServerComponents.Divider />
+      <LocalClientComponents.Main
+        now={now}
+        allUserMomentsToCRUD={allUserMomentsToCRUD}
+        maxPages={maxPages}
+        destinationOptions={destinationOptions}
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+        // view={view}
+        view={pageView}
+        // setView={setView}
+        // moment={moment}
+        // setMoment={setMoment}
+        pageMoment={pageMoment}
+      />
+    </>
   );
 }
 
 export function Header({
-  view,
-  setView,
-  setMoment, // and now Header no longer needs setMoment // not anymore
+  // view,
+  // setView,
+  // setMoment, // and now Header no longer needs setMoment // not anymore
   pageView,
-  pageMomentId,
+  // pageMomentId,
 }: {
-  view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  // view: View;
+  // setView: SetState<View>;
+  // setMoment: SetState<MomentToCRUD | undefined>;
   pageView: View;
-  pageMomentId: string | undefined;
+  // pageMomentId: string | undefined;
 }) {
   return (
     <header>
@@ -273,14 +298,14 @@ export function NoDateCard({ children }: { children: React.ReactNode }) {
 
 export function DestinationInDateCard({
   e2,
-  setMoment,
+  // setMoment,
   realMoments,
-  setView,
+  // setView,
 }: {
   e2: MomentsDestinationToCRUD;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  // setMoment: SetState<MomentToCRUD | undefined>;
   realMoments: MomentToCRUD[];
-  setView: SetState<View>;
+  // setView: SetState<View>;
 }) {
   return (
     <div className="flex flex-col gap-y-8">
@@ -298,9 +323,9 @@ export function DestinationInDateCard({
           key={e3.id + e2.id} // because of userMoments duplicates
           e3={e3}
           i3={i3}
-          setMoment={setMoment}
+          // setMoment={setMoment}
           realMoments={realMoments}
-          setView={setView}
+          // setView={setView}
         />
       ))}
     </div>

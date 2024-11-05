@@ -524,7 +524,7 @@ function ReadMomentsView({
                   {e.destinations.map((e2) => {
                     return (
                       <DestinationInDateCard
-                        key={e2.destinationIdeal}
+                        key={e2.id + i.toString()}
                         e2={e2}
                         setMoment={setMoment}
                         realMoments={realMoments}

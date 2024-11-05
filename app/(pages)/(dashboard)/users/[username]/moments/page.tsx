@@ -15,8 +15,10 @@ import {
 import {
   dateToInputDatetime,
   defineCurrentPage,
+  defineMoment,
   defineMomentId,
   defineView,
+  defineWithViewAndMoment,
   defineWithViewAndMomentId,
 } from "@/app/utilities/moments";
 import {
@@ -92,17 +94,17 @@ export default async function MomentsPage({
 
   // obtaining and interpreting view and momentId
 
-  let definedView = defineView(searchParams?.view);
-  // console.log({ definedView });
+  // let definedView = defineView(searchParams?.view);
+  // // console.log({ definedView });
 
-  let definedMomentId = await defineMomentId(searchParams?.momentId, userId);
-  // console.log({ definedMomentId });
+  // let definedMomentId = await defineMomentId(searchParams?.momentId, userId);
+  // // console.log({ definedMomentId });
 
-  const { view, momentId } = defineWithViewAndMomentId(
-    definedView,
-    definedMomentId,
-  );
-  // console.log({ view, momentId });
+  // const { view, momentId } = defineWithViewAndMomentId(
+  //   definedView,
+  //   definedMomentId,
+  // );
+  // // console.log({ view, momentId });
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
@@ -313,6 +315,37 @@ export default async function MomentsPage({
     });
   // console.logs on demand...
 
+  // obtaining and interpreting view and moment
+
+  const uniqueShownSet = new Set<string>();
+
+  allUserMomentsToCRUD.forEach((e) => {
+    e.dates.forEach((e2) => {
+      e2.destinations.forEach((e3) => {
+        e3.moments.forEach((e4) => {
+          uniqueShownSet.add(JSON.stringify(e4));
+        });
+      });
+    });
+  });
+
+  const uniqueShownMoments = [...uniqueShownSet].map((e) =>
+    JSON.parse(e),
+  ) as MomentToCRUD[];
+  // console.log({ uniqueShownMoments });
+
+  let definedView = defineView(searchParams?.view);
+  // console.log({ definedView });
+
+  let definedMoment = await defineMoment(
+    searchParams?.momentId,
+    uniqueShownMoments,
+  );
+  // console.log({ definedMomentId });
+
+  const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
+  // console.log({ view, moment });
+
   // PART WRITE (a.k.a. server actions)
 
   async function createOrUpdateMoment(
@@ -392,7 +425,7 @@ export default async function MomentsPage({
           deleteMoment={deleteMoment}
           // to separe view and moment from the ones I'm getting here, I'm going for now with pageView and pageMomentId
           pageView={view}
-          pageMomentId={momentId}
+          pageMoment={moment}
         />
       </Suspense>
     </ErrorBoundary>
