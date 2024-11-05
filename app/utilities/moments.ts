@@ -154,7 +154,7 @@ export const scrollToTopOfDesiredView = (
 
   push(`${pathname}?${newSearchParams.toString()}`);
 
-  scrollTo({ top: 0 });
+  // scrollTo({ top: 0 }); // apparently useRouter scroll to top on its own
 };
 
 // scrolls back to the desired section (usually yourMoment or itsSteps in the Moment forms)
