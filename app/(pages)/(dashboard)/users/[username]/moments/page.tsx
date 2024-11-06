@@ -16,19 +16,20 @@ import {
   dateToInputDatetime,
   defineCurrentPage,
   defineMoment,
-  defineMomentId,
   defineSubView,
   defineView,
   defineWithViewAndMoment,
-  defineWithViewAndMomentId,
 } from "@/app/utilities/moments";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
   INITIAL_PAGE,
+  MOMENTID,
   PASTUSERMOMENTSPAGE,
+  SUBVIEW,
   USERMOMENTSPAGE,
+  VIEW,
 } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
@@ -64,10 +65,10 @@ export default async function MomentsPage({
     [PASTUSERMOMENTSPAGE]?: string;
     [CURRENTUSERMOMENTSPAGE]?: string;
     [FUTUREUSERMOMENTSPAGE]?: string;
-    // now in the URL
-    view?: string;
-    subView?: string;
-    momentId?: string;
+    // now lifted to the URL
+    [VIEW]?: string;
+    [SUBVIEW]?: string;
+    [MOMENTID]?: string;
   };
 }) {
   // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.
@@ -93,20 +94,6 @@ export default async function MomentsPage({
   const user = userFound;
 
   const userId = user.id;
-
-  // obtaining and interpreting view and momentId
-
-  // let definedView = defineView(searchParams?.view);
-  // // console.log({ definedView });
-
-  // let definedMomentId = await defineMomentId(searchParams?.momentId, userId);
-  // // console.log({ definedMomentId });
-
-  // const { view, momentId } = defineWithViewAndMomentId(
-  //   definedView,
-  //   definedMomentId,
-  // );
-  // // console.log({ view, momentId });
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
@@ -317,7 +304,7 @@ export default async function MomentsPage({
     });
   // console.logs on demand...
 
-  // obtaining and interpreting view and moment
+  // obtaining and interpreting view, moment and subView
 
   const uniqueShownSet = new Set<string>();
 
@@ -336,19 +323,19 @@ export default async function MomentsPage({
   ) as MomentToCRUD[];
   // console.log({ uniqueShownMoments });
 
-  let definedView = defineView(searchParams?.view);
+  let definedView = defineView(searchParams?.[VIEW]);
   // console.log({ definedView });
 
   let definedMoment = await defineMoment(
-    searchParams?.momentId,
+    searchParams?.[MOMENTID],
     uniqueShownMoments,
   );
-  // console.log({ definedMomentId });
+  // console.log({ definedMoment });
 
   const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
   // console.log({ view, moment });
 
-  const subView = defineSubView(searchParams?.subView, allUserMomentsToCRUD);
+  const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
   // console.log({ subView });
 
   // PART WRITE (a.k.a. server actions)
@@ -402,7 +389,6 @@ export default async function MomentsPage({
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
-    // <StillServer>
     <ErrorBoundary
       fallback={
         <GlobalServerComponents.FallbackFlex>
@@ -428,14 +414,13 @@ export default async function MomentsPage({
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
-          // to separe view and moment from the ones I'm getting here, I'm going for now with pageView and pageMomentId
-          pageView={view}
-          pageMoment={moment}
-          pageSubView={subView}
+          // states lifted to the URL
+          view={view}
+          subView={subView}
+          moment={moment}
         />
       </Suspense>
     </ErrorBoundary>
-    // </StillServer>
   );
 }
 

@@ -1,5 +1,4 @@
-"use client";
-// It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll through the whole file, find that component, and manually export it.
+"use client"; // It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll through the whole file, find that component, and manually export it.
 
 import {
   FormEvent,
@@ -65,6 +64,7 @@ import {
   PASTUSERMOMENTSPAGE,
   SEARCH_FORM_ID,
   STEP_DURATION_ORIGINAL,
+  SUBVIEW,
   subViews,
   subViewTitles,
   USERMOMENTSPAGE,
@@ -78,14 +78,11 @@ import {
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
   rotateSearchParams,
-  rotateStates,
   roundTimeUpTenMinutes,
   scrollToTopOfDesiredView,
-  setScrollToTop,
   toWordsing,
 } from "@/app/utilities/moments";
 import {
-  createOrUpdateMomentClientFlow,
   createOrUpdateStepClientFlow,
   deleteMomentClientFlow,
   deleteStepClientFlow,
@@ -95,41 +92,39 @@ import {
   trueCreateOrUpdateMomentClientFlow,
 } from "@/app/flows/client/moments";
 import {
-  createOrUpdateMomentAfterFlow,
-  deleteMomentAfterFlow,
   resetMomentAfterFlow,
   trueCreateOrUpdateMomentAfterFlow,
   trueDeleteMomentAfterFlow,
 } from "@/app/flows/after/moments";
 
-// now obsolete
-// export default function ClientCore({
-//   // time
-//   now,
-//   // reads
-//   allUserMomentsToCRUD,
-//   maxPages,
-//   destinationOptions,
-//   // writes
-//   revalidateMoments,
-//   createOrUpdateMoment,
-//   deleteMoment,
-//   pageView,
-//   pageMomentId,
-// }: {
-//   now: string;
-//   allUserMomentsToCRUD: UserMomentsToCRUD[];
-//   maxPages: number[];
-//   destinationOptions: Option[];
-//   revalidateMoments: RevalidateMoments;
-//   createOrUpdateMoment: CreateOrUpdateMoment;
-//   deleteMoment: DeleteMoment;
-//   pageView: View;
-//   pageMomentId: string | undefined;
-// }) {
-//   console.log({ now });
+// this is now where the client-side begins, from ClientCore to Main and now to container of the carousel
+export function ViewsCarouselContainer({
+  view,
+  now,
+  allUserMomentsToCRUD,
+  maxPages,
+  destinationOptions,
+  revalidateMoments,
+  createOrUpdateMoment,
+  deleteMoment,
+  moment,
+  subView,
+}: {
+  view: View;
+  now: string;
+  allUserMomentsToCRUD: UserMomentsToCRUD[];
+  maxPages: number[];
+  destinationOptions: Option[];
+  revalidateMoments: RevalidateMoments;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
+  moment: MomentToCRUD | undefined;
+  subView: SubView;
+}) {
+  const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
+  let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
 
-/* Functioning timer logic, with useTimer
+  /* Functioning timer logic, with useTimer
   // The callback function to fire every step of the timer.
   // const callback = useCallback(
     (overdueCallCount: number) => console.log("Boom", overdueCallCount),
@@ -143,236 +138,6 @@ import {
   // here on its own is going to be worth an entire file.
   */
 
-// let [view, setView] = useState<View>("read-moments");
-// starting directly with the create form for now
-// let [view, setView] = useState<View>("create-moment");
-
-// at an upper level for UpdateMomentView
-// const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
-// IMPORTANT
-// Now that LocalServerComponents.Header no longer needs setMoment, I can shift moment and setMoment to Main, so that only view and setView remain in ClientCore. Then I can replace them by params at the RSC page level, and thus turn and replace LocalServerComponents.Header by a server component instead, doing away entirely with ClientCore and having the header be server)rendered.
-// And noticing this is all thanks to my new way of organizing components.
-
-//   return (
-//     // now obsolete
-//     <>
-//       {/* <LocalServerComponents.Header
-//         view={view}
-//         setView={setView}
-//         setMoment={setMoment}
-//         pageView={pageView}
-//         pageMomentId={pageMomentId}
-//       />
-//       <GlobalServerComponents.Divider />
-//       <Main
-//         now={now}
-//         allUserMomentsToCRUD={allUserMomentsToCRUD}
-//         maxPages={maxPages}
-//         destinationOptions={destinationOptions}
-//         revalidateMoments={revalidateMoments}
-//         createOrUpdateMoment={createOrUpdateMoment}
-//         deleteMoment={deleteMoment}
-//         // view={view}
-//         view={pageView}
-//         setView={setView}
-//         // moment={moment}
-//         // setMoment={setMoment}
-//       /> */}
-//     </>
-//   );
-// }
-
-// exclusive to the attempted version 3
-export function SetViewButton({ pageView }: { pageView: View }) {
-  const desiredView = defineDesiredView(pageView);
-
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-  const pathname = usePathname();
-
-  return (
-    <GlobalClientComponents.Button
-      type="button"
-      variant="destroy-step"
-      onClick={() => {
-        // SetViewButton is the only one that sets moment to undefined. NO.
-        // if (view === "update-moment") setMoment(undefined);
-        // IMPORTANT
-        // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
-        // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.
-        // Reagreement: now it's actually indispensable to not setMoment to undefined so that clicking the back button still yields the right moment for default values without needing to wait on the database.
-        // But then it doesn't work on page refresh because the state is reinitialized.
-
-        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname);
-      }}
-    >
-      {(() => {
-        switch (desiredView) {
-          // no case "update-moment", since moment-specific
-          case "read-moments":
-            return <>Vos moments</>;
-          case "create-moment":
-            return <>Créez un moment</>;
-          default:
-            return null;
-        }
-      })()}
-    </GlobalClientComponents.Button>
-  );
-}
-
-export function Main({
-  now,
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
-  revalidateMoments,
-  createOrUpdateMoment,
-  deleteMoment,
-  view,
-  // setView,
-  // moment,
-  // setMoment,
-  pageMoment,
-  pageSubView,
-}: {
-  now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
-  revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
-  view: View;
-  // setView: SetState<View>;
-  // moment: MomentToCRUD | undefined;
-  // setMoment: SetState<MomentToCRUD | undefined>;
-  pageMoment: MomentToCRUD | undefined;
-  pageSubView: SubView;
-}) {
-  // const [
-  //   _realUserMoments,
-  //   realPastMoments,
-  //   realCurrentMoments,
-  //   realFutureMoments,
-  // ] = allUserMomentsToCRUD;
-
-  // let initialSubView: SubView =
-  //   realCurrentMoments.dates.length > 0
-  //     ? "current-moments"
-  //     : realFutureMoments.dates.length > 0
-  //       ? "future-moments"
-  //       : realPastMoments.dates.length > 0
-  //         ? "past-moments"
-  //         : "all-moments";
-
-  // const [notSubView, setSubView] = useState<SubView>("all-moments");
-  const subView = pageSubView;
-
-  const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
-
-  let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
-
-  // shifted from ClientCore to Main // not anymore
-  // const [moment, setMoment] = useState<MomentToCRUD>(); // setMoment is going to have to go, it's all going to come down to the URL
-  const moment = pageMoment;
-
-  // ...We're staying on the moment that you can see, so on the moments that have been retrieved by the page. If you want to modify any moment, there'll be a moment page for that.
-  // ...I need to send from the server a list of all the unique moments that are being set at all times.
-  // let trueMoment: MomentToCRUD | undefined;
-
-  return (
-    <main>
-      <LocalServerComponents.ViewsCarousel
-        view={view}
-        isCRUDOpSuccessful={isCRUDOpSuccessful}
-        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-        currentViewHeight={currentViewHeight}
-      >
-        <LocalServerComponents.PageSegment
-          isSegmentContainerInvisible={view !== "update-moment"}
-        >
-          <ViewSegment
-            id="update-moment"
-            currentView={view}
-            currentViewHeight={currentViewHeight}
-          >
-            {/* UpdateMomentView */}
-            <MomentForms
-              key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
-              variant="updating"
-              moment={moment}
-              destinationOptions={destinationOptions}
-              // setView={setView}
-              // setSubView={setSubView}
-              createOrUpdateMoment={createOrUpdateMoment}
-              deleteMoment={deleteMoment}
-              now={now}
-              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-              allButtonsDisabled={view !== "update-moment"}
-            />
-          </ViewSegment>
-        </LocalServerComponents.PageSegment>
-        <LocalServerComponents.PageSegment
-          isSegmentContainerInvisible={view !== "read-moments"}
-        >
-          <ViewSegment
-            id="read-moments"
-            currentView={view}
-            currentViewHeight={currentViewHeight}
-          >
-            <ReadMomentsView
-              allUserMomentsToCRUD={allUserMomentsToCRUD}
-              maxPages={maxPages}
-              view={view}
-              subView={subView}
-              // setView={setView}
-              // setSubView={setSubView}
-              // setMoment={setMoment}
-              revalidateMoments={revalidateMoments}
-              allButtonsDisabled={view !== "read-moments"}
-            />
-          </ViewSegment>
-        </LocalServerComponents.PageSegment>
-        <LocalServerComponents.PageSegment
-          isSegmentContainerInvisible={view !== "create-moment"}
-        >
-          <ViewSegment
-            id="create-moment"
-            currentView={view}
-            currentViewHeight={currentViewHeight}
-          >
-            {/* CreateMomentView */}
-            <MomentForms
-              variant="creating"
-              destinationOptions={destinationOptions}
-              // setView={setView}
-              // setSubView={setSubView}
-              createOrUpdateMoment={createOrUpdateMoment}
-              now={now}
-              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-              allButtonsDisabled={view !== "create-moment"}
-            />
-          </ViewSegment>
-        </LocalServerComponents.PageSegment>
-      </LocalServerComponents.ViewsCarousel>
-    </main>
-  );
-}
-
-export function ViewsCarouselContainer({
-  view,
-  isCRUDOpSuccessful,
-  setIsCRUDOpSuccessful,
-  currentViewHeight,
-  children,
-}: {
-  view: View;
-  isCRUDOpSuccessful: boolean;
-  setIsCRUDOpSuccessful: SetState<boolean>;
-  currentViewHeight: MotionValue<number>;
-  children: React.ReactNode;
-}) {
   return (
     <motion.div
       className="flex"
@@ -391,8 +156,96 @@ export function ViewsCarouselContainer({
         height: currentViewHeight,
       }}
     >
-      {children}
+      <LocalServerComponents.PageSegment
+        isSegmentContainerInvisible={view !== "update-moment"}
+      >
+        <ViewSegment
+          id="update-moment"
+          currentView={view}
+          currentViewHeight={currentViewHeight}
+        >
+          {/* UpdateMomentView */}
+          <MomentForms
+            key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+            variant="updating"
+            moment={moment}
+            destinationOptions={destinationOptions}
+            createOrUpdateMoment={createOrUpdateMoment}
+            deleteMoment={deleteMoment}
+            now={now}
+            setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+            allButtonsDisabled={view !== "update-moment"}
+          />
+        </ViewSegment>
+      </LocalServerComponents.PageSegment>
+      <LocalServerComponents.PageSegment
+        isSegmentContainerInvisible={view !== "read-moments"}
+      >
+        <ViewSegment
+          id="read-moments"
+          currentView={view}
+          currentViewHeight={currentViewHeight}
+        >
+          <ReadMomentsView
+            allUserMomentsToCRUD={allUserMomentsToCRUD}
+            maxPages={maxPages}
+            view={view}
+            subView={subView}
+            revalidateMoments={revalidateMoments}
+            allButtonsDisabled={view !== "read-moments"}
+          />
+        </ViewSegment>
+      </LocalServerComponents.PageSegment>
+      <LocalServerComponents.PageSegment
+        isSegmentContainerInvisible={view !== "create-moment"}
+      >
+        <ViewSegment
+          id="create-moment"
+          currentView={view}
+          currentViewHeight={currentViewHeight}
+        >
+          {/* CreateMomentView */}
+          <MomentForms
+            variant="creating"
+            destinationOptions={destinationOptions}
+            createOrUpdateMoment={createOrUpdateMoment}
+            now={now}
+            setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+            allButtonsDisabled={view !== "create-moment"}
+          />
+        </ViewSegment>
+      </LocalServerComponents.PageSegment>
     </motion.div>
+  );
+}
+
+export function SetViewButton({ view }: { view: View }) {
+  const desiredView = defineDesiredView(view);
+
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
+  return (
+    <GlobalClientComponents.Button
+      type="button"
+      variant="destroy-step"
+      onClick={() =>
+        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname)
+      }
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -428,9 +281,6 @@ export function ReadMomentsView({
   maxPages,
   view,
   subView,
-  // setView,
-  // setSubView,
-  // setMoment,
   revalidateMoments,
   allButtonsDisabled,
 }: {
@@ -438,9 +288,6 @@ export function ReadMomentsView({
   maxPages: number[];
   view: View;
   subView: SubView;
-  // setView: SetState<View>;
-  // setSubView: SetState<SubView>;
-  // setMoment: SetState<MomentToCRUD | undefined>;
   revalidateMoments: RevalidateMoments;
   allButtonsDisabled: boolean;
 }) {
@@ -546,10 +393,9 @@ export function ReadMomentsView({
   }
 
   const rotateSubView = (direction: "left" | "right") =>
-    // rotateStates(direction, setSubView, subViews, subView);
     rotateSearchParams(
       direction,
-      "subView",
+      SUBVIEW,
       subViews,
       subView,
       searchParams,
@@ -625,12 +471,7 @@ export function ReadMomentsView({
       <div></div>
       <div className={clsx("flex flex-wrap gap-4")}>
         {subViews.map((e) => (
-          <SetSubViewButton
-            key={e}
-            // setSubView={setSubView}
-            e={e}
-            subView={subView}
-          />
+          <SetSubViewButton key={e} e={e} subView={subView} />
         ))}
         <RevalidateMomentsButton
           // I insist on specifying and sending all of my actions' booleans because they can be used for stylistic purposes with isDedicatedDisabled
@@ -658,9 +499,7 @@ export function ReadMomentsView({
                       <LocalServerComponents.DestinationInDateCard
                         key={e2.id + i.toString()}
                         e2={e2}
-                        // setMoment={setMoment}
                         realMoments={realMoments}
-                        // setView={setView}
                       />
                     );
                   })}
@@ -707,20 +546,15 @@ export function MomentForms({
   variant,
   moment,
   destinationOptions,
-  // setView,
-  // setSubView,
   createOrUpdateMoment,
   deleteMoment,
   now,
   setIsCRUDOpSuccessful,
   allButtonsDisabled,
-  pageMomentId,
 }: {
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  // setView: SetState<View>;
-  // setSubView: SetState<SubView>;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
@@ -917,8 +751,6 @@ export function MomentForms({
 
   // step actions
   // to access step actions' isPending states from their parent component (MomentForms)
-  // IMPORTANT deleteStepAction should be included // Done.
-  // (so the rest of this week to completely complete the form and then I work on the keynote for my talk at React Paris Meetup November 2024)
 
   // addStepAction
 
@@ -1175,24 +1007,23 @@ export function MomentForms({
 
 // sure I can get the spans to be Server Components but this really is a whole
 export function SetSubViewButton({
-  // setSubView,
   e,
   subView,
 }: {
-  // setSubView: SetState<SubView>;
   e: SubView;
   subView: SubView;
 }) {
   // this needs to be inside the component because its entirely specific to the component
   const className = "px-4 py-2 h-9 flex items-center justify-center";
 
+  // I prefer each Client Component that interact with the URL to have their own searchParams, pathname, push/replace trilogy.
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
 
   function handleSubView() {
     const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set("subView", e);
+    newSearchParams.set(SUBVIEW, e);
     replace(`${pathname}?${newSearchParams.toString()}`);
   }
 
@@ -1307,26 +1138,20 @@ export function SearchForm({
 export function MomentInDateCard({
   e3,
   i3,
-  // setMoment,
   realMoments,
-  // setView,
 }: {
   e3: MomentToCRUD;
   i3: number;
-  // setMoment: SetState<MomentToCRUD | undefined>;
   realMoments: MomentToCRUD[];
-  // setView: SetState<View>;
 }) {
   const searchParams = useSearchParams();
   const { push } = useRouter();
   const pathname = usePathname();
 
   // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
-  function setUpdateMomentView() {
+  function handleUpdateMomentView() {
     const moment = realMoments.find((e0) => e0.id === e3.id);
-    // setMoment(moment); // still using setMoment because I'm basing my modifications from moments already in the client, not from those on the server, which is better because it allows the user to base their modifications on what they've seen with their own eyes
 
-    // setScrollToTop("update-moment", setView);
     scrollToTopOfDesiredView(
       "update-moment",
       searchParams,
@@ -1344,7 +1169,7 @@ export function MomentInDateCard({
           <GlobalClientComponents.Button
             type="button"
             variant="destroy-step"
-            onClick={setUpdateMomentView}
+            onClick={handleUpdateMomentView}
           >
             <Icons.PencilSquareSolid className="size-5" />
           </GlobalClientComponents.Button>
@@ -1395,6 +1220,7 @@ export function PaginationButton({
 
   return (
     <button
+      // hum...
       onClick={() => handlePagination(direction, subView)}
       disabled={allButtonsDisabled || disabled}
       className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
@@ -1563,7 +1389,8 @@ export function ReorderItem({
 
   const [isRestoreStepPending, startRestoreStepTransition] = useTransition();
 
-  // the jumping is simply due to a current lack of animations
+  // The jumping is simply due to a current lack of animations
+  // ...which I may or may not end up modifying.
   const restoreStepAction = () => {
     startRestoreStepTransition(() => {
       setStepVisible("create");
@@ -1696,10 +1523,11 @@ export function ReorderItem({
   );
 }
 
+// keeping ClientCore and Main a comments to highlight the server-side progress made
 const localClientComponents = {
   // ClientCore,
+  // Main,
   SetViewButton,
-  Main,
   ViewsCarouselContainer,
   ViewSegment,
   ReadMomentsView,

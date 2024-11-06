@@ -249,38 +249,7 @@ export const defineView = (rawView: string | undefined): View => {
   }
 };
 
-// defines the current moment id from the view searchParam whether it is specified (as a string) or not (as undefined)
-export const defineMomentId = async (
-  rawMomentId: string | undefined,
-  userId: string,
-): Promise<string | undefined> => {
-  if (!rawMomentId) return undefined;
-
-  const moment = await findMomentByIdAndUserId(rawMomentId, userId);
-
-  if (moment) return moment.id;
-  else return undefined;
-};
-
-// defines both the view and momentId depending on one another, so that the "update-moment" cannot be shown if there is no momentId
-export const defineWithViewAndMomentId = (
-  view: View,
-  momentId: string | undefined,
-): { view: View; momentId: string | undefined } => {
-  switch (view) {
-    case "update-moment":
-      if (momentId) return { view, momentId };
-      else return { view: "read-moments", momentId };
-    case "read-moments":
-      return { view, momentId: undefined };
-    case "create-moment":
-      return { view, momentId: undefined };
-
-    default:
-      return { view, momentId };
-  }
-};
-
+// defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page
 export const defineMoment = async (
   rawMomentId: string | undefined,
   uniqueShownMoments: MomentToCRUD[],
@@ -289,6 +258,7 @@ export const defineMoment = async (
   else return uniqueShownMoments.find((e) => e.id === rawMomentId);
 };
 
+// defines both the view and moment depending on one another, so that the "update-moment" cannot be shown if there is no moment
 export const defineWithViewAndMoment = (
   view: View,
   moment: MomentToCRUD | undefined,

@@ -8,6 +8,7 @@ import {
   DEFAULT_STEP_SUBMESSAGE,
   MOMENT_FORM_IDS,
   STEP_DURATION_ORIGINAL,
+  VIEW,
 } from "@/app/data/moments";
 import {
   DeleteMoment,
@@ -35,8 +36,9 @@ export const revalidateMomentsClientFlow = async (
 ): Promise<void> => {
   const button = event.currentTarget;
   await revalidateMoments();
-  replace(`${pathname}`);
   button.form?.reset(); // Indeed. Better for type safety.
+
+  replace(`${pathname}?${VIEW}=read-moments`); // It could have made more sense to have the redirection in an after flow. But since it doesn't depend on data received from the server (for now?), I can let this slide.
 };
 
 // best be to prepare the state right here
