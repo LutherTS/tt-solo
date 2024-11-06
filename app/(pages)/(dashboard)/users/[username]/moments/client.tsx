@@ -77,6 +77,7 @@ import {
   numStringToTimeString,
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
+  rotateSearchParams,
   rotateStates,
   roundTimeUpTenMinutes,
   scrollToTopOfDesiredView,
@@ -231,6 +232,7 @@ export function Main({
   // moment,
   // setMoment,
   pageMoment,
+  pageSubView,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -244,24 +246,26 @@ export function Main({
   // moment: MomentToCRUD | undefined;
   // setMoment: SetState<MomentToCRUD | undefined>;
   pageMoment: MomentToCRUD | undefined;
+  pageSubView: SubView;
 }) {
-  const [
-    _realUserMoments,
-    realPastMoments,
-    realCurrentMoments,
-    realFutureMoments,
-  ] = allUserMomentsToCRUD;
+  // const [
+  //   _realUserMoments,
+  //   realPastMoments,
+  //   realCurrentMoments,
+  //   realFutureMoments,
+  // ] = allUserMomentsToCRUD;
 
-  let initialSubView: SubView =
-    realCurrentMoments.dates.length > 0
-      ? "current-moments"
-      : realFutureMoments.dates.length > 0
-        ? "future-moments"
-        : realPastMoments.dates.length > 0
-          ? "past-moments"
-          : "all-moments";
+  // let initialSubView: SubView =
+  //   realCurrentMoments.dates.length > 0
+  //     ? "current-moments"
+  //     : realFutureMoments.dates.length > 0
+  //       ? "future-moments"
+  //       : realPastMoments.dates.length > 0
+  //         ? "past-moments"
+  //         : "all-moments";
 
-  const [subView, setSubView] = useState<SubView>(initialSubView);
+  const [notSubView, setSubView] = useState<SubView>("all-moments");
+  const subView = pageSubView;
 
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
 
@@ -321,7 +325,7 @@ export function Main({
               view={view}
               subView={subView}
               // setView={setView}
-              setSubView={setSubView}
+              // setSubView={setSubView}
               // setMoment={setMoment}
               revalidateMoments={revalidateMoments}
               allButtonsDisabled={view !== "read-moments"}
@@ -423,7 +427,7 @@ export function ReadMomentsView({
   view,
   subView,
   // setView,
-  setSubView,
+  // setSubView,
   // setMoment,
   revalidateMoments,
   allButtonsDisabled,
@@ -433,7 +437,7 @@ export function ReadMomentsView({
   view: View;
   subView: SubView;
   // setView: SetState<View>;
-  setSubView: SetState<SubView>;
+  // setSubView: SetState<SubView>;
   // setMoment: SetState<MomentToCRUD | undefined>;
   revalidateMoments: RevalidateMoments;
   allButtonsDisabled: boolean;
@@ -540,14 +544,23 @@ export function ReadMomentsView({
   }
 
   const rotateSubView = (direction: "left" | "right") =>
-    rotateStates(direction, setSubView, subViews, subView);
+    // rotateStates(direction, setSubView, subViews, subView);
+    rotateSearchParams(
+      direction,
+      "subView",
+      subViews,
+      subView,
+      searchParams,
+      pathname,
+      replace,
+    );
 
   useKeypress("ArrowLeft", (event: KeyboardEvent) => {
     if (view === "read-moments") {
       event.preventDefault();
 
       if (event.altKey) {
-        rotateSubView("left"); // does not update the time because it speaks exclusively to the client
+        rotateSubView("left"); // does not update the time because it speaks exclusively to the client // not anymore
       } else {
         if (currentPage !== 1) handlePagination("left", subView); // updates the time because it speaks to the server (and the database)
       }
@@ -559,7 +572,7 @@ export function ReadMomentsView({
       event.preventDefault();
 
       if (event.altKey) {
-        rotateSubView("right"); // does not update the time because it speaks exclusively to the client
+        rotateSubView("right"); // does not update the time because it speaks exclusively to the client // not anymore
       } else {
         if (currentPage !== subViewMaxPages[subView])
           handlePagination("right", subView); // updates the time because it speaks to the server (and the database)
@@ -612,7 +625,7 @@ export function ReadMomentsView({
         {subViews.map((e) => (
           <SetSubViewButton
             key={e}
-            setSubView={setSubView}
+            // setSubView={setSubView}
             e={e}
             subView={subView}
           />
@@ -1163,20 +1176,30 @@ export function MomentForms({
 
 // sure I can get the spans to be Server Components but this really is a whole
 export function SetSubViewButton({
-  setSubView,
+  // setSubView,
   e,
   subView,
 }: {
-  setSubView: SetState<SubView>;
+  // setSubView: SetState<SubView>;
   e: SubView;
   subView: SubView;
 }) {
   // this needs to be inside the component because its entirely specific to the component
   const className = "px-4 py-2 h-9 flex items-center justify-center";
 
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  function handleSubView() {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("subView", e);
+    replace(`${pathname}?${newSearchParams.toString()}`);
+  }
+
   return (
     <button
-      onClick={() => setSubView(e)}
+      onClick={handleSubView}
       className={clsx(
         className,
         "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",

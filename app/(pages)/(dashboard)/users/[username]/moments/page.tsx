@@ -17,6 +17,7 @@ import {
   defineCurrentPage,
   defineMoment,
   defineMomentId,
+  defineSubView,
   defineView,
   defineWithViewAndMoment,
   defineWithViewAndMomentId,
@@ -65,6 +66,7 @@ export default async function MomentsPage({
     [FUTUREUSERMOMENTSPAGE]?: string;
     // now in the URL // not anymore
     view?: string;
+    subView?: string;
     momentId?: string;
   };
 }) {
@@ -346,6 +348,11 @@ export default async function MomentsPage({
   const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
   // console.log({ view, moment });
 
+  const subView = defineSubView(searchParams?.subView, allUserMomentsToCRUD);
+  console.log({ subView });
+
+  // now I kinda feel like putting setSubView in the URL too...
+
   // PART WRITE (a.k.a. server actions)
 
   async function createOrUpdateMoment(
@@ -426,6 +433,7 @@ export default async function MomentsPage({
           // to separe view and moment from the ones I'm getting here, I'm going for now with pageView and pageMomentId
           pageView={view}
           pageMoment={moment}
+          pageSubView={subView}
         />
       </Suspense>
     </ErrorBoundary>
