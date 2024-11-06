@@ -92,6 +92,7 @@ import {
   resetMomentClientFlow,
   resetStepClientFlow,
   revalidateMomentsClientFlow,
+  trueCreateOrUpdateMomentClientFlow,
 } from "@/app/flows/client/moments";
 import {
   createOrUpdateMomentAfterFlow,
@@ -101,33 +102,34 @@ import {
   trueDeleteMomentAfterFlow,
 } from "@/app/flows/after/moments";
 
-export default function ClientCore({
-  // time
-  now,
-  // reads
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
-  // writes
-  revalidateMoments,
-  createOrUpdateMoment,
-  deleteMoment,
-  pageView,
-  pageMomentId,
-}: {
-  now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
-  revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
-  pageView: View;
-  pageMomentId: string | undefined;
-}) {
-  console.log({ now });
+// now obsolete
+// export default function ClientCore({
+//   // time
+//   now,
+//   // reads
+//   allUserMomentsToCRUD,
+//   maxPages,
+//   destinationOptions,
+//   // writes
+//   revalidateMoments,
+//   createOrUpdateMoment,
+//   deleteMoment,
+//   pageView,
+//   pageMomentId,
+// }: {
+//   now: string;
+//   allUserMomentsToCRUD: UserMomentsToCRUD[];
+//   maxPages: number[];
+//   destinationOptions: Option[];
+//   revalidateMoments: RevalidateMoments;
+//   createOrUpdateMoment: CreateOrUpdateMoment;
+//   deleteMoment: DeleteMoment;
+//   pageView: View;
+//   pageMomentId: string | undefined;
+// }) {
+//   console.log({ now });
 
-  /* Functioning timer logic, with useTimer
+/* Functioning timer logic, with useTimer
   // The callback function to fire every step of the timer.
   // const callback = useCallback(
     (overdueCallCount: number) => console.log("Boom", overdueCallCount),
@@ -141,44 +143,44 @@ export default function ClientCore({
   // here on its own is going to be worth an entire file.
   */
 
-  // let [view, setView] = useState<View>("read-moments");
-  // starting directly with the create form for now
-  let [view, setView] = useState<View>("create-moment");
+// let [view, setView] = useState<View>("read-moments");
+// starting directly with the create form for now
+// let [view, setView] = useState<View>("create-moment");
 
-  // at an upper level for UpdateMomentView
-  const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
-  // IMPORTANT
-  // Now that LocalServerComponents.Header no longer needs setMoment, I can shift moment and setMoment to Main, so that only view and setView remain in ClientCore. Then I can replace them by params at the RSC page level, and thus turn and replace LocalServerComponents.Header by a server component instead, doing away entirely with ClientCore and having the header be server)rendered.
-  // And noticing this is all thanks to my new way of organizing components.
+// at an upper level for UpdateMomentView
+// const [moment, setMoment] = useState<MomentToCRUD>(); // undefined voluntarily chosen over null (or void) because "CreateMomentView" specifically and logically requires an undefined moment.
+// IMPORTANT
+// Now that LocalServerComponents.Header no longer needs setMoment, I can shift moment and setMoment to Main, so that only view and setView remain in ClientCore. Then I can replace them by params at the RSC page level, and thus turn and replace LocalServerComponents.Header by a server component instead, doing away entirely with ClientCore and having the header be server)rendered.
+// And noticing this is all thanks to my new way of organizing components.
 
-  return (
-    // now obsolete
-    <>
-      {/* <LocalServerComponents.Header
-        view={view}
-        setView={setView}
-        setMoment={setMoment}
-        pageView={pageView}
-        pageMomentId={pageMomentId}
-      />
-      <GlobalServerComponents.Divider />
-      <Main
-        now={now}
-        allUserMomentsToCRUD={allUserMomentsToCRUD}
-        maxPages={maxPages}
-        destinationOptions={destinationOptions}
-        revalidateMoments={revalidateMoments}
-        createOrUpdateMoment={createOrUpdateMoment}
-        deleteMoment={deleteMoment}
-        // view={view}
-        view={pageView}
-        setView={setView}
-        // moment={moment}
-        // setMoment={setMoment}
-      /> */}
-    </>
-  );
-}
+//   return (
+//     // now obsolete
+//     <>
+//       {/* <LocalServerComponents.Header
+//         view={view}
+//         setView={setView}
+//         setMoment={setMoment}
+//         pageView={pageView}
+//         pageMomentId={pageMomentId}
+//       />
+//       <GlobalServerComponents.Divider />
+//       <Main
+//         now={now}
+//         allUserMomentsToCRUD={allUserMomentsToCRUD}
+//         maxPages={maxPages}
+//         destinationOptions={destinationOptions}
+//         revalidateMoments={revalidateMoments}
+//         createOrUpdateMoment={createOrUpdateMoment}
+//         deleteMoment={deleteMoment}
+//         // view={view}
+//         view={pageView}
+//         setView={setView}
+//         // moment={moment}
+//         // setMoment={setMoment}
+//       /> */}
+//     </>
+//   );
+// }
 
 // exclusive to the attempted version 3
 export function SetViewButton({ pageView }: { pageView: View }) {
@@ -264,7 +266,7 @@ export function Main({
   //         ? "past-moments"
   //         : "all-moments";
 
-  const [notSubView, setSubView] = useState<SubView>("all-moments");
+  // const [notSubView, setSubView] = useState<SubView>("all-moments");
   const subView = pageSubView;
 
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
@@ -277,7 +279,7 @@ export function Main({
 
   // ...We're staying on the moment that you can see, so on the moments that have been retrieved by the page. If you want to modify any moment, there'll be a moment page for that.
   // ...I need to send from the server a list of all the unique moments that are being set at all times.
-  let trueMoment: MomentToCRUD | undefined;
+  // let trueMoment: MomentToCRUD | undefined;
 
   return (
     <main>
@@ -302,7 +304,7 @@ export function Main({
               moment={moment}
               destinationOptions={destinationOptions}
               // setView={setView}
-              setSubView={setSubView}
+              // setSubView={setSubView}
               createOrUpdateMoment={createOrUpdateMoment}
               deleteMoment={deleteMoment}
               now={now}
@@ -345,7 +347,7 @@ export function Main({
               variant="creating"
               destinationOptions={destinationOptions}
               // setView={setView}
-              setSubView={setSubView}
+              // setSubView={setSubView}
               createOrUpdateMoment={createOrUpdateMoment}
               now={now}
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
@@ -706,7 +708,7 @@ export function MomentForms({
   moment,
   destinationOptions,
   // setView,
-  setSubView,
+  // setSubView,
   createOrUpdateMoment,
   deleteMoment,
   now,
@@ -718,7 +720,7 @@ export function MomentForms({
   moment?: MomentToCRUD;
   destinationOptions: Option[];
   // setView: SetState<View>;
-  setSubView: SetState<SubView>;
+  // setSubView: SetState<SubView>;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
@@ -785,7 +787,6 @@ export function MomentForms({
   // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
   const [inputSwitchKey, setInputSwitchKey] = useState("");
 
-  // not anymore
   const searchParams = useSearchParams();
   const { push } = useRouter();
   const pathname = usePathname();
@@ -806,7 +807,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentClientFlow(
+      const state = await trueCreateOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -816,8 +817,6 @@ export function MomentForms({
         destinationSelect,
         activitySelect,
         createOrUpdateMomentState,
-        endMomentDate,
-        setSubView,
       );
 
       setCreateOrUpdateMomentState(state);
@@ -1698,7 +1697,7 @@ export function ReorderItem({
 }
 
 const localClientComponents = {
-  ClientCore,
+  // ClientCore,
   SetViewButton,
   Main,
   ViewsCarouselContainer,

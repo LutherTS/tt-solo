@@ -64,7 +64,7 @@ export default async function MomentsPage({
     [PASTUSERMOMENTSPAGE]?: string;
     [CURRENTUSERMOMENTSPAGE]?: string;
     [FUTUREUSERMOMENTSPAGE]?: string;
-    // now in the URL // not anymore
+    // now in the URL
     view?: string;
     subView?: string;
     momentId?: string;
@@ -349,9 +349,7 @@ export default async function MomentsPage({
   // console.log({ view, moment });
 
   const subView = defineSubView(searchParams?.subView, allUserMomentsToCRUD);
-  console.log({ subView });
-
-  // now I kinda feel like putting setSubView in the URL too...
+  // console.log({ subView });
 
   // PART WRITE (a.k.a. server actions)
 
