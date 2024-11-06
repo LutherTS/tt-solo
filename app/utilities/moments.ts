@@ -6,12 +6,15 @@ import {
   CreateOrUpdateMomentState,
   StepFromCRUD,
   View,
+  MomentToCRUD,
+  SubView,
+  UserMomentsToCRUD,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { MOMENTID, VIEW } from "../data/moments";
+import { MOMENTID, subViews, VIEW } from "../data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -114,6 +117,34 @@ export const rotateStates = <T>(
   } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
 };
 
+export const rotateSearchParams = (
+  direction: "left" | "right",
+  paramsKey: string,
+  paramsArray: readonly string[],
+  paramsValue: string,
+  searchParams: ReadonlyURLSearchParams,
+  pathname: string,
+  replace: (href: string, options?: NavigateOptions) => void,
+) => {
+  const newSearchParams = new URLSearchParams(searchParams);
+  if (direction === "right")
+    newSearchParams.set(
+      paramsKey,
+      paramsArray.at(
+        paramsArray.indexOf(paramsValue) + 1 > paramsArray.length - 1
+          ? 0
+          : paramsArray.indexOf(paramsValue) + 1,
+      )!,
+    );
+  else
+    newSearchParams.set(
+      paramsKey,
+      // .at() handles rotation on its own for negative values
+      paramsArray.at(paramsArray.indexOf(paramsValue) - 1)!,
+    );
+  replace(`${pathname}?${newSearchParams.toString()}`);
+};
+
 // scroll back to top when changing a view
 export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   // https://www.bajorunas.tech/blog/typescript-generics-inheritance
@@ -154,7 +185,7 @@ export const scrollToTopOfDesiredView = (
 
   push(`${pathname}?${newSearchParams.toString()}`);
 
-  scrollTo({ top: 0 });
+  // scrollTo({ top: 0 }); // apparently useRouter scroll to top on its own ...and that was the only issue
 };
 
 // scrolls back to the desired section (usually yourMoment or itsSteps in the Moment forms)
@@ -218,35 +249,63 @@ export const defineView = (rawView: string | undefined): View => {
   }
 };
 
-// defines the current moment id from the view searchParam whether it is specified (as a string) or not (as undefined)
-export const defineMomentId = async (
+// defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page
+export const defineMoment = async (
   rawMomentId: string | undefined,
-  userId: string,
-): Promise<string | undefined> => {
+  uniqueShownMoments: MomentToCRUD[],
+): Promise<MomentToCRUD | undefined> => {
   if (!rawMomentId) return undefined;
-
-  const moment = await findMomentByIdAndUserId(rawMomentId, userId);
-
-  if (moment) return moment.id;
-  else return undefined;
+  else return uniqueShownMoments.find((e) => e.id === rawMomentId);
 };
 
-// defines both the view and momentId depending on one another, so that the "update-moment" cannot be shown if there is no momentId
-export const defineWithViewAndMomentId = (
+// defines both the view and moment depending on one another, so that the "update-moment" cannot be shown if there is no moment
+export const defineWithViewAndMoment = (
   view: View,
-  momentId: string | undefined,
-): { view: View; momentId: string | undefined } => {
+  moment: MomentToCRUD | undefined,
+): { view: View; moment: MomentToCRUD | undefined } => {
   switch (view) {
     case "update-moment":
-      if (momentId) return { view, momentId };
-      else return { view: "read-moments", momentId };
+      if (moment) return { view, moment };
+      else return { view: "read-moments", moment };
     case "read-moments":
-      return { view, momentId: undefined };
+      return { view, moment: undefined };
     case "create-moment":
-      return { view, momentId: undefined };
+      return { view, moment: undefined };
 
     default:
-      return { view, momentId };
+      return { view, moment };
+  }
+};
+
+// type predicate for the subView searchParam
+const isSubView = (value: any): value is SubView => {
+  return subViews.includes(value);
+};
+
+// defines the current read-moments view subView from the subView searchParam whether it is specified (as a string) or not (as undefined)
+export const defineSubView = (
+  rawSubView: string | undefined,
+  allUserMomentsToCRUD: UserMomentsToCRUD[],
+): SubView => {
+  if (isSubView(rawSubView)) return rawSubView;
+  else {
+    const [
+      _realUserMoments,
+      realPastMoments,
+      realCurrentMoments,
+      realFutureMoments,
+    ] = allUserMomentsToCRUD;
+
+    let initialSubView: SubView =
+      realCurrentMoments.dates.length > 0
+        ? "current-moments"
+        : realFutureMoments.dates.length > 0
+          ? "future-moments"
+          : realPastMoments.dates.length > 0
+            ? "past-moments"
+            : "all-moments";
+
+    return initialSubView;
   }
 };
 

@@ -539,7 +539,7 @@ export function ReadMomentsView({
                   {e.destinations.map((e2) => {
                     return (
                       <LocalServerComponents.DestinationInDateCard
-                        key={e2.id}
+                        key={e2.id + i.toString()}
                         e2={e2}
                         setMoment={setMoment}
                         realMoments={realMoments}
@@ -737,6 +737,8 @@ export function MomentForms({
           setStepVisible,
           variant,
           setInputSwitchKey,
+          setDestinationSelect,
+          setActivitySelect,
         );
 
         setCreateOrUpdateMomentState(state);

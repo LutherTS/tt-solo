@@ -8,6 +8,7 @@ import {
   DEFAULT_STEP_SUBMESSAGE,
   MOMENT_FORM_IDS,
   STEP_DURATION_ORIGINAL,
+  VIEW,
 } from "@/app/data/moments";
 import {
   DeleteMoment,
@@ -35,8 +36,9 @@ export const revalidateMomentsClientFlow = async (
 ): Promise<void> => {
   const button = event.currentTarget;
   await revalidateMoments();
-  replace(`${pathname}`);
   button.form?.reset(); // Indeed. Better for type safety.
+
+  replace(`${pathname}?${VIEW}=read-moments`); // It could have made more sense to have the redirection in an after flow. But since it doesn't depend on data received from the server (for now?), I can let this slide.
 };
 
 // best be to prepare the state right here
@@ -91,6 +93,62 @@ export const createOrUpdateMomentClientFlow = async (
   }
 };
 
+export const trueCreateOrUpdateMomentClientFlow = async (
+  event: FormEvent<HTMLFormElement>,
+  createOrUpdateMoment: CreateOrUpdateMoment,
+  variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentToCRUD | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+  // endMomentDate: string,
+  // setSubView: SetState<SubView>,
+): Promise<CreateOrUpdateMomentState> => {
+  event.preventDefault();
+
+  const createOrUpdateMomentBound = createOrUpdateMoment.bind(
+    null,
+    new FormData(event.currentTarget),
+    variant,
+    startMomentDate,
+    steps,
+    momentFromCRUD,
+    destinationSelect,
+    activitySelect,
+  );
+  let state = await createOrUpdateMomentBound();
+
+  if (state) {
+    return { ...createOrUpdateMomentState, ...state };
+  } else {
+    // IMPORTANT
+    // I'm sunsetting this feature, because in truth it does not scale as is. The way it should be done is that within the server action, I look on the server to see where the created or updated moment would appear on the three lists (past, present, future), including at what given page on these lists it would appear. Then I'd pass this data inside the state (meaning I will then justifiably have to distinguish CreateOrUpdateMomentState in two routes: error and success (!)), with a top enum that says whether it is in error or success state... or in truth I could just start with a boolean isSuccess. The boolean sends the relevant data to the client, and then the after flow handles the redirection correctly.
+    // At this time I can even save in the success path of the state the id of the element that's been created or updated, find a way to scroll down to it on the new view, and complete with a little animation that shows where it has been added.
+    // I would say that's a lot better than what I have right now, and a lot more thought out, so that's what I'll be exploring, hopefully before the 20 this month.
+
+    // const currentNow = dateToInputDatetime(new Date());
+
+    // if (compareDesc(endMomentDate, currentNow) === 1)
+    //   setSubView("past-moments");
+    // else if (compareAsc(startMomentDate, currentNow) === 1)
+    //   setSubView("future-moments");
+    // // present by default
+    // else setSubView("current-moments");
+
+    // resetting the whole form manually
+    if (variant === "creating") {
+      const momentForm = document.getElementById(
+        MOMENT_FORM_IDS[variant].momentForm,
+      ) as HTMLFormElement | null;
+      momentForm?.reset();
+    }
+
+    return state;
+  }
+};
+
 // reset is only on the creating variant of MomentForms
 export const resetMomentClientFlow = (
   setStartMomentDate: SetState<string>,
@@ -98,6 +156,8 @@ export const resetMomentClientFlow = (
   setStepVisible: SetState<StepVisible>,
   variant: MomentFormVariant,
   setInputSwitchKey: SetState<string>,
+  setDestinationSelect: SetState<boolean>,
+  setActivitySelect: SetState<boolean>,
 ): CreateOrUpdateMomentState => {
   // if (revalidateMoments) await revalidateMoments();
   // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
@@ -111,6 +171,8 @@ export const resetMomentClientFlow = (
   // in complement to HTML reset
   setSteps([]);
   setStepVisible("creating");
+  setDestinationSelect(false);
+  setActivitySelect(false);
 
   // resetting the create step form along
   const stepFormCreating = document.getElementById(

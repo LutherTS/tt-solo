@@ -1,6 +1,5 @@
 // "use server" at the top implies for React 19 that the file is made of Server Actions, NOT Server Components. It's only for "use client" that it means the file is made exclusively of strictly Client Components.
 
-import { MotionValue } from "framer-motion";
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
@@ -25,14 +24,11 @@ import {
   StepFromCRUD,
   StepToCRUD,
   StepVisible,
+  SubView,
   UserMomentsToCRUD,
   View,
 } from "@/app/types/moments";
-import {
-  defineDesiredView,
-  numStringToTimeString,
-  setScrollToTop,
-} from "@/app/utilities/moments";
+import { numStringToTimeString } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
 export default function ServerCore({
@@ -46,8 +42,10 @@ export default function ServerCore({
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  // pageView,
-  // pageMomentId,
+  // states lifted to the URL
+  view,
+  moment,
+  subView,
 }: {
   now: string;
   allUserMomentsToCRUD: UserMomentsToCRUD[];
@@ -56,101 +54,84 @@ export default function ServerCore({
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  // pageView: View;
-  // pageMomentId: string | undefined;
+  view: View;
+  moment: MomentToCRUD | undefined;
+  subView: SubView;
 }) {
-  // When receiving view from the URL, remember that another transform in Main will be required based on the moment. You can't go to "update-moment" if moment is undefined, so you'll have to default on "read-moments".
-  // ...If I'm honest, all these details are going to lose my audience in the talk and is extremely specific to my project, just like for them it will be extremely specific to theirs.
-  // So I really can't go any further. I can just inform them that this is what I could do from then on in order to allow my Header below to be rendered on the server.
-
   return (
-    <LocalClientComponents.default
-      // time (aligned across server and client for hydration cases)
-      now={now}
-      // reads
-      allUserMomentsToCRUD={allUserMomentsToCRUD}
-      maxPages={maxPages}
-      destinationOptions={destinationOptions}
-      // writes
-      revalidateMoments={revalidateMoments}
-      createOrUpdateMoment={createOrUpdateMoment}
-      deleteMoment={deleteMoment}
-      // pageView={pageView}
-      // pageMomentId={pageMomentId}
-    />
+    <>
+      <Header view={view} />
+      <GlobalServerComponents.Divider />
+      <Main
+        now={now}
+        allUserMomentsToCRUD={allUserMomentsToCRUD}
+        maxPages={maxPages}
+        destinationOptions={destinationOptions}
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+        view={view}
+        subView={subView}
+        moment={moment}
+      />
+    </>
   );
 }
 
-export function Header({
-  view,
-  setView,
-  setMoment, // and now Header no longer needs setMoment // not anymore
-  // pageView,
-  // pageMomentId,
-}: {
-  view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
-  // pageView: View;
-  // pageMomentId: string | undefined;
-}) {
+export function Header({ view }: { view: View }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
           <GlobalServerComponents.PageTitle title={viewTitles[view]} />
-          {/* <GlobalServerComponents.PageTitle title={viewTitles[pageView]} /> */}
-          <SetViewButton
-            // <LocalClientComponents.SetViewButton
-            view={view}
-            setView={setView}
-            setMoment={setMoment}
-            // pageView={pageView}
-            // pageMomentId={pageMomentId}
-          />
+          <LocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>
     </header>
   );
 }
 
-export function SetViewButton({
+export function Main({
+  now,
+  allUserMomentsToCRUD,
+  maxPages,
+  destinationOptions,
+  revalidateMoments,
+  createOrUpdateMoment,
+  deleteMoment,
   view,
-  setView,
-  setMoment, // SetViewButton no longer needs setMoment // not anymore
+  moment,
+  subView,
 }: {
+  now: string;
+  allUserMomentsToCRUD: UserMomentsToCRUD[];
+  maxPages: number[];
+  destinationOptions: Option[];
+  revalidateMoments: RevalidateMoments;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
   view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  moment: MomentToCRUD | undefined;
+  subView: SubView;
 }) {
-  const desiredView = defineDesiredView(view);
-
   return (
-    <GlobalClientComponents.Button
-      type="button"
-      variant="destroy-step"
-      onClick={() => {
-        // SetViewButton is the only one that sets moment to undefined. NO.
-        if (view === "update-moment") setMoment(undefined);
-        // IMPORTANT
-        // I think moment should never be reset to undefined and here is why. First, perhaps they were some issues before but now it works fine between my views if I leave the moment as is. Second, there are actually benefits in keeping track in the code of the last moment that has been opened for modifications. So the decision is, moment should begin as undefined (since the createOrUpdateMoment does expect a moment of undefined), but should never set to undefined).
-        // ...But now I disagree. Because if view and moment are in the URL, it won't make any sense for moment to remain in the URL on ReadMomentsView. So for this moments-2, I'll let moment in ClientCore.
-
-        setScrollToTop(desiredView, setView);
-      }}
-    >
-      {(() => {
-        switch (desiredView) {
-          // no case "update-moment", since moment-specific
-          case "read-moments":
-            return <>Vos moments</>;
-          case "create-moment":
-            return <>Créez un moment</>;
-          default:
-            return null;
-        }
-      })()}
-    </GlobalClientComponents.Button>
+    <main>
+      {/* ViewsCarousel */}
+      <ViewsCarouselWrapper>
+        <LocalClientComponents.ViewsCarouselContainer
+          now={now}
+          allUserMomentsToCRUD={allUserMomentsToCRUD}
+          maxPages={maxPages}
+          destinationOptions={destinationOptions}
+          revalidateMoments={revalidateMoments}
+          createOrUpdateMoment={createOrUpdateMoment}
+          deleteMoment={deleteMoment}
+          view={view}
+          subView={subView}
+          moment={moment}
+        />
+      </ViewsCarouselWrapper>
+    </main>
   );
 }
 
@@ -203,33 +184,6 @@ export function HeaderSegment({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ViewsCarousel({
-  view,
-  isCRUDOpSuccessful,
-  setIsCRUDOpSuccessful,
-  currentViewHeight,
-  children,
-}: {
-  view: View;
-  isCRUDOpSuccessful: boolean;
-  setIsCRUDOpSuccessful: SetState<boolean>;
-  currentViewHeight: MotionValue<number>;
-  children: React.ReactNode;
-}) {
-  return (
-    <ViewsCarouselWrapper>
-      <LocalClientComponents.ViewsCarouselContainer
-        view={view}
-        isCRUDOpSuccessful={isCRUDOpSuccessful}
-        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-        currentViewHeight={currentViewHeight}
-      >
-        {children}
-      </LocalClientComponents.ViewsCarouselContainer>
-    </ViewsCarouselWrapper>
-  );
-}
-
 export function ViewsCarouselWrapper({
   children,
 }: {
@@ -273,14 +227,10 @@ export function NoDateCard({ children }: { children: React.ReactNode }) {
 
 export function DestinationInDateCard({
   e2,
-  setMoment,
   realMoments,
-  setView,
 }: {
   e2: MomentsDestinationToCRUD;
-  setMoment: SetState<MomentToCRUD | undefined>;
   realMoments: MomentToCRUD[];
-  setView: SetState<View>;
 }) {
   return (
     <div className="flex flex-col gap-y-8">
@@ -295,12 +245,10 @@ export function DestinationInDateCard({
       </div>
       {e2.moments.map((e3, i3) => (
         <LocalClientComponents.MomentInDateCard
-          key={e3.id}
+          key={e3.id + e2.id} // because of userMoments duplicates
           e3={e3}
           i3={i3}
-          setMoment={setMoment}
           realMoments={realMoments}
-          setView={setView}
         />
       ))}
     </div>
@@ -677,7 +625,7 @@ export function StepVisibleCreate({
   allButtonsDisabled: boolean;
 }) {
   return (
-    // This is complicated. This is a Server Component. Even though honestly the div could have been removed and this would have been just Client Component. Yes. I can replace the div by a Fragment and keep it a Server Component. But I want to keep the div so that StepVisibleCreate is semantically aligned with StepVisibleCreating, and also because it is possible in the future that I add more content here, such as descriptions or anything, which can simply be server-side rendered.
+    // This is complicated. This is a Server Component. Even though honestly the div could have been removed and this would have been just a Client Component. Yes, I can replace the div by a Fragment and keep it a Server Component. But I want to keep the div so that StepVisibleCreate is semantically aligned with StepVisibleCreating, and also because it is possible in the future that I add more content here, such as descriptions or anything, which can simply be server-side rendered.
     <div>
       <GlobalClientComponents.Button
         type="button"
@@ -903,9 +851,6 @@ export function EraseStepButton({
   allButtonsDisabled: boolean;
 }) {
   return (
-    // And poof, with a Fragment you're no longer a Client Component.
-    // So everywhere I see a custom button, since button itself already is a Client Component, their wrappers do not need to be one too.
-    // <>
     <GlobalClientComponents.Button
       form={form}
       type="button"
@@ -915,8 +860,6 @@ export function EraseStepButton({
     >
       Effacer l&apos;étape
     </GlobalClientComponents.Button>
-    // </>
-    // (No need for the Fragment, React understands on its own that the configuration of Button brought by EraseStepButton is a server shell.)
   );
 }
 
@@ -962,12 +905,10 @@ export function StepContents({
 const localServerComponents = {
   ServerCore,
   Header,
-  SetViewButton,
   PageSegment,
   SegmentWrapper,
   SegmentContainer,
   HeaderSegment,
-  ViewsCarousel,
   ViewsCarouselWrapper,
   DateCard,
   NoDateCard,

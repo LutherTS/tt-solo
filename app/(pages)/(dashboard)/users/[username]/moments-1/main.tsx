@@ -524,7 +524,7 @@ function ReadMomentsView({
                   {e.destinations.map((e2) => {
                     return (
                       <DestinationInDateCard
-                        key={e2.destinationIdeal}
+                        key={e2.id + i.toString()}
                         e2={e2}
                         setMoment={setMoment}
                         realMoments={realMoments}
@@ -711,6 +711,8 @@ function MomentForms({
           setStepVisible,
           variant,
           setInputSwitchKey,
+          setDestinationSelect,
+          setActivitySelect,
         );
 
         setCreateOrUpdateMomentState(state);
@@ -1220,7 +1222,7 @@ function DestinationInDateCard({
       </div>
       {e2.moments.map((e3, i3) => (
         <MomentInDateCard
-          key={e3.id}
+          key={e3.id + e2.id}
           e3={e3}
           i3={i3}
           setMoment={setMoment}

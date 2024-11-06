@@ -4,11 +4,12 @@ import { MomentFormIds, MomentFormVariant } from "@/app/types/moments";
 // searchParams keys
 
 export const CONTAINS = "contains" as const;
-export const USERMOMENTSPAGE = "usermomentspage" as const;
-export const PASTUSERMOMENTSPAGE = "pastusermomentspage" as const;
-export const CURRENTUSERMOMENTSPAGE = "currentusermomentspage" as const;
-export const FUTUREUSERMOMENTSPAGE = "futureusermomentspage" as const;
+export const USERMOMENTSPAGE = "userMomentsPage" as const;
+export const PASTUSERMOMENTSPAGE = "pastUserMomentsPage" as const;
+export const CURRENTUSERMOMENTSPAGE = "currentUserMomentsPage" as const;
+export const FUTUREUSERMOMENTSPAGE = "futureUserMomentsPage" as const;
 export const VIEW = "view" as const;
+export const SUBVIEW = "subView" as const;
 export const MOMENTID = "momentId" as const;
 
 // currently unused
@@ -19,11 +20,14 @@ export const MOMENTS_SEARCH_PARAMS_KEYS = [
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
   VIEW,
+  SUBVIEW,
   MOMENTID,
 ] as const;
 
 // initial and lowest moments page number
 export const INITIAL_PAGE = 1;
+
+// TAKE will need to be in here to when I'll work on the success state of CreateOrUpdateMomentState
 
 // HTML ids
 
