@@ -4,12 +4,17 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Icons from "@/app/icons";
 import * as GlobalClientComponents from "./client";
 import { Option, SetState } from "@/app/types/globals";
-import { CreateOrUpdateMomentState } from "@/app/types/moments";
+import {
+  CreateOrUpdateMomentState,
+  FormSectionTopic,
+  TrueCreateOrUpdateMomentState,
+} from "@/app/types/moments";
 import {
   baseInputTexts,
   focusVisibleTexts,
   notDatetimeLocalPadding,
 } from "@/app/data/globals";
+import { formSectionTopicRemoves } from "../data/moments";
 
 // Components
 
@@ -44,6 +49,36 @@ function FormDescriptionOrError({
       setCreateOrUpdateMomentState &&
       removeMessagesAndErrorsCallback ? (
         <GlobalClientComponents.FormValidationError
+          error={error}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+          removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
+        />
+      ) : (
+        <p className="max-w-prose text-sm text-neutral-500">{description}</p>
+      )}
+    </>
+  );
+}
+
+function TrueFormDescriptionOrError({
+  error,
+  description,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
+}: {
+  error?: string;
+  description: string;
+  setCreateOrUpdateMomentState?: SetState<TrueCreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: TrueCreateOrUpdateMomentState,
+  ) => TrueCreateOrUpdateMomentState;
+}) {
+  return (
+    <>
+      {error &&
+      setCreateOrUpdateMomentState &&
+      removeMessagesAndErrorsCallback ? (
+        <GlobalClientComponents.TrueFormValidationError
           error={error}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
           removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
@@ -105,6 +140,77 @@ export function Section({
                   setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
                   removeMessagesAndErrorsCallback={
                     removeMessagesAndErrorsCallback
+                  }
+                />
+              )}
+              {subError ? (
+                <GlobalClientComponents.FormValidationError error={subError} />
+              ) : (
+                <>
+                  {addendum && showAddendum && (
+                    <p className="max-w-prose text-sm text-neutral-500">
+                      {addendum}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      <div className="flex flex-col gap-y-8">{children}</div>
+    </section>
+  );
+}
+
+export function FormSection({
+  topic,
+  title,
+  description,
+  showDescription = true,
+  addendum,
+  showAddendum = true,
+  id,
+  error,
+  subError,
+  setCreateOrUpdateMomentState,
+  children,
+}: {
+  topic: FormSectionTopic;
+  title?: string;
+  description?: string;
+  showDescription?: boolean;
+  addendum?: string;
+  showAddendum?: boolean;
+  id?: string;
+  error?: string;
+  subError?: string;
+  setCreateOrUpdateMomentState?: SetState<TrueCreateOrUpdateMomentState>;
+  children: React.ReactNode;
+}) {
+  return (
+    // pb-1 (or +1) making up for input padding inconsistencies
+    <section
+      className="grid items-baseline gap-8 pb-9 pt-8 md:grid-cols-[1fr_2fr]"
+      id={id}
+    >
+      <div
+        className={clsx(
+          !title && "hidden md:block",
+          description && showDescription && "flex flex-col gap-y-4",
+        )}
+      >
+        {title && (
+          <>
+            <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
+            <div className="flex flex-col gap-y-2">
+              {description && showDescription && (
+                <TrueFormDescriptionOrError
+                  error={error}
+                  description={description}
+                  setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+                  removeMessagesAndErrorsCallback={
+                    formSectionTopicRemoves[topic]
                   }
                 />
               )}
@@ -414,6 +520,7 @@ const globalServerComponents = {
   Divider,
   FormDescriptionOrError,
   Section,
+  FormSection,
   InputValidationError,
   InputDescriptionOrError,
   SelectWithOptions,

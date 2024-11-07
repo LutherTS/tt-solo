@@ -10,12 +10,14 @@ import {
   SubView,
   UserMomentsToCRUD,
   SelectMomentIdNameAndDates,
+  TrueCreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { MOMENTID, subViews, TAKE, VIEW } from "../data/moments";
+import { error } from "console";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -203,11 +205,21 @@ export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
   return stepsCompoundDurationsArray;
 };
 
-// cleans createOrUpdateMomentState from its steps-related properties only, leaving moment-related properties untouched
+// cleanse createOrUpdateMomentState from its steps-related properties only, leaving moment-related properties untouched
 export const removeStepsMessagesAndErrorsCallback = (
   s: CreateOrUpdateMomentState,
-) => {
+): CreateOrUpdateMomentState => {
   return { ...s, stepsMessages: {}, stepsErrors: {} };
+};
+
+export const trueRemoveStepsMessagesAndErrorsCallback = (
+  s: TrueCreateOrUpdateMomentState,
+): TrueCreateOrUpdateMomentState => {
+  // return { ...s, stepsMessages: {}, stepsErrors: {} };
+
+  if (s?.error)
+    return { ...s, error: { ...s?.error, stepsMessages: {}, stepsErrors: {} } };
+  else return s;
 };
 
 // same as above but for the moment part of the form
@@ -215,6 +227,19 @@ export const removeMomentMessagesAndErrorsCallback = (
   s: CreateOrUpdateMomentState,
 ) => {
   return { ...s, momentMessages: {}, momentErrors: {} };
+};
+
+export const trueRemoveMomentMessagesAndErrorsCallback = (
+  s: TrueCreateOrUpdateMomentState,
+) => {
+  // return { ...s, momentMessages: {}, momentErrors: {} };
+
+  if (s?.error)
+    return {
+      ...s,
+      error: { ...s?.error, momentMessages: {}, momentErrors: {} },
+    };
+  else return s;
 };
 
 // defines the desired view to shift to from a view depending on that original view

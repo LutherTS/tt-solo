@@ -92,6 +92,16 @@ export type CreateOrUpdateMoment = (
   activitySelect: boolean,
 ) => Promise<CreateOrUpdateMomentState>;
 
+export type TrueCreateOrUpdateMoment = (
+  formData: FormData,
+  variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentToCRUD | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
+) => Promise<TrueCreateOrUpdateMomentState>;
+
 type FormMessages = {
   message?: string;
   subMessage?: string;
@@ -133,8 +143,13 @@ export type CreateOrUpdateMomentState = {
   errorScrollPriority?: "moment" | "steps";
 } | null;
 
-export type TrueCreateOrUpdateMomentState = {
-  isSuccess?: boolean;
+export type TrueCreateOrUpdateMomentState =
+  | CreateOrUpdateMomentError
+  | CreateOrUpdateMomentSuccess
+  | null;
+
+export type CreateOrUpdateMomentError = {
+  isSuccess: false;
   error: {
     momentMessages?: MomentMessages;
     momentErrors?: {
@@ -153,16 +168,26 @@ export type TrueCreateOrUpdateMomentState = {
     };
     errorScrollPriority?: "moment" | "steps";
   };
+  success?: never;
+};
+
+export type CreateOrUpdateMomentSuccess = {
+  isSuccess: true;
+  error?: never;
   success: {
-    moment: SelectMomentIdNameAndDates; // voluntarily sending to the client the data from the moment that was needed in the server to obtain the expected effects of the after flow
-    countPage: number;
-    subView: SubView;
+    moment?: SelectMomentIdNameAndDates; // voluntarily sending to the client the data from the moment that was needed in the server to obtain the expected effects of the after flow
+    countPage?: number;
+    subView?: SubView;
   };
-} | null;
+};
 
 export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<CreateOrUpdateMomentState>;
+
+export type TrueDeleteMoment = (
+  momentFromCRUD?: MomentToCRUD,
+) => Promise<TrueCreateOrUpdateMomentState>;
 
 export type RevalidateMoments = () => Promise<void>;
 
@@ -201,3 +226,5 @@ export type MomentsSearchParams = {
   [VIEW]: string;
   [MOMENTID]: string;
 };
+
+export type FormSectionTopic = "moment" | "steps";

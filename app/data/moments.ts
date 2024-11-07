@@ -1,5 +1,16 @@
 import { Option } from "@/app/types/globals";
-import { MomentFormIds, MomentFormVariant } from "@/app/types/moments";
+import {
+  FormSectionTopic,
+  MomentFormIds,
+  MomentFormVariant,
+  SubView,
+  TrueCreateOrUpdateMomentState,
+  View,
+} from "@/app/types/moments";
+import {
+  trueRemoveMomentMessagesAndErrorsCallback,
+  trueRemoveStepsMessagesAndErrorsCallback,
+} from "../utilities/moments";
 
 // searchParams keys
 
@@ -99,7 +110,7 @@ export const views = [
   "create-moment",
 ] as const;
 
-export const viewTitles = {
+export const viewTitles: { [K in View]: string } = {
   "update-moment": "Éditez",
   "read-moments": "Vos moments",
   "create-moment": "Créez",
@@ -112,7 +123,7 @@ export const subViews = [
   "future-moments",
 ] as const;
 
-export const subViewTitles = {
+export const subViewTitles: { [K in SubView]: string } = {
   "all-moments": "Tous",
   "past-moments": "Passés",
   "current-moments": "Actuels",
@@ -124,6 +135,17 @@ export const subViewPages = {
   "past-moments": PASTUSERMOMENTSPAGE,
   "current-moments": CURRENTUSERMOMENTSPAGE,
   "future-moments": FUTUREUSERMOMENTSPAGE,
+};
+
+// form section topic removeMessagesAndErrorsCallbacks
+
+export const formSectionTopicRemoves: {
+  [K in FormSectionTopic]: (
+    s: TrueCreateOrUpdateMomentState,
+  ) => TrueCreateOrUpdateMomentState;
+} = {
+  moment: trueRemoveMomentMessagesAndErrorsCallback,
+  steps: trueRemoveStepsMessagesAndErrorsCallback,
 };
 
 // default error messages

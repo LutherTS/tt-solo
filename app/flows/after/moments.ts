@@ -3,6 +3,9 @@ import {
   CreateOrUpdateMomentState,
   View,
   MomentFormVariant,
+  TrueCreateOrUpdateMomentState,
+  CreateOrUpdateMomentError,
+  CreateOrUpdateMomentSuccess,
 } from "@/app/types/moments";
 import {
   scrollToSection,
@@ -50,18 +53,17 @@ export const createOrUpdateMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    if (searchParams && push && pathname)
-      scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
-    // original below
-    else setScrollToTop("read-moments", setView);
+    setScrollToTop("read-moments", setView);
     // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
   }
 };
 
 export const trueCreateOrUpdateMomentAfterFlow = (
   variant: MomentFormVariant,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
-  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
+  createOrUpdateMomentState:
+    | CreateOrUpdateMomentError
+    | CreateOrUpdateMomentSuccess,
+  setCreateOrUpdateMomentState: SetState<TrueCreateOrUpdateMomentState>,
   setIsCRUDOpSuccessful: SetState<boolean>,
   // version 3 attempt bonuses
   searchParams: ReadonlyURLSearchParams,
@@ -70,8 +72,8 @@ export const trueCreateOrUpdateMomentAfterFlow = (
 ) => {
   // now = dateToInputDatetime(new Date());
 
-  if (createOrUpdateMomentState) {
-    switch (createOrUpdateMomentState.errorScrollPriority) {
+  if (createOrUpdateMomentState?.isSuccess === false) {
+    switch (createOrUpdateMomentState.error.errorScrollPriority) {
       case "moment":
         scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
         break;
@@ -84,13 +86,14 @@ export const trueCreateOrUpdateMomentAfterFlow = (
     }
 
     setCreateOrUpdateMomentState((s) => {
-      delete s?.errorScrollPriority;
+      if (s?.isSuccess === false) delete s.error.errorScrollPriority;
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete
       return s;
     });
   } else {
     setIsCRUDOpSuccessful(true);
 
+    console.log(createOrUpdateMomentState);
     scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
   }
 };
@@ -127,16 +130,19 @@ export const deleteMomentAfterFlow = (
 
 export const trueDeleteMomentAfterFlow = (
   variant: MomentFormVariant,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
+  createOrUpdateMomentState:
+    | CreateOrUpdateMomentError
+    | CreateOrUpdateMomentSuccess,
   setIsCRUDOpSuccessful: SetState<boolean>,
   // version 3 attempt bonuses
   searchParams: ReadonlyURLSearchParams,
   push: (href: string, options?: NavigateOptions) => void,
   pathname: string,
 ) => {
-  if (createOrUpdateMomentState) {
+  if (createOrUpdateMomentState?.isSuccess === false) {
     scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
   } else {
+    // I might even be able to do away with setIsCRUDOpSuccessful now that createOrUpdateMomentState has its own boolean
     setIsCRUDOpSuccessful(true);
 
     scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
