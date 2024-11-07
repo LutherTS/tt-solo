@@ -29,6 +29,9 @@ export const INITIAL_PAGE = 1;
 
 // TAKE will need to be in here to when I'll work on the success state of CreateOrUpdateMomentState
 
+// global take (limit in SQL) for all four subViews
+export const TAKE = 2;
+
 // HTML ids
 
 export const SEARCH_FORM_ID = "search-form";
@@ -114,6 +117,13 @@ export const subViewTitles = {
   "past-moments": "Passés",
   "current-moments": "Actuels",
   "future-moments": "Futurs",
+};
+
+export const subViewPages = {
+  "all-moments": USERMOMENTSPAGE,
+  "past-moments": PASTUSERMOMENTSPAGE,
+  "current-moments": CURRENTUSERMOMENTSPAGE,
+  "future-moments": FUTUREUSERMOMENTSPAGE,
 };
 
 // default error messages

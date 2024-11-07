@@ -28,6 +28,7 @@ import {
   MOMENTID,
   PASTUSERMOMENTSPAGE,
   SUBVIEW,
+  TAKE,
   USERMOMENTSPAGE,
   VIEW,
 } from "@/app/data/moments";
@@ -35,6 +36,7 @@ import { findUserIdByUsername } from "@/app/reads/users";
 import {
   countCurrentUserMomentsWithContains,
   countFutureUserMomentsWithContains,
+  countPastUserMomentsShownBeforeMoment,
   countPastUserMomentsWithContains,
   countUserMomentsWithContains,
   findCurrentUserMomentsWithContains,
@@ -48,6 +50,7 @@ import {
   revalidateMomentsServerFlow,
   createOrUpdateMomentServerFlow,
 } from "@/app/flows/server/moments";
+import prisma from "@/prisma/db";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still sometimes it says static route...
@@ -126,7 +129,7 @@ export default async function MomentsPage({
   // console.log({ totals })
 
   // TAKE is page-dependent here. Therefore the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
-  const TAKE = 2;
+  // const TAKE = 2; // TAKE is now a moments variable
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log({ maxPages });
@@ -337,6 +340,17 @@ export default async function MomentsPage({
 
   const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
   // console.log({ subView });
+
+  console.log(moment?.startDateAndTime);
+
+  // if (moment) {
+  //   const count = await countPastUserMomentsShownBeforeMoment(
+  //     userId,
+  //     now,
+  //     moment,
+  //   );
+  //   console.log(count);
+  // }
 
   // PART WRITE (a.k.a. server actions)
 

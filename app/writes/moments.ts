@@ -5,13 +5,16 @@ import {
   dataCreateMomentDestination,
   dataCreateMomentWithoutDestination,
 } from "./subwrites/moments";
-import { selectMomentId, whereMomentId } from "../reads/subreads/moments";
+import {
+  selectMomentIdNameAndDates,
+  whereMomentId,
+} from "../reads/subreads/moments";
 
 // The additions to dataCreateMomentWithoutDestination are sufficiently minuscule to be handled right here in Object.assign instead of finding nonexistant Prisma types that would satisfy them.
 
 // Defaults
 
-const select = selectMomentId;
+const select = selectMomentIdNameAndDates;
 
 // Creates
 
@@ -51,7 +54,6 @@ export async function createMomentAndDestination(
   destinationName: string,
   userId: string,
 ) {
-  const select = selectMomentId;
   const data = Object.assign(
     dataCreateMomentWithoutDestination(
       activity,

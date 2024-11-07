@@ -128,6 +128,8 @@ export const trueCreateOrUpdateMomentClientFlow = async (
     // At this time I can even save in the success path of the state the id of the element that's been created or updated, find a way to scroll down to it on the new view, and complete with a little animation that shows where it has been added.
     // I would say that's a lot better than what I have right now, and a lot more thought out, so that's what I'll be exploring, hopefully before the 20 this month.
 
+    // This is going back to the server flow.
+
     // const currentNow = dateToInputDatetime(new Date());
 
     // if (compareDesc(endMomentDate, currentNow) === 1)

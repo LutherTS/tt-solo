@@ -1,12 +1,23 @@
 import { revalidatePath } from "next/cache";
-import { add, compareDesc, isValid, roundToNearestHours, sub } from "date-fns";
+import {
+  add,
+  compareAsc,
+  compareDesc,
+  isValid,
+  roundToNearestHours,
+  sub,
+} from "date-fns";
 
 import {
   dateToInputDatetime,
+  makeConditionalSuccessStateProperties,
   makeStepsCompoundDurationsArray,
 } from "@/app/utilities/moments";
 import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
 import {
+  countCurrentUserMomentsShownBeforeMoment,
+  countFutureUserMomentsShownBeforeMoment,
+  countPastUserMomentsShownBeforeMoment,
   findMomentByIdAndUserId,
   findMomentByNameAndUserId,
 } from "@/app/reads/moments";
@@ -14,6 +25,8 @@ import { findDestinationIdByNameAndUserId } from "@/app/reads/destinations";
 import {
   createMomentAndDestination,
   createMomentFromFormData,
+  // createMomentAndDestination,
+  // createMomentFromFormData,
   deleteMomentByMomentId,
   updateMomentAndDestination,
   updateMomentFromFormData,
@@ -27,12 +40,14 @@ import {
   MomentFormVariant,
   MomentToCRUD,
   SelectMomentId,
+  SelectMomentIdNameAndDates,
   StepFromCRUD,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
 import {
   DEFAULT_MOMENT_MESSAGE,
   DEFAULT_MOMENT_SUBMESSAGE,
+  TAKE,
 } from "@/app/data/moments";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
@@ -49,9 +64,8 @@ export const createOrUpdateMomentServerFlow = async (
   destinationSelect: boolean,
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
-  version?: "v3",
 ): Promise<CreateOrUpdateMomentState> => {
-  const currentNow = dateToInputDatetime(new Date());
+  let currentNow = dateToInputDatetime(new Date());
 
   // in case somehow startMomentDate is not sent correctly
   if (!isValid(new Date(startMomentDate)))
@@ -233,6 +247,8 @@ export const createOrUpdateMomentServerFlow = async (
 
   let duration = steps.reduce((acc, curr) => acc + +curr.duree, 0).toString();
 
+  let moment: SelectMomentIdNameAndDates;
+
   if (variant === "creating") {
     const preexistingMoment = await findMomentByNameAndUserId(objectif, userId);
 
@@ -255,7 +271,7 @@ export const createOrUpdateMomentServerFlow = async (
       userId,
     );
 
-    let moment: SelectMomentId;
+    // let moment: SelectMomentIdAndDates;
 
     if (destinationEntry) {
       const destinationId = destinationEntry.id;
@@ -290,9 +306,8 @@ export const createOrUpdateMomentServerFlow = async (
       startMomentDate,
       momentId,
     );
-  }
-
-  if (variant === "updating") {
+  } else {
+    // if (variant === "updating") {
     if (!momentFromCRUD)
       return {
         momentMessages: {
@@ -312,7 +327,7 @@ export const createOrUpdateMomentServerFlow = async (
       userId,
     );
 
-    let moment: SelectMomentId;
+    // let moment: SelectMomentIdAndDates;
 
     if (destinationEntry) {
       const destinationId = destinationEntry.id;
@@ -355,18 +370,58 @@ export const createOrUpdateMomentServerFlow = async (
 
   const username = user.username;
 
-  if (version === "v3") {
-    // redirect directly from the flow
-  }
-  // Here's the culprit of the second GET
-  // but that has no effect on the issue
-  // it's been a combo of both
-  // now that I'm using the URL and the page is dynamic I don't need to revalidate. So perhaps now I need to do the redirect from the server and leave the scroll to top to the afterflow
-  // actually now it worked... but without scroll to top
-  // that's why I need to do the redirect from the action and level the scroll to top only to the afterflow
+  // revalidatePath should be above since the code below will return the state with its success properties
+  revalidatePath(`/users/${username}/moments`);
 
-  // original below
-  else revalidatePath(`/users/${username}/moments`);
+  // closer to functions reduce inevitable time issues
+  currentNow = dateToInputDatetime(new Date());
+
+  if (
+    // if the end of the moment is before now, it's "past-moments"
+    compareDesc(moment.endDateAndTime, currentNow) === 1
+  ) {
+    const { countPage } = await makeConditionalSuccessStateProperties(
+      userId,
+      currentNow,
+      moment,
+      countPastUserMomentsShownBeforeMoment,
+    );
+    console.log({
+      isSuccess: true,
+      success: { moment, countPage, subView: "past-moments" },
+    });
+  } else if (
+    // if the start of the moment is after now, it's "future-moments"
+    compareAsc(moment.startDateAndTime, currentNow) === 1
+  ) {
+    const { countPage } = await makeConditionalSuccessStateProperties(
+      userId,
+      currentNow,
+      moment,
+      countFutureUserMomentsShownBeforeMoment,
+    );
+    console.log({
+      isSuccess: true,
+      success: { moment, countPage, subView: "future-moments" },
+    });
+  }
+  // present by default // else, it can only be "current-moments"
+  else {
+    const { countPage } = await makeConditionalSuccessStateProperties(
+      userId,
+      currentNow,
+      moment,
+      countCurrentUserMomentsShownBeforeMoment,
+    );
+    console.log({
+      isSuccess: true,
+      success: { moment, countPage, subView: "current-moments" },
+    });
+  } // works
+  // I have all the data that I need. I just need to put it in the success portion of the upcoming TrueCreateOrUpdateMomentState.
+  // This will include the moment, the subView and the relevant countPage.
+  // The URLSearchParams will have subView, and the relevant PAGE number.
+  // And I've already created subViewPages for the URL.
 
   return null;
 };

@@ -1,6 +1,9 @@
 import { Prisma } from "@prisma/client";
 
-import { selectMomentId } from "@/app/reads/subreads/moments";
+import {
+  selectMomentId,
+  selectMomentIdNameAndDates,
+} from "@/app/reads/subreads/moments";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
@@ -130,14 +133,46 @@ export type CreateOrUpdateMomentState = {
   errorScrollPriority?: "moment" | "steps";
 } | null;
 
+export type TrueCreateOrUpdateMomentState = {
+  isSuccess?: boolean;
+  error: {
+    momentMessages?: MomentMessages;
+    momentErrors?: {
+      destinationName?: string[];
+      momentActivity?: string[];
+      momentName?: string[];
+      momentIsIndispensable?: string[];
+      momentDescription?: string[];
+      momentStartDateAndTime?: string[];
+    };
+    stepsMessages?: StepsMessages;
+    stepsErrors?: {
+      stepName?: string[];
+      stepDescription?: string[];
+      realStepDuration?: string[];
+    };
+    errorScrollPriority?: "moment" | "steps";
+  };
+  success: {
+    moment: SelectMomentIdNameAndDates; // voluntarily sending to the client the data from the moment that was needed in the server to obtain the expected effects of the after flow
+    countPage: number;
+    subView: SubView;
+  };
+} | null;
+
 export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<CreateOrUpdateMomentState>;
 
 export type RevalidateMoments = () => Promise<void>;
 
-export type SelectMomentId = Prisma.UserGetPayload<{
+// no longer used
+export type SelectMomentId = Prisma.MomentGetPayload<{
   select: typeof selectMomentId;
+}>;
+
+export type SelectMomentIdNameAndDates = Prisma.MomentGetPayload<{
+  select: typeof selectMomentIdNameAndDates;
 }>;
 
 export type MomentFormIds = {

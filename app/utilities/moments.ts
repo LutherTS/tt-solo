@@ -9,12 +9,13 @@ import {
   MomentToCRUD,
   SubView,
   UserMomentsToCRUD,
+  SelectMomentIdNameAndDates,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { MOMENTID, subViews, VIEW } from "../data/moments";
+import { MOMENTID, subViews, TAKE, VIEW } from "../data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -150,10 +151,6 @@ export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
   // https://www.bajorunas.tech/blog/typescript-generics-inheritance
   desiredView: DesiredView,
   setDesiredView: SetState<DesiredViews>,
-  searchParams?: ReadonlyURLSearchParams,
-  push?: (href: string, options?: NavigateOptions) => void,
-  pathname?: string,
-  momentId?: string,
 ) => {
   // setDesiredView will need to be replace by something replacing the URL.
   // But since the arguments are going to different it's also going to be different function altogether.
@@ -307,6 +304,30 @@ export const defineSubView = (
 
     return initialSubView;
   }
+};
+
+export const makeConditionalSuccessStateProperties = async (
+  userId: string,
+  currentNow: string,
+  moment: SelectMomentIdNameAndDates,
+  countFunction: (
+    userId: string,
+    nowString: string,
+    moment: SelectMomentIdNameAndDates,
+  ) => Promise<number>,
+  // callback: Promise<number> // I could use this instead of all the arguments, but I'd rather keep passing the function and its arguments instead for better comprehension
+): Promise<{ countPage: number }> => {
+  const count = await countFunction(userId, currentNow, moment);
+  const countPage = Math.ceil((count + 1) / TAKE);
+
+  // This is what the callback could have been
+  // const callback = countFunction(
+  //   userId,
+  //   currentNow,
+  //   moment,
+  // );
+
+  return { countPage };
 };
 
 /* Notes
