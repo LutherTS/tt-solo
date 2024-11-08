@@ -12,6 +12,8 @@ import {
   MomentFormVariant,
   CreateOrUpdateMomentState,
   TrueCreateOrUpdateMomentState,
+  CreateOrUpdateMomentError,
+  CreateOrUpdateMomentSuccess,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -164,27 +166,24 @@ export default async function MomentsPage({
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      findUserMomentsWithContains(userId, contains, userMomentsPage, TAKE),
+      findUserMomentsWithContains(userId, contains, userMomentsPage),
       findPastUserMomentsWithContains(
         userId,
         contains,
         now,
         pastUserMomentsPage,
-        TAKE,
       ),
       findCurrentUserMomentsWithContains(
         userId,
         contains,
         now,
         currentUserMomentsPage,
-        TAKE,
       ),
       findFutureUserMomentsWithContains(
         userId,
         contains,
         now,
         futureUserMomentsPage,
-        TAKE,
       ),
     ]);
   // console.log({
@@ -354,7 +353,7 @@ export default async function MomentsPage({
     momentFromCRUD: MomentToCRUD | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
-  ): Promise<TrueCreateOrUpdateMomentState> {
+  ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
     // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
@@ -377,7 +376,7 @@ export default async function MomentsPage({
 
   async function deleteMoment(
     momentFromCRUD: MomentToCRUD | undefined,
-  ): Promise<TrueCreateOrUpdateMomentState> {
+  ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
     return await trueDeleteMomentServerFlow(momentFromCRUD, user);

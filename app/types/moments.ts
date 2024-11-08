@@ -10,6 +10,7 @@ import {
   FUTUREUSERMOMENTSPAGE,
   MOMENTID,
   PASTUSERMOMENTSPAGE,
+  SUBVIEW,
   USERMOMENTSPAGE,
   VIEW,
 } from "@/app/data/moments";
@@ -100,7 +101,7 @@ export type TrueCreateOrUpdateMoment = (
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
-) => Promise<TrueCreateOrUpdateMomentState>;
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 
 type FormMessages = {
   message?: string;
@@ -187,7 +188,7 @@ export type DeleteMoment = (
 
 export type TrueDeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
-) => Promise<TrueCreateOrUpdateMomentState>;
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 
 export type RevalidateMoments = () => Promise<void>;
 
@@ -223,7 +224,8 @@ export type MomentsSearchParams = {
   [PASTUSERMOMENTSPAGE]: string;
   [CURRENTUSERMOMENTSPAGE]: string;
   [FUTUREUSERMOMENTSPAGE]: string;
-  [VIEW]: string;
+  [VIEW]: View;
+  [SUBVIEW]: SubView;
   [MOMENTID]: string;
 };
 

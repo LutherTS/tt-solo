@@ -23,6 +23,8 @@ import {
   TrueCreateOrUpdateMomentState,
   TrueCreateOrUpdateMoment,
   TrueDeleteMoment,
+  CreateOrUpdateMomentError,
+  CreateOrUpdateMomentSuccess,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -93,9 +95,8 @@ export const trueCreateOrUpdateMomentClientFlow = async (
   destinationSelect: boolean,
   activitySelect: boolean,
   createOrUpdateMomentState: TrueCreateOrUpdateMomentState,
-  // endMomentDate: string,
-  // setSubView: SetState<SubView>,
-): Promise<TrueCreateOrUpdateMomentState> => {
+  // ): Promise<TrueCreateOrUpdateMomentState> => {
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   event.preventDefault();
 
   const createOrUpdateMomentBound = createOrUpdateMoment.bind(
@@ -154,7 +155,7 @@ export const resetMomentClientFlow = (
   setInputSwitchKey: SetState<string>,
   setDestinationSelect: SetState<boolean>,
   setActivitySelect: SetState<boolean>,
-): CreateOrUpdateMomentState => {
+): null => {
   // if (revalidateMoments) await revalidateMoments();
   // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
   // setStartMomentDate(nowRoundedUpTenMinutes);
@@ -190,7 +191,7 @@ export const trueResetMomentClientFlow = (
   setInputSwitchKey: SetState<string>,
   setDestinationSelect: SetState<boolean>,
   setActivitySelect: SetState<boolean>,
-): TrueCreateOrUpdateMomentState => {
+): null => {
   // if (revalidateMoments) await revalidateMoments();
   // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
   // setStartMomentDate(nowRoundedUpTenMinutes);
@@ -245,7 +246,8 @@ export const deleteMomentClientFlow = async (
 export const trueDeleteMomentClientFlow = async (
   deleteMoment: TrueDeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
-): Promise<TrueCreateOrUpdateMomentState> => {
+  // ): Promise<TrueCreateOrUpdateMomentState> => {
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (deleteMoment) {
     const deleteMomentBound = deleteMoment.bind(null, moment);
     // spreading from the original state is currently unnecessary
@@ -410,7 +412,9 @@ export const trueCreateOrUpdateStepClientFlow = (
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
   createOrUpdateMomentState: TrueCreateOrUpdateMomentState,
-): TrueCreateOrUpdateMomentState => {
+  setIsAnimationDelayed?: SetState<boolean>,
+  // ): TrueCreateOrUpdateMomentState => {
+): CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess => {
   event.preventDefault();
 
   const formData = new FormData(event.currentTarget);
@@ -562,6 +566,8 @@ export const trueCreateOrUpdateStepClientFlow = (
   setSteps(newSteps);
   setStepVisible("create");
 
+  if (setIsAnimationDelayed) setIsAnimationDelayed(true);
+
   // return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };
   return {
     isSuccess: false,
@@ -585,7 +591,7 @@ export const resetStepClientFlow = (
 export const trueResetStepClientFlow = (
   setStepDuree: SetState<string>,
   createOrUpdateMomentState: TrueCreateOrUpdateMomentState,
-): TrueCreateOrUpdateMomentState => {
+): CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess => {
   // in complement to HTML reset, since duree is controlled
   setStepDuree(STEP_DURATION_ORIGINAL);
   // return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };

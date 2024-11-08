@@ -18,6 +18,7 @@ import {
   whereUserMoments,
 } from "./subreads/moments";
 import { SelectMomentIdNameAndDates } from "../types/moments";
+import { TAKE } from "../data/moments";
 
 // Counts
 
@@ -147,7 +148,6 @@ export async function findUserMomentsWithContains(
   userId: string,
   contains: string,
   userMomentsPage: number,
-  TAKE: number,
 ) {
   const include = includeMomentDestinationAndSteps;
   const where = Object.assign(
@@ -156,7 +156,7 @@ export async function findUserMomentsWithContains(
   );
   const orderBy = [momentsOrderByStartDesc, momentsOrderByNameAsc];
   const take = TAKE;
-  const skip = (userMomentsPage - 1) * TAKE;
+  const skip = Math.max(0, userMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
     include,
@@ -172,7 +172,6 @@ export async function findPastUserMomentsWithContains(
   contains: string,
   nowString: string,
   pastUserMomentsPage: number,
-  TAKE: number,
 ) {
   const include = includeMomentDestinationAndSteps;
   const where = Object.assign(
@@ -182,7 +181,7 @@ export async function findPastUserMomentsWithContains(
   );
   const orderBy = [momentsOrderByStartDesc, momentsOrderByNameAsc];
   const take = TAKE;
-  const skip = (pastUserMomentsPage - 1) * TAKE;
+  const skip = Math.max(0, pastUserMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
     include,
@@ -198,7 +197,6 @@ export async function findCurrentUserMomentsWithContains(
   contains: string,
   nowString: string,
   currentUserMomentsPage: number,
-  TAKE: number,
 ) {
   const include = includeMomentDestinationAndSteps;
   const where = Object.assign(
@@ -208,7 +206,7 @@ export async function findCurrentUserMomentsWithContains(
   );
   const orderBy = [momentsOrderByStartAsc, momentsOrderByNameAsc];
   const take = TAKE;
-  const skip = (currentUserMomentsPage - 1) * TAKE;
+  const skip = Math.max(0, currentUserMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
     include,
@@ -224,7 +222,6 @@ export async function findFutureUserMomentsWithContains(
   contains: string,
   nowString: string,
   futureUserMomentsPage: number,
-  TAKE: number,
 ) {
   const include = includeMomentDestinationAndSteps;
   const where = Object.assign(
@@ -234,7 +231,7 @@ export async function findFutureUserMomentsWithContains(
   );
   const orderBy = [momentsOrderByStartAsc, momentsOrderByNameAsc];
   const take = TAKE;
-  const skip = (futureUserMomentsPage - 1) * TAKE;
+  const skip = Math.max(0, futureUserMomentsPage - 1) * TAKE;
 
   return await prisma.moment.findMany({
     include,

@@ -1,4 +1,10 @@
-import { MOMENT_FORM_IDS } from "@/app/data/moments";
+import {
+  MOMENT_FORM_IDS,
+  MOMENTID,
+  SUBVIEW,
+  subViewPages,
+  VIEW,
+} from "@/app/data/moments";
 import {
   CreateOrUpdateMomentState,
   View,
@@ -6,13 +12,19 @@ import {
   TrueCreateOrUpdateMomentState,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
+  MomentsSearchParams,
+  // TrueMomentsSearchParams,
 } from "@/app/types/moments";
 import {
   scrollToSection,
   scrollToTopOfDesiredView,
   setScrollToTop,
 } from "@/app/utilities/moments";
-import { SetState } from "@/app/types/globals";
+import {
+  SetState,
+  // TrueTypedURLSearchParams,
+  TypedURLSearchParams,
+} from "@/app/types/globals";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { ReadonlyURLSearchParams } from "next/navigation";
 
@@ -93,8 +105,27 @@ export const trueCreateOrUpdateMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    console.log(createOrUpdateMomentState);
-    scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
+    // console.log(createOrUpdateMomentState);
+
+    const newSearchParams = new URLSearchParams(
+      searchParams,
+    ) as TypedURLSearchParams<MomentsSearchParams>;
+
+    newSearchParams.set(VIEW, "read-moments");
+    newSearchParams.delete(MOMENTID);
+
+    if (createOrUpdateMomentState.success.subView)
+      newSearchParams.set(SUBVIEW, createOrUpdateMomentState.success.subView);
+    if (
+      createOrUpdateMomentState.success.subView &&
+      createOrUpdateMomentState.success.countPage
+    )
+      newSearchParams.set(
+        subViewPages[createOrUpdateMomentState.success.subView],
+        createOrUpdateMomentState.success.countPage.toString(),
+      );
+
+    push(`${pathname}?${newSearchParams.toString()}`); // it works, only thing left is typing
   }
 };
 
@@ -112,19 +143,19 @@ export const deleteMomentAfterFlow = (
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
   // version 3 attempt bonuses
-  searchParams?: ReadonlyURLSearchParams,
-  push?: (href: string, options?: NavigateOptions) => void,
-  pathname?: string,
+  // searchParams?: ReadonlyURLSearchParams,
+  // push?: (href: string, options?: NavigateOptions) => void,
+  // pathname?: string,
 ) => {
   if (createOrUpdateMomentState) {
     scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
   } else {
     setIsCRUDOpSuccessful(true);
 
-    if (searchParams && push && pathname)
-      scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
+    // if (searchParams && push && pathname)
+    //   scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
     // original below
-    else setScrollToTop("read-moments", setView);
+    setScrollToTop("read-moments", setView);
   }
 };
 

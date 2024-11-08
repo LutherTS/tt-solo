@@ -36,7 +36,9 @@ import {
   deleteMomentStepsByMomentId,
 } from "@/app/writes/steps";
 import {
+  CreateOrUpdateMomentError,
   CreateOrUpdateMomentState,
+  CreateOrUpdateMomentSuccess,
   MomentFormVariant,
   MomentToCRUD,
   SelectMomentId,
@@ -436,7 +438,7 @@ export const trueCreateOrUpdateMomentServerFlow = async (
   destinationSelect: boolean,
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
-): Promise<TrueCreateOrUpdateMomentState> => {
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   let currentNow = dateToInputDatetime(new Date());
 
   // in case somehow startMomentDate is not sent correctly
@@ -819,11 +821,7 @@ export const trueCreateOrUpdateMomentServerFlow = async (
       isSuccess: true,
       success: { moment, countPage, subView: "current-moments" },
     };
-  } // works
-  // I have all the data that I need. I just need to put it in the success portion of the upcoming TrueCreateOrUpdateMomentState.
-  // This will include the moment, the subView and the relevant countPage.
-  // The URLSearchParams will have subView, and the relevant PAGE number.
-  // And I've already created subViewPages for the URL.
+  }
 };
 
 const createStepsInCreateOrUpdateMomentServerFlow = async (
@@ -909,8 +907,8 @@ export const deleteMomentServerFlow = async (
 export const trueDeleteMomentServerFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
-  version?: "v3",
-): Promise<TrueCreateOrUpdateMomentState> => {
+  // ): Promise<TrueCreateOrUpdateMomentState> => {
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (!momentFromCRUD)
     return {
       isSuccess: false,
@@ -949,11 +947,10 @@ export const trueDeleteMomentServerFlow = async (
 
   const username = user.username;
 
-  if (version === "v3") {
-  } // original below
-  else revalidatePath(`/users/${username}/moments`);
+  revalidatePath(`/users/${username}/moments`);
 
-  return null;
+  // return null;
+  return { isSuccess: true, success: {} };
 };
 
 export const revalidateMomentsServerFlow = async (
