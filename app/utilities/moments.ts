@@ -13,11 +13,9 @@ import {
   TrueCreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { findMomentByIdAndUserId } from "../reads/moments";
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { MOMENTID, subViews, TAKE, VIEW } from "../data/moments";
-import { error } from "console";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>

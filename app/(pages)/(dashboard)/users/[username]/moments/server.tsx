@@ -788,8 +788,8 @@ export function StepInputs({
         errors={createOrUpdateMomentState?.error?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
       >
-        <p className="text-sm font-medium text-blue-900">
-          commence à{" "}
+        <p className="font-mono text-xs font-medium text-blue-900">
+          de{" "}
           {step // && stepAddingTime (can equal 0 which is falsy)
             ? format(
                 add(startMomentDate, {
@@ -802,7 +802,23 @@ export function StepInputs({
                   minutes: stepsCompoundDurations.at(-1),
                 }),
                 "HH:mm",
-              )}
+              )}{" "}
+          à{" "}
+          <span className="text-blue-700">
+            {step // && stepAddingTime (can equal 0 which is falsy)
+              ? format(
+                  add(startMomentDate, {
+                    minutes: (stepAddingTime || 0) + +stepDuree,
+                  }),
+                  "HH:mm",
+                )
+              : format(
+                  add(startMomentDate, {
+                    minutes: (stepsCompoundDurations.at(-1) || 0) + +stepDuree,
+                  }),
+                  "HH:mm",
+                )}
+          </span>
         </p>
       </GlobalClientComponents.InputNumberControlled>
     </>
