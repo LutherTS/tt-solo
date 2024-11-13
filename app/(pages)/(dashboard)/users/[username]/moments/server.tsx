@@ -481,8 +481,8 @@ export function StepsSummaries({
   momentAddingTime: number;
 }) {
   return (
-    // try pt-5 instead pt-4
-    <div className="space-y-8 pt-5">
+    // try pt-5 instead pt-4 // formerly pt-5 now on MotionAddStepVisible
+    <div className="space-y-8">
       {/* the space between Récapitulatifs and the rest was assured by space-y-8, so let's just remake it for now in the fragment about */}
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">

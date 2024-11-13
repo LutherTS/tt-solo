@@ -109,10 +109,6 @@ import {
 } from "@/app/flows/after/moments";
 import { UseMeasureRect } from "react-use/lib/useMeasure";
 
-// steps animations data
-
-const CREATE_DURATION_AND_DELAY = 0.2;
-
 // this is now where the client-side begins, from ClientCore to Main and now to container of the carousel
 export function ViewsCarouselContainer({
   view,
@@ -558,6 +554,238 @@ export function ReadMomentsView({
     </div>
   );
 }
+
+// sure I can get the spans to be Server Components but this really is a whole
+export function SetSubViewButton({
+  e,
+  subView,
+}: {
+  e: SubView;
+  subView: SubView;
+}) {
+  // this needs to be inside the component because its entirely specific to the component
+  const className = "px-4 py-2 h-9 flex items-center justify-center";
+
+  // I prefer each Client Component that interact with the URL to have their own searchParams, pathname, push/replace trilogy.
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  function handleSubView() {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set(SUBVIEW, e);
+    replace(`${pathname}?${newSearchParams.toString()}`);
+  }
+
+  return (
+    <button
+      onClick={handleSubView}
+      className={clsx(
+        className,
+        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        subView === e && "focus-visible:outline-blue-500",
+        subView !== e && "focus-visible:outline-cyan-500",
+      )}
+    >
+      {/* real occupied space */}
+      <span className="invisible static">{subViewTitles[e]}</span>
+      {/* gradient text */}
+      <span
+        className={clsx(
+          className,
+          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+        )}
+      >
+        {subViewTitles[e]}
+      </span>
+      {/* white background */}
+      <div
+        className={clsx(
+          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+        )}
+      ></div>
+      {/* gradient border */}
+      <div
+        className={clsx(
+          "absolute inset-0 rounded-full",
+          subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
+          subView !== e && "bg-transparent",
+        )}
+      ></div>
+    </button>
+  );
+}
+
+export function RevalidateMomentsButton({
+  revalidateMomentsAction,
+  isRevalidateMomentsPending,
+  allButtonsDisabled,
+}: {
+  revalidateMomentsAction: (
+    event: MouseEvent<HTMLButtonElement>,
+  ) => Promise<void>;
+  isRevalidateMomentsPending: boolean;
+  allButtonsDisabled: boolean;
+}) {
+  return (
+    <button
+      form={SEARCH_FORM_ID}
+      onClick={revalidateMomentsAction}
+      disabled={allButtonsDisabled || isRevalidateMomentsPending}
+      className={clsx(
+        "flex h-9 items-center justify-center px-4 py-2",
+        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        "focus-visible:outline-cyan-500",
+      )}
+    >
+      {/* real occupied space */}
+      <span className="invisible static">
+        <Icons.ArrowPathSolid />
+      </span>
+      {/* gradient text */}
+      <span
+        className={clsx(
+          "flex h-9 items-center justify-center px-4 py-2",
+          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+        )}
+      >
+        <Icons.ArrowPathSolid className="size-6 text-blue-950" />
+      </span>
+      {/* white background */}
+      <div
+        className={clsx(
+          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+        )}
+      ></div>
+      {/* gradient border */}
+      <div className={clsx("absolute inset-0 rounded-full", "bg-white")}></div>
+    </button>
+  );
+}
+
+export function SearchForm({
+  searchParams,
+  debouncedHandleSearch,
+}: {
+  searchParams: ReadonlyURLSearchParams;
+  debouncedHandleSearch: debounce.DebouncedFunction<(term: string) => void>;
+}) {
+  return (
+    <form id={SEARCH_FORM_ID} noValidate>
+      <GlobalClientComponents.InputText
+        id={CONTAINS}
+        name={CONTAINS}
+        placeholder="Cherchez parmi vos moments..."
+        defaultValue={searchParams.get(CONTAINS)?.toString()}
+        onChange={(e) => {
+          debouncedHandleSearch(e.currentTarget.value);
+        }}
+      />
+    </form>
+  );
+}
+
+export function MomentInDateCard({
+  e3,
+  i3,
+  realMoments,
+}: {
+  e3: MomentToCRUD;
+  i3: number;
+  realMoments: MomentToCRUD[];
+}) {
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
+  // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
+  function handleUpdateMomentView() {
+    const moment = realMoments.find((e0) => e0.id === e3.id);
+
+    scrollToTopOfDesiredView(
+      "update-moment",
+      searchParams,
+      push,
+      pathname,
+      moment?.id,
+    );
+  }
+
+  return (
+    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
+      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+        <p className="font-medium text-blue-950">{e3.objective}</p>
+        <div className="invisible flex justify-end group-hover:visible">
+          <GlobalClientComponents.Button
+            type="button"
+            variant="destroy-step"
+            onClick={handleUpdateMomentView}
+          >
+            <Icons.PencilSquareSolid className="size-5" />
+          </GlobalClientComponents.Button>
+        </div>
+      </div>
+      <p>
+        <span className={"font-semibold text-neutral-800"}>
+          {e3.startDateAndTime.split("T")[1]}
+        </span>{" "}
+        • {numStringToTimeString(e3.duration)}
+        {e3.isIndispensable && (
+          <>
+            {" "}
+            •{" "}
+            <span className="text-sm font-semibold uppercase">
+              indispensable
+            </span>
+          </>
+        )}
+      </p>
+      <ol className="">
+        {e3.steps.map((e4) => (
+          <LocalServerComponents.StepInDateCard key={e4.id} e4={e4} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+export function PaginationButton({
+  handlePagination,
+  direction,
+  subView,
+  disabled,
+  icon,
+  iconClassName,
+  allButtonsDisabled,
+}: {
+  handlePagination: (direction: "left" | "right", subView: SubView) => void;
+  direction: "left" | "right";
+  subView: SubView;
+  disabled: boolean;
+  icon: Icons.IconName;
+  iconClassName?: string;
+  allButtonsDisabled: boolean;
+}) {
+  const Icon = Icons[icon];
+
+  return (
+    <button
+      // hum...
+      onClick={() => handlePagination(direction, subView)}
+      disabled={allButtonsDisabled || disabled}
+      className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
+    >
+      <div className="rounded-lg bg-white p-2 shadow">
+        <Icon className={iconClassName} />
+      </div>
+    </button>
+  );
+}
+
+// steps animations data, children of MomentForms
+
+const SHARED_HEIGHT_DURATION = 0.2; // previously ADD__HEIGHT_DURATION
+const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION / 2; // MotionAddStepVisible opacity duration is purposefully shorter (currently twice shorter than MotionAddStepVisible height duration). In fact, instead of currently writing 0.1 I can just right height duration divided by 2 // previously ADD_SWITCH__OPACITY_DURATION
 
 export function MomentForms({
   variant,
@@ -1013,421 +1241,6 @@ export function MomentForms({
   );
 }
 
-function MotionAddStepVisible({
-  stepVisible,
-  variant,
-  isResetStepPending,
-  createOrUpdateMomentState,
-  stepDureeCreate,
-  setStepDureeCreate,
-  isCreateStepPending,
-  cancelStepAction,
-  steps,
-  isCancelStepPending,
-  stepsCompoundDurations,
-  startMomentDate,
-  allButtonsDisabled,
-  addStepAction,
-  isAddStepPending,
-}: {
-  stepVisible: StepVisible;
-  variant: MomentFormVariant;
-  isResetStepPending: boolean;
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
-  stepDureeCreate: string;
-  setStepDureeCreate: SetState<string>;
-  isCreateStepPending: boolean;
-  cancelStepAction: () => void;
-  steps: StepFromCRUD[];
-  isCancelStepPending: boolean;
-  stepsCompoundDurations: number[];
-  startMomentDate: string;
-  allButtonsDisabled: boolean;
-  addStepAction: () => void;
-  isAddStepPending: boolean;
-}) {
-  const [ref, bounds] = useMeasure();
-  const reference = ref as Ref<HTMLDivElement>;
-
-  return (
-    <motion.div
-      animate={{ height: bounds.height > 0 ? bounds.height : "auto" }}
-      transition={{ duration: CREATE_DURATION_AND_DELAY }}
-    >
-      <div ref={reference}>
-        <AnimatePresence initial={false} mode="popLayout">
-          {(() => {
-            switch (stepVisible) {
-              case "creating":
-                return (
-                  <motion.div
-                    key={"stepVisibleCreating"}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.1 }}
-                    className="pb-4"
-                  >
-                    <LocalServerComponents.StepVisibleCreating
-                      key={stepVisible}
-                      momentFormVariant={variant}
-                      isResetStepPending={isResetStepPending}
-                      createOrUpdateMomentState={createOrUpdateMomentState}
-                      stepDureeCreate={stepDureeCreate}
-                      setStepDureeCreate={setStepDureeCreate}
-                      isCreateStepPending={isCreateStepPending}
-                      cancelStepAction={cancelStepAction}
-                      steps={steps}
-                      isCancelStepPending={isCancelStepPending}
-                      stepsCompoundDurations={stepsCompoundDurations}
-                      startMomentDate={startMomentDate}
-                      allButtonsDisabled={allButtonsDisabled}
-                    />
-                  </motion.div>
-                );
-              default:
-                return (
-                  <motion.div
-                    key={"stepVisibleCreate"}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.1 }}
-                    className="pb-4"
-                  >
-                    <LocalServerComponents.StepVisibleCreate
-                      key={stepVisible}
-                      addStepAction={addStepAction}
-                      isAddStepPending={isAddStepPending}
-                      allButtonsDisabled={allButtonsDisabled}
-                    />
-                  </motion.div>
-                );
-            }
-          })()}
-        </AnimatePresence>
-      </div>
-    </motion.div>
-  );
-}
-
-// sure I can get the spans to be Server Components but this really is a whole
-export function SetSubViewButton({
-  e,
-  subView,
-}: {
-  e: SubView;
-  subView: SubView;
-}) {
-  // this needs to be inside the component because its entirely specific to the component
-  const className = "px-4 py-2 h-9 flex items-center justify-center";
-
-  // I prefer each Client Component that interact with the URL to have their own searchParams, pathname, push/replace trilogy.
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { replace } = useRouter();
-
-  function handleSubView() {
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set(SUBVIEW, e);
-    replace(`${pathname}?${newSearchParams.toString()}`);
-  }
-
-  return (
-    <button
-      onClick={handleSubView}
-      className={clsx(
-        className,
-        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-        subView === e && "focus-visible:outline-blue-500",
-        subView !== e && "focus-visible:outline-cyan-500",
-      )}
-    >
-      {/* real occupied space */}
-      <span className="invisible static">{subViewTitles[e]}</span>
-      {/* gradient text */}
-      <span
-        className={clsx(
-          className,
-          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
-        )}
-      >
-        {subViewTitles[e]}
-      </span>
-      {/* white background */}
-      <div
-        className={clsx(
-          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-        )}
-      ></div>
-      {/* gradient border */}
-      <div
-        className={clsx(
-          "absolute inset-0 rounded-full",
-          subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
-          subView !== e && "bg-transparent",
-        )}
-      ></div>
-    </button>
-  );
-}
-
-export function RevalidateMomentsButton({
-  revalidateMomentsAction,
-  isRevalidateMomentsPending,
-  allButtonsDisabled,
-}: {
-  revalidateMomentsAction: (
-    event: MouseEvent<HTMLButtonElement>,
-  ) => Promise<void>;
-  isRevalidateMomentsPending: boolean;
-  allButtonsDisabled: boolean;
-}) {
-  return (
-    <button
-      form={SEARCH_FORM_ID}
-      onClick={revalidateMomentsAction}
-      disabled={allButtonsDisabled || isRevalidateMomentsPending}
-      className={clsx(
-        "flex h-9 items-center justify-center px-4 py-2",
-        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
-        "focus-visible:outline-cyan-500",
-      )}
-    >
-      {/* real occupied space */}
-      <span className="invisible static">
-        <Icons.ArrowPathSolid />
-      </span>
-      {/* gradient text */}
-      <span
-        className={clsx(
-          "flex h-9 items-center justify-center px-4 py-2",
-          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
-        )}
-      >
-        <Icons.ArrowPathSolid className="size-6 text-blue-950" />
-      </span>
-      {/* white background */}
-      <div
-        className={clsx(
-          "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-        )}
-      ></div>
-      {/* gradient border */}
-      <div className={clsx("absolute inset-0 rounded-full", "bg-white")}></div>
-    </button>
-  );
-}
-
-export function SearchForm({
-  searchParams,
-  debouncedHandleSearch,
-}: {
-  searchParams: ReadonlyURLSearchParams;
-  debouncedHandleSearch: debounce.DebouncedFunction<(term: string) => void>;
-}) {
-  return (
-    <form id={SEARCH_FORM_ID} noValidate>
-      <GlobalClientComponents.InputText
-        id={CONTAINS}
-        name={CONTAINS}
-        placeholder="Cherchez parmi vos moments..."
-        defaultValue={searchParams.get(CONTAINS)?.toString()}
-        onChange={(e) => {
-          debouncedHandleSearch(e.currentTarget.value);
-        }}
-      />
-    </form>
-  );
-}
-
-export function MomentInDateCard({
-  e3,
-  i3,
-  realMoments,
-}: {
-  e3: MomentToCRUD;
-  i3: number;
-  realMoments: MomentToCRUD[];
-}) {
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-  const pathname = usePathname();
-
-  // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
-  function handleUpdateMomentView() {
-    const moment = realMoments.find((e0) => e0.id === e3.id);
-
-    scrollToTopOfDesiredView(
-      "update-moment",
-      searchParams,
-      push,
-      pathname,
-      moment?.id,
-    );
-  }
-
-  return (
-    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
-      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
-        <p className="font-medium text-blue-950">{e3.objective}</p>
-        <div className="invisible flex justify-end group-hover:visible">
-          <GlobalClientComponents.Button
-            type="button"
-            variant="destroy-step"
-            onClick={handleUpdateMomentView}
-          >
-            <Icons.PencilSquareSolid className="size-5" />
-          </GlobalClientComponents.Button>
-        </div>
-      </div>
-      <p>
-        <span className={"font-semibold text-neutral-800"}>
-          {e3.startDateAndTime.split("T")[1]}
-        </span>{" "}
-        • {numStringToTimeString(e3.duration)}
-        {e3.isIndispensable && (
-          <>
-            {" "}
-            •{" "}
-            <span className="text-sm font-semibold uppercase">
-              indispensable
-            </span>
-          </>
-        )}
-      </p>
-      <ol className="">
-        {e3.steps.map((e4) => (
-          <LocalServerComponents.StepInDateCard key={e4.id} e4={e4} />
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-export function PaginationButton({
-  handlePagination,
-  direction,
-  subView,
-  disabled,
-  icon,
-  iconClassName,
-  allButtonsDisabled,
-}: {
-  handlePagination: (direction: "left" | "right", subView: SubView) => void;
-  direction: "left" | "right";
-  subView: SubView;
-  disabled: boolean;
-  icon: Icons.IconName;
-  iconClassName?: string;
-  allButtonsDisabled: boolean;
-}) {
-  const Icon = Icons[icon];
-
-  return (
-    <button
-      // hum...
-      onClick={() => handlePagination(direction, subView)}
-      disabled={allButtonsDisabled || disabled}
-      className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
-    >
-      <div className="rounded-lg bg-white p-2 shadow">
-        <Icon className={iconClassName} />
-      </div>
-    </button>
-  );
-}
-
-export function StepForm({
-  variant,
-  momentFormVariant,
-  currentStepId,
-  steps,
-  setSteps,
-  setStepVisible,
-  stepDuree,
-  setStepDuree,
-  startCreateOrUpdateStepTransition,
-  startResetStepTransition,
-  createOrUpdateMomentState,
-  setCreateOrUpdateMomentState,
-  setIsAnimationDelayed,
-}: {
-  variant: StepFormVariant;
-  momentFormVariant: MomentFormVariant;
-  currentStepId: string;
-  steps: StepFromCRUD[];
-  setSteps: SetState<StepFromCRUD[]>;
-  setStepVisible: SetState<StepVisible>;
-  stepDuree: string;
-  setStepDuree: SetState<string>;
-  startCreateOrUpdateStepTransition: TransitionStartFunction;
-  startResetStepTransition: TransitionStartFunction;
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
-  setCreateOrUpdateMomentState: SetState<TrueCreateOrUpdateMomentState>;
-  setIsAnimationDelayed?: SetState<boolean>;
-}) {
-  const stepFormId =
-    variant === "updating"
-      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
-      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
-
-  // createOrUpdateStepAction
-
-  const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
-    startCreateOrUpdateStepTransition(() => {
-      const state = trueCreateOrUpdateStepClientFlow(
-        event,
-        stepDuree,
-        steps,
-        variant,
-        currentStepId,
-        setSteps,
-        setStepVisible,
-        createOrUpdateMomentState,
-        setIsAnimationDelayed,
-      );
-
-      setCreateOrUpdateMomentState(state);
-    });
-  };
-
-  // resetStepAction
-
-  const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
-    startResetStepTransition(() => {
-      // do not confirm if reset is not triggered by stepFormCreating
-      const noConfirm =
-        // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
-        event.nativeEvent.explicitOriginalTarget?.form?.id !==
-        // triggers confirm only if original intent is from stepFormCreating
-        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
-
-      if (
-        // Attention please: this right here HARD LEVEL JAVASCRIPT.
-        noConfirm ||
-        confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
-      ) {
-        const state = trueResetStepClientFlow(
-          setStepDuree,
-          createOrUpdateMomentState,
-        );
-
-        setCreateOrUpdateMomentState(state);
-      } else event.preventDefault();
-    });
-  };
-
-  return (
-    <form
-      id={stepFormId}
-      onSubmit={createOrUpdateStepAction}
-      onReset={resetStepAction}
-      noValidate
-    ></form>
-  );
-}
-
 export function ReorderItem({
   step,
   index,
@@ -1543,12 +1356,12 @@ export function ReorderItem({
       transition={{
         // delays must be conditional
         opacity: {
-          duration: 0.1,
-          delay: isAnimationDelayed ? CREATE_DURATION_AND_DELAY : 0,
+          duration: SHARED_OPACITY_DURATION,
+          delay: isAnimationDelayed ? SHARED_HEIGHT_DURATION : 0,
         },
         height: {
-          duration: 0.2,
-          delay: isAnimationDelayed ? CREATE_DURATION_AND_DELAY : 0,
+          duration: SHARED_HEIGHT_DURATION,
+          delay: isAnimationDelayed ? SHARED_HEIGHT_DURATION : 0,
         },
       }}
       onAnimationStart={() => {
@@ -1632,7 +1445,7 @@ export function ReorderItem({
   );
 }
 
-// interruptability breaks the component
+// Caution: component may break under prolonged interruptability.
 function MotionIsCurrentStepUpdating({
   isCurrentStepUpdating,
   form,
@@ -1672,7 +1485,7 @@ function MotionIsCurrentStepUpdating({
   return (
     <motion.div
       animate={{ height: height > 0 ? height : "auto" }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: SHARED_HEIGHT_DURATION }}
     >
       <div ref={reference}>
         <AnimatePresence initial={false} mode="popLayout">
@@ -1682,7 +1495,7 @@ function MotionIsCurrentStepUpdating({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.1 }}
+              transition={{ duration: SHARED_OPACITY_DURATION }}
             >
               <div className="flex flex-col gap-y-8">
                 <LocalServerComponents.StepInputs
@@ -1733,7 +1546,7 @@ function MotionIsCurrentStepUpdating({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.1 }}
+              transition={{ duration: SHARED_OPACITY_DURATION }}
             >
               <LocalServerComponents.StepContents
                 step={step}
@@ -1747,6 +1560,201 @@ function MotionIsCurrentStepUpdating({
         </AnimatePresence>
       </div>
     </motion.div>
+  );
+}
+
+function MotionAddStepVisible({
+  stepVisible,
+  variant,
+  isResetStepPending,
+  createOrUpdateMomentState,
+  stepDureeCreate,
+  setStepDureeCreate,
+  isCreateStepPending,
+  cancelStepAction,
+  steps,
+  isCancelStepPending,
+  stepsCompoundDurations,
+  startMomentDate,
+  allButtonsDisabled,
+  addStepAction,
+  isAddStepPending,
+}: {
+  stepVisible: StepVisible;
+  variant: MomentFormVariant;
+  isResetStepPending: boolean;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  stepDureeCreate: string;
+  setStepDureeCreate: SetState<string>;
+  isCreateStepPending: boolean;
+  cancelStepAction: () => void;
+  steps: StepFromCRUD[];
+  isCancelStepPending: boolean;
+  stepsCompoundDurations: number[];
+  startMomentDate: string;
+  allButtonsDisabled: boolean;
+  addStepAction: () => void;
+  isAddStepPending: boolean;
+}) {
+  const [ref, bounds] = useMeasure();
+  const reference = ref as Ref<HTMLDivElement>;
+
+  const variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
+  return (
+    <motion.div
+      animate={{ height: bounds.height > 0 ? bounds.height : "auto" }}
+      transition={{ duration: SHARED_HEIGHT_DURATION }}
+    >
+      <div ref={reference}>
+        <AnimatePresence initial={false} mode="popLayout">
+          {(() => {
+            switch (stepVisible) {
+              case "creating":
+                return (
+                  <motion.div
+                    key={"stepVisibleCreating"}
+                    variants={variants}
+                    initial={"hidden"}
+                    animate={"visible"}
+                    exit={"hidden"}
+                    transition={{ duration: SHARED_OPACITY_DURATION }}
+                    className="pb-9" // formerly shared between StepsSummaries
+                  >
+                    <LocalServerComponents.StepVisibleCreating
+                      key={stepVisible}
+                      momentFormVariant={variant}
+                      isResetStepPending={isResetStepPending}
+                      createOrUpdateMomentState={createOrUpdateMomentState}
+                      stepDureeCreate={stepDureeCreate}
+                      setStepDureeCreate={setStepDureeCreate}
+                      isCreateStepPending={isCreateStepPending}
+                      cancelStepAction={cancelStepAction}
+                      steps={steps}
+                      isCancelStepPending={isCancelStepPending}
+                      stepsCompoundDurations={stepsCompoundDurations}
+                      startMomentDate={startMomentDate}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                  </motion.div>
+                );
+              default:
+                return (
+                  <motion.div
+                    key={"stepVisibleCreate"}
+                    variants={variants}
+                    initial={"hidden"}
+                    animate={"visible"}
+                    exit={"hidden"}
+                    transition={{ duration: SHARED_OPACITY_DURATION }}
+                    className="pb-9"
+                  >
+                    <LocalServerComponents.StepVisibleCreate
+                      key={stepVisible}
+                      addStepAction={addStepAction}
+                      isAddStepPending={isAddStepPending}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                  </motion.div>
+                );
+            }
+          })()}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+export function StepForm({
+  variant,
+  momentFormVariant,
+  currentStepId,
+  steps,
+  setSteps,
+  setStepVisible,
+  stepDuree,
+  setStepDuree,
+  startCreateOrUpdateStepTransition,
+  startResetStepTransition,
+  createOrUpdateMomentState,
+  setCreateOrUpdateMomentState,
+  setIsAnimationDelayed,
+}: {
+  variant: StepFormVariant;
+  momentFormVariant: MomentFormVariant;
+  currentStepId: string;
+  steps: StepFromCRUD[];
+  setSteps: SetState<StepFromCRUD[]>;
+  setStepVisible: SetState<StepVisible>;
+  stepDuree: string;
+  setStepDuree: SetState<string>;
+  startCreateOrUpdateStepTransition: TransitionStartFunction;
+  startResetStepTransition: TransitionStartFunction;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  setCreateOrUpdateMomentState: SetState<TrueCreateOrUpdateMomentState>;
+  setIsAnimationDelayed?: SetState<boolean>;
+}) {
+  const stepFormId =
+    variant === "updating"
+      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
+      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
+  // createOrUpdateStepAction
+
+  const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
+    startCreateOrUpdateStepTransition(() => {
+      const state = trueCreateOrUpdateStepClientFlow(
+        event,
+        stepDuree,
+        steps,
+        variant,
+        currentStepId,
+        setSteps,
+        setStepVisible,
+        createOrUpdateMomentState,
+        setIsAnimationDelayed,
+      );
+
+      setCreateOrUpdateMomentState(state);
+    });
+  };
+
+  // resetStepAction
+
+  const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
+    startResetStepTransition(() => {
+      // do not confirm if reset is not triggered by stepFormCreating
+      const noConfirm =
+        // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
+        event.nativeEvent.explicitOriginalTarget?.form?.id !==
+        // triggers confirm only if original intent is from stepFormCreating
+        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
+      if (
+        // Attention please: this right here HARD LEVEL JAVASCRIPT.
+        noConfirm ||
+        confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
+      ) {
+        const state = trueResetStepClientFlow(
+          setStepDuree,
+          createOrUpdateMomentState,
+        );
+
+        setCreateOrUpdateMomentState(state);
+      } else event.preventDefault();
+    });
+  };
+
+  return (
+    <form
+      id={stepFormId}
+      onSubmit={createOrUpdateStepAction}
+      onReset={resetStepAction}
+      noValidate
+    ></form>
   );
 }
 
