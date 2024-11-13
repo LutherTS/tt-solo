@@ -13,18 +13,13 @@ import {
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
   MomentsSearchParams,
-  // TrueMomentsSearchParams,
 } from "@/app/types/moments";
 import {
   scrollToSection,
   scrollToTopOfDesiredView,
   setScrollToTop,
 } from "@/app/utilities/moments";
-import {
-  SetState,
-  // TrueTypedURLSearchParams,
-  TypedURLSearchParams,
-} from "@/app/types/globals";
+import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { ReadonlyURLSearchParams } from "next/navigation";
 
@@ -37,13 +32,7 @@ export const createOrUpdateMomentAfterFlow = (
   setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
-  // version 3 attempt bonuses
-  searchParams?: ReadonlyURLSearchParams,
-  push?: (href: string, options?: NavigateOptions) => void,
-  pathname?: string,
 ) => {
-  // now = dateToInputDatetime(new Date());
-
   if (createOrUpdateMomentState) {
     switch (createOrUpdateMomentState.errorScrollPriority) {
       case "moment":
@@ -77,13 +66,10 @@ export const trueCreateOrUpdateMomentAfterFlow = (
     | CreateOrUpdateMomentSuccess,
   setCreateOrUpdateMomentState: SetState<TrueCreateOrUpdateMomentState>,
   setIsCRUDOpSuccessful: SetState<boolean>,
-  // version 3 attempt bonuses
   searchParams: ReadonlyURLSearchParams,
   push: (href: string, options?: NavigateOptions) => void,
   pathname: string,
 ) => {
-  // now = dateToInputDatetime(new Date());
-
   if (createOrUpdateMomentState?.isSuccess === false) {
     switch (createOrUpdateMomentState.error.errorScrollPriority) {
       case "moment":
@@ -105,8 +91,6 @@ export const trueCreateOrUpdateMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    // console.log(createOrUpdateMomentState);
-
     const newSearchParams = new URLSearchParams(
       searchParams,
     ) as TypedURLSearchParams<MomentsSearchParams>;
@@ -120,12 +104,17 @@ export const trueCreateOrUpdateMomentAfterFlow = (
       createOrUpdateMomentState.success.subView &&
       createOrUpdateMomentState.success.countPage
     )
-      newSearchParams.set(
-        subViewPages[createOrUpdateMomentState.success.subView],
-        createOrUpdateMomentState.success.countPage.toString(),
-      );
+      if (createOrUpdateMomentState.success.countPage === 1)
+        newSearchParams.delete(
+          subViewPages[createOrUpdateMomentState.success.subView],
+        );
+      else
+        newSearchParams.set(
+          subViewPages[createOrUpdateMomentState.success.subView],
+          createOrUpdateMomentState.success.countPage.toString(),
+        );
 
-    push(`${pathname}?${newSearchParams.toString()}`); // it works, only thing left is typing
+    push(`${pathname}?${newSearchParams.toString()}`);
   }
 };
 
@@ -142,19 +131,12 @@ export const deleteMomentAfterFlow = (
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
-  // version 3 attempt bonuses
-  // searchParams?: ReadonlyURLSearchParams,
-  // push?: (href: string, options?: NavigateOptions) => void,
-  // pathname?: string,
 ) => {
   if (createOrUpdateMomentState) {
     scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
   } else {
     setIsCRUDOpSuccessful(true);
 
-    // if (searchParams && push && pathname)
-    //   scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
-    // original below
     setScrollToTop("read-moments", setView);
   }
 };
@@ -165,7 +147,6 @@ export const trueDeleteMomentAfterFlow = (
     | CreateOrUpdateMomentError
     | CreateOrUpdateMomentSuccess,
   setIsCRUDOpSuccessful: SetState<boolean>,
-  // version 3 attempt bonuses
   searchParams: ReadonlyURLSearchParams,
   push: (href: string, options?: NavigateOptions) => void,
   pathname: string,
@@ -173,7 +154,6 @@ export const trueDeleteMomentAfterFlow = (
   if (createOrUpdateMomentState?.isSuccess === false) {
     scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
   } else {
-    // I might even be able to do away with setIsCRUDOpSuccessful now that createOrUpdateMomentState has its own boolean
     setIsCRUDOpSuccessful(true);
 
     scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);

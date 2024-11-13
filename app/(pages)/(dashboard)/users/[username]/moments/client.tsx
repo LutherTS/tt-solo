@@ -40,9 +40,6 @@ import * as LocalServerComponents from "./server";
 import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
-  CreateOrUpdateMoment,
-  CreateOrUpdateMomentState,
-  DeleteMoment,
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
@@ -57,8 +54,6 @@ import {
   TrueCreateOrUpdateMomentState,
   TrueCreateOrUpdateMoment,
   TrueDeleteMoment,
-  CreateOrUpdateMomentError,
-  CreateOrUpdateMomentSuccess,
 } from "@/app/types/moments";
 import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
@@ -80,9 +75,6 @@ import {
   defineCurrentPage,
   defineDesiredView,
   makeStepsCompoundDurationsArray,
-  numStringToTimeString,
-  removeMomentMessagesAndErrorsCallback,
-  removeStepsMessagesAndErrorsCallback,
   rotateSearchParams,
   roundTimeUpTenMinutes,
   scrollToTopOfDesiredView,
@@ -90,11 +82,7 @@ import {
   trueRemoveStepsMessagesAndErrorsCallback,
 } from "@/app/utilities/moments";
 import {
-  createOrUpdateStepClientFlow,
-  deleteMomentClientFlow,
   deleteStepClientFlow,
-  resetMomentClientFlow,
-  resetStepClientFlow,
   revalidateMomentsClientFlow,
   trueCreateOrUpdateMomentClientFlow,
   trueCreateOrUpdateStepClientFlow,
@@ -107,9 +95,10 @@ import {
   trueCreateOrUpdateMomentAfterFlow,
   trueDeleteMomentAfterFlow,
 } from "@/app/flows/after/moments";
-import { UseMeasureRect } from "react-use/lib/useMeasure";
 
-// this is now where the client-side begins, from ClientCore to Main and now to container of the carousel
+// this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
+
+// NOTEWORTHY: This can be turned into a server component if I use CSS transitions instead of Framer Motion.
 export function ViewsCarouselContainer({
   view,
   now,
@@ -160,7 +149,7 @@ export function ViewsCarouselContainer({
       initial={false}
       transition={{
         type: "spring",
-        // createOrUpdateMomentState.isSuccess
+        // if the transition is from a successful write operation (from the CRUD but excluding R or read) go with config A, else go with config B
         bounce: isCRUDOpSuccessful ? 0.2 : 0,
         duration: isCRUDOpSuccessful ? 0.4 : 0.2,
       }}
@@ -232,36 +221,7 @@ export function ViewsCarouselContainer({
   );
 }
 
-export function SetViewButton({ view }: { view: View }) {
-  const desiredView = defineDesiredView(view);
-
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-  const pathname = usePathname();
-
-  return (
-    <GlobalClientComponents.Button
-      type="button"
-      variant="destroy-step"
-      onClick={() =>
-        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname)
-      }
-    >
-      {(() => {
-        switch (desiredView) {
-          // no case "update-moment", since moment-specific
-          case "read-moments":
-            return <>Vos moments</>;
-          case "create-moment":
-            return <>Créez un moment</>;
-          default:
-            return null;
-        }
-      })()}
-    </GlobalClientComponents.Button>
-  );
-}
-
+// NOTEWORTHY: To my knowledge, this is the furthest I could push down the client boundary because useMeasure as a hook reads from the DOM itself, unique to each user's browsing environment.
 export function ViewSegment({
   id,
   currentView,
@@ -273,6 +233,7 @@ export function ViewSegment({
   currentViewHeight: MotionValue<number>;
   children: React.ReactNode;
 }) {
+  // usually I should use bounds instead of { height } so that I'm allowed to name bounds whatever I want
   const [ref, { height }] = useMeasure();
   // making TypeScript happy
   const reference = ref as Ref<HTMLDivElement>;
@@ -685,13 +646,11 @@ export function SearchForm({
   );
 }
 
-export function MomentInDateCard({
+export function UpdateMomentViewButton({
   e3,
-  i3,
   realMoments,
 }: {
   e3: MomentToCRUD;
-  i3: number;
   realMoments: MomentToCRUD[];
 }) {
   const searchParams = useSearchParams();
@@ -712,40 +671,13 @@ export function MomentInDateCard({
   }
 
   return (
-    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
-      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
-        <p className="font-medium text-blue-950">{e3.objective}</p>
-        <div className="invisible flex justify-end group-hover:visible">
-          <GlobalClientComponents.Button
-            type="button"
-            variant="destroy-step"
-            onClick={handleUpdateMomentView}
-          >
-            <Icons.PencilSquareSolid className="size-5" />
-          </GlobalClientComponents.Button>
-        </div>
-      </div>
-      <p>
-        <span className={"font-semibold text-neutral-800"}>
-          {e3.startDateAndTime.split("T")[1]}
-        </span>{" "}
-        • {numStringToTimeString(e3.duration)}
-        {e3.isIndispensable && (
-          <>
-            {" "}
-            •{" "}
-            <span className="text-sm font-semibold uppercase">
-              indispensable
-            </span>
-          </>
-        )}
-      </p>
-      <ol className="">
-        {e3.steps.map((e4) => (
-          <LocalServerComponents.StepInDateCard key={e4.id} e4={e4} />
-        ))}
-      </ol>
-    </div>
+    <GlobalClientComponents.Button
+      type="button"
+      variant="destroy-step"
+      onClick={handleUpdateMomentView}
+    >
+      <Icons.PencilSquareSolid className="size-5" />
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -770,7 +702,7 @@ export function PaginationButton({
 
   return (
     <button
-      // hum...
+      // hum... // because I'm providing external arguments, and actually handlePagination is also external
       onClick={() => handlePagination(direction, subView)}
       disabled={allButtonsDisabled || disabled}
       className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
@@ -1035,7 +967,7 @@ export function MomentForms({
 
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
-  // steps animations
+  // steps animation controls
 
   const [isAnimationDelayed, setIsAnimationDelayed] = useState(false);
 
@@ -1380,14 +1312,7 @@ export function ReorderItem({
         }}
         // whileDrag={{ opacity: 0.5 }} // buggy though
       >
-        <div
-          className={clsx(
-            "flex flex-col gap-y-8",
-            // index !== steps.length - 1 && "pb-8", // I remember I did that specifically for animations
-            // "pb-4 pt-5",
-            "pb-9",
-          )}
-        >
+        <div className={clsx("flex flex-col gap-y-8", "pb-9")}>
           <div className="flex select-none items-baseline justify-between">
             <p
               className={clsx(
@@ -1479,12 +1404,17 @@ function MotionIsCurrentStepUpdating({
   index: number;
   hasAPreviousStepUpdating: boolean;
 }) {
-  const [ref, { height }] = useMeasure();
+  const [ref, bounds] = useMeasure();
   const reference = ref as Ref<HTMLDivElement>;
+
+  const variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
 
   return (
     <motion.div
-      animate={{ height: height > 0 ? height : "auto" }}
+      animate={{ height: bounds.height > 0 ? bounds.height : "auto" }}
       transition={{ duration: SHARED_HEIGHT_DURATION }}
     >
       <div ref={reference}>
@@ -1492,9 +1422,10 @@ function MotionIsCurrentStepUpdating({
           {isCurrentStepUpdating ? (
             <motion.div
               key={"StepInputs"}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              variants={variants}
+              initial={"hidden"}
+              animate={"visible"}
+              exit={"hidden"}
               transition={{ duration: SHARED_OPACITY_DURATION }}
             >
               <div className="flex flex-col gap-y-8">
@@ -1543,9 +1474,10 @@ function MotionIsCurrentStepUpdating({
           ) : (
             <motion.div
               key={"StepContents"}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              variants={variants}
+              initial={"hidden"}
+              animate={"visible"}
+              exit={"hidden"}
               transition={{ duration: SHARED_OPACITY_DURATION }}
             >
               <LocalServerComponents.StepContents
@@ -1758,22 +1690,52 @@ export function StepForm({
   );
 }
 
+export function SetViewButton({ view }: { view: View }) {
+  const desiredView = defineDesiredView(view);
+
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
+  return (
+    <GlobalClientComponents.Button
+      type="button"
+      variant="destroy-step"
+      onClick={() =>
+        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname)
+      }
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </GlobalClientComponents.Button>
+  );
+}
+
 // keeping ClientCore and Main a comments to highlight the server-side progress made
 const localClientComponents = {
   // ClientCore,
   // Main,
-  SetViewButton,
-  ViewsCarouselContainer,
-  ViewSegment,
+  ViewsCarouselContainer, // next
+  ViewSegment, // known max
   ReadMomentsView,
-  MomentForms,
   SetSubViewButton,
   RevalidateMomentsButton,
   SearchForm,
-  MomentInDateCard,
+  UpdateMomentViewButton,
+  MomentForms,
   PaginationButton,
   StepForm,
   ReorderItem,
+  SetViewButton,
 } as const;
 
 export type LocalClientComponentsName = keyof typeof localClientComponents;

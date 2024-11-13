@@ -13,11 +13,6 @@ import {
   viewTitles,
 } from "@/app/data/moments";
 import {
-  CreateOrUpdateMoment,
-  CreateOrUpdateMomentError,
-  CreateOrUpdateMomentState,
-  CreateOrUpdateMomentSuccess,
-  DeleteMoment,
   MomentFormVariant,
   MomentsDateToCRUD,
   MomentsDestinationToCRUD,
@@ -123,6 +118,7 @@ export function Main({
     <main>
       {/* ViewsCarousel */}
       <ViewsCarouselWrapper>
+        {/* where the client boundary currently begins */}
         <LocalClientComponents.ViewsCarouselContainer
           now={now}
           allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -249,13 +245,58 @@ export function DestinationInDateCard({
         </p>
       </div>
       {e2.moments.map((e3, i3) => (
-        <LocalClientComponents.MomentInDateCard
+        // no longer from LocalClientComponents
+        <MomentInDateCard
           key={e3.id + e2.id} // because of userMoments duplicates
           e3={e3}
           i3={i3}
           realMoments={realMoments}
         />
       ))}
+    </div>
+  );
+}
+
+export function MomentInDateCard({
+  e3,
+  i3,
+  realMoments,
+}: {
+  e3: MomentToCRUD;
+  i3: number;
+  realMoments: MomentToCRUD[];
+}) {
+  return (
+    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
+      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+        <p className="font-medium text-blue-950">{e3.objective}</p>
+        <div className="invisible flex justify-end group-hover:visible">
+          <LocalClientComponents.UpdateMomentViewButton
+            e3={e3}
+            realMoments={realMoments}
+          />
+        </div>
+      </div>
+      <p>
+        <span className={"font-semibold text-neutral-800"}>
+          {e3.startDateAndTime.split("T")[1]}
+        </span>{" "}
+        • {numStringToTimeString(e3.duration)}
+        {e3.isIndispensable && (
+          <>
+            {" "}
+            •{" "}
+            <span className="text-sm font-semibold uppercase">
+              indispensable
+            </span>
+          </>
+        )}
+      </p>
+      <ol className="">
+        {e3.steps.map((e4) => (
+          <StepInDateCard key={e4.id} e4={e4} />
+        ))}
+      </ol>
     </div>
   );
 }
@@ -481,9 +522,8 @@ export function StepsSummaries({
   momentAddingTime: number;
 }) {
   return (
-    // try pt-5 instead pt-4 // formerly pt-5 now on MotionAddStepVisible
     <div className="space-y-8">
-      {/* the space between Récapitulatifs and the rest was assured by space-y-8, so let's just remake it for now in the fragment about */}
+      {/* the space between Récapitulatifs and the rest was assured by space-y-8, so let's just remake it for now above */}
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Récapitulatifs
@@ -790,7 +830,6 @@ export function StepInputs({
         errors={createOrUpdateMomentState?.error?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
       >
-        {/* font-mono text-xs */}
         <p className="text-sm font-medium text-blue-900">
           commence à{" "}
           {step // && stepAddingTime (can equal 0 which is falsy)
@@ -806,22 +845,6 @@ export function StepInputs({
                 }),
                 "HH:mm",
               )}
-          {/* {" "}à{" "}
-          <span className="text-blue-700">
-            {step // && stepAddingTime (can equal 0 which is falsy)
-              ? format(
-                  add(startMomentDate, {
-                    minutes: (stepAddingTime || 0) + +stepDuree,
-                  }),
-                  "HH:mm",
-                )
-              : format(
-                  add(startMomentDate, {
-                    minutes: (stepsCompoundDurations.at(-1) || 0) + +stepDuree,
-                  }),
-                  "HH:mm",
-                )}
-          </span> */}
         </p>
       </GlobalClientComponents.InputNumberControlled>
     </>
@@ -943,6 +966,7 @@ const localServerComponents = {
   DateCard,
   NoDateCard,
   DestinationInDateCard,
+  MomentInDateCard,
   StepInDateCard,
   MomentsPageDetails,
   MomentInputs,

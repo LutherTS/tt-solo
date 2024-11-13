@@ -1,14 +1,14 @@
-/* PREVENTING CIRCULAR DEPENDENCY
+/* PREVENTING CIRCULAR DEPENDENCIES
 The should be NO IMPORTS OTHER TYPES in the data file. Any variable, or object or whatever that requires a mix of data and utilities import (as it happened) NEEDS TO MADE ON THE FILE WHERE IT IS USED. (Looking at you, formSectionTopicRemoves.)
 */
 
 import { Option } from "@/app/types/globals";
 import {
-  FormSectionTopic,
+  // FormSectionTopic,
   MomentFormIds,
   MomentFormVariant,
   SubView,
-  TrueCreateOrUpdateMomentState,
+  // TrueCreateOrUpdateMomentState,
   View,
 } from "@/app/types/moments";
 // import {
@@ -137,7 +137,8 @@ export const subViewPages = {
 };
 
 // form section topic removeMessagesAndErrorsCallbacks
-// THIS OBJECTIVE SHOULD HAVE NEVER BEEN HERE SINCE ITS UNIQUE TO FORMSECTION
+// THIS SHOULD HAVE NEVER BEEN HERE SINCE IT'S UNIQUE TO FORMSECTION.
+// KEEP THIS HERE NONETHELESS SO THAT I CAN TEST GLOBAL-ERROR IN SOME FORM OF PRODUCTION ENVIRONMENT.
 
 // export const formSectionTopicRemoves: {
 //   [K in FormSectionTopic]: (
