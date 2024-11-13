@@ -234,7 +234,7 @@ export function FormSection({
           </>
         )}
       </div>
-      <div className={clsx("flex flex-col", topic === "moment" && "gap-y-8")}>
+      <div className={clsx(topic === "moment" && "flex flex-col gap-y-8")}>
         {children}
       </div>
     </section>
