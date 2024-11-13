@@ -210,11 +210,10 @@ export const removeStepsMessagesAndErrorsCallback = (
   return { ...s, stepsMessages: {}, stepsErrors: {} };
 };
 
+// I NEED TO BE VERY CAREFUL HOW I IMPORT THIS (circular dependency)
 export const trueRemoveStepsMessagesAndErrorsCallback = (
   s: TrueCreateOrUpdateMomentState,
 ): TrueCreateOrUpdateMomentState => {
-  // return { ...s, stepsMessages: {}, stepsErrors: {} };
-
   if (s?.error)
     return { ...s, error: { ...s?.error, stepsMessages: {}, stepsErrors: {} } };
   else return s;
@@ -227,11 +226,10 @@ export const removeMomentMessagesAndErrorsCallback = (
   return { ...s, momentMessages: {}, momentErrors: {} };
 };
 
+// I NEED TO BE VERY CAREFUL HOW I IMPORT THIS (circular dependency)
 export const trueRemoveMomentMessagesAndErrorsCallback = (
   s: TrueCreateOrUpdateMomentState,
 ) => {
-  // return { ...s, momentMessages: {}, momentErrors: {} };
-
   if (s?.error)
     return {
       ...s,

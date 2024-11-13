@@ -1,3 +1,7 @@
+/* PREVENTING CIRCULAR DEPENDENCY
+The should be NO IMPORTS OTHER TYPES in the data file. Any variable, or object or whatever that requires a mix of data and utilities import (as it happened) NEEDS TO MADE ON THE FILE WHERE IT IS USED. (Looking at you, formSectionTopicRemoves.)
+*/
+
 import { Option } from "@/app/types/globals";
 import {
   FormSectionTopic,
@@ -7,10 +11,10 @@ import {
   TrueCreateOrUpdateMomentState,
   View,
 } from "@/app/types/moments";
-import {
-  trueRemoveMomentMessagesAndErrorsCallback,
-  trueRemoveStepsMessagesAndErrorsCallback,
-} from "../utilities/moments";
+// import {
+//   trueRemoveMomentMessagesAndErrorsCallback,
+//   trueRemoveStepsMessagesAndErrorsCallback,
+// } from "../utilities/moments";
 
 // searchParams keys
 
@@ -37,8 +41,6 @@ export const MOMENTS_SEARCH_PARAMS_KEYS = [
 
 // initial and lowest moments page number
 export const INITIAL_PAGE = 1;
-
-// TAKE will need to be in here to when I'll work on the success state of CreateOrUpdateMomentState
 
 // global take (limit in SQL) for all four subViews
 export const TAKE = 2;
@@ -99,9 +101,6 @@ export const activityOptions: Option[] = [
 
 export const STEP_DURATION_ORIGINAL = "10";
 
-// I've effectively decided not to use STEP_DURATION_DEFAULT of 0
-// export const STEP_DURATION_DEFAULT = "0";
-
 // views and subviews
 
 export const views = [
@@ -138,15 +137,16 @@ export const subViewPages = {
 };
 
 // form section topic removeMessagesAndErrorsCallbacks
+// THIS OBJECTIVE SHOULD HAVE NEVER BEEN HERE SINCE ITS UNIQUE TO FORMSECTION
 
-export const formSectionTopicRemoves: {
-  [K in FormSectionTopic]: (
-    s: TrueCreateOrUpdateMomentState,
-  ) => TrueCreateOrUpdateMomentState;
-} = {
-  moment: trueRemoveMomentMessagesAndErrorsCallback,
-  steps: trueRemoveStepsMessagesAndErrorsCallback,
-};
+// export const formSectionTopicRemoves: {
+//   [K in FormSectionTopic]: (
+//     s: TrueCreateOrUpdateMomentState,
+//   ) => TrueCreateOrUpdateMomentState;
+// } = {
+//   moment: trueRemoveMomentMessagesAndErrorsCallback,
+//   steps: trueRemoveStepsMessagesAndErrorsCallback,
+// };
 
 // default error messages
 

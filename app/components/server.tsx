@@ -14,7 +14,11 @@ import {
   focusVisibleTexts,
   notDatetimeLocalPadding,
 } from "@/app/data/globals";
-import { formSectionTopicRemoves } from "../data/moments";
+// import { formSectionTopicRemoves } from "../data/moments";
+import {
+  trueRemoveMomentMessagesAndErrorsCallback,
+  trueRemoveStepsMessagesAndErrorsCallback,
+} from "../utilities/moments";
 
 // Components
 
@@ -162,6 +166,15 @@ export function Section({
     </section>
   );
 }
+
+const formSectionTopicRemoves: {
+  [K in FormSectionTopic]: (
+    s: TrueCreateOrUpdateMomentState,
+  ) => TrueCreateOrUpdateMomentState;
+} = {
+  moment: trueRemoveMomentMessagesAndErrorsCallback,
+  steps: trueRemoveStepsMessagesAndErrorsCallback,
+};
 
 export function FormSection({
   topic,
