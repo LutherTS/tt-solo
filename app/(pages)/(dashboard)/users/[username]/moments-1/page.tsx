@@ -21,6 +21,7 @@ import {
   FUTUREUSERMOMENTSPAGE,
   INITIAL_PAGE,
   PASTUSERMOMENTSPAGE,
+  TAKE,
   USERMOMENTSPAGE,
 } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
@@ -109,8 +110,6 @@ export default async function MomentsPage({
   ] as const;
   // console.log({ totals })
 
-  const TAKE = 2;
-
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log({ maxPages });
 
@@ -135,27 +134,24 @@ export default async function MomentsPage({
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      findUserMomentsWithContains(userId, contains, userMomentsPage, TAKE),
+      findUserMomentsWithContains(userId, contains, userMomentsPage),
       findPastUserMomentsWithContains(
         userId,
         contains,
         now,
         pastUserMomentsPage,
-        TAKE,
       ),
       findCurrentUserMomentsWithContains(
         userId,
         contains,
         now,
         currentUserMomentsPage,
-        TAKE,
       ),
       findFutureUserMomentsWithContains(
         userId,
         contains,
         now,
         futureUserMomentsPage,
-        TAKE,
       ),
     ]);
   // console.log({

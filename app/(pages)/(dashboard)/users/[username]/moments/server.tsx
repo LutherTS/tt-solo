@@ -481,7 +481,9 @@ export function StepsSummaries({
   momentAddingTime: number;
 }) {
   return (
-    <>
+    // try pt-5 instead pt-4
+    <div className="space-y-8 pt-5">
+      {/* the space between Récapitulatifs and the rest was assured by space-y-8, so let's just remake it for now in the fragment about */}
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Récapitulatifs
@@ -519,7 +521,7 @@ export function StepsSummaries({
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -788,8 +790,9 @@ export function StepInputs({
         errors={createOrUpdateMomentState?.error?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
       >
-        <p className="font-mono text-xs font-medium text-blue-900">
-          de{" "}
+        {/* font-mono text-xs */}
+        <p className="text-sm font-medium text-blue-900">
+          commence à{" "}
           {step // && stepAddingTime (can equal 0 which is falsy)
             ? format(
                 add(startMomentDate, {
@@ -802,8 +805,8 @@ export function StepInputs({
                   minutes: stepsCompoundDurations.at(-1),
                 }),
                 "HH:mm",
-              )}{" "}
-          à{" "}
+              )}
+          {/* {" "}à{" "}
           <span className="text-blue-700">
             {step // && stepAddingTime (can equal 0 which is falsy)
               ? format(
@@ -818,7 +821,7 @@ export function StepInputs({
                   }),
                   "HH:mm",
                 )}
-          </span>
+          </span> */}
         </p>
       </GlobalClientComponents.InputNumberControlled>
     </>

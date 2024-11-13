@@ -191,7 +191,12 @@ export function FormSection({
   return (
     // pb-1 (or +1) making up for input padding inconsistencies
     <section
-      className="grid items-baseline gap-8 pb-9 pt-8 md:grid-cols-[1fr_2fr]"
+      // pb-9 will be conditional, only on topic === "moment"
+      className={clsx(
+        "grid items-baseline gap-8 pt-8 md:grid-cols-[1fr_2fr]",
+        topic === "moment" && "pb-9",
+        topic === "steps" && "pb-8",
+      )}
       id={id}
     >
       <div
@@ -229,7 +234,9 @@ export function FormSection({
           </>
         )}
       </div>
-      <div className="flex flex-col gap-y-8">{children}</div>
+      <div className={clsx("flex flex-col", topic === "moment" && "gap-y-8")}>
+        {children}
+      </div>
     </section>
   );
 }

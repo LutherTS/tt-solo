@@ -918,6 +918,7 @@ function MomentForms({
                       stepsCompoundDurations={stepsCompoundDurations}
                       isDeleteStepPending={isDeleteStepPending}
                       startDeleteStepTransition={startDeleteStepTransition}
+                      setStepDureeCreate={setStepDureeCreate}
                     />
                   );
                 })}
@@ -1626,6 +1627,7 @@ function ReorderItem({
   stepsCompoundDurations,
   isDeleteStepPending,
   startDeleteStepTransition,
+  setStepDureeCreate,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1647,6 +1649,7 @@ function ReorderItem({
   stepsCompoundDurations: number[];
   isDeleteStepPending: boolean;
   startDeleteStepTransition: TransitionStartFunction;
+  setStepDureeCreate: SetState<string>;
 }) {
   const controls = useDragControls();
 
@@ -1663,7 +1666,13 @@ function ReorderItem({
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
-        deleteStepClientFlow(steps, currentStepId, setSteps, setStepVisible);
+        deleteStepClientFlow(
+          steps,
+          currentStepId,
+          setSteps,
+          setStepVisible,
+          setStepDureeCreate,
+        );
         setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
       }
     });

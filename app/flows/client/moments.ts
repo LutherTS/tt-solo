@@ -610,10 +610,13 @@ export const deleteStepClientFlow = (
   currentStepId: string,
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
+  setStepDureeCreate: SetState<string>,
 ): void => {
   let newSteps = steps.filter((step) => step.id !== currentStepId);
   setSteps(newSteps);
 
-  if (newSteps.length === 0) setStepVisible("creating");
-  else setStepVisible("create");
+  if (newSteps.length === 0) {
+    setStepVisible("creating");
+    setStepDureeCreate(STEP_DURATION_ORIGINAL);
+  } else setStepVisible("create");
 };
