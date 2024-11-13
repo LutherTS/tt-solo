@@ -109,6 +109,10 @@ import {
 } from "@/app/flows/after/moments";
 import { UseMeasureRect } from "react-use/lib/useMeasure";
 
+// steps animations data
+
+const CREATE_DURATION_AND_DELAY = 0.2;
+
 // this is now where the client-side begins, from ClientCore to Main and now to container of the carousel
 export function ViewsCarouselContainer({
   view,
@@ -803,8 +807,7 @@ export function MomentForms({
 
   const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
 
-  // const [ref, bounds] = useMeasure();
-  // const reference = ref as Ref<HTMLDivElement>;
+  // steps animations
 
   const [isAnimationDelayed, setIsAnimationDelayed] = useState(false);
 
@@ -882,74 +885,11 @@ export function MomentForms({
           subError={createOrUpdateMomentState?.error?.stepsMessages?.subMessage}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
         >
-          {/* // test is exactly at the right spot. */}
-          {/* <p>Test.</p> */}
-
-          {/* {(() => {
-            switch (stepVisible) {
-              case "creating":
-                return <p>Creating.</p>;
-              default:
-                return <p>Create.</p>;
-            }
-          })()} */}
-
-          {/* <MotionStepVisible
-            stepVisible={stepVisible}
-            variant={variant}
-            isResetStepPending={isResetStepPending}
-            createOrUpdateMomentState={createOrUpdateMomentState}
-            stepDureeCreate={stepDureeCreate}
-            setStepDureeCreate={setStepDureeCreate}
-            isCreateStepPending={isCreateStepPending}
-            cancelStepAction={cancelStepAction}
-            steps={steps}
-            isCancelStepPending={isCancelStepPending}
-            stepsCompoundDurations={stepsCompoundDurations}
-            startMomentDate={startMomentDate}
-            allButtonsDisabled={allButtonsDisabled}
-            addStepAction={addStepAction}
-            isAddStepPending={isAddStepPending}
-          /> */}
-
-          {/* That means this should have the padding. (?) Verdict, though its OK on the moment form, I'm going to need to remove the gap on FormSection. */}
-          {/* The space issue doesn't show up with this, but shows with the current MotionStepVisible component. I think Animate presence should NOT be part of the component. It complicated because just like the steps list where I need an AnimatePresence for the items and an AnimatePresence for the list itself, here I need an AnimatePresence for the Switch and an AnimatePresence for the whole thing, because currently and ultimately the whole thing needs to disappeat when stepVisible === "updating"?
-          Or what if I just keep the button up at all time and it never disappears? I don't think it should disappear. When you're modifying a step it should just stay there, and make the step remove from editing before it opens the create a step. */}
-          {/* And I think recap needs to exist as well but remember. The list will have to disappear if there is nothing in it, because even if the data is 0, you can't return anything. */}
-          {/* So the idea is: 
-          - keep the add component up at all times
-          - make the list AnimatePresence, and it's content AnimatePresence
-          - make the summaries like the list, wrapped in AnimatePresence and allowed to be removed.
-          This last part is just going to take a lot of orchestration. I'll sleep, and I'll work on it, especially since I'll have a lot to do irl in the morning. */}
-
-          {/* Here. When it's 0, that entirely disappears. */}
-          {/* <AnimatePresence initial={false} mode="wait"> */}
-          {/* it's going to need some well timed delays, at least at first */}
-          {/* {steps.length > 0 && (
-              <motion.div
-                key={"steps"}
-                initial={{ opacity: 1 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 1 }}
-                transition={{ exit: { delay: 5 } }}
-              >
-                <div
-                  ref={reference2}
-                  className="flex flex-col gap-y-8" // back from FormSection
-                > */}
-          {/* {steps.length > 0 && ( */}
           <Reorder.Group // steps
             axis="y"
             values={steps}
             onReorder={setSteps}
             as="ol"
-            key={"steps"}
-            // initial={{ opacity: 1 }}
-            // animate={{ opacity: 1 }}
-            // exit={{ opacity: 1 }}
-            // style={{ margin: 0, padding: 0 }} // didn't work
-            // transition={{ exit: { delay: 5 } }}
-            // animate={{ opacity: 0 }} // Yes, it takes HTMLMotionProps. That's why the AnimatePresence thing works with it right now.
           >
             <AnimatePresence initial={false}>
               {steps.map((step, index) => {
@@ -972,69 +912,39 @@ export function MomentForms({
                 }
 
                 return (
-                  <motion.div
+                  <ReorderItem // step
                     key={step.id}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{
-                      // delays must be conditional
-                      opacity: {
-                        duration: 0.1,
-                        delay: isAnimationDelayed ? 0.2 : 0,
-                      },
-                      height: {
-                        duration: 0.2,
-                        delay: isAnimationDelayed ? 0.2 : 0,
-                      },
-                    }}
-                    onAnimationStart={() => {
-                      if (isAnimationDelayed) setIsAnimationDelayed(false);
-                    }}
-                  >
-                    <ReorderItem // step
-                      step={step}
-                      index={index}
-                      isAfterCurrentStep={isAfterCurrentStep}
-                      momentFormVariant={variant}
-                      steps={steps}
-                      stepVisible={stepVisible}
-                      currentStepId={currentStepId}
-                      setCurrentStepId={setCurrentStepId}
-                      setStepVisible={setStepVisible}
-                      startMomentDate={startMomentDate}
-                      stepAddingTime={stepAddingTime}
-                      setSteps={setSteps}
-                      isUpdateStepPending={isUpdateStepPending}
-                      stepDureeUpdate={stepDureeUpdate}
-                      setStepDureeUpdate={setStepDureeUpdate}
-                      createOrUpdateMomentState={createOrUpdateMomentState}
-                      setCreateOrUpdateMomentState={
-                        setCreateOrUpdateMomentState
-                      }
-                      stepsCompoundDurations={stepsCompoundDurations}
-                      isDeleteStepPending={isDeleteStepPending}
-                      startDeleteStepTransition={startDeleteStepTransition}
-                      allButtonsDisabled={allButtonsDisabled}
-                      setStepDureeCreate={setStepDureeCreate}
-                    />
-                  </motion.div>
+                    step={step}
+                    index={index}
+                    isAfterCurrentStep={isAfterCurrentStep}
+                    momentFormVariant={variant}
+                    steps={steps}
+                    stepVisible={stepVisible}
+                    currentStepId={currentStepId}
+                    setCurrentStepId={setCurrentStepId}
+                    setStepVisible={setStepVisible}
+                    startMomentDate={startMomentDate}
+                    stepAddingTime={stepAddingTime}
+                    setSteps={setSteps}
+                    isUpdateStepPending={isUpdateStepPending}
+                    stepDureeUpdate={stepDureeUpdate}
+                    setStepDureeUpdate={setStepDureeUpdate}
+                    createOrUpdateMomentState={createOrUpdateMomentState}
+                    setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+                    stepsCompoundDurations={stepsCompoundDurations}
+                    isDeleteStepPending={isDeleteStepPending}
+                    startDeleteStepTransition={startDeleteStepTransition}
+                    allButtonsDisabled={allButtonsDisabled}
+                    setStepDureeCreate={setStepDureeCreate}
+                    isAnimationDelayed={isAnimationDelayed}
+                    setIsAnimationDelayed={setIsAnimationDelayed}
+                  />
                 );
               })}
             </AnimatePresence>
           </Reorder.Group>
-          {/* )} */}
-          {/* <LocalServerComponents.StepsSummaries
-                  stepVisible={stepVisible}
-                  endMomentDate={endMomentDate}
-                  momentAddingTime={momentAddingTime}
-                /> */}
-          {/* </div> */}
-          {/* </motion.div>
-            )} */}
-          {/* </AnimatePresence> */}
 
-          <MotionStepVisible
+          <MotionAddStepVisible
             stepVisible={stepVisible}
             variant={variant}
             isResetStepPending={isResetStepPending}
@@ -1052,30 +962,11 @@ export function MomentForms({
             isAddStepPending={isAddStepPending}
           />
 
-          {/* having StepsSummaries visible at all times */}
           <LocalServerComponents.StepsSummaries
             stepVisible={stepVisible}
             endMomentDate={endMomentDate}
             momentAddingTime={momentAddingTime}
           />
-
-          {/* <MotionStepVisible
-            stepVisible={stepVisible}
-            variant={variant}
-            isResetStepPending={isResetStepPending}
-            createOrUpdateMomentState={createOrUpdateMomentState}
-            stepDureeCreate={stepDureeCreate}
-            setStepDureeCreate={setStepDureeCreate}
-            isCreateStepPending={isCreateStepPending}
-            cancelStepAction={cancelStepAction}
-            steps={steps}
-            isCancelStepPending={isCancelStepPending}
-            stepsCompoundDurations={stepsCompoundDurations}
-            startMomentDate={startMomentDate}
-            allButtonsDisabled={allButtonsDisabled}
-            addStepAction={addStepAction}
-            isAddStepPending={isAddStepPending}
-          /> */}
         </GlobalServerComponents.FormSection>
         <GlobalServerComponents.Divider />
         <GlobalServerComponents.Section>
@@ -1122,7 +1013,7 @@ export function MomentForms({
   );
 }
 
-function MotionStepVisible({
+function MotionAddStepVisible({
   stepVisible,
   variant,
   isResetStepPending,
@@ -1161,7 +1052,7 @@ function MotionStepVisible({
   return (
     <motion.div
       animate={{ height: bounds.height > 0 ? bounds.height : "auto" }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: CREATE_DURATION_AND_DELAY }}
     >
       <div ref={reference}>
         <AnimatePresence initial={false} mode="popLayout">
@@ -1560,6 +1451,8 @@ export function ReorderItem({
   startDeleteStepTransition,
   allButtonsDisabled,
   setStepDureeCreate,
+  isAnimationDelayed,
+  setIsAnimationDelayed,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1583,6 +1476,8 @@ export function ReorderItem({
   startDeleteStepTransition: TransitionStartFunction;
   allButtonsDisabled: boolean;
   setStepDureeCreate: SetState<string>;
+  isAnimationDelayed: boolean;
+  setIsAnimationDelayed: SetState<boolean>;
 }) {
   const controls = useDragControls();
 
@@ -1640,79 +1535,100 @@ export function ReorderItem({
   };
 
   return (
-    <Reorder.Item
-      value={step}
-      dragListener={false}
-      dragControls={controls}
-      transition={{ layout: { duration: 0 } }}
-      // layout="position" // or "preserve-aspect"
-      dragTransition={{
-        bounceStiffness: 900,
-        bounceDamping: 50,
+    <motion.div
+      key={step.id}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{
+        // delays must be conditional
+        opacity: {
+          duration: 0.1,
+          delay: isAnimationDelayed ? CREATE_DURATION_AND_DELAY : 0,
+        },
+        height: {
+          duration: 0.2,
+          delay: isAnimationDelayed ? CREATE_DURATION_AND_DELAY : 0,
+        },
       }}
-      // whileDrag={{ opacity: 0.5 }} // buggy though
+      onAnimationStart={() => {
+        if (isAnimationDelayed) setIsAnimationDelayed(false);
+      }}
     >
-      <div
-        className={clsx(
-          "flex flex-col gap-y-8",
-          // index !== steps.length - 1 && "pb-8", // I remember I did that specifically for animations
-          // "pb-4 pt-5",
-          "pb-9",
-        )}
+      <Reorder.Item
+        value={step}
+        dragListener={false}
+        dragControls={controls}
+        transition={{ layout: { duration: 0 } }}
+        // layout="position" // or "preserve-aspect"
+        dragTransition={{
+          bounceStiffness: 900,
+          bounceDamping: 50,
+        }}
+        // whileDrag={{ opacity: 0.5 }} // buggy though
       >
-        <div className="flex select-none items-baseline justify-between">
-          <p
-            className={clsx(
-              "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-              "transition-colors",
-              stepVisible !== "updating" && "hover:text-neutral-400",
-            )}
-            onPointerDown={(event) => {
-              if (stepVisible !== "updating") controls.start(event);
-            }}
-            style={{ touchAction: "none" }}
-          >
-            Étape <span>{toWordsing(index + 1)}</span>
-          </p>{" "}
-          {isCurrentStepUpdating ? (
-            <GlobalClientComponents.Button
-              type="button"
-              variant="destroy-step"
-              onClick={restoreStepAction}
-              disabled={allButtonsDisabled || isRestoreStepPending}
-            >
-              Restaurer l&apos;étape
-            </GlobalClientComponents.Button>
-          ) : (
-            <GlobalClientComponents.Button
-              variant="destroy-step"
-              type="button"
-              onClick={modifyStepAction}
-              disabled={allButtonsDisabled || isModifyStepPending}
-            >
-              Modifier cette étape
-            </GlobalClientComponents.Button>
+        <div
+          className={clsx(
+            "flex flex-col gap-y-8",
+            // index !== steps.length - 1 && "pb-8", // I remember I did that specifically for animations
+            // "pb-4 pt-5",
+            "pb-9",
           )}
+        >
+          <div className="flex select-none items-baseline justify-between">
+            <p
+              className={clsx(
+                "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
+                "transition-colors",
+                stepVisible !== "updating" && "hover:text-neutral-400",
+              )}
+              onPointerDown={(event) => {
+                if (stepVisible !== "updating") controls.start(event);
+              }}
+              style={{ touchAction: "none" }}
+            >
+              Étape <span>{toWordsing(index + 1)}</span>
+            </p>{" "}
+            {isCurrentStepUpdating ? (
+              <GlobalClientComponents.Button
+                type="button"
+                variant="destroy-step"
+                onClick={restoreStepAction}
+                disabled={allButtonsDisabled || isRestoreStepPending}
+              >
+                Restaurer l&apos;étape
+              </GlobalClientComponents.Button>
+            ) : (
+              <GlobalClientComponents.Button
+                variant="destroy-step"
+                type="button"
+                onClick={modifyStepAction}
+                disabled={allButtonsDisabled || isModifyStepPending}
+              >
+                Modifier cette étape
+              </GlobalClientComponents.Button>
+            )}
+          </div>
+          <MotionIsCurrentStepUpdating
+            isCurrentStepUpdating={isCurrentStepUpdating}
+            form={form}
+            createOrUpdateMomentState={createOrUpdateMomentState}
+            stepDureeUpdate={stepDureeUpdate}
+            setStepDureeUpdate={setStepDureeUpdate}
+            step={step}
+            startMomentDate={startMomentDate}
+            stepAddingTime={stepAddingTime}
+            stepsCompoundDurations={stepsCompoundDurations}
+            isUpdateStepPending={isUpdateStepPending}
+            allButtonsDisabled={allButtonsDisabled}
+            deleteStepAction={deleteStepAction}
+            isDeleteStepPending={isDeleteStepPending}
+            index={index}
+            hasAPreviousStepUpdating={hasAPreviousStepUpdating}
+          />
         </div>
-        <MotionIsCurrentStepUpdating
-          isCurrentStepUpdating={isCurrentStepUpdating}
-          form={form}
-          createOrUpdateMomentState={createOrUpdateMomentState}
-          stepDureeUpdate={stepDureeUpdate}
-          setStepDureeUpdate={setStepDureeUpdate}
-          step={step}
-          startMomentDate={startMomentDate}
-          stepAddingTime={stepAddingTime}
-          stepsCompoundDurations={stepsCompoundDurations}
-          isUpdateStepPending={isUpdateStepPending}
-          allButtonsDisabled={allButtonsDisabled}
-          deleteStepAction={deleteStepAction}
-          isDeleteStepPending={isDeleteStepPending}
-          index={index}
-          hasAPreviousStepUpdating={hasAPreviousStepUpdating}
-        />
-      </div>
-    </Reorder.Item>
+      </Reorder.Item>
+    </motion.div>
   );
 }
 
