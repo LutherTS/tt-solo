@@ -1,5 +1,20 @@
+/* PREVENTING CIRCULAR DEPENDENCIES
+The should be NO IMPORTS OTHER TYPES in the data file. Any variable, or object or whatever that requires a mix of data and utilities import (as it happened) NEEDS TO MADE ON THE FILE WHERE IT IS USED. (Looking at you, formSectionTopicRemoves.)
+*/
+
 import { Option } from "@/app/types/globals";
-import { MomentFormIds, MomentFormVariant } from "@/app/types/moments";
+import {
+  // FormSectionTopic,
+  MomentFormIds,
+  MomentFormVariant,
+  SubView,
+  // TrueCreateOrUpdateMomentState,
+  View,
+} from "@/app/types/moments";
+// import {
+//   trueRemoveMomentMessagesAndErrorsCallback,
+//   trueRemoveStepsMessagesAndErrorsCallback,
+// } from "../utilities/moments";
 
 // searchParams keys
 
@@ -27,7 +42,8 @@ export const MOMENTS_SEARCH_PARAMS_KEYS = [
 // initial and lowest moments page number
 export const INITIAL_PAGE = 1;
 
-// TAKE will need to be in here to when I'll work on the success state of CreateOrUpdateMomentState
+// global take (limit in SQL) for all four subViews
+export const TAKE = 2;
 
 // HTML ids
 
@@ -85,9 +101,6 @@ export const activityOptions: Option[] = [
 
 export const STEP_DURATION_ORIGINAL = "10";
 
-// I've effectively decided not to use STEP_DURATION_DEFAULT of 0
-// export const STEP_DURATION_DEFAULT = "0";
-
 // views and subviews
 
 export const views = [
@@ -96,7 +109,7 @@ export const views = [
   "create-moment",
 ] as const;
 
-export const viewTitles = {
+export const viewTitles: { [K in View]: string } = {
   "update-moment": "Éditez",
   "read-moments": "Vos moments",
   "create-moment": "Créez",
@@ -109,12 +122,32 @@ export const subViews = [
   "future-moments",
 ] as const;
 
-export const subViewTitles = {
+export const subViewTitles: { [K in SubView]: string } = {
   "all-moments": "Tous",
   "past-moments": "Passés",
   "current-moments": "Actuels",
   "future-moments": "Futurs",
 };
+
+export const subViewPages = {
+  "all-moments": USERMOMENTSPAGE,
+  "past-moments": PASTUSERMOMENTSPAGE,
+  "current-moments": CURRENTUSERMOMENTSPAGE,
+  "future-moments": FUTUREUSERMOMENTSPAGE,
+};
+
+// form section topic removeMessagesAndErrorsCallbacks
+// THIS SHOULD HAVE NEVER BEEN HERE SINCE IT'S UNIQUE TO FORMSECTION.
+// KEEP THIS HERE NONETHELESS SO THAT I CAN TEST GLOBAL-ERROR IN SOME FORM OF PRODUCTION ENVIRONMENT.
+
+// export const formSectionTopicRemoves: {
+//   [K in FormSectionTopic]: (
+//     s: TrueCreateOrUpdateMomentState,
+//   ) => TrueCreateOrUpdateMomentState;
+// } = {
+//   moment: trueRemoveMomentMessagesAndErrorsCallback,
+//   steps: trueRemoveStepsMessagesAndErrorsCallback,
+// };
 
 // default error messages
 

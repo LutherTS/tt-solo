@@ -1,12 +1,16 @@
 import { Prisma } from "@prisma/client";
 
-import { selectMomentId } from "@/app/reads/subreads/moments";
+import {
+  selectMomentId,
+  selectMomentIdNameAndDates,
+} from "@/app/reads/subreads/moments";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
   MOMENTID,
   PASTUSERMOMENTSPAGE,
+  SUBVIEW,
   USERMOMENTSPAGE,
   VIEW,
 } from "@/app/data/moments";
@@ -89,6 +93,16 @@ export type CreateOrUpdateMoment = (
   activitySelect: boolean,
 ) => Promise<CreateOrUpdateMomentState>;
 
+export type TrueCreateOrUpdateMoment = (
+  formData: FormData,
+  variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentToCRUD | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+
 type FormMessages = {
   message?: string;
   subMessage?: string;
@@ -130,14 +144,61 @@ export type CreateOrUpdateMomentState = {
   errorScrollPriority?: "moment" | "steps";
 } | null;
 
+export type TrueCreateOrUpdateMomentState =
+  | CreateOrUpdateMomentError
+  | CreateOrUpdateMomentSuccess
+  | null;
+
+export type CreateOrUpdateMomentError = {
+  isSuccess: false;
+  error: {
+    momentMessages?: MomentMessages;
+    momentErrors?: {
+      destinationName?: string[];
+      momentActivity?: string[];
+      momentName?: string[];
+      momentIsIndispensable?: string[];
+      momentDescription?: string[];
+      momentStartDateAndTime?: string[];
+    };
+    stepsMessages?: StepsMessages;
+    stepsErrors?: {
+      stepName?: string[];
+      stepDescription?: string[];
+      realStepDuration?: string[];
+    };
+    errorScrollPriority?: "moment" | "steps";
+  };
+  success?: never;
+};
+
+export type CreateOrUpdateMomentSuccess = {
+  isSuccess: true;
+  error?: never;
+  success: {
+    moment?: SelectMomentIdNameAndDates; // voluntarily sending to the client the data from the moment that was needed in the server to obtain the expected effects of the after flow
+    countPage?: number;
+    subView?: SubView;
+  };
+};
+
 export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<CreateOrUpdateMomentState>;
 
+export type TrueDeleteMoment = (
+  momentFromCRUD?: MomentToCRUD,
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+
 export type RevalidateMoments = () => Promise<void>;
 
-export type SelectMomentId = Prisma.UserGetPayload<{
+// no longer used
+export type SelectMomentId = Prisma.MomentGetPayload<{
   select: typeof selectMomentId;
+}>;
+
+export type SelectMomentIdNameAndDates = Prisma.MomentGetPayload<{
+  select: typeof selectMomentIdNameAndDates;
 }>;
 
 export type MomentFormIds = {
@@ -163,6 +224,9 @@ export type MomentsSearchParams = {
   [PASTUSERMOMENTSPAGE]: string;
   [CURRENTUSERMOMENTSPAGE]: string;
   [FUTUREUSERMOMENTSPAGE]: string;
-  [VIEW]: string;
+  [VIEW]: View;
+  [SUBVIEW]: SubView;
   [MOMENTID]: string;
 };
+
+export type FormSectionTopic = "moment" | "steps";

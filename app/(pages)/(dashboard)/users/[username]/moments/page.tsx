@@ -10,7 +10,8 @@ import {
   StepFromCRUD,
   MomentToCRUD,
   MomentFormVariant,
-  CreateOrUpdateMomentState,
+  CreateOrUpdateMomentError,
+  CreateOrUpdateMomentSuccess,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -28,6 +29,7 @@ import {
   MOMENTID,
   PASTUSERMOMENTSPAGE,
   SUBVIEW,
+  TAKE,
   USERMOMENTSPAGE,
   VIEW,
 } from "@/app/data/moments";
@@ -44,10 +46,30 @@ import {
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
-  deleteMomentServerFlow,
   revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
+  trueCreateOrUpdateMomentServerFlow,
+  trueDeleteMomentServerFlow,
 } from "@/app/flows/server/moments";
+
+/* Dummy Form Presenting Data 
+Devenir tech lead sur TekTIME. 
+Développement de feature
+Faire un formulaire indéniable pour TekTIME.
+
+De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice. 
+
+Réaliser la div d'une étape
+S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.
+10 minutes
+
+Implémenter le système de coulissement des étapes
+Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.
+20 minutes
+
+Finir de vérifier le formulaire
+S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.
+30 minutes
+*/
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still sometimes it says static route...
@@ -126,7 +148,7 @@ export default async function MomentsPage({
   // console.log({ totals })
 
   // TAKE is page-dependent here. Therefore the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
-  const TAKE = 2;
+  // const TAKE = 2; // TAKE is now a moments variable
 
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log({ maxPages });
@@ -158,27 +180,24 @@ export default async function MomentsPage({
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      findUserMomentsWithContains(userId, contains, userMomentsPage, TAKE),
+      findUserMomentsWithContains(userId, contains, userMomentsPage),
       findPastUserMomentsWithContains(
         userId,
         contains,
         now,
         pastUserMomentsPage,
-        TAKE,
       ),
       findCurrentUserMomentsWithContains(
         userId,
         contains,
         now,
         currentUserMomentsPage,
-        TAKE,
       ),
       findFutureUserMomentsWithContains(
         userId,
         contains,
         now,
         futureUserMomentsPage,
-        TAKE,
       ),
     ]);
   // console.log({
@@ -348,11 +367,11 @@ export default async function MomentsPage({
     momentFromCRUD: MomentToCRUD | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
-  ): Promise<CreateOrUpdateMomentState> {
+  ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
     // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
-    return await createOrUpdateMomentServerFlow(
+    return await trueCreateOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -371,10 +390,10 @@ export default async function MomentsPage({
 
   async function deleteMoment(
     momentFromCRUD: MomentToCRUD | undefined,
-  ): Promise<CreateOrUpdateMomentState> {
+  ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await deleteMomentServerFlow(momentFromCRUD, user);
+    return await trueDeleteMomentServerFlow(momentFromCRUD, user);
   }
 
   // insisting on : Promise<void> to keep in sync with the flow

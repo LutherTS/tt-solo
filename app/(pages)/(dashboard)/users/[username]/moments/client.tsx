@@ -17,6 +17,7 @@ import {
   useSearchParams,
 } from "next/navigation";
 import {
+  AnimatePresence,
   motion,
   MotionValue,
   Reorder,
@@ -39,9 +40,6 @@ import * as LocalServerComponents from "./server";
 import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
-  CreateOrUpdateMoment,
-  CreateOrUpdateMomentState,
-  DeleteMoment,
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
@@ -53,6 +51,9 @@ import {
   UserMomentsToCRUD,
   View,
   MomentsSearchParams,
+  TrueCreateOrUpdateMomentState,
+  TrueCreateOrUpdateMoment,
+  TrueDeleteMoment,
 } from "@/app/types/moments";
 import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
@@ -74,22 +75,20 @@ import {
   defineCurrentPage,
   defineDesiredView,
   makeStepsCompoundDurationsArray,
-  numStringToTimeString,
-  removeMomentMessagesAndErrorsCallback,
-  removeStepsMessagesAndErrorsCallback,
   rotateSearchParams,
   roundTimeUpTenMinutes,
   scrollToTopOfDesiredView,
   toWordsing,
+  trueRemoveStepsMessagesAndErrorsCallback,
 } from "@/app/utilities/moments";
 import {
-  createOrUpdateStepClientFlow,
-  deleteMomentClientFlow,
   deleteStepClientFlow,
-  resetMomentClientFlow,
-  resetStepClientFlow,
   revalidateMomentsClientFlow,
   trueCreateOrUpdateMomentClientFlow,
+  trueCreateOrUpdateStepClientFlow,
+  trueDeleteMomentClientFlow,
+  trueResetMomentClientFlow,
+  trueResetStepClientFlow,
 } from "@/app/flows/client/moments";
 import {
   resetMomentAfterFlow,
@@ -97,7 +96,9 @@ import {
   trueDeleteMomentAfterFlow,
 } from "@/app/flows/after/moments";
 
-// this is now where the client-side begins, from ClientCore to Main and now to container of the carousel
+// this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
+
+// NOTEWORTHY: This can be turned into a server component if I use CSS transitions instead of Framer Motion.
 export function ViewsCarouselContainer({
   view,
   now,
@@ -116,8 +117,8 @@ export function ViewsCarouselContainer({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment: TrueDeleteMoment;
   moment: MomentToCRUD | undefined;
   subView: SubView;
 }) {
@@ -148,6 +149,7 @@ export function ViewsCarouselContainer({
       initial={false}
       transition={{
         type: "spring",
+        // if the transition is from a successful write operation (from the CRUD but excluding R or read) go with config A, else go with config B
         bounce: isCRUDOpSuccessful ? 0.2 : 0,
         duration: isCRUDOpSuccessful ? 0.4 : 0.2,
       }}
@@ -219,36 +221,7 @@ export function ViewsCarouselContainer({
   );
 }
 
-export function SetViewButton({ view }: { view: View }) {
-  const desiredView = defineDesiredView(view);
-
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-  const pathname = usePathname();
-
-  return (
-    <GlobalClientComponents.Button
-      type="button"
-      variant="destroy-step"
-      onClick={() =>
-        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname)
-      }
-    >
-      {(() => {
-        switch (desiredView) {
-          // no case "update-moment", since moment-specific
-          case "read-moments":
-            return <>Vos moments</>;
-          case "create-moment":
-            return <>Créez un moment</>;
-          default:
-            return null;
-        }
-      })()}
-    </GlobalClientComponents.Button>
-  );
-}
-
+// NOTEWORTHY: To my knowledge, this is the furthest I could push down the client boundary because useMeasure as a hook reads from the DOM itself, unique to each user's browsing environment.
 export function ViewSegment({
   id,
   currentView,
@@ -260,6 +233,7 @@ export function ViewSegment({
   currentViewHeight: MotionValue<number>;
   children: React.ReactNode;
 }) {
+  // usually I should use bounds instead of { height } so that I'm allowed to name bounds whatever I want
   const [ref, { height }] = useMeasure();
   // making TypeScript happy
   const reference = ref as Ref<HTMLDivElement>;
@@ -542,469 +516,6 @@ export function ReadMomentsView({
   );
 }
 
-export function MomentForms({
-  variant,
-  moment,
-  destinationOptions,
-  createOrUpdateMoment,
-  deleteMoment,
-  now,
-  setIsCRUDOpSuccessful,
-  allButtonsDisabled,
-}: {
-  variant: MomentFormVariant;
-  moment?: MomentToCRUD;
-  destinationOptions: Option[];
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment?: DeleteMoment;
-  now: string;
-  setIsCRUDOpSuccessful: SetState<boolean>;
-  allButtonsDisabled: boolean;
-  pageMomentId?: string;
-}) {
-  const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
-
-  const isVariantUpdatingMoment = variant === "updating" && moment;
-
-  // datetime-local input is now controlled for dynamic moment and steps times
-  let [startMomentDate, setStartMomentDate] = useState(
-    isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
-  );
-
-  const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
-    return {
-      id: e.id,
-      intitule: e.title,
-      details: e.details,
-      duree: e.duration,
-    };
-  });
-
-  let [steps, setSteps] = useState<StepFromCRUD[]>(
-    isVariantUpdatingMoment && momentSteps ? momentSteps : [],
-  );
-
-  const stepsCompoundDurations = makeStepsCompoundDurationsArray(steps);
-
-  let [currentStepId, setCurrentStepId] = useState("");
-  let currentStep = steps.find((step) => step.id === currentStepId);
-
-  let [stepVisible, setStepVisible] = useState<StepVisible>(
-    !isVariantUpdatingMoment ? "creating" : "create",
-  );
-
-  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
-  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_ORIGINAL);
-  let [stepDureeUpdate, setStepDureeUpdate] = useState(
-    currentStep ? currentStep.duree : STEP_DURATION_ORIGINAL,
-  );
-
-  let momentAddingTime = steps.reduce((acc, curr) => {
-    // it is understood that curr.id === currentStepId can only happen when stepVisible === "updating"
-    if (curr.id === currentStepId && stepVisible === "updating")
-      return acc + +stepDureeUpdate;
-    else return acc + +curr.duree;
-  }, 0);
-
-  if (stepVisible === "creating") momentAddingTime += +stepDureeCreate;
-
-  let endMomentDate = format(
-    add(startMomentDate, {
-      minutes: momentAddingTime,
-    }),
-    "yyyy-MM-dd'T'HH:mm",
-  );
-
-  let [destinationSelect, setDestinationSelect] = useState(false);
-  let [activitySelect, setActivitySelect] = useState(false);
-
-  // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
-  const [inputSwitchKey, setInputSwitchKey] = useState("");
-
-  const searchParams = useSearchParams();
-  const { push } = useRouter();
-  const pathname = usePathname();
-
-  // createOrUpdateMomentAction
-
-  const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-    useState<CreateOrUpdateMomentState>(null);
-
-  const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
-    useTransition();
-
-  const [isCreateOrUpdateMomentDone, setIsCreateOrUpdateMomentDone] =
-    useState(false);
-
-  const createOrUpdateMomentAction = async (
-    event: FormEvent<HTMLFormElement>,
-  ) => {
-    startCreateOrUpdateMomentTransition(async () => {
-      // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await trueCreateOrUpdateMomentClientFlow(
-        event,
-        createOrUpdateMoment,
-        variant,
-        startMomentDate,
-        steps,
-        moment,
-        destinationSelect,
-        activitySelect,
-        createOrUpdateMomentState,
-      );
-
-      setCreateOrUpdateMomentState(state);
-      setIsCreateOrUpdateMomentDone(true);
-    });
-  };
-
-  useEffect(() => {
-    if (isCreateOrUpdateMomentDone) {
-      // an "after flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
-      trueCreateOrUpdateMomentAfterFlow(
-        variant,
-        createOrUpdateMomentState,
-        setCreateOrUpdateMomentState,
-        setIsCRUDOpSuccessful,
-        searchParams,
-        push,
-        pathname,
-      );
-
-      setIsCreateOrUpdateMomentDone(false);
-    }
-  }, [isCreateOrUpdateMomentDone]);
-
-  // resetMomentFormAction
-
-  const [isResetMomentPending, startResetMomentTransition] = useTransition();
-
-  const [isResetMomentDone, setIsResetMomentDone] = useState(false);
-
-  const resetMomentAction = (event: FormEvent<HTMLFormElement>) => {
-    startResetMomentTransition(() => {
-      const noConfirm =
-        // @ts-ignore might not work on mobile but it's a bonus
-        event.nativeEvent.explicitOriginalTarget?.type !== "reset"; // could be improved later in case an even upper reset buton triggers this reset action
-
-      // retroactive high level JavaScript, but honestly this should be done on any action that uses a confirm, assuming that action can be triggered externally and automatically
-      // This allows that wherever I reset the form but triggering its HTML reset, it gets fully reset including controlled fields and default states, and even resets its cascading "children forms" since this resetMoment actually triggers the reset of stepFromCreating.
-      if (
-        noConfirm ||
-        confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
-      ) {
-        const state = resetMomentClientFlow(
-          setStartMomentDate,
-          setSteps,
-          setStepVisible,
-          variant,
-          setInputSwitchKey,
-          setDestinationSelect,
-          setActivitySelect,
-        );
-
-        setCreateOrUpdateMomentState(state);
-        setIsResetMomentDone(true);
-      } else event.preventDefault();
-    });
-  };
-
-  useEffect(() => {
-    if (isResetMomentDone) {
-      resetMomentAfterFlow(variant);
-
-      setIsResetMomentDone(false);
-    }
-  }, [isResetMomentDone]);
-
-  // deleteMomentAction
-
-  const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
-
-  const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
-
-  const deleteMomentAction = async () => {
-    startDeleteMomentTransition(async () => {
-      if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentClientFlow(deleteMoment, moment);
-
-        setCreateOrUpdateMomentState(state);
-        setIsDeleteMomentDone(true);
-      }
-    });
-  };
-
-  useEffect(() => {
-    if (isDeleteMomentDone) {
-      trueDeleteMomentAfterFlow(
-        variant,
-        createOrUpdateMomentState,
-        setIsCRUDOpSuccessful,
-        searchParams,
-        push,
-        pathname,
-      );
-
-      setIsDeleteMomentDone(false);
-    }
-  }, [isDeleteMomentDone]);
-
-  // step actions
-  // to access step actions' isPending states from their parent component (MomentForms)
-
-  // addStepAction
-
-  const [isAddStepPending, startAddStepTransition] = useTransition();
-
-  const addStepAction = () => {
-    startAddStepTransition(() => {
-      setStepVisible("creating");
-      setStepDureeCreate(STEP_DURATION_ORIGINAL);
-    });
-  };
-
-  // cancelStepAction
-
-  const [isCancelStepPending, startCancelStepTransition] = useTransition();
-
-  const cancelStepAction = () => {
-    startCancelStepTransition(() => {
-      setStepVisible("create");
-      setStepDureeCreate(STEP_DURATION_ORIGINAL);
-      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
-    });
-  };
-
-  // createOrUpdateStepAction
-
-  const [isCreateStepPending, startCreateStepTransition] = useTransition();
-
-  const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
-
-  // resetStepAction
-
-  const [isResetStepPending, startResetStepTransition] = useTransition();
-
-  // deleteStepAction
-
-  const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
-
-  return (
-    <>
-      <StepForm
-        variant="creating"
-        momentFormVariant={variant}
-        currentStepId={currentStepId}
-        steps={steps}
-        setSteps={setSteps}
-        setStepVisible={setStepVisible}
-        stepDuree={stepDureeCreate}
-        setStepDuree={setStepDureeCreate}
-        startCreateOrUpdateStepTransition={startCreateStepTransition}
-        startResetStepTransition={startResetStepTransition}
-        createOrUpdateMomentState={createOrUpdateMomentState}
-        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-      />
-      <StepForm
-        variant="updating"
-        momentFormVariant={variant}
-        currentStepId={currentStepId}
-        steps={steps}
-        setSteps={setSteps}
-        setStepVisible={setStepVisible}
-        stepDuree={stepDureeUpdate}
-        setStepDuree={setStepDureeUpdate}
-        startCreateOrUpdateStepTransition={startUpdateStepTransition}
-        startResetStepTransition={startResetStepTransition}
-        createOrUpdateMomentState={createOrUpdateMomentState}
-        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-      />
-      {/* <Form */}
-      {/* action={createOrUpdateMomentAction} // It still works despite the TypeScript error, but I don't know where it will break and I don't need it right now. Again, regular HTML/CSS/JS and regular React should always be prioritized if they do the work and don't significantly hinder the developer experience. */}
-      <form
-        onSubmit={createOrUpdateMomentAction}
-        onReset={resetMomentAction}
-        id={MOMENT_FORM_IDS[variant].momentForm}
-        noValidate
-      >
-        <GlobalServerComponents.Section
-          title="Votre moment"
-          description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
-          id={MOMENT_FORM_IDS[variant].yourMoment}
-          error={createOrUpdateMomentState?.momentMessages?.message}
-          subError={createOrUpdateMomentState?.momentMessages?.subMessage}
-          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-          removeMessagesAndErrorsCallback={
-            removeMomentMessagesAndErrorsCallback
-          }
-        >
-          <LocalServerComponents.MomentInputs
-            variant={variant}
-            moment={moment}
-            destinationOptions={destinationOptions}
-            createOrUpdateMomentState={createOrUpdateMomentState}
-            destinationSelect={destinationSelect}
-            setDestinationSelect={setDestinationSelect}
-            activitySelect={activitySelect}
-            setActivitySelect={setActivitySelect}
-            inputSwitchKey={inputSwitchKey}
-            startMomentDate={startMomentDate}
-            setStartMomentDate={setStartMomentDate}
-          />
-        </GlobalServerComponents.Section>
-        <GlobalServerComponents.Divider />
-        <GlobalServerComponents.Section
-          title="Ses étapes"
-          description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          id={MOMENT_FORM_IDS[variant].itsSteps}
-          error={createOrUpdateMomentState?.stepsMessages?.message}
-          subError={createOrUpdateMomentState?.stepsMessages?.subMessage}
-          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-          removeMessagesAndErrorsCallback={removeStepsMessagesAndErrorsCallback}
-        >
-          {steps.length > 0 && (
-            <>
-              <Reorder.Group // steps
-                axis="y"
-                values={steps}
-                onReorder={setSteps}
-                as="ol"
-              >
-                {steps.map((step, index) => {
-                  // this needs to stay up there because it depends from an information obtained in MomentForms (even though I am now passing it down as a property)
-                  let stepAddingTime =
-                    index === 0 ? 0 : stepsCompoundDurations[index - 1];
-
-                  const currentStepIndex = steps.findIndex(
-                    (e) => e.id === currentStepId,
-                  );
-                  const isAfterCurrentStep = index > currentStepIndex;
-
-                  if (
-                    currentStep &&
-                    currentStepIndex > -1 &&
-                    isAfterCurrentStep
-                  ) {
-                    stepAddingTime =
-                      stepAddingTime - +currentStep.duree + +stepDureeUpdate;
-                  }
-
-                  return (
-                    <ReorderItem // step
-                      key={step.id}
-                      step={step}
-                      index={index}
-                      isAfterCurrentStep={isAfterCurrentStep}
-                      momentFormVariant={variant}
-                      steps={steps}
-                      stepVisible={stepVisible}
-                      currentStepId={currentStepId}
-                      setCurrentStepId={setCurrentStepId}
-                      setStepVisible={setStepVisible}
-                      startMomentDate={startMomentDate}
-                      stepAddingTime={stepAddingTime}
-                      setSteps={setSteps}
-                      isUpdateStepPending={isUpdateStepPending}
-                      stepDureeUpdate={stepDureeUpdate}
-                      setStepDureeUpdate={setStepDureeUpdate}
-                      createOrUpdateMomentState={createOrUpdateMomentState}
-                      setCreateOrUpdateMomentState={
-                        setCreateOrUpdateMomentState
-                      }
-                      stepsCompoundDurations={stepsCompoundDurations}
-                      isDeleteStepPending={isDeleteStepPending}
-                      startDeleteStepTransition={startDeleteStepTransition}
-                      allButtonsDisabled={allButtonsDisabled}
-                    />
-                  );
-                })}
-              </Reorder.Group>
-              <LocalServerComponents.StepsSummaries
-                stepVisible={stepVisible}
-                endMomentDate={endMomentDate}
-                momentAddingTime={momentAddingTime}
-              />
-            </>
-          )}
-          {(() => {
-            switch (stepVisible) {
-              case "creating":
-                return (
-                  <LocalServerComponents.StepVisibleCreating
-                    key={stepVisible}
-                    momentFormVariant={variant}
-                    isResetStepPending={isResetStepPending}
-                    createOrUpdateMomentState={createOrUpdateMomentState}
-                    stepDureeCreate={stepDureeCreate}
-                    setStepDureeCreate={setStepDureeCreate}
-                    isCreateStepPending={isCreateStepPending}
-                    cancelStepAction={cancelStepAction}
-                    steps={steps}
-                    isCancelStepPending={isCancelStepPending}
-                    stepsCompoundDurations={stepsCompoundDurations}
-                    startMomentDate={startMomentDate}
-                    allButtonsDisabled={allButtonsDisabled}
-                  />
-                );
-              case "create":
-                return (
-                  <LocalServerComponents.StepVisibleCreate
-                    key={stepVisible}
-                    addStepAction={addStepAction}
-                    isAddStepPending={isAddStepPending}
-                    allButtonsDisabled={allButtonsDisabled}
-                  />
-                );
-              default:
-                return null;
-            }
-          })()}
-        </GlobalServerComponents.Section>
-        <GlobalServerComponents.Divider />
-        <GlobalServerComponents.Section>
-          {/* Doubling up instead of reverse for accessibility */}
-          <div className="flex">
-            {/* Mobile */}
-            <div className="flex w-full flex-col gap-4 md:hidden">
-              <LocalServerComponents.ConfirmMomentButton
-                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
-                isResetMomentPending={isResetMomentPending}
-                isDeleteMomentPending={isDeleteMomentPending}
-                allButtonsDisabled={allButtonsDisabled}
-              />
-              <LocalServerComponents.ResetOrEraseMomentButton
-                variant={variant}
-                deleteMomentAction={deleteMomentAction}
-                isResetMomentPending={isResetMomentPending}
-                isDeleteMomentPending={isDeleteMomentPending}
-                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
-                allButtonsDisabled={allButtonsDisabled}
-              />
-            </div>
-            {/* Desktop */}
-            <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-              <LocalServerComponents.ResetOrEraseMomentButton
-                variant={variant}
-                deleteMomentAction={deleteMomentAction}
-                isResetMomentPending={isResetMomentPending}
-                isDeleteMomentPending={isDeleteMomentPending}
-                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
-                allButtonsDisabled={allButtonsDisabled}
-              />
-              <LocalServerComponents.ConfirmMomentButton
-                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
-                isResetMomentPending={isResetMomentPending}
-                isDeleteMomentPending={isDeleteMomentPending}
-                allButtonsDisabled={allButtonsDisabled}
-              />
-            </div>
-          </div>
-        </GlobalServerComponents.Section>
-      </form>
-    </>
-  );
-}
-
 // sure I can get the spans to be Server Components but this really is a whole
 export function SetSubViewButton({
   e,
@@ -1135,13 +646,11 @@ export function SearchForm({
   );
 }
 
-export function MomentInDateCard({
+export function UpdateMomentViewButton({
   e3,
-  i3,
   realMoments,
 }: {
   e3: MomentToCRUD;
-  i3: number;
   realMoments: MomentToCRUD[];
 }) {
   const searchParams = useSearchParams();
@@ -1162,40 +671,13 @@ export function MomentInDateCard({
   }
 
   return (
-    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
-      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
-        <p className="font-medium text-blue-950">{e3.objective}</p>
-        <div className="invisible flex justify-end group-hover:visible">
-          <GlobalClientComponents.Button
-            type="button"
-            variant="destroy-step"
-            onClick={handleUpdateMomentView}
-          >
-            <Icons.PencilSquareSolid className="size-5" />
-          </GlobalClientComponents.Button>
-        </div>
-      </div>
-      <p>
-        <span className={"font-semibold text-neutral-800"}>
-          {e3.startDateAndTime.split("T")[1]}
-        </span>{" "}
-        • {numStringToTimeString(e3.duration)}
-        {e3.isIndispensable && (
-          <>
-            {" "}
-            •{" "}
-            <span className="text-sm font-semibold uppercase">
-              indispensable
-            </span>
-          </>
-        )}
-      </p>
-      <ol className="">
-        {e3.steps.map((e4) => (
-          <LocalServerComponents.StepInDateCard key={e4.id} e4={e4} />
-        ))}
-      </ol>
-    </div>
+    <GlobalClientComponents.Button
+      type="button"
+      variant="destroy-step"
+      onClick={handleUpdateMomentView}
+    >
+      <Icons.PencilSquareSolid className="size-5" />
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -1220,7 +702,7 @@ export function PaginationButton({
 
   return (
     <button
-      // hum...
+      // hum... // because I'm providing external arguments, and actually handlePagination is also external
       onClick={() => handlePagination(direction, subView)}
       disabled={allButtonsDisabled || disabled}
       className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
@@ -1232,90 +714,462 @@ export function PaginationButton({
   );
 }
 
-export function StepForm({
+// steps animations data, children of MomentForms
+
+const SHARED_HEIGHT_DURATION = 0.2; // previously ADD__HEIGHT_DURATION
+const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION / 2; // MotionAddStepVisible opacity duration is purposefully shorter (currently twice shorter than MotionAddStepVisible height duration). In fact, instead of currently writing 0.1 I can just right height duration divided by 2 // previously ADD_SWITCH__OPACITY_DURATION
+
+export function MomentForms({
   variant,
-  momentFormVariant,
-  currentStepId,
-  steps,
-  setSteps,
-  setStepVisible,
-  stepDuree,
-  setStepDuree,
-  startCreateOrUpdateStepTransition,
-  startResetStepTransition,
-  createOrUpdateMomentState,
-  setCreateOrUpdateMomentState,
+  moment,
+  destinationOptions,
+  createOrUpdateMoment,
+  deleteMoment,
+  now,
+  setIsCRUDOpSuccessful,
+  allButtonsDisabled,
 }: {
-  variant: StepFormVariant;
-  momentFormVariant: MomentFormVariant;
-  currentStepId: string;
-  steps: StepFromCRUD[];
-  setSteps: SetState<StepFromCRUD[]>;
-  setStepVisible: SetState<StepVisible>;
-  stepDuree: string;
-  setStepDuree: SetState<string>;
-  startCreateOrUpdateStepTransition: TransitionStartFunction;
-  startResetStepTransition: TransitionStartFunction;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
+  variant: MomentFormVariant;
+  moment?: MomentToCRUD;
+  destinationOptions: Option[];
+  createOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment?: TrueDeleteMoment;
+  now: string;
+  setIsCRUDOpSuccessful: SetState<boolean>;
+  allButtonsDisabled: boolean;
+  pageMomentId?: string;
 }) {
-  const stepFormId =
-    variant === "updating"
-      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
-      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+  const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
-  // createOrUpdateStepAction
+  const isVariantUpdatingMoment = variant === "updating" && moment;
 
-  const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
-    startCreateOrUpdateStepTransition(() => {
-      const state = createOrUpdateStepClientFlow(
+  // datetime-local input is now controlled for dynamic moment and steps times
+  let [startMomentDate, setStartMomentDate] = useState(
+    isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
+  );
+
+  const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
+    return {
+      id: e.id,
+      intitule: e.title,
+      details: e.details,
+      duree: e.duration,
+    };
+  });
+
+  let [steps, setSteps] = useState<StepFromCRUD[]>(
+    isVariantUpdatingMoment && momentSteps ? momentSteps : [],
+  );
+
+  const stepsCompoundDurations = makeStepsCompoundDurationsArray(steps);
+
+  let [currentStepId, setCurrentStepId] = useState("");
+  let currentStep = steps.find((step) => step.id === currentStepId);
+
+  let [stepVisible, setStepVisible] = useState<StepVisible>(
+    !isVariantUpdatingMoment ? "creating" : "create",
+  );
+
+  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
+  let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_ORIGINAL);
+  let [stepDureeUpdate, setStepDureeUpdate] = useState(
+    currentStep ? currentStep.duree : STEP_DURATION_ORIGINAL,
+  );
+
+  let momentAddingTime = steps.reduce((acc, curr) => {
+    // it is understood that curr.id === currentStepId can only happen when stepVisible === "updating"
+    if (curr.id === currentStepId && stepVisible === "updating")
+      return acc + +stepDureeUpdate;
+    else return acc + +curr.duree;
+  }, 0);
+
+  if (stepVisible === "creating") momentAddingTime += +stepDureeCreate;
+
+  let endMomentDate = format(
+    add(startMomentDate, {
+      minutes: momentAddingTime,
+    }),
+    "yyyy-MM-dd'T'HH:mm",
+  );
+
+  let [destinationSelect, setDestinationSelect] = useState(false);
+  let [activitySelect, setActivitySelect] = useState(false);
+
+  // InputSwitch key to reset InputSwitch with the form reset (Radix bug)
+  const [inputSwitchKey, setInputSwitchKey] = useState("");
+
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
+  // createOrUpdateMomentAction
+
+  const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
+    useState<TrueCreateOrUpdateMomentState>(null);
+
+  const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
+    useTransition();
+
+  // indispensable if I want to localize my after flows
+  const [isCreateOrUpdateMomentDone, setIsCreateOrUpdateMomentDone] =
+    useState(false);
+
+  const createOrUpdateMomentAction = async (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
+    startCreateOrUpdateMomentTransition(async () => {
+      // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
+      const state = await trueCreateOrUpdateMomentClientFlow(
         event,
-        stepDuree,
-        steps,
+        createOrUpdateMoment,
         variant,
-        currentStepId,
-        setSteps,
-        setStepVisible,
+        startMomentDate,
+        steps,
+        moment,
+        destinationSelect,
+        activitySelect,
         createOrUpdateMomentState,
       );
 
       setCreateOrUpdateMomentState(state);
+      setIsCreateOrUpdateMomentDone(true);
     });
   };
 
-  // resetStepAction
+  useEffect(() => {
+    if (isCreateOrUpdateMomentDone && createOrUpdateMomentState) {
+      // an "after flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
+      trueCreateOrUpdateMomentAfterFlow(
+        variant,
+        createOrUpdateMomentState,
+        setCreateOrUpdateMomentState,
+        setIsCRUDOpSuccessful,
+        searchParams,
+        push,
+        pathname,
+      );
 
-  const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
-    startResetStepTransition(() => {
-      // do not confirm if reset is not triggered by stepFormCreating
+      setIsCreateOrUpdateMomentDone(false);
+    }
+  }, [isCreateOrUpdateMomentDone]);
+
+  // resetMomentFormAction
+
+  const [isResetMomentPending, startResetMomentTransition] = useTransition();
+
+  const [isResetMomentDone, setIsResetMomentDone] = useState(false);
+
+  const resetMomentAction = (event: FormEvent<HTMLFormElement>) => {
+    startResetMomentTransition(() => {
       const noConfirm =
-        // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
-        event.nativeEvent.explicitOriginalTarget?.form?.id !==
-        // triggers confirm only if original intent is from stepFormCreating
-        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+        // @ts-ignore might not work on mobile but it's a bonus
+        event.nativeEvent.explicitOriginalTarget?.type !== "reset"; // could be improved later in case an even upper reset buton triggers this reset action
 
+      // retroactive high level JavaScript, but honestly this should be done on any action that uses a confirm, assuming that action can be triggered externally and automatically
+      // This allows that wherever I reset the form but triggering its HTML reset, it gets fully reset including controlled fields and default states, and even resets its cascading "children forms" since this resetMoment actually triggers the reset of stepFromCreating.
       if (
-        // Attention please: this right here HARD LEVEL JAVASCRIPT.
         noConfirm ||
-        confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
+        confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
       ) {
-        const state = resetStepClientFlow(
-          setStepDuree,
-          createOrUpdateMomentState,
+        const state = trueResetMomentClientFlow(
+          setStartMomentDate,
+          setSteps,
+          setStepVisible,
+          variant,
+          setInputSwitchKey,
+          setDestinationSelect,
+          setActivitySelect,
         );
 
         setCreateOrUpdateMomentState(state);
+        setIsResetMomentDone(true);
       } else event.preventDefault();
     });
   };
 
+  useEffect(() => {
+    if (isResetMomentDone) {
+      resetMomentAfterFlow(variant);
+
+      setIsResetMomentDone(false);
+    }
+  }, [isResetMomentDone]);
+
+  // deleteMomentAction
+
+  const [isDeleteMomentPending, startDeleteMomentTransition] = useTransition();
+
+  const [isDeleteMomentDone, setIsDeleteMomentDone] = useState(false);
+
+  const deleteMomentAction = async () => {
+    startDeleteMomentTransition(async () => {
+      if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
+        const state = await trueDeleteMomentClientFlow(deleteMoment, moment);
+
+        setCreateOrUpdateMomentState(state);
+        setIsDeleteMomentDone(true);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (isDeleteMomentDone && createOrUpdateMomentState) {
+      trueDeleteMomentAfterFlow(
+        variant,
+        createOrUpdateMomentState,
+        setIsCRUDOpSuccessful,
+        searchParams,
+        push,
+        pathname,
+      );
+
+      setIsDeleteMomentDone(false);
+    }
+  }, [isDeleteMomentDone]);
+
+  // step actions
+  // to access step actions' isPending states from their parent component (MomentForms)
+
+  // addStepAction
+
+  const [isAddStepPending, startAddStepTransition] = useTransition();
+
+  const addStepAction = () => {
+    startAddStepTransition(() => {
+      setStepVisible("creating");
+      setStepDureeCreate(STEP_DURATION_ORIGINAL);
+    });
+  };
+
+  // cancelStepAction
+
+  const [isCancelStepPending, startCancelStepTransition] = useTransition();
+
+  const cancelStepAction = () => {
+    startCancelStepTransition(() => {
+      setStepVisible("create");
+      setStepDureeCreate(STEP_DURATION_ORIGINAL);
+      setCreateOrUpdateMomentState(trueRemoveStepsMessagesAndErrorsCallback);
+    });
+  };
+
+  // createOrUpdateStepAction
+
+  const [isCreateStepPending, startCreateStepTransition] = useTransition();
+
+  const [isUpdateStepPending, startUpdateStepTransition] = useTransition();
+
+  // resetStepAction
+
+  const [isResetStepPending, startResetStepTransition] = useTransition();
+
+  // deleteStepAction
+
+  const [isDeleteStepPending, startDeleteStepTransition] = useTransition();
+
+  // steps animation controls
+
+  const [isAnimationDelayed, setIsAnimationDelayed] = useState(false);
+
   return (
-    <form
-      id={stepFormId}
-      onSubmit={createOrUpdateStepAction}
-      onReset={resetStepAction}
-      noValidate
-    ></form>
+    <>
+      <StepForm
+        variant="creating"
+        momentFormVariant={variant}
+        currentStepId={currentStepId}
+        steps={steps}
+        setSteps={setSteps}
+        setStepVisible={setStepVisible}
+        stepDuree={stepDureeCreate}
+        setStepDuree={setStepDureeCreate}
+        startCreateOrUpdateStepTransition={startCreateStepTransition}
+        startResetStepTransition={startResetStepTransition}
+        createOrUpdateMomentState={createOrUpdateMomentState}
+        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+        setIsAnimationDelayed={setIsAnimationDelayed}
+      />
+      <StepForm
+        variant="updating"
+        momentFormVariant={variant}
+        currentStepId={currentStepId}
+        steps={steps}
+        setSteps={setSteps}
+        setStepVisible={setStepVisible}
+        stepDuree={stepDureeUpdate}
+        setStepDuree={setStepDureeUpdate}
+        startCreateOrUpdateStepTransition={startUpdateStepTransition}
+        startResetStepTransition={startResetStepTransition}
+        createOrUpdateMomentState={createOrUpdateMomentState}
+        setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+      />
+      {/* <Form */}
+      {/* action={createOrUpdateMomentAction} // It still works despite the TypeScript error, but I don't know where it will break and I don't need it right now. Again, regular HTML/CSS/JS and regular React should always be prioritized if they do the work and don't significantly hinder the developer experience. */}
+      <form
+        onSubmit={createOrUpdateMomentAction}
+        onReset={resetMomentAction}
+        id={MOMENT_FORM_IDS[variant].momentForm}
+        noValidate
+      >
+        <GlobalServerComponents.FormSection
+          topic="moment"
+          title="Votre moment"
+          description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
+          id={MOMENT_FORM_IDS[variant].yourMoment}
+          error={createOrUpdateMomentState?.error?.momentMessages?.message}
+          subError={
+            createOrUpdateMomentState?.error?.momentMessages?.subMessage
+          }
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+        >
+          <LocalServerComponents.MomentInputs
+            variant={variant}
+            moment={moment}
+            destinationOptions={destinationOptions}
+            createOrUpdateMomentState={createOrUpdateMomentState}
+            destinationSelect={destinationSelect}
+            setDestinationSelect={setDestinationSelect}
+            activitySelect={activitySelect}
+            setActivitySelect={setActivitySelect}
+            inputSwitchKey={inputSwitchKey}
+            startMomentDate={startMomentDate}
+            setStartMomentDate={setStartMomentDate}
+          />
+        </GlobalServerComponents.FormSection>
+        <GlobalServerComponents.Divider />
+        <GlobalServerComponents.FormSection
+          topic="steps"
+          title="Ses étapes"
+          description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
+          id={MOMENT_FORM_IDS[variant].itsSteps}
+          error={createOrUpdateMomentState?.error?.stepsMessages?.message}
+          subError={createOrUpdateMomentState?.error?.stepsMessages?.subMessage}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+        >
+          <Reorder.Group // steps
+            axis="y"
+            values={steps}
+            onReorder={setSteps}
+            as="ol"
+          >
+            <AnimatePresence initial={false}>
+              {steps.map((step, index) => {
+                // this needs to stay up there because it depends from an information obtained in MomentForms (even though I am now passing it down as a property)
+                let stepAddingTime =
+                  index === 0 ? 0 : stepsCompoundDurations[index - 1];
+
+                const currentStepIndex = steps.findIndex(
+                  (e) => e.id === currentStepId,
+                );
+                const isAfterCurrentStep = index > currentStepIndex;
+
+                if (
+                  currentStep &&
+                  currentStepIndex > -1 &&
+                  isAfterCurrentStep
+                ) {
+                  stepAddingTime =
+                    stepAddingTime - +currentStep.duree + +stepDureeUpdate;
+                }
+
+                return (
+                  <ReorderItem // step
+                    key={step.id}
+                    step={step}
+                    index={index}
+                    isAfterCurrentStep={isAfterCurrentStep}
+                    momentFormVariant={variant}
+                    steps={steps}
+                    stepVisible={stepVisible}
+                    currentStepId={currentStepId}
+                    setCurrentStepId={setCurrentStepId}
+                    setStepVisible={setStepVisible}
+                    startMomentDate={startMomentDate}
+                    stepAddingTime={stepAddingTime}
+                    setSteps={setSteps}
+                    isUpdateStepPending={isUpdateStepPending}
+                    stepDureeUpdate={stepDureeUpdate}
+                    setStepDureeUpdate={setStepDureeUpdate}
+                    createOrUpdateMomentState={createOrUpdateMomentState}
+                    setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+                    stepsCompoundDurations={stepsCompoundDurations}
+                    isDeleteStepPending={isDeleteStepPending}
+                    startDeleteStepTransition={startDeleteStepTransition}
+                    allButtonsDisabled={allButtonsDisabled}
+                    setStepDureeCreate={setStepDureeCreate}
+                    isAnimationDelayed={isAnimationDelayed}
+                    setIsAnimationDelayed={setIsAnimationDelayed}
+                  />
+                );
+              })}
+            </AnimatePresence>
+          </Reorder.Group>
+
+          <MotionAddStepVisible
+            stepVisible={stepVisible}
+            variant={variant}
+            isResetStepPending={isResetStepPending}
+            createOrUpdateMomentState={createOrUpdateMomentState}
+            stepDureeCreate={stepDureeCreate}
+            setStepDureeCreate={setStepDureeCreate}
+            isCreateStepPending={isCreateStepPending}
+            cancelStepAction={cancelStepAction}
+            steps={steps}
+            isCancelStepPending={isCancelStepPending}
+            stepsCompoundDurations={stepsCompoundDurations}
+            startMomentDate={startMomentDate}
+            allButtonsDisabled={allButtonsDisabled}
+            addStepAction={addStepAction}
+            isAddStepPending={isAddStepPending}
+          />
+
+          <LocalServerComponents.StepsSummaries
+            stepVisible={stepVisible}
+            endMomentDate={endMomentDate}
+            momentAddingTime={momentAddingTime}
+          />
+        </GlobalServerComponents.FormSection>
+        <GlobalServerComponents.Divider />
+        <GlobalServerComponents.Section>
+          {/* Doubling up instead of reverse for accessibility */}
+          <div className="flex">
+            {/* Mobile */}
+            <div className="flex w-full flex-col gap-4 md:hidden">
+              <LocalServerComponents.ConfirmMomentButton
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                isResetMomentPending={isResetMomentPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
+              />
+              <LocalServerComponents.ResetOrEraseMomentButton
+                variant={variant}
+                deleteMomentAction={deleteMomentAction}
+                isResetMomentPending={isResetMomentPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
+              />
+            </div>
+            {/* Desktop */}
+            <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
+              <LocalServerComponents.ResetOrEraseMomentButton
+                variant={variant}
+                deleteMomentAction={deleteMomentAction}
+                isResetMomentPending={isResetMomentPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
+              />
+              <LocalServerComponents.ConfirmMomentButton
+                isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
+                isResetMomentPending={isResetMomentPending}
+                isDeleteMomentPending={isDeleteMomentPending}
+                allButtonsDisabled={allButtonsDisabled}
+              />
+            </div>
+          </div>
+        </GlobalServerComponents.Section>
+      </form>
+    </>
   );
 }
 
@@ -1341,6 +1195,9 @@ export function ReorderItem({
   isDeleteStepPending,
   startDeleteStepTransition,
   allButtonsDisabled,
+  setStepDureeCreate,
+  isAnimationDelayed,
+  setIsAnimationDelayed,
 }: {
   step: StepFromCRUD;
   index: number;
@@ -1357,12 +1214,15 @@ export function ReorderItem({
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  setCreateOrUpdateMomentState: SetState<TrueCreateOrUpdateMomentState>;
   stepsCompoundDurations: number[];
   isDeleteStepPending: boolean;
   startDeleteStepTransition: TransitionStartFunction;
   allButtonsDisabled: boolean;
+  setStepDureeCreate: SetState<string>;
+  isAnimationDelayed: boolean;
+  setIsAnimationDelayed: SetState<boolean>;
 }) {
   const controls = useDragControls();
 
@@ -1379,8 +1239,14 @@ export function ReorderItem({
   const deleteStepAction = () => {
     startDeleteStepTransition(() => {
       if (confirm("Êtes-vous sûr de vouloir effacer cette étape ?")) {
-        deleteStepClientFlow(steps, currentStepId, setSteps, setStepVisible);
-        setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+        deleteStepClientFlow(
+          steps,
+          currentStepId,
+          setSteps,
+          setStepVisible,
+          setStepDureeCreate,
+        );
+        setCreateOrUpdateMomentState(trueRemoveStepsMessagesAndErrorsCallback);
       }
     });
   };
@@ -1395,7 +1261,7 @@ export function ReorderItem({
     startRestoreStepTransition(() => {
       setStepVisible("create");
       setCurrentStepId("");
-      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+      setCreateOrUpdateMomentState(trueRemoveStepsMessagesAndErrorsCallback);
     });
   };
 
@@ -1408,118 +1274,449 @@ export function ReorderItem({
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);
       setStepDureeUpdate(step.duree);
-      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+      setCreateOrUpdateMomentState(trueRemoveStepsMessagesAndErrorsCallback);
       setStepVisible("updating");
     });
   };
 
   return (
-    <Reorder.Item
-      value={step}
-      dragListener={false}
-      dragControls={controls}
-      transition={{ layout: { duration: 0 } }}
-      // layout="position" // or "preserve-aspect"
-      dragTransition={{
-        bounceStiffness: 900,
-        bounceDamping: 50,
+    <motion.div
+      key={step.id}
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{
+        // delays must be conditional
+        opacity: {
+          duration: SHARED_OPACITY_DURATION,
+          delay: isAnimationDelayed ? SHARED_HEIGHT_DURATION : 0,
+        },
+        height: {
+          duration: SHARED_HEIGHT_DURATION,
+          delay: isAnimationDelayed ? SHARED_HEIGHT_DURATION : 0,
+        },
       }}
-      // whileDrag={{ opacity: 0.5 }} // buggy though
+      onAnimationStart={() => {
+        if (isAnimationDelayed) setIsAnimationDelayed(false);
+      }}
     >
-      <div
-        className={clsx(
-          "flex flex-col gap-y-8",
-          index !== steps.length - 1 && "pb-8", // I remember I did that specifically for animations
-        )}
+      <Reorder.Item
+        value={step}
+        dragListener={false}
+        dragControls={controls}
+        transition={{ layout: { duration: 0 } }}
+        // layout="position" // or "preserve-aspect"
+        dragTransition={{
+          bounceStiffness: 900,
+          bounceDamping: 50,
+        }}
+        // whileDrag={{ opacity: 0.5 }} // buggy though
       >
-        <div className="flex select-none items-baseline justify-between">
-          <p
-            className={clsx(
-              "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
-              "transition-colors",
-              stepVisible !== "updating" && "hover:text-neutral-400",
+        <div className={clsx("flex flex-col gap-y-8", "pb-9")}>
+          <div className="flex select-none items-baseline justify-between">
+            <p
+              className={clsx(
+                "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
+                "transition-colors",
+                stepVisible !== "updating" && "hover:text-neutral-400",
+              )}
+              onPointerDown={(event) => {
+                if (stepVisible !== "updating") controls.start(event);
+              }}
+              style={{ touchAction: "none" }}
+            >
+              Étape <span>{toWordsing(index + 1)}</span>
+            </p>{" "}
+            {isCurrentStepUpdating ? (
+              <GlobalClientComponents.Button
+                type="button"
+                variant="destroy-step"
+                onClick={restoreStepAction}
+                disabled={allButtonsDisabled || isRestoreStepPending}
+              >
+                Restaurer l&apos;étape
+              </GlobalClientComponents.Button>
+            ) : (
+              <GlobalClientComponents.Button
+                variant="destroy-step"
+                type="button"
+                onClick={modifyStepAction}
+                disabled={allButtonsDisabled || isModifyStepPending}
+              >
+                Modifier cette étape
+              </GlobalClientComponents.Button>
             )}
-            onPointerDown={(event) => {
-              if (stepVisible !== "updating") controls.start(event);
-            }}
-            style={{ touchAction: "none" }}
-          >
-            Étape <span>{toWordsing(index + 1)}</span>
-          </p>{" "}
-          {isCurrentStepUpdating ? (
-            <GlobalClientComponents.Button
-              type="button"
-              variant="destroy-step"
-              onClick={restoreStepAction}
-              disabled={allButtonsDisabled || isRestoreStepPending}
-            >
-              Restaurer l&apos;étape
-            </GlobalClientComponents.Button>
-          ) : (
-            <GlobalClientComponents.Button
-              variant="destroy-step"
-              type="button"
-              onClick={modifyStepAction}
-              disabled={allButtonsDisabled || isModifyStepPending}
-            >
-              Modifier cette étape
-            </GlobalClientComponents.Button>
-          )}
-        </div>
-        {isCurrentStepUpdating ? (
-          <div className="flex flex-col gap-y-8">
-            <LocalServerComponents.StepInputs
-              form={form}
-              createOrUpdateMomentState={createOrUpdateMomentState}
-              stepDuree={stepDureeUpdate}
-              setStepDuree={setStepDureeUpdate}
-              step={step}
-              startMomentDate={startMomentDate}
-              stepAddingTime={stepAddingTime}
-              stepsCompoundDurations={stepsCompoundDurations}
-            />
-            <div>
-              {/* Mobile */}
-              <LocalServerComponents.StepFormControlsMobileWrapper>
-                <LocalServerComponents.UpdateStepButton
-                  form={form}
-                  isUpdateStepPending={isUpdateStepPending}
-                  allButtonsDisabled={allButtonsDisabled}
-                />
-                <LocalServerComponents.EraseStepButton
-                  form={form}
-                  deleteStepAction={deleteStepAction}
-                  isDeleteStepPending={isDeleteStepPending}
-                  allButtonsDisabled={allButtonsDisabled}
-                />
-              </LocalServerComponents.StepFormControlsMobileWrapper>
-              {/* Desktop */}
-              <LocalServerComponents.StepFormControlsDesktopWrapper>
-                <LocalServerComponents.EraseStepButton
-                  form={form}
-                  deleteStepAction={deleteStepAction}
-                  isDeleteStepPending={isDeleteStepPending}
-                  allButtonsDisabled={allButtonsDisabled}
-                />
-                <LocalServerComponents.UpdateStepButton
-                  form={form}
-                  isUpdateStepPending={isUpdateStepPending}
-                  allButtonsDisabled={allButtonsDisabled}
-                />
-              </LocalServerComponents.StepFormControlsDesktopWrapper>
-            </div>
           </div>
-        ) : (
-          <LocalServerComponents.StepContents
+          <MotionIsCurrentStepUpdating
+            isCurrentStepUpdating={isCurrentStepUpdating}
+            form={form}
+            createOrUpdateMomentState={createOrUpdateMomentState}
+            stepDureeUpdate={stepDureeUpdate}
+            setStepDureeUpdate={setStepDureeUpdate}
             step={step}
-            index={index}
-            hasAPreviousStepUpdating={hasAPreviousStepUpdating}
             startMomentDate={startMomentDate}
             stepAddingTime={stepAddingTime}
+            stepsCompoundDurations={stepsCompoundDurations}
+            isUpdateStepPending={isUpdateStepPending}
+            allButtonsDisabled={allButtonsDisabled}
+            deleteStepAction={deleteStepAction}
+            isDeleteStepPending={isDeleteStepPending}
+            index={index}
+            hasAPreviousStepUpdating={hasAPreviousStepUpdating}
           />
-        )}
+        </div>
+      </Reorder.Item>
+    </motion.div>
+  );
+}
+
+// Caution: component may break under prolonged interruptability.
+function MotionIsCurrentStepUpdating({
+  isCurrentStepUpdating,
+  form,
+  createOrUpdateMomentState,
+  stepDureeUpdate,
+  setStepDureeUpdate,
+  step,
+  startMomentDate,
+  stepAddingTime,
+  stepsCompoundDurations,
+  isUpdateStepPending,
+  allButtonsDisabled,
+  deleteStepAction,
+  isDeleteStepPending,
+  index,
+  hasAPreviousStepUpdating,
+}: {
+  isCurrentStepUpdating: boolean;
+  form: string;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  stepDureeUpdate: string;
+  setStepDureeUpdate: SetState<string>;
+  step: StepFromCRUD;
+  startMomentDate: string;
+  stepAddingTime: number;
+  stepsCompoundDurations: number[];
+  isUpdateStepPending: boolean;
+  allButtonsDisabled: boolean;
+  deleteStepAction: () => void;
+  isDeleteStepPending: boolean;
+  index: number;
+  hasAPreviousStepUpdating: boolean;
+}) {
+  const [ref, bounds] = useMeasure();
+  const reference = ref as Ref<HTMLDivElement>;
+
+  const variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
+  return (
+    <motion.div
+      animate={{ height: bounds.height > 0 ? bounds.height : "auto" }}
+      transition={{ duration: SHARED_HEIGHT_DURATION }}
+    >
+      <div ref={reference}>
+        <AnimatePresence initial={false} mode="popLayout">
+          {isCurrentStepUpdating ? (
+            <motion.div
+              key={"StepInputs"}
+              variants={variants}
+              initial={"hidden"}
+              animate={"visible"}
+              exit={"hidden"}
+              transition={{ duration: SHARED_OPACITY_DURATION }}
+            >
+              <div className="flex flex-col gap-y-8">
+                <LocalServerComponents.StepInputs
+                  form={form}
+                  createOrUpdateMomentState={createOrUpdateMomentState}
+                  stepDuree={stepDureeUpdate}
+                  setStepDuree={setStepDureeUpdate}
+                  step={step}
+                  startMomentDate={startMomentDate}
+                  stepAddingTime={stepAddingTime}
+                  stepsCompoundDurations={stepsCompoundDurations}
+                />
+                <div>
+                  {/* Mobile */}
+                  <LocalServerComponents.StepFormControlsMobileWrapper>
+                    <LocalServerComponents.UpdateStepButton
+                      form={form}
+                      isUpdateStepPending={isUpdateStepPending}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                    <LocalServerComponents.EraseStepButton
+                      form={form}
+                      deleteStepAction={deleteStepAction}
+                      isDeleteStepPending={isDeleteStepPending}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                  </LocalServerComponents.StepFormControlsMobileWrapper>
+                  {/* Desktop */}
+                  <LocalServerComponents.StepFormControlsDesktopWrapper>
+                    <LocalServerComponents.EraseStepButton
+                      form={form}
+                      deleteStepAction={deleteStepAction}
+                      isDeleteStepPending={isDeleteStepPending}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                    <LocalServerComponents.UpdateStepButton
+                      form={form}
+                      isUpdateStepPending={isUpdateStepPending}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                  </LocalServerComponents.StepFormControlsDesktopWrapper>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={"StepContents"}
+              variants={variants}
+              initial={"hidden"}
+              animate={"visible"}
+              exit={"hidden"}
+              transition={{ duration: SHARED_OPACITY_DURATION }}
+            >
+              <LocalServerComponents.StepContents
+                step={step}
+                index={index}
+                hasAPreviousStepUpdating={hasAPreviousStepUpdating}
+                startMomentDate={startMomentDate}
+                stepAddingTime={stepAddingTime}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </Reorder.Item>
+    </motion.div>
+  );
+}
+
+function MotionAddStepVisible({
+  stepVisible,
+  variant,
+  isResetStepPending,
+  createOrUpdateMomentState,
+  stepDureeCreate,
+  setStepDureeCreate,
+  isCreateStepPending,
+  cancelStepAction,
+  steps,
+  isCancelStepPending,
+  stepsCompoundDurations,
+  startMomentDate,
+  allButtonsDisabled,
+  addStepAction,
+  isAddStepPending,
+}: {
+  stepVisible: StepVisible;
+  variant: MomentFormVariant;
+  isResetStepPending: boolean;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  stepDureeCreate: string;
+  setStepDureeCreate: SetState<string>;
+  isCreateStepPending: boolean;
+  cancelStepAction: () => void;
+  steps: StepFromCRUD[];
+  isCancelStepPending: boolean;
+  stepsCompoundDurations: number[];
+  startMomentDate: string;
+  allButtonsDisabled: boolean;
+  addStepAction: () => void;
+  isAddStepPending: boolean;
+}) {
+  const [ref, bounds] = useMeasure();
+  const reference = ref as Ref<HTMLDivElement>;
+
+  const variants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+  };
+
+  return (
+    <motion.div
+      animate={{ height: bounds.height > 0 ? bounds.height : "auto" }}
+      transition={{ duration: SHARED_HEIGHT_DURATION }}
+    >
+      <div ref={reference}>
+        <AnimatePresence initial={false} mode="popLayout">
+          {(() => {
+            switch (stepVisible) {
+              case "creating":
+                return (
+                  <motion.div
+                    key={"stepVisibleCreating"}
+                    variants={variants}
+                    initial={"hidden"}
+                    animate={"visible"}
+                    exit={"hidden"}
+                    transition={{ duration: SHARED_OPACITY_DURATION }}
+                    className="pb-9" // formerly shared between StepsSummaries
+                  >
+                    <LocalServerComponents.StepVisibleCreating
+                      key={stepVisible}
+                      momentFormVariant={variant}
+                      isResetStepPending={isResetStepPending}
+                      createOrUpdateMomentState={createOrUpdateMomentState}
+                      stepDureeCreate={stepDureeCreate}
+                      setStepDureeCreate={setStepDureeCreate}
+                      isCreateStepPending={isCreateStepPending}
+                      cancelStepAction={cancelStepAction}
+                      steps={steps}
+                      isCancelStepPending={isCancelStepPending}
+                      stepsCompoundDurations={stepsCompoundDurations}
+                      startMomentDate={startMomentDate}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                  </motion.div>
+                );
+              default:
+                return (
+                  <motion.div
+                    key={"stepVisibleCreate"}
+                    variants={variants}
+                    initial={"hidden"}
+                    animate={"visible"}
+                    exit={"hidden"}
+                    transition={{ duration: SHARED_OPACITY_DURATION }}
+                    className="pb-9"
+                  >
+                    <LocalServerComponents.StepVisibleCreate
+                      key={stepVisible}
+                      addStepAction={addStepAction}
+                      isAddStepPending={isAddStepPending}
+                      allButtonsDisabled={allButtonsDisabled}
+                    />
+                  </motion.div>
+                );
+            }
+          })()}
+        </AnimatePresence>
+      </div>
+    </motion.div>
+  );
+}
+
+export function StepForm({
+  variant,
+  momentFormVariant,
+  currentStepId,
+  steps,
+  setSteps,
+  setStepVisible,
+  stepDuree,
+  setStepDuree,
+  startCreateOrUpdateStepTransition,
+  startResetStepTransition,
+  createOrUpdateMomentState,
+  setCreateOrUpdateMomentState,
+  setIsAnimationDelayed,
+}: {
+  variant: StepFormVariant;
+  momentFormVariant: MomentFormVariant;
+  currentStepId: string;
+  steps: StepFromCRUD[];
+  setSteps: SetState<StepFromCRUD[]>;
+  setStepVisible: SetState<StepVisible>;
+  stepDuree: string;
+  setStepDuree: SetState<string>;
+  startCreateOrUpdateStepTransition: TransitionStartFunction;
+  startResetStepTransition: TransitionStartFunction;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  setCreateOrUpdateMomentState: SetState<TrueCreateOrUpdateMomentState>;
+  setIsAnimationDelayed?: SetState<boolean>;
+}) {
+  const stepFormId =
+    variant === "updating"
+      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
+      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
+  // createOrUpdateStepAction
+
+  const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
+    startCreateOrUpdateStepTransition(() => {
+      const state = trueCreateOrUpdateStepClientFlow(
+        event,
+        stepDuree,
+        steps,
+        variant,
+        currentStepId,
+        setSteps,
+        setStepVisible,
+        createOrUpdateMomentState,
+        setIsAnimationDelayed,
+      );
+
+      setCreateOrUpdateMomentState(state);
+    });
+  };
+
+  // resetStepAction
+
+  const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
+    startResetStepTransition(() => {
+      // do not confirm if reset is not triggered by stepFormCreating
+      const noConfirm =
+        // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
+        event.nativeEvent.explicitOriginalTarget?.form?.id !==
+        // triggers confirm only if original intent is from stepFormCreating
+        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+
+      if (
+        // Attention please: this right here HARD LEVEL JAVASCRIPT.
+        noConfirm ||
+        confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
+      ) {
+        const state = trueResetStepClientFlow(
+          setStepDuree,
+          createOrUpdateMomentState,
+        );
+
+        setCreateOrUpdateMomentState(state);
+      } else event.preventDefault();
+    });
+  };
+
+  return (
+    <form
+      id={stepFormId}
+      onSubmit={createOrUpdateStepAction}
+      onReset={resetStepAction}
+      noValidate
+    ></form>
+  );
+}
+
+export function SetViewButton({ view }: { view: View }) {
+  const desiredView = defineDesiredView(view);
+
+  const searchParams = useSearchParams();
+  const { push } = useRouter();
+  const pathname = usePathname();
+
+  return (
+    <GlobalClientComponents.Button
+      type="button"
+      variant="destroy-step"
+      onClick={() =>
+        scrollToTopOfDesiredView(desiredView, searchParams, push, pathname)
+      }
+    >
+      {(() => {
+        switch (desiredView) {
+          // no case "update-moment", since moment-specific
+          case "read-moments":
+            return <>Vos moments</>;
+          case "create-moment":
+            return <>Créez un moment</>;
+          default:
+            return null;
+        }
+      })()}
+    </GlobalClientComponents.Button>
   );
 }
 
@@ -1527,18 +1724,18 @@ export function ReorderItem({
 const localClientComponents = {
   // ClientCore,
   // Main,
-  SetViewButton,
-  ViewsCarouselContainer,
-  ViewSegment,
+  ViewsCarouselContainer, // next
+  ViewSegment, // known max
   ReadMomentsView,
-  MomentForms,
   SetSubViewButton,
   RevalidateMomentsButton,
   SearchForm,
-  MomentInDateCard,
+  UpdateMomentViewButton,
+  MomentForms,
   PaginationButton,
   StepForm,
   ReorderItem,
+  SetViewButton,
 } as const;
 
 export type LocalClientComponentsName = keyof typeof localClientComponents;

@@ -13,9 +13,6 @@ import {
   viewTitles,
 } from "@/app/data/moments";
 import {
-  CreateOrUpdateMoment,
-  CreateOrUpdateMomentState,
-  DeleteMoment,
   MomentFormVariant,
   MomentsDateToCRUD,
   MomentsDestinationToCRUD,
@@ -25,6 +22,9 @@ import {
   StepToCRUD,
   StepVisible,
   SubView,
+  TrueCreateOrUpdateMoment,
+  TrueCreateOrUpdateMomentState,
+  TrueDeleteMoment,
   UserMomentsToCRUD,
   View,
 } from "@/app/types/moments";
@@ -52,8 +52,8 @@ export default function ServerCore({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment: TrueDeleteMoment;
   view: View;
   moment: MomentToCRUD | undefined;
   subView: SubView;
@@ -108,8 +108,8 @@ export function Main({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment: TrueDeleteMoment;
   view: View;
   moment: MomentToCRUD | undefined;
   subView: SubView;
@@ -118,6 +118,7 @@ export function Main({
     <main>
       {/* ViewsCarousel */}
       <ViewsCarouselWrapper>
+        {/* where the client boundary currently begins */}
         <LocalClientComponents.ViewsCarouselContainer
           now={now}
           allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -244,13 +245,58 @@ export function DestinationInDateCard({
         </p>
       </div>
       {e2.moments.map((e3, i3) => (
-        <LocalClientComponents.MomentInDateCard
+        // no longer from LocalClientComponents
+        <MomentInDateCard
           key={e3.id + e2.id} // because of userMoments duplicates
           e3={e3}
           i3={i3}
           realMoments={realMoments}
         />
       ))}
+    </div>
+  );
+}
+
+export function MomentInDateCard({
+  e3,
+  i3,
+  realMoments,
+}: {
+  e3: MomentToCRUD;
+  i3: number;
+  realMoments: MomentToCRUD[];
+}) {
+  return (
+    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
+      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+        <p className="font-medium text-blue-950">{e3.objective}</p>
+        <div className="invisible flex justify-end group-hover:visible">
+          <LocalClientComponents.UpdateMomentViewButton
+            e3={e3}
+            realMoments={realMoments}
+          />
+        </div>
+      </div>
+      <p>
+        <span className={"font-semibold text-neutral-800"}>
+          {e3.startDateAndTime.split("T")[1]}
+        </span>{" "}
+        • {numStringToTimeString(e3.duration)}
+        {e3.isIndispensable && (
+          <>
+            {" "}
+            •{" "}
+            <span className="text-sm font-semibold uppercase">
+              indispensable
+            </span>
+          </>
+        )}
+      </p>
+      <ol className="">
+        {e3.steps.map((e4) => (
+          <StepInDateCard key={e4.id} e4={e4} />
+        ))}
+      </ol>
     </div>
   );
 }
@@ -300,7 +346,7 @@ export function MomentInputs({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
   destinationSelect: boolean;
   setDestinationSelect: SetState<boolean>;
   activitySelect: boolean;
@@ -329,7 +375,7 @@ export function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.destinationName}
         hidden={destinationSelect}
       >
         {destinationOptions.length > 0 && (
@@ -355,7 +401,7 @@ export function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.destinationName}
         hidden={!destinationSelect}
       >
         <SetSelectButton
@@ -371,7 +417,7 @@ export function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
         hidden={activitySelect}
       >
         <SetSelectButton
@@ -393,7 +439,7 @@ export function MomentInputs({
         options={activityOptions}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
         hidden={!activitySelect}
       >
         <SetSelectButton
@@ -407,7 +453,7 @@ export function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
         description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentName}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.momentName}
       />
       <GlobalServerComponents.InputSwitch
         key={inputSwitchKey}
@@ -418,7 +464,9 @@ export function MomentInputs({
         }
         description="Activez l'interrupteur si ce moment est d'une importance incontournable."
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentIsIndispensable}
+        errors={
+          createOrUpdateMomentState?.error?.momentErrors?.momentIsIndispensable
+        }
       />
       <GlobalClientComponents.Textarea
         label="Contexte"
@@ -427,7 +475,9 @@ export function MomentInputs({
         description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
         rows={6}
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentDescription}
+        errors={
+          createOrUpdateMomentState?.error?.momentErrors?.momentDescription
+        }
       />
       <GlobalClientComponents.InputDatetimeLocalControlled
         label="Date et heure"
@@ -436,7 +486,9 @@ export function MomentInputs({
         definedValue={startMomentDate}
         definedOnValueChange={setStartMomentDate}
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentStartDateAndTime}
+        errors={
+          createOrUpdateMomentState?.error?.momentErrors?.momentStartDateAndTime
+        }
       />
     </>
   );
@@ -470,7 +522,8 @@ export function StepsSummaries({
   momentAddingTime: number;
 }) {
   return (
-    <>
+    <div className="space-y-8">
+      {/* the space between Récapitulatifs and the rest was assured by space-y-8, so let's just remake it for now above */}
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Récapitulatifs
@@ -508,7 +561,7 @@ export function StepsSummaries({
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -528,7 +581,7 @@ export function StepVisibleCreating({
 }: {
   momentFormVariant: MomentFormVariant;
   isResetStepPending: boolean;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
   stepDureeCreate: string;
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
@@ -736,7 +789,7 @@ export function StepInputs({
   stepsCompoundDurations,
 }: {
   form: string;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
   startMomentDate: string;
@@ -753,7 +806,7 @@ export function StepInputs({
         defaultValue={step?.intitule}
         description="Définissez simplement le sujet de l'étape."
         required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.stepName}
+        errors={createOrUpdateMomentState?.error?.stepsErrors?.stepName}
       />
       <GlobalClientComponents.Textarea
         form={form}
@@ -763,7 +816,7 @@ export function StepInputs({
         description="Expliquez en détails le déroulé de l'étape."
         rows={4}
         required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.stepDescription}
+        errors={createOrUpdateMomentState?.error?.stepsErrors?.stepDescription}
       />
       <GlobalClientComponents.InputNumberControlled
         form={form}
@@ -774,7 +827,7 @@ export function StepInputs({
         description="Renseignez en minutes la longueur de l'étape."
         min="5"
         required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.realStepDuration}
+        errors={createOrUpdateMomentState?.error?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
       >
         <p className="text-sm font-medium text-blue-900">
@@ -913,6 +966,7 @@ const localServerComponents = {
   DateCard,
   NoDateCard,
   DestinationInDateCard,
+  MomentInDateCard,
   StepInDateCard,
   MomentsPageDetails,
   MomentInputs,

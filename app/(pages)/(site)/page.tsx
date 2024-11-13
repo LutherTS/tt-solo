@@ -1,4 +1,8 @@
+"use client";
+
 export default function Home() {
+  // throw new Error("Test error");
+
   return (
     <main>
       <div>Hello world!</div>

@@ -9,7 +9,10 @@ import * as Icons from "@/app/icons";
 import * as GlocalServerComponents from "./server";
 import { Option, SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "@/app/validations/steps";
-import { CreateOrUpdateMomentState } from "@/app/types/moments";
+import {
+  CreateOrUpdateMomentState,
+  TrueCreateOrUpdateMomentState,
+} from "@/app/types/moments";
 import {
   baseInputTexts,
   focusVisibleTexts,
@@ -29,6 +32,37 @@ export function FormValidationError({
   removeMessagesAndErrorsCallback?: (
     s: CreateOrUpdateMomentState,
   ) => CreateOrUpdateMomentState; // could be more precise but true
+}) {
+  function handleClick() {
+    if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
+      setCreateOrUpdateMomentState(removeMessagesAndErrorsCallback);
+  }
+
+  return (
+    <p
+      className={clsx(
+        "max-w-prose text-sm text-pink-500",
+        setCreateOrUpdateMomentState &&
+          removeMessagesAndErrorsCallback &&
+          "hover:cursor-pointer",
+      )}
+      onClick={handleClick}
+    >
+      {error}
+    </p>
+  );
+}
+
+export function TrueFormValidationError({
+  error,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
+}: {
+  error: string;
+  setCreateOrUpdateMomentState?: SetState<TrueCreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: TrueCreateOrUpdateMomentState,
+  ) => TrueCreateOrUpdateMomentState; // could be more precise but true
 }) {
   function handleClick() {
     if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
@@ -791,6 +825,7 @@ export function Button({
 
 const globalClientComponents = {
   FormValidationError,
+  TrueFormValidationError,
   InputText,
   InputTextControlled,
   SelectWithOptionsControlled,
