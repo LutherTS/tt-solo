@@ -1,3 +1,6 @@
+import { Prisma } from "@prisma/client";
+import { selectDestinationKeyAndName } from "../reads/subreads/destinations";
+
 export type DestinationToCRUD = {
   id: string;
   ideal: string;
@@ -7,3 +10,7 @@ export type DestinationToCRUD = {
   currentMomentsCount: number;
   futureMomentsCount: number;
 };
+
+export type SelectDestinationForMoment = Prisma.DestinationGetPayload<{
+  select: typeof selectDestinationKeyAndName;
+}>;

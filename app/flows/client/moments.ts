@@ -11,18 +11,18 @@ import {
   VIEW,
 } from "@/app/data/moments";
 import {
-  DeleteMoment,
+  FalseDeleteMoment,
   MomentFormVariant,
   MomentToCRUD,
   StepFormVariant,
   StepFromCRUD,
   StepVisible,
-  CreateOrUpdateMoment,
-  CreateOrUpdateMomentState,
+  FalseCreateOrUpdateMoment,
+  FalseCreateOrUpdateMomentState,
   SubView,
-  TrueCreateOrUpdateMomentState,
-  TrueCreateOrUpdateMoment,
-  TrueDeleteMoment,
+  CreateOrUpdateMomentState,
+  CreateOrUpdateMoment,
+  DeleteMoment,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
 } from "@/app/types/moments";
@@ -34,19 +34,19 @@ import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 import { SetState } from "@/app/types/globals";
 
 // best be to prepare the state right here
-export const createOrUpdateMomentClientFlow = async (
+export const falseCreateOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
-  createOrUpdateMoment: CreateOrUpdateMoment,
+  createOrUpdateMoment: FalseCreateOrUpdateMoment,
   variant: MomentFormVariant,
   startMomentDate: string,
   steps: StepFromCRUD[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
   endMomentDate: string,
   setSubView: SetState<SubView>,
-): Promise<CreateOrUpdateMomentState> => {
+): Promise<FalseCreateOrUpdateMomentState> => {
   event.preventDefault();
 
   const createOrUpdateMomentBound = createOrUpdateMoment.bind(
@@ -85,17 +85,16 @@ export const createOrUpdateMomentClientFlow = async (
   }
 };
 
-export const trueCreateOrUpdateMomentClientFlow = async (
+export const createOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
-  createOrUpdateMoment: TrueCreateOrUpdateMoment,
+  createOrUpdateMoment: CreateOrUpdateMoment,
   variant: MomentFormVariant,
   startMomentDate: string,
   steps: StepFromCRUD[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState,
-  // ): Promise<TrueCreateOrUpdateMomentState> => {
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   event.preventDefault();
 
@@ -147,6 +146,42 @@ export const trueCreateOrUpdateMomentClientFlow = async (
 };
 
 // reset is only on the creating variant of MomentForms
+export const falseResetMomentClientFlow = (
+  setStartMomentDate: SetState<string>,
+  setSteps: SetState<StepFromCRUD[]>,
+  setStepVisible: SetState<StepVisible>,
+  variant: MomentFormVariant,
+  setInputSwitchKey: SetState<string>,
+  setDestinationSelect: SetState<boolean>,
+  setActivitySelect: SetState<boolean>,
+): null => {
+  // if (revalidateMoments) await revalidateMoments();
+  // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
+  // setStartMomentDate(nowRoundedUpTenMinutes);
+  // the easy solution
+  setStartMomentDate(roundTimeUpTenMinutes(dateToInputDatetime(new Date()))); // the harder solution would be returning that information from a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case (it's an escape hatch I've then used to solve a bug from React 19)
+  // Or actually the flow that I preconize now is to do what's next to be done inside a subsequent useEffect (but I don't think that would have worked). Here it had only to do with time so I could guess it manually, but for anything more complex, that's where useEffect currently comes in until the React team defeat it as the "final boss."
+  // https://x.com/acdlite/status/1758231913314091267
+  // https://x.com/acdlite/status/1758233493408973104
+
+  // in complement to HTML reset
+  setSteps([]);
+  setStepVisible("creating");
+  setDestinationSelect(false);
+  setActivitySelect(false);
+
+  // resetting the create step form along
+  const stepFormCreating = document.getElementById(
+    MOMENT_FORM_IDS[variant].stepFormCreating,
+  ) as HTMLFormElement | null;
+  stepFormCreating?.reset();
+
+  // "resetting" the InputSwitchKey fixing a bug from Radix
+  setInputSwitchKey(uuidv4());
+
+  return null;
+};
+
 export const resetMomentClientFlow = (
   setStartMomentDate: SetState<string>,
   setSteps: SetState<StepFromCRUD[]>,
@@ -183,47 +218,11 @@ export const resetMomentClientFlow = (
   return null;
 };
 
-export const trueResetMomentClientFlow = (
-  setStartMomentDate: SetState<string>,
-  setSteps: SetState<StepFromCRUD[]>,
-  setStepVisible: SetState<StepVisible>,
-  variant: MomentFormVariant,
-  setInputSwitchKey: SetState<string>,
-  setDestinationSelect: SetState<boolean>,
-  setActivitySelect: SetState<boolean>,
-): null => {
-  // if (revalidateMoments) await revalidateMoments();
-  // The (side?) effects of the revalidation are felt after the action ends. That's why they can't be used within the action.
-  // setStartMomentDate(nowRoundedUpTenMinutes);
-  // the easy solution
-  setStartMomentDate(roundTimeUpTenMinutes(dateToInputDatetime(new Date()))); // the harder solution would be returning that information from a server action, but since it can be obtained on the client and it's just for cosmetics, that will wait for a more relevant use case (it's an escape hatch I've then used to solve a bug from React 19)
-  // Or actually the flow that I preconize now is to do what's next to be done inside a subsequent useEffect (but I don't think that would have worked). Here it had only to do with time so I could guess it manually, but for anything more complex, that's where useEffect currently comes in until the React team defeat it as the "final boss."
-  // https://x.com/acdlite/status/1758231913314091267
-  // https://x.com/acdlite/status/1758233493408973104
-
-  // in complement to HTML reset
-  setSteps([]);
-  setStepVisible("creating");
-  setDestinationSelect(false);
-  setActivitySelect(false);
-
-  // resetting the create step form along
-  const stepFormCreating = document.getElementById(
-    MOMENT_FORM_IDS[variant].stepFormCreating,
-  ) as HTMLFormElement | null;
-  stepFormCreating?.reset();
-
-  // "resetting" the InputSwitchKey fixing a bug from Radix
-  setInputSwitchKey(uuidv4());
-
-  return null;
-};
-
 // delete is only on the updating variant of MomentForms
-export const deleteMomentClientFlow = async (
-  deleteMoment: DeleteMoment | undefined,
+export const falseDeleteMomentClientFlow = async (
+  deleteMoment: FalseDeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
-): Promise<CreateOrUpdateMomentState> => {
+): Promise<FalseCreateOrUpdateMomentState> => {
   if (deleteMoment) {
     const deleteMomentBound = deleteMoment.bind(null, moment);
     // spreading from the original state is currently unnecessary
@@ -243,10 +242,9 @@ export const deleteMomentClientFlow = async (
   }
 };
 
-export const trueDeleteMomentClientFlow = async (
-  deleteMoment: TrueDeleteMoment | undefined,
+export const deleteMomentClientFlow = async (
+  deleteMoment: DeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
-  // ): Promise<TrueCreateOrUpdateMomentState> => {
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (deleteMoment) {
     const deleteMomentBound = deleteMoment.bind(null, moment);
@@ -283,7 +281,7 @@ export const revalidateMomentsClientFlow = async (
   replace(`${pathname}?${VIEW}=read-moments`); // It could have made more sense to have the redirection in an after flow. But since it doesn't depend on data received from the server (for now?), I can let this slide.
 };
 
-export const createOrUpdateStepClientFlow = (
+export const falseCreateOrUpdateStepClientFlow = (
   event: FormEvent<HTMLFormElement>,
   duree: string,
   steps: StepFromCRUD[],
@@ -291,8 +289,8 @@ export const createOrUpdateStepClientFlow = (
   currentStepId: string,
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
-): CreateOrUpdateMomentState => {
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
+): FalseCreateOrUpdateMomentState => {
   event.preventDefault();
 
   const formData = new FormData(event.currentTarget);
@@ -403,7 +401,7 @@ export const createOrUpdateStepClientFlow = (
   return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };
 };
 
-export const trueCreateOrUpdateStepClientFlow = (
+export const createOrUpdateStepClientFlow = (
   event: FormEvent<HTMLFormElement>,
   duree: string,
   steps: StepFromCRUD[],
@@ -411,9 +409,8 @@ export const trueCreateOrUpdateStepClientFlow = (
   currentStepId: string,
   setSteps: SetState<StepFromCRUD[]>,
   setStepVisible: SetState<StepVisible>,
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
   setIsAnimationDelayed?: SetState<boolean>,
-  // ): TrueCreateOrUpdateMomentState => {
 ): CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess => {
   event.preventDefault();
 
@@ -454,14 +451,6 @@ export const trueCreateOrUpdateStepClientFlow = (
   });
 
   if (!validatedFields.success) {
-    // return {
-    //   ...createOrUpdateMomentState,
-    //   stepsMessages: {
-    //     message: DEFAULT_STEP_MESSAGE,
-    //     subMessage: DEFAULT_STEP_SUBMESSAGE,
-    //   },
-    //   stepsErrors: validatedFields.error.flatten().fieldErrors,
-    // };
     return {
       isSuccess: false,
       error: {
@@ -481,18 +470,6 @@ export const trueCreateOrUpdateStepClientFlow = (
   const stepsDetails = steps.map((e) => e.details);
 
   if (stepsIntitules.includes(stepName) && variant === "creating") {
-    // return {
-    //   ...createOrUpdateMomentState,
-    //   stepsMessages: {
-    //     message: DEFAULT_STEP_MESSAGE,
-    //     subMessage: DEFAULT_STEP_SUBMESSAGE,
-    //   },
-    //   stepsErrors: {
-    //     stepName: [
-    //       "Vous ne pouvez pas créer deux étapes du même nom sur le même moment.",
-    //     ],
-    //   },
-    // };
     return {
       isSuccess: false,
       error: {
@@ -511,18 +488,6 @@ export const trueCreateOrUpdateStepClientFlow = (
   }
 
   if (stepsDetails.includes(stepDescription) && variant === "creating") {
-    // return {
-    //   ...createOrUpdateMomentState,
-    //   stepsMessages: {
-    //     message: DEFAULT_STEP_MESSAGE,
-    //     subMessage: DEFAULT_STEP_SUBMESSAGE,
-    //   },
-    //   stepsErrors: {
-    //     stepDescription: [
-    //       "Vous ne pouvez pas vraiment créer deux étapes avec les mêmes détails sur le même moment.",
-    //     ],
-    //   },
-    // };
     return {
       isSuccess: false,
       error: {
@@ -568,7 +533,6 @@ export const trueCreateOrUpdateStepClientFlow = (
 
   if (setIsAnimationDelayed) setIsAnimationDelayed(true);
 
-  // return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };
   return {
     isSuccess: false,
     error: {
@@ -579,22 +543,21 @@ export const trueCreateOrUpdateStepClientFlow = (
   };
 };
 
-export const resetStepClientFlow = (
+export const falseResetStepClientFlow = (
   setStepDuree: SetState<string>,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
-): CreateOrUpdateMomentState => {
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
+): FalseCreateOrUpdateMomentState => {
   // in complement to HTML reset, since duree is controlled
   setStepDuree(STEP_DURATION_ORIGINAL);
   return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };
 };
 
-export const trueResetStepClientFlow = (
+export const resetStepClientFlow = (
   setStepDuree: SetState<string>,
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
 ): CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess => {
   // in complement to HTML reset, since duree is controlled
   setStepDuree(STEP_DURATION_ORIGINAL);
-  // return { ...createOrUpdateMomentState, stepsMessages: {}, stepsErrors: {} };
   return {
     isSuccess: false,
     error: {

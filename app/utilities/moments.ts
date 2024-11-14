@@ -1,21 +1,21 @@
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
+import { ReadonlyURLSearchParams } from "next/navigation";
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 import {
   MomentsSearchParams,
-  CreateOrUpdateMomentState,
+  FalseCreateOrUpdateMomentState,
   StepFromCRUD,
   View,
   MomentToCRUD,
   SubView,
   UserMomentsToCRUD,
   SelectMomentIdNameAndDates,
-  TrueCreateOrUpdateMomentState,
+  CreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { ReadonlyURLSearchParams } from "next/navigation";
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { MOMENTID, subViews, TAKE, VIEW } from "../data/moments";
+import { MOMENTID, subViews, TAKE, VIEW } from "@/app/data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -204,31 +204,31 @@ export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
 };
 
 // cleanse createOrUpdateMomentState from its steps-related properties only, leaving moment-related properties untouched
-export const removeStepsMessagesAndErrorsCallback = (
-  s: CreateOrUpdateMomentState,
-): CreateOrUpdateMomentState => {
+export const falseRemoveStepsMessagesAndErrorsCallback = (
+  s: FalseCreateOrUpdateMomentState,
+): FalseCreateOrUpdateMomentState => {
   return { ...s, stepsMessages: {}, stepsErrors: {} };
 };
 
 // I NEED TO BE VERY CAREFUL HOW I IMPORT THIS (circular dependency)
-export const trueRemoveStepsMessagesAndErrorsCallback = (
-  s: TrueCreateOrUpdateMomentState,
-): TrueCreateOrUpdateMomentState => {
+export const removeStepsMessagesAndErrorsCallback = (
+  s: CreateOrUpdateMomentState,
+): CreateOrUpdateMomentState => {
   if (s?.error)
     return { ...s, error: { ...s?.error, stepsMessages: {}, stepsErrors: {} } };
   else return s;
 };
 
 // same as above but for the moment part of the form
-export const removeMomentMessagesAndErrorsCallback = (
-  s: CreateOrUpdateMomentState,
+export const falseRemoveMomentMessagesAndErrorsCallback = (
+  s: FalseCreateOrUpdateMomentState,
 ) => {
   return { ...s, momentMessages: {}, momentErrors: {} };
 };
 
 // I NEED TO BE VERY CAREFUL HOW I IMPORT THIS (circular dependency)
-export const trueRemoveMomentMessagesAndErrorsCallback = (
-  s: TrueCreateOrUpdateMomentState,
+export const removeMomentMessagesAndErrorsCallback = (
+  s: CreateOrUpdateMomentState,
 ) => {
   if (s?.error)
     return {

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
+import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/server";
 import Core from "./server";
@@ -10,21 +10,29 @@ import {
   StepFromCRUD,
   MomentToCRUD,
   MomentFormVariant,
-  FalseCreateOrUpdateMomentState,
+  CreateOrUpdateMomentError,
+  CreateOrUpdateMomentSuccess,
   SelectMomentDefault,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
   defineCurrentPage,
+  defineMoment,
+  defineSubView,
+  defineView,
+  defineWithViewAndMoment,
 } from "@/app/utilities/moments";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
   INITIAL_PAGE,
+  MOMENTID,
   PASTUSERMOMENTSPAGE,
+  SUBVIEW,
   TAKE,
   USERMOMENTSPAGE,
+  VIEW,
 } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
@@ -39,13 +47,14 @@ import {
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
-  falseDeleteMomentServerFlow,
   revalidateMomentsServerFlow,
-  falseCreateOrUpdateMomentServerFlow,
+  createOrUpdateMomentServerFlow,
+  deleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
 
 export const dynamic = "force-dynamic";
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 
 export default async function MomentsPage({
   params,
@@ -60,6 +69,10 @@ export default async function MomentsPage({
     [PASTUSERMOMENTSPAGE]?: string;
     [CURRENTUSERMOMENTSPAGE]?: string;
     [FUTUREUSERMOMENTSPAGE]?: string;
+    // now lifted to the URL
+    [VIEW]?: string;
+    [SUBVIEW]?: string;
+    [MOMENTID]?: string;
   };
 }) {
   let now = dateToInputDatetime(new Date());
@@ -68,6 +81,7 @@ export default async function MomentsPage({
   // PART READ (a.k.a database calls)
 
   params = await params;
+  searchParams = await searchParams;
 
   const username = params.username;
   // console.log({ username });
@@ -81,9 +95,6 @@ export default async function MomentsPage({
 
   const userId = user.id;
 
-  searchParams = await searchParams;
-
-  // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
   // console.log({ contains });
 
@@ -189,6 +200,40 @@ export default async function MomentsPage({
     adaptDestinationsForMoment(userDestinations);
   // console.logs on demand...
 
+  // obtaining and interpreting view, moment and subView
+
+  const uniqueShownSet = new Set<string>();
+
+  allUserMomentsToCRUD.forEach((e) => {
+    e.dates.forEach((e2) => {
+      e2.destinations.forEach((e3) => {
+        e3.moments.forEach((e4) => {
+          uniqueShownSet.add(JSON.stringify(e4));
+        });
+      });
+    });
+  });
+
+  const uniqueShownMoments = [...uniqueShownSet].map((e) =>
+    JSON.parse(e),
+  ) as MomentToCRUD[];
+  // console.log({ uniqueShownMoments });
+
+  let definedView = defineView(searchParams?.[VIEW]);
+  // console.log({ definedView });
+
+  let definedMoment = await defineMoment(
+    searchParams?.[MOMENTID],
+    uniqueShownMoments,
+  );
+  // console.log({ definedMoment });
+
+  const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
+  // console.log({ view, moment });
+
+  const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
+  // console.log({ subView });
+
   // PART WRITE (a.k.a. server actions)
 
   async function createOrUpdateMoment(
@@ -199,10 +244,10 @@ export default async function MomentsPage({
     momentFromCRUD: MomentToCRUD | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
-  ): Promise<FalseCreateOrUpdateMomentState> {
+  ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await falseCreateOrUpdateMomentServerFlow(
+    return await createOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -216,10 +261,10 @@ export default async function MomentsPage({
 
   async function deleteMoment(
     momentFromCRUD: MomentToCRUD | undefined,
-  ): Promise<FalseCreateOrUpdateMomentState> {
+  ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await falseDeleteMomentServerFlow(momentFromCRUD, user);
+    return await deleteMomentServerFlow(momentFromCRUD, user);
   }
 
   async function revalidateMoments(): Promise<void> {
@@ -244,13 +289,20 @@ export default async function MomentsPage({
         }
       >
         <Core
+          // time (aligned across server and client for hydration cases)
           now={now}
+          // reads
           allUserMomentsToCRUD={allUserMomentsToCRUD}
           maxPages={maxPages}
           destinationOptions={destinationOptions}
+          // writes
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
+          // states lifted to the URL
+          view={view}
+          subView={subView}
+          moment={moment}
         />
       </Suspense>
     </ErrorBoundary>

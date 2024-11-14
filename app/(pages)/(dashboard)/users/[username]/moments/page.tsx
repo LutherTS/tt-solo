@@ -12,6 +12,7 @@ import {
   MomentFormVariant,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
+  SelectMomentDefault,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -47,16 +48,17 @@ import {
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
   revalidateMomentsServerFlow,
-  trueCreateOrUpdateMomentServerFlow,
-  trueDeleteMomentServerFlow,
+  createOrUpdateMomentServerFlow,
+  deleteMomentServerFlow,
 } from "@/app/flows/server/moments";
+import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
 
 /* Dummy Form Presenting Data 
-Devenir tech lead sur TekTIME. 
+Présenter le projet à React Paris Meetup. 
 Développement de feature
-Faire un formulaire indéniable pour TekTIME.
+Faire un formulaire indéniable pour le projet.
 
-De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice. 
+De mon point de vue, ce projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice. 
 
 Réaliser la div d'une étape
 S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.
@@ -67,7 +69,7 @@ Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et so
 20 minutes
 
 Finir de vérifier le formulaire
-S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.
+S'assurer que toutes les fonctionnalités marchent sans problème, avant une future phase de nettoyage de code et de mises en composants.
 30 minutes
 */
 
@@ -178,28 +180,31 @@ export default async function MomentsPage({
     futureUserMomentsPage,
   ] = pages;
 
-  const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
-    await Promise.all([
-      findUserMomentsWithContains(userId, contains, userMomentsPage),
-      findPastUserMomentsWithContains(
-        userId,
-        contains,
-        now,
-        pastUserMomentsPage,
-      ),
-      findCurrentUserMomentsWithContains(
-        userId,
-        contains,
-        now,
-        currentUserMomentsPage,
-      ),
-      findFutureUserMomentsWithContains(
-        userId,
-        contains,
-        now,
-        futureUserMomentsPage,
-      ),
-    ]);
+  // ...This is complicated.
+  // Eventually, theses promises are likely to be resolved by the client. And, their data can be expected to be adapted by the client.
+  // If that's the case, their selects need to be explicit, and typed. Because if they're not, they're passing more data than needed to the client.
+  // Additionally and as I've mentioned, in every model in my database, I'll need to have the field key right next after id which will house an encrypted version of the id that I'll be exposed to the client. (I can start thinking this through with Grevents v3 if I want.)
+  const [
+    userMoments,
+    pastUserMoments,
+    currentUserMoments,
+    futureUserMoments,
+  ]: SelectMomentDefault[][] = await Promise.all([
+    findUserMomentsWithContains(userId, contains, userMomentsPage),
+    findPastUserMomentsWithContains(userId, contains, now, pastUserMomentsPage),
+    findCurrentUserMomentsWithContains(
+      userId,
+      contains,
+      now,
+      currentUserMomentsPage,
+    ),
+    findFutureUserMomentsWithContains(
+      userId,
+      contains,
+      now,
+      futureUserMomentsPage,
+    ),
+  ]);
   // console.log({
   //   userMoments,
   //   pastUserMoments,
@@ -207,7 +212,12 @@ export default async function MomentsPage({
   //   futureUserMoments,
   // });
 
-  const allUserMoments = [
+  const userDestinations = await findDestinationsByUserId(userId);
+  // console.log({ userDestinations });
+
+  // adapting data for the client
+
+  const allUserMoments: SelectMomentDefault[][] = [
     userMoments,
     pastUserMoments,
     currentUserMoments,
@@ -215,113 +225,19 @@ export default async function MomentsPage({
   ];
   // console.log({ allUserMoments });
 
-  // treating data for the client...
-  const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map(
-    (e, i, a) => {
-      return {
-        dates: [
-          ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
-        ].map((e3) => {
-          return {
-            date: e3,
-            destinations: [
-              ...new Set(
-                e
-                  .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                  .map((moment) => {
-                    return {
-                      id: moment.destinationId,
-                      destinationIdeal: moment.destination.name,
-                    };
-                  }),
-              ),
-            ]
-              // organizes destinations per day alphabetically
-              .sort((a, b) => {
-                const destinationA = a.destinationIdeal.toLowerCase();
-                const destinationB = b.destinationIdeal.toLowerCase();
-                if (destinationA < destinationB) return -1;
-                if (destinationB > destinationA) return 1;
-                return 0;
-                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
-              })
-              .map((e5) => {
-                return {
-                  id: e5.id,
-                  destinationIdeal: e5.destinationIdeal,
-                  moments: e
-                    .filter(
-                      (moment) =>
-                        moment.destination.name === e5.destinationIdeal &&
-                        moment.startDateAndTime.startsWith(e3),
-                    )
-                    // organizes moments per destination chronologically
-                    .sort((a, b) => {
-                      const startDateAndTimeA = a.startDateAndTime;
-                      const startDateAndTimeB = b.startDateAndTime;
-                      if (startDateAndTimeA < startDateAndTimeB) return -1;
-                      if (startDateAndTimeB > startDateAndTimeA) return 1;
-                      return 0;
-                    })
-                    .map((e6) => {
-                      return {
-                        id: e6.id,
-                        activity: e6.activity,
-                        objective: e6.name,
-                        isIndispensable: e6.isIndispensable,
-                        context: e6.description,
-                        startDateAndTime: e6.startDateAndTime,
-                        duration: e6.duration,
-                        endDateAndTime: e6.endDateAndTime,
-                        steps: e6.steps.map((e7) => {
-                          return {
-                            id: e7.id,
-                            orderId: e7.orderId,
-                            title: e7.name,
-                            details: e7.description,
-                            startDateAndTime: e7.startDateAndTime,
-                            duration: e7.duration,
-                            endDateAndTime: e7.endDateAndTime,
-                          };
-                        }),
-                        destinationIdeal: e5.destinationIdeal,
-                      };
-                    }),
-                };
-              }),
-            momentsTotal: a[i].length,
-            momentFirstIndex: (pages[i] - 1) * TAKE + 1,
-            momentLastIndex: (pages[i] - 1) * TAKE + a[i].length,
-            allMomentsTotal: totals[i],
-            currentPage: pages[i],
-            totalPage: maxPages[i],
-          };
-        }),
-      };
-    },
+  const allUserMomentsToCRUD: UserMomentsToCRUD[] = adaptMoments(
+    allUserMoments,
+    pages,
+    totals,
+    maxPages,
   );
   // console.logs on demand...
+  // console.log(allUserMomentsToCRUD[0].dates[0]);
 
-  const userDestinations = await findDestinationsByUserId(userId);
-  // console.log({ userDestinations });
-
-  // treating data for the client...
-  const destinationOptions: Option[] = userDestinations
-    .sort((a, b) => {
-      const nameA = a.name.toLowerCase();
-      const nameB = b.name.toLowerCase();
-      if (nameA < nameB) return -1;
-      if (nameB > nameA) return 1;
-      return 0;
-    })
-    .map((e, i) => {
-      return {
-        key: i + 1,
-        label: e.name,
-        value: e.name,
-      };
-    });
+  const destinationOptions: Option[] =
+    adaptDestinationsForMoment(userDestinations);
   // console.logs on demand...
+  console.log(destinationOptions);
 
   // obtaining and interpreting view, moment and subView
 
@@ -371,7 +287,7 @@ export default async function MomentsPage({
     "use server";
 
     // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
-    return await trueCreateOrUpdateMomentServerFlow(
+    return await createOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -393,7 +309,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await trueDeleteMomentServerFlow(momentFromCRUD, user);
+    return await deleteMomentServerFlow(momentFromCRUD, user);
   }
 
   // insisting on : Promise<void> to keep in sync with the flow

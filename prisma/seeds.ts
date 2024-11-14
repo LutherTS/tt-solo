@@ -1,9 +1,12 @@
 import { User, Destination, Moment, Step } from "@prisma/client";
 import { add, format, roundToNearestHours, sub } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcrypt";
 
 import prisma from "./db";
 
 const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
+const defaultSaltRounds = 10;
 
 async function seed() {
   console.log(`Defining time.`);
@@ -25,6 +28,7 @@ async function seed() {
   ///////////////////////////////////////////////////////////////////////////
 
   console.log(`Creating users data.`);
+
   const usersData = [
     {
       // LePapier / “me”
@@ -47,7 +51,17 @@ async function seed() {
       lastName: "Moses",
     },
   ];
-  console.log({ usersData });
+
+  const usersIds = usersData.map(() => uuidv4());
+  const usersKeys = await Promise.all(
+    usersIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
+  );
+
+  const usersDataWithHashedKeys = usersData.map((e, i) => {
+    return { ...e, id: usersIds[i], key: usersKeys[i] };
+  });
+
+  console.log({ usersDataWithHashedKeys });
 
   console.log(`Seeding Users...`);
 
@@ -56,13 +70,15 @@ async function seed() {
   console.log(`Seeding all Users...`);
 
   const allUsers = await Promise.all(
-    usersData.map(async (userData) => {
+    usersDataWithHashedKeys.map(async (userData) => {
       return await prisma.user.upsert({
         where: {
           signInEmailAddress: userData.signInEmailAddress,
         },
         update: {},
         create: {
+          id: userData.id,
+          key: userData.key,
           signInEmailAddress: userData.signInEmailAddress,
           hashedPassword: userData.hashedPassword,
           username: userData.username,
@@ -87,7 +103,7 @@ async function seed() {
   console.log(`Creating destinations data.`);
   const destinationsData = [
     {
-      name: "Devenir tech lead sur TekTIME.",
+      name: "Présenter le projet au React Paris Meetup.",
     },
   ];
   console.log({ destinationsData });
@@ -99,8 +115,17 @@ async function seed() {
   console.log(`Seeding all Destinations...`);
 
   for (const user of users) {
+    const destinationsIds = destinationsData.map(() => uuidv4());
+    const destinationsKeys = await Promise.all(
+      destinationsIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
+    );
+
+    const destinationsDataWithHashedKeys = destinationsData.map((e, i) => {
+      return { ...e, id: destinationsIds[i], key: destinationsKeys[i] };
+    });
+
     const userDestinations = await Promise.all(
-      destinationsData.map(async (destinationData) => {
+      destinationsDataWithHashedKeys.map(async (destinationData) => {
         return await prisma.destination.upsert({
           where: {
             name_userId: {
@@ -110,6 +135,8 @@ async function seed() {
           },
           update: {},
           create: {
+            id: destinationData.id,
+            key: destinationData.key,
             name: destinationData.name,
             userId: user.id,
           },
@@ -132,10 +159,10 @@ async function seed() {
   const momentsData = [
     {
       activity: "Développement de fonctionnalité",
-      objective: "Faire un formulaire indéniable pour TekTIME. (passé)",
+      objective: "Faire un formulaire indéniable pour le projet. (passé)",
       isIndispensable: true,
       context:
-        "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
+        "De mon point de vue, le projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
       startDateAndTime: dateToInputDatetime(lastMonth),
       endDateAndTime: dateToInputDatetime(
         add(lastMonth, { minutes: momentDuration }),
@@ -143,10 +170,10 @@ async function seed() {
     },
     {
       activity: "Développement de fonctionnalité",
-      objective: "Faire un formulaire indéniable pour TekTIME. (actuel)",
+      objective: "Faire un formulaire indéniable pour le projet. (actuel)",
       isIndispensable: true,
       context:
-        "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
+        "De mon point de vue, le projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
       startDateAndTime: dateToInputDatetime(nowHourFloored),
       endDateAndTime: dateToInputDatetime(
         add(nowHourFloored, { minutes: momentDuration }),
@@ -154,10 +181,10 @@ async function seed() {
     },
     {
       activity: "Développement de fonctionnalité",
-      objective: "Faire un formulaire indéniable pour TekTIME. (futur)",
+      objective: "Faire un formulaire indéniable pour le projet. (futur)",
       isIndispensable: true,
       context:
-        "De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
+        "De mon point de vue, le projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.",
       startDateAndTime: dateToInputDatetime(nextMonth),
       endDateAndTime: dateToInputDatetime(
         add(nextMonth, { minutes: momentDuration }),
@@ -175,8 +202,17 @@ async function seed() {
   for (const user of users) {
     const userDestinations = destinations.filter((e) => e.userId === user.id);
     for (const destination of userDestinations) {
+      const momentsIds = momentsData.map(() => uuidv4());
+      const momentsKeys = await Promise.all(
+        momentsIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
+      );
+
+      const momentsDataWithHashedKeys = momentsData.map((e, i) => {
+        return { ...e, id: momentsIds[i], key: momentsKeys[i] };
+      });
+
       const destinationMoments = await Promise.all(
-        momentsData.map(async (momentData) => {
+        momentsDataWithHashedKeys.map(async (momentData) => {
           return await prisma.moment.upsert({
             where: {
               name_userId: {
@@ -186,6 +222,8 @@ async function seed() {
             },
             update: {},
             create: {
+              id: momentData.id,
+              key: momentData.key,
               activity: momentData.activity,
               name: momentData.objective,
               isIndispensable: momentData.isIndispensable,
@@ -253,8 +291,17 @@ async function seed() {
       map.set(j, durationTotal);
     }
 
+    const stepsIds = stepsData.map(() => uuidv4());
+    const stepsKeys = await Promise.all(
+      stepsIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
+    );
+
+    const stepsDataWithHashedKeys = stepsData.map((e, i) => {
+      return { ...e, id: stepsIds[i], key: stepsKeys[i] };
+    });
+
     const momentSteps = await Promise.all(
-      stepsData.map(async (stepData, index) => {
+      stepsDataWithHashedKeys.map(async (stepData, index) => {
         return await prisma.step.upsert({
           where: {
             name_momentId: {
@@ -264,6 +311,8 @@ async function seed() {
           },
           update: {},
           create: {
+            id: stepData.id,
+            key: stepData.key,
             orderId: stepData.orderId,
             name: stepData.title,
             description: stepData.details,

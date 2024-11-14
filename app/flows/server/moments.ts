@@ -25,8 +25,6 @@ import { findDestinationIdByNameAndUserId } from "@/app/reads/destinations";
 import {
   createMomentAndDestination,
   createMomentFromFormData,
-  // createMomentAndDestination,
-  // createMomentFromFormData,
   deleteMomentByMomentId,
   updateMomentAndDestination,
   updateMomentFromFormData,
@@ -37,20 +35,17 @@ import {
 } from "@/app/writes/steps";
 import {
   CreateOrUpdateMomentError,
-  CreateOrUpdateMomentState,
+  FalseCreateOrUpdateMomentState,
   CreateOrUpdateMomentSuccess,
   MomentFormVariant,
   MomentToCRUD,
-  SelectMomentId,
   SelectMomentIdNameAndDates,
   StepFromCRUD,
-  TrueCreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
 import {
   DEFAULT_MOMENT_MESSAGE,
   DEFAULT_MOMENT_SUBMESSAGE,
-  TAKE,
 } from "@/app/data/moments";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
@@ -58,7 +53,7 @@ import {
 
 // Some errors to me are like showstoppers, they erase all other errors to single-handedly focus on themselves.
 
-export const createOrUpdateMomentServerFlow = async (
+export const falseCreateOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -67,7 +62,7 @@ export const createOrUpdateMomentServerFlow = async (
   destinationSelect: boolean,
   activitySelect: boolean,
   user: SelectUserIdAndUsername,
-): Promise<CreateOrUpdateMomentState> => {
+): Promise<FalseCreateOrUpdateMomentState> => {
   let currentNow = dateToInputDatetime(new Date());
 
   // in case somehow startMomentDate is not sent correctly
@@ -429,7 +424,7 @@ export const createOrUpdateMomentServerFlow = async (
   return null;
 };
 
-export const trueCreateOrUpdateMomentServerFlow = async (
+export const createOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -861,11 +856,11 @@ const createStepsInCreateOrUpdateMomentServerFlow = async (
   }
 };
 
-export const deleteMomentServerFlow = async (
+export const falseDeleteMomentServerFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
   version?: "v3",
-): Promise<CreateOrUpdateMomentState> => {
+): Promise<FalseCreateOrUpdateMomentState> => {
   if (!momentFromCRUD)
     return {
       momentMessages: {
@@ -904,10 +899,9 @@ export const deleteMomentServerFlow = async (
   return null;
 };
 
-export const trueDeleteMomentServerFlow = async (
+export const deleteMomentServerFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
-  // ): Promise<TrueCreateOrUpdateMomentState> => {
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (!momentFromCRUD)
     return {
@@ -949,7 +943,6 @@ export const trueDeleteMomentServerFlow = async (
 
   revalidatePath(`/users/${username}/moments`);
 
-  // return null;
   return { isSuccess: true, success: {} };
 };
 
