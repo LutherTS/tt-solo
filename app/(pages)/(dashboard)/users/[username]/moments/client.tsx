@@ -1271,6 +1271,7 @@ export function ReorderItem({
 
   // The jumping is simply due to a current lack of animations
   // ...which I may or may not end up modifying.
+  // ...And did indeed end up modifying.
   const restoreStepAction = () => {
     startRestoreStepTransition(() => {
       setStepVisible("create");
@@ -1738,7 +1739,7 @@ export function SetViewButton({ view }: { view: View }) {
 const localClientComponents = {
   // ClientCore,
   // Main,
-  ViewsCarouselContainer, // next
+  ViewsCarouselContainer, // next maybe
   ViewSegment, // known max
   ReadMomentsView,
   SetSubViewButton,

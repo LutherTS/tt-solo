@@ -34,9 +34,3 @@ export default function MomentsError({
     </GlobalServerComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/error
-
-/* Notes
-All errors go to the GlobalError by default, unless there's an error boundary defined in between. This here now defines the error boundary for every unhandled error, meaning I can safely remove all of my...
-// error handling needed eventually
-...mentions. // Done.
-*/
