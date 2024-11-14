@@ -11,6 +11,7 @@ import {
   MomentToCRUD,
   MomentFormVariant,
   CreateOrUpdateMomentState,
+  SelectMomentDefault,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -42,6 +43,7 @@ import {
   revalidateMomentsServerFlow,
   createOrUpdateMomentServerFlow,
 } from "@/app/flows/server/moments";
+import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
 
 export const dynamic = "force-dynamic";
 
@@ -162,7 +164,12 @@ export default async function MomentsPage({
   //   futureUserMoments,
   // });
 
-  const allUserMoments = [
+  const userDestinations = await findDestinationsByUserId(userId);
+  // console.log({ userDestinations });
+
+  // adapting data for the client
+
+  const allUserMoments: SelectMomentDefault[][] = [
     userMoments,
     pastUserMoments,
     currentUserMoments,
@@ -170,111 +177,16 @@ export default async function MomentsPage({
   ];
   // console.log({ allUserMoments });
 
-  // treating data for the client...
-  const allUserMomentsToCRUD: UserMomentsToCRUD[] = allUserMoments.map(
-    (e, i, a) => {
-      return {
-        dates: [
-          ...new Set(e.map((moment) => moment.startDateAndTime.split("T")[0])),
-        ].map((e3) => {
-          return {
-            date: e3,
-            destinations: [
-              ...new Set(
-                e
-                  .filter((moment) => moment.startDateAndTime.startsWith(e3))
-                  .map((moment) => {
-                    return {
-                      id: moment.destinationId,
-                      destinationIdeal: moment.destination.name,
-                    };
-                  }),
-              ),
-            ]
-              // organizes destinations per day alphabetically
-              .sort((a, b) => {
-                const destinationA = a.destinationIdeal.toLowerCase();
-                const destinationB = b.destinationIdeal.toLowerCase();
-                if (destinationA < destinationB) return -1;
-                if (destinationB > destinationA) return 1;
-                return 0;
-              })
-              .map((e5) => {
-                return {
-                  id: e5.id,
-                  destinationIdeal: e5.destinationIdeal,
-                  moments: e
-                    .filter(
-                      (moment) =>
-                        moment.destination.name === e5.destinationIdeal &&
-                        moment.startDateAndTime.startsWith(e3),
-                    )
-                    // organizes moments per destination chronologically
-                    .sort((a, b) => {
-                      const startDateAndTimeA = a.startDateAndTime;
-                      const startDateAndTimeB = b.startDateAndTime;
-                      if (startDateAndTimeA < startDateAndTimeB) return -1;
-                      if (startDateAndTimeB > startDateAndTimeA) return 1;
-                      return 0;
-                    })
-                    .map((e6) => {
-                      return {
-                        id: e6.id,
-                        activity: e6.activity,
-                        objective: e6.name,
-                        isIndispensable: e6.isIndispensable,
-                        context: e6.description,
-                        startDateAndTime: e6.startDateAndTime,
-                        duration: e6.duration,
-                        endDateAndTime: e6.endDateAndTime,
-                        steps: e6.steps.map((e7) => {
-                          return {
-                            id: e7.id,
-                            orderId: e7.orderId,
-                            title: e7.name,
-                            details: e7.description,
-                            startDateAndTime: e7.startDateAndTime,
-                            duration: e7.duration,
-                            endDateAndTime: e7.endDateAndTime,
-                          };
-                        }),
-                        destinationIdeal: e5.destinationIdeal,
-                      };
-                    }),
-                };
-              }),
-            momentsTotal: a[i].length,
-            momentFirstIndex: (pages[i] - 1) * TAKE + 1,
-            momentLastIndex: (pages[i] - 1) * TAKE + a[i].length,
-            allMomentsTotal: totals[i],
-            currentPage: pages[i],
-            totalPage: maxPages[i],
-          };
-        }),
-      };
-    },
+  const allUserMomentsToCRUD: UserMomentsToCRUD[] = adaptMoments(
+    allUserMoments,
+    pages,
+    totals,
+    maxPages,
   );
   // console.logs on demand...
 
-  const userDestinations = await findDestinationsByUserId(userId);
-  // console.log({ userDestinations });
-
-  // treating data for the client...
-  const destinationOptions: Option[] = userDestinations
-    .sort((a, b) => {
-      const nameA = a.name.toLowerCase();
-      const nameB = b.name.toLowerCase();
-      if (nameA < nameB) return -1;
-      if (nameB > nameA) return 1;
-      return 0;
-    })
-    .map((e, i) => {
-      return {
-        key: i + 1,
-        label: e.name,
-        value: e.name,
-      };
-    });
+  const destinationOptions: Option[] =
+    adaptDestinationsForMoment(userDestinations);
   // console.logs on demand...
 
   // PART WRITE (a.k.a. server actions)

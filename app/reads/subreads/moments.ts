@@ -1,9 +1,30 @@
 import { Prisma } from "@prisma/client";
 
-import { stepsOrderByDefault } from "./steps";
+import { selectStepDefault, orderByStepsDefault } from "./steps";
 import { SelectMomentIdNameAndDates } from "@/app/types/moments";
 
 // Selects
+
+export const selectMomentDefault = {
+  id: true,
+  activity: true,
+  name: true,
+  isIndispensable: true,
+  description: true,
+  startDateAndTime: true,
+  duration: true,
+  endDateAndTime: true,
+  destination: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  steps: {
+    orderBy: orderByStepsDefault,
+    select: selectStepDefault,
+  },
+} satisfies Prisma.MomentSelect;
 
 export const selectMomentId = {
   id: true,
@@ -15,15 +36,6 @@ export const selectMomentIdNameAndDates = {
   startDateAndTime: true,
   endDateAndTime: true,
 } satisfies Prisma.MomentSelect;
-
-// Includes
-
-export const includeMomentDestinationAndSteps = {
-  destination: true,
-  steps: {
-    orderBy: stepsOrderByDefault,
-  },
-} satisfies Prisma.MomentInclude;
 
 // Wheres
 
@@ -150,15 +162,15 @@ export function whereMomentIdAndUserId(
 
 // OrderBys
 
-export const momentsOrderByStartDesc = {
+export const orderByMomentsStartDesc = {
   startDateAndTime: "desc",
 } satisfies Prisma.MomentOrderByWithRelationInput;
 
-export const momentsOrderByStartAsc = {
+export const orderByMomentsStartAsc = {
   startDateAndTime: "asc",
 } satisfies Prisma.MomentOrderByWithRelationInput;
 
 // enough because no two moments from the same user are allowed to have the same name at the database or Prisma levels
-export const momentsOrderByNameAsc = {
+export const orderByMomentsNameAsc = {
   name: "asc",
 } satisfies Prisma.MomentOrderByWithRelationInput;

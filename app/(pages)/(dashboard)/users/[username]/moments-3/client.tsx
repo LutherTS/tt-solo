@@ -484,6 +484,7 @@ export function ReadMomentsView({
                   {e.destinations.map((e2) => {
                     return (
                       <LocalServerComponents.DestinationInDateCard
+                        // you we're not at fault per se, there was a real bug
                         key={e2.id + i.toString()}
                         e2={e2}
                         realMoments={realMoments}

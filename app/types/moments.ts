@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 
 import {
+  selectMomentDefault,
   selectMomentId,
   selectMomentIdNameAndDates,
 } from "@/app/reads/subreads/moments";
@@ -199,6 +200,10 @@ export type SelectMomentId = Prisma.MomentGetPayload<{
 
 export type SelectMomentIdNameAndDates = Prisma.MomentGetPayload<{
   select: typeof selectMomentIdNameAndDates;
+}>;
+
+export type SelectMomentDefault = Prisma.MomentGetPayload<{
+  select: typeof selectMomentDefault;
 }>;
 
 export type MomentFormIds = {
