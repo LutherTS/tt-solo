@@ -12,9 +12,9 @@ import * as Switch from "@radix-ui/react-switch";
 import { isValid } from "date-fns";
 
 import * as Icons from "@/app/icons";
-import { SetState } from "@/app/types/globals";
-import { EventStepDurationSchema } from "../validations/steps";
-import { FalseCreateOrUpdateMomentState } from "../types/moments";
+import { Option, SetState } from "@/app/types/globals";
+import { EventStepDurationSchema } from "@/app//validations/steps";
+import { FalseCreateOrUpdateMomentState } from "@/app//types/moments";
 
 // Variables
 
@@ -409,12 +409,6 @@ export function InputTextControlled({
     </FieldFlex>
   );
 }
-
-type Option = {
-  key: number;
-  label: string;
-  value: string;
-};
 
 export function SelectWithOptions({
   id,

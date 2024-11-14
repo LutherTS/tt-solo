@@ -232,10 +232,12 @@ export default async function MomentsPage({
     maxPages,
   );
   // console.logs on demand...
+  // console.log(allUserMomentsToCRUD[0].dates[0]);
 
   const destinationOptions: Option[] =
     adaptDestinationsForMoment(userDestinations);
   // console.logs on demand...
+  console.log(destinationOptions);
 
   // obtaining and interpreting view, moment and subView
 

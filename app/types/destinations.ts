@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { selectDestinationIdAndName } from "../reads/subreads/destinations";
+import { selectDestinationKeyAndName } from "../reads/subreads/destinations";
 
 export type DestinationToCRUD = {
   id: string;
@@ -12,5 +12,5 @@ export type DestinationToCRUD = {
 };
 
 export type SelectDestinationForMoment = Prisma.DestinationGetPayload<{
-  select: typeof selectDestinationIdAndName;
+  select: typeof selectDestinationKeyAndName;
 }>;

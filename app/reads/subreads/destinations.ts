@@ -6,8 +6,8 @@ export const selectDestinationId = {
   id: true,
 } satisfies Prisma.DestinationSelect;
 
-export const selectDestinationIdAndName = {
-  id: true,
+export const selectDestinationKeyAndName = {
+  key: true,
   name: true,
 } satisfies Prisma.DestinationSelect;
 

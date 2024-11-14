@@ -12,6 +12,7 @@ datasource db {
 
 model User {
   id                             String                    @id @default(uuid())
+  key                            String                    @unique
 
   signInEmailAddress             String                    @unique
   hashedPassword                 String
@@ -36,6 +37,7 @@ model User {
 
 model Destination {
   id                             String                    @id @default(uuid())
+  key                            String                    @unique
 
   // the Destination's ideal
   name                           String
@@ -55,6 +57,7 @@ model Destination {
 
 model Moment {
   id                             String                    @id @default(uuid())
+  key                            String                    @unique
 
   // can potentially become its own model
   activity                       String
@@ -90,6 +93,8 @@ model Moment {
 
 model Step {
   id                             String                    @id @default(uuid())
+  key                            String                    @unique
+
   orderId                        Int
 
   // the Step's title

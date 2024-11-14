@@ -107,11 +107,13 @@ export const adaptDestinationsForMoment = (
       if (nameB > nameA) return 1;
       return 0;
     })
-    .map((e, i) => {
+    .map((e) => {
       return {
         // I'll have to think someday about bcrypting my keys because they show in the React Developer Tools. Maybe just having an entry in the database that is called key which would be the id of the entry encrypted.
         // This will be especially necessary in order not retrieve ids from the database but sometimes rather retrieve keys instead. (Still it'd might be necessary in params or searchParams but I'm not sure.) Next time.
-        key: i + 1,
+        // UPDATE
+        // Keys are now implemented. For now I'm only going to use them here since I don't want to disrupt how I'm using moment ids for the UpdateMomentView. But in the future, they'll be thoroughly implemented in my projects, and I rely on self-made, probably even AI-driven slug for new entries getting created. One way or the other, slug are going to be just as important as, and could even replace, these database keys.
+        key: e.key,
         label: e.name,
         value: e.name,
       };

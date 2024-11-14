@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction } from "react";
 import * as Icons from "@/app/icons";
 
 export type Option = {
-  key: number;
+  key: string;
   label: string;
   value: string;
 };
