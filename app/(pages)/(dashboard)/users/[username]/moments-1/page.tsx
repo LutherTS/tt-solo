@@ -9,7 +9,7 @@ import {
   StepFromCRUD,
   MomentToCRUD,
   MomentFormVariant,
-  CreateOrUpdateMomentState,
+  FalseCreateOrUpdateMomentState,
   SelectMomentDefault,
 } from "@/app/types/moments";
 import {
@@ -38,9 +38,9 @@ import {
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
-  deleteMomentServerFlow,
+  falseDeleteMomentServerFlow,
   revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
+  falseCreateOrUpdateMomentServerFlow,
 } from "@/app/flows/server/moments";
 import { FallbackFlex } from "@/app/components/__components__";
 import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
@@ -198,10 +198,10 @@ export default async function MomentsPage({
     momentFromCRUD: MomentToCRUD | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
-  ): Promise<CreateOrUpdateMomentState> {
+  ): Promise<FalseCreateOrUpdateMomentState> {
     "use server";
 
-    return await createOrUpdateMomentServerFlow(
+    return await falseCreateOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -215,10 +215,10 @@ export default async function MomentsPage({
 
   async function deleteMoment(
     momentFromCRUD: MomentToCRUD | undefined,
-  ): Promise<CreateOrUpdateMomentState> {
+  ): Promise<FalseCreateOrUpdateMomentState> {
     "use server";
 
-    return await deleteMomentServerFlow(momentFromCRUD, user);
+    return await falseDeleteMomentServerFlow(momentFromCRUD, user);
   }
 
   async function revalidateMoments(): Promise<void> {

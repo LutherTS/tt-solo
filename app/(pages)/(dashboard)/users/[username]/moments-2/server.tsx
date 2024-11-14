@@ -12,9 +12,9 @@ import {
   viewTitles,
 } from "@/app/data/moments";
 import {
-  CreateOrUpdateMoment,
-  CreateOrUpdateMomentState,
-  DeleteMoment,
+  FalseCreateOrUpdateMoment,
+  FalseCreateOrUpdateMomentState,
+  FalseDeleteMoment,
   MomentFormVariant,
   MomentsDateToCRUD,
   MomentsDestinationToCRUD,
@@ -47,8 +47,8 @@ export default function ServerCore({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment: FalseDeleteMoment;
 }) {
   return (
     <LocalClientComponents.default
@@ -315,7 +315,7 @@ export function MomentInputs({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
   destinationSelect: boolean;
   setDestinationSelect: SetState<boolean>;
   activitySelect: boolean;
@@ -543,7 +543,7 @@ export function StepVisibleCreating({
 }: {
   momentFormVariant: MomentFormVariant;
   isResetStepPending: boolean;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
   stepDureeCreate: string;
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
@@ -746,7 +746,7 @@ export function StepInputs({
   stepsCompoundDurations,
 }: {
   form: string;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
   startMomentDate: string;

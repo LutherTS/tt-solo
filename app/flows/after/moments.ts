@@ -1,3 +1,6 @@
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { ReadonlyURLSearchParams } from "next/navigation";
+
 import {
   MOMENT_FORM_IDS,
   MOMENTID,
@@ -6,10 +9,10 @@ import {
   VIEW,
 } from "@/app/data/moments";
 import {
-  CreateOrUpdateMomentState,
+  FalseCreateOrUpdateMomentState,
   View,
   MomentFormVariant,
-  TrueCreateOrUpdateMomentState,
+  CreateOrUpdateMomentState,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
   MomentsSearchParams,
@@ -20,16 +23,14 @@ import {
   setScrollToTop,
 } from "@/app/utilities/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { ReadonlyURLSearchParams } from "next/navigation";
 
 // scrolls back to the section of the form that possesses new errors
 // or to the correct subView when successfully submitted
 // (every time createOrUpdateMomentAction is done)
-export const createOrUpdateMomentAfterFlow = (
+export const falseCreateOrUpdateMomentAfterFlow = (
   variant: MomentFormVariant,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
-  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
+  setCreateOrUpdateMomentState: SetState<FalseCreateOrUpdateMomentState>,
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
 ) => {
@@ -59,12 +60,12 @@ export const createOrUpdateMomentAfterFlow = (
   }
 };
 
-export const trueCreateOrUpdateMomentAfterFlow = (
+export const createOrUpdateMomentAfterFlow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState:
     | CreateOrUpdateMomentError
     | CreateOrUpdateMomentSuccess,
-  setCreateOrUpdateMomentState: SetState<TrueCreateOrUpdateMomentState>,
+  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>,
   setIsCRUDOpSuccessful: SetState<boolean>,
   searchParams: ReadonlyURLSearchParams,
   push: (href: string, options?: NavigateOptions) => void,
@@ -126,9 +127,9 @@ export const resetMomentAfterFlow = (variant: MomentFormVariant) => {
 
 // scrolls back to yourMoment's section if there's a mistake, or leads to the top of "read-moments" after the moment is successfully deleted
 // (every time deleteMomentAction is done)
-export const deleteMomentAfterFlow = (
+export const falseDeleteMomentAfterFlow = (
   variant: MomentFormVariant,
-  createOrUpdateMomentState: CreateOrUpdateMomentState,
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
   setView: SetState<View>,
   setIsCRUDOpSuccessful: SetState<boolean>,
 ) => {
@@ -141,7 +142,7 @@ export const deleteMomentAfterFlow = (
   }
 };
 
-export const trueDeleteMomentAfterFlow = (
+export const deleteMomentAfterFlow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState:
     | CreateOrUpdateMomentError

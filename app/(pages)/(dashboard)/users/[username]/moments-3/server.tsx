@@ -22,9 +22,9 @@ import {
   StepToCRUD,
   StepVisible,
   SubView,
-  TrueCreateOrUpdateMoment,
-  TrueCreateOrUpdateMomentState,
-  TrueDeleteMoment,
+  CreateOrUpdateMoment,
+  CreateOrUpdateMomentState,
+  DeleteMoment,
   UserMomentsToCRUD,
   View,
 } from "@/app/types/moments";
@@ -52,8 +52,8 @@ export default function ServerCore({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: TrueCreateOrUpdateMoment;
-  deleteMoment: TrueDeleteMoment;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
   view: View;
   moment: MomentToCRUD | undefined;
   subView: SubView;
@@ -108,8 +108,8 @@ export function Main({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: TrueCreateOrUpdateMoment;
-  deleteMoment: TrueDeleteMoment;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
   view: View;
   moment: MomentToCRUD | undefined;
   subView: SubView;
@@ -346,7 +346,7 @@ export function MomentInputs({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   destinationSelect: boolean;
   setDestinationSelect: SetState<boolean>;
   activitySelect: boolean;
@@ -581,7 +581,7 @@ export function StepVisibleCreating({
 }: {
   momentFormVariant: MomentFormVariant;
   isResetStepPending: boolean;
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDureeCreate: string;
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
@@ -789,7 +789,7 @@ export function StepInputs({
   stepsCompoundDurations,
 }: {
   form: string;
-  createOrUpdateMomentState: TrueCreateOrUpdateMomentState;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
   startMomentDate: string;

@@ -84,7 +84,7 @@ export type MomentFormVariant = DefaultFormVariant;
 export type StepFormVariant = DefaultFormVariant;
 
 // Now the action types will also be kept here, to be manually shared wherever the actions are to be used.
-export type CreateOrUpdateMoment = (
+export type FalseCreateOrUpdateMoment = (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -92,9 +92,9 @@ export type CreateOrUpdateMoment = (
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
-) => Promise<CreateOrUpdateMomentState>;
+) => Promise<FalseCreateOrUpdateMomentState>;
 
-export type TrueCreateOrUpdateMoment = (
+export type CreateOrUpdateMoment = (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -126,7 +126,7 @@ type StepsMessages = FormMessages;
 // Et il faut aussi que le travail des erreurs se fasse dans les deux sens...
 // ...Looking at my afterflows I don't think I'll actually need errorScrollPriority since it's only the top form that actually does a priority scrolling and I've already established this priority in the afterflow.
 // What I will need however, is a complete revamp of errors that clearly separates between momentErrors and stepsErrors, so that I don't have to always, always modify both when I only one to modify one. Let's go. // Done.
-export type CreateOrUpdateMomentState = {
+export type FalseCreateOrUpdateMomentState = {
   momentMessages?: MomentMessages;
   momentErrors?: {
     destinationName?: string[];
@@ -145,7 +145,7 @@ export type CreateOrUpdateMomentState = {
   errorScrollPriority?: "moment" | "steps";
 } | null;
 
-export type TrueCreateOrUpdateMomentState =
+export type CreateOrUpdateMomentState =
   | CreateOrUpdateMomentError
   | CreateOrUpdateMomentSuccess
   | null;
@@ -183,11 +183,11 @@ export type CreateOrUpdateMomentSuccess = {
   };
 };
 
-export type DeleteMoment = (
+export type FalseDeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
-) => Promise<CreateOrUpdateMomentState>;
+) => Promise<FalseCreateOrUpdateMomentState>;
 
-export type TrueDeleteMoment = (
+export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 

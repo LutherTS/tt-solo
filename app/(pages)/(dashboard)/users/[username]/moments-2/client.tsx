@@ -37,9 +37,9 @@ import * as LocalServerComponents from "./server";
 import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
-  CreateOrUpdateMoment,
-  CreateOrUpdateMomentState,
-  DeleteMoment,
+  FalseCreateOrUpdateMoment,
+  FalseCreateOrUpdateMomentState,
+  FalseDeleteMoment,
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
@@ -70,25 +70,25 @@ import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
-  removeMomentMessagesAndErrorsCallback,
-  removeStepsMessagesAndErrorsCallback,
+  falseRemoveMomentMessagesAndErrorsCallback,
+  falseRemoveStepsMessagesAndErrorsCallback,
   rotateStates,
   roundTimeUpTenMinutes,
   setScrollToTop,
   toWordsing,
 } from "@/app/utilities/moments";
 import {
-  createOrUpdateMomentClientFlow,
-  createOrUpdateStepClientFlow,
-  deleteMomentClientFlow,
+  falseCreateOrUpdateMomentClientFlow,
+  falseCreateOrUpdateStepClientFlow,
+  falseDeleteMomentClientFlow,
   deleteStepClientFlow,
-  resetMomentClientFlow,
-  resetStepClientFlow,
+  falseResetMomentClientFlow,
+  falseResetStepClientFlow,
   revalidateMomentsClientFlow,
 } from "@/app/flows/client/moments";
 import {
-  createOrUpdateMomentAfterFlow,
-  deleteMomentAfterFlow,
+  falseCreateOrUpdateMomentAfterFlow,
+  falseDeleteMomentAfterFlow,
   resetMomentAfterFlow,
 } from "@/app/flows/after/moments";
 
@@ -106,8 +106,8 @@ export default function ClientCore({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment: FalseDeleteMoment;
 }) {
   console.log({ now });
 
@@ -158,8 +158,8 @@ export function Main({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment: FalseDeleteMoment;
   view: View;
   setView: SetState<View>;
   moment: MomentToCRUD | undefined;
@@ -603,8 +603,8 @@ export function MomentForms({
   destinationOptions: Option[];
   setView: SetState<View>;
   setSubView: SetState<SubView>;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment?: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment?: FalseDeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
   allButtonsDisabled: boolean;
@@ -668,7 +668,7 @@ export function MomentForms({
   // createOrUpdateMomentAction
 
   const [createOrUpdateMomentState, setCreateOrUpdateMomentState] =
-    useState<CreateOrUpdateMomentState>(null);
+    useState<FalseCreateOrUpdateMomentState>(null);
 
   const [isCreateOrUpdateMomentPending, startCreateOrUpdateMomentTransition] =
     useTransition();
@@ -681,7 +681,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentClientFlow(
+      const state = await falseCreateOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -703,7 +703,7 @@ export function MomentForms({
   useEffect(() => {
     if (isCreateOrUpdateMomentDone) {
       // an "after flow" is the set of subsequent client impacts that follow the end of the preceding "action-flow" based on its side effects
-      createOrUpdateMomentAfterFlow(
+      falseCreateOrUpdateMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setCreateOrUpdateMomentState,
@@ -731,7 +731,7 @@ export function MomentForms({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
       ) {
-        const state = resetMomentClientFlow(
+        const state = falseResetMomentClientFlow(
           setStartMomentDate,
           setSteps,
           setStepVisible,
@@ -764,7 +764,7 @@ export function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentClientFlow(deleteMoment, moment);
+        const state = await falseDeleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -774,7 +774,7 @@ export function MomentForms({
 
   useEffect(() => {
     if (isDeleteMomentDone) {
-      deleteMomentAfterFlow(
+      falseDeleteMomentAfterFlow(
         variant,
         createOrUpdateMomentState,
         setView,
@@ -804,7 +804,7 @@ export function MomentForms({
     startCancelStepTransition(() => {
       setStepVisible("create");
       setStepDureeCreate(STEP_DURATION_ORIGINAL);
-      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+      setCreateOrUpdateMomentState(falseRemoveStepsMessagesAndErrorsCallback);
     });
   };
 
@@ -866,7 +866,7 @@ export function MomentForms({
           subError={createOrUpdateMomentState?.momentMessages?.subMessage}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
           removeMessagesAndErrorsCallback={
-            removeMomentMessagesAndErrorsCallback
+            falseRemoveMomentMessagesAndErrorsCallback
           }
         >
           <LocalServerComponents.MomentInputs
@@ -891,7 +891,9 @@ export function MomentForms({
           error={createOrUpdateMomentState?.stepsMessages?.message}
           subError={createOrUpdateMomentState?.stepsMessages?.subMessage}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-          removeMessagesAndErrorsCallback={removeStepsMessagesAndErrorsCallback}
+          removeMessagesAndErrorsCallback={
+            falseRemoveStepsMessagesAndErrorsCallback
+          }
         >
           {steps.length > 0 && (
             <>
@@ -1267,8 +1269,8 @@ export function StepForm({
   setStepDuree: SetState<string>;
   startCreateOrUpdateStepTransition: TransitionStartFunction;
   startResetStepTransition: TransitionStartFunction;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
+  setCreateOrUpdateMomentState: SetState<FalseCreateOrUpdateMomentState>;
 }) {
   const stepFormId =
     variant === "updating"
@@ -1279,7 +1281,7 @@ export function StepForm({
 
   const createOrUpdateStepAction = (event: FormEvent<HTMLFormElement>) => {
     startCreateOrUpdateStepTransition(() => {
-      const state = createOrUpdateStepClientFlow(
+      const state = falseCreateOrUpdateStepClientFlow(
         event,
         stepDuree,
         steps,
@@ -1307,7 +1309,7 @@ export function StepForm({
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
-        const state = resetStepClientFlow(
+        const state = falseResetStepClientFlow(
           setStepDuree,
           createOrUpdateMomentState,
         );
@@ -1366,8 +1368,8 @@ export function ReorderItem({
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  setCreateOrUpdateMomentState: SetState<CreateOrUpdateMomentState>;
+  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
+  setCreateOrUpdateMomentState: SetState<FalseCreateOrUpdateMomentState>;
   stepsCompoundDurations: number[];
   isDeleteStepPending: boolean;
   startDeleteStepTransition: TransitionStartFunction;
@@ -1396,7 +1398,7 @@ export function ReorderItem({
           setStepVisible,
           setStepDureeCreate,
         );
-        setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+        setCreateOrUpdateMomentState(falseRemoveStepsMessagesAndErrorsCallback);
       }
     });
   };
@@ -1409,7 +1411,7 @@ export function ReorderItem({
     startRestoreStepTransition(() => {
       setStepVisible("create");
       setCurrentStepId("");
-      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+      setCreateOrUpdateMomentState(falseRemoveStepsMessagesAndErrorsCallback);
     });
   };
 
@@ -1421,7 +1423,7 @@ export function ReorderItem({
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);
       setStepDureeUpdate(step.duree);
-      setCreateOrUpdateMomentState(removeStepsMessagesAndErrorsCallback);
+      setCreateOrUpdateMomentState(falseRemoveStepsMessagesAndErrorsCallback);
       setStepVisible("updating");
     });
   };

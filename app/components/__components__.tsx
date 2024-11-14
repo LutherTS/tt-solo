@@ -14,7 +14,7 @@ import { isValid } from "date-fns";
 import * as Icons from "@/app/icons";
 import { SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "../validations/steps";
-import { CreateOrUpdateMomentState } from "../types/moments";
+import { FalseCreateOrUpdateMomentState } from "../types/moments";
 
 // Variables
 
@@ -56,10 +56,10 @@ function FormValidationError({
   removeMessagesAndErrorsCallback,
 }: {
   error: string;
-  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: CreateOrUpdateMomentState,
-  ) => CreateOrUpdateMomentState; // could be more precise but true
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState; // could be more precise but true
 }) {
   function handleClick() {
     if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
@@ -89,10 +89,10 @@ function FormDescriptionOrError({
 }: {
   error?: string;
   description: string;
-  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: CreateOrUpdateMomentState,
-  ) => CreateOrUpdateMomentState;
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState;
 }) {
   return (
     <>
@@ -132,10 +132,10 @@ export function Section({
   id?: string;
   error?: string;
   subError?: string;
-  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: CreateOrUpdateMomentState,
-  ) => CreateOrUpdateMomentState;
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState;
   children: React.ReactNode;
 }) {
   return (

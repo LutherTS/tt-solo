@@ -5,9 +5,9 @@ import * as Icons from "@/app/icons";
 import * as GlobalClientComponents from "./client";
 import { Option, SetState } from "@/app/types/globals";
 import {
-  CreateOrUpdateMomentState,
+  FalseCreateOrUpdateMomentState,
   FormSectionTopic,
-  TrueCreateOrUpdateMomentState,
+  CreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import {
   baseInputTexts,
@@ -16,8 +16,8 @@ import {
 } from "@/app/data/globals";
 // import { formSectionTopicRemoves } from "../data/moments";
 import {
-  trueRemoveMomentMessagesAndErrorsCallback,
-  trueRemoveStepsMessagesAndErrorsCallback,
+  removeMomentMessagesAndErrorsCallback,
+  removeStepsMessagesAndErrorsCallback,
 } from "../utilities/moments";
 
 // Components
@@ -42,10 +42,10 @@ function FormDescriptionOrError({
 }: {
   error?: string;
   description: string;
-  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: CreateOrUpdateMomentState,
-  ) => CreateOrUpdateMomentState;
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState;
 }) {
   return (
     <>
@@ -72,10 +72,10 @@ function TrueFormDescriptionOrError({
 }: {
   error?: string;
   description: string;
-  setCreateOrUpdateMomentState?: SetState<TrueCreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: TrueCreateOrUpdateMomentState,
-  ) => TrueCreateOrUpdateMomentState;
+    s: CreateOrUpdateMomentState,
+  ) => CreateOrUpdateMomentState;
 }) {
   return (
     <>
@@ -115,10 +115,10 @@ export function Section({
   id?: string;
   error?: string;
   subError?: string;
-  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: CreateOrUpdateMomentState,
-  ) => CreateOrUpdateMomentState;
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState;
   children: React.ReactNode;
 }) {
   return (
@@ -169,11 +169,11 @@ export function Section({
 
 const formSectionTopicRemoves: {
   [K in FormSectionTopic]: (
-    s: TrueCreateOrUpdateMomentState,
-  ) => TrueCreateOrUpdateMomentState;
+    s: CreateOrUpdateMomentState,
+  ) => CreateOrUpdateMomentState;
 } = {
-  moment: trueRemoveMomentMessagesAndErrorsCallback,
-  steps: trueRemoveStepsMessagesAndErrorsCallback,
+  moment: removeMomentMessagesAndErrorsCallback,
+  steps: removeStepsMessagesAndErrorsCallback,
 };
 
 export function FormSection({
@@ -198,7 +198,7 @@ export function FormSection({
   id?: string;
   error?: string;
   subError?: string;
-  setCreateOrUpdateMomentState?: SetState<TrueCreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
   children: React.ReactNode;
 }) {
   return (

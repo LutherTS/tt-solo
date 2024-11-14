@@ -4,16 +4,16 @@ The should be NO IMPORTS OTHER TYPES in the data file. Any variable, or object o
 
 import { Option } from "@/app/types/globals";
 import {
-  // FormSectionTopic,
   MomentFormIds,
   MomentFormVariant,
   SubView,
-  // TrueCreateOrUpdateMomentState,
   View,
+  // FormSectionTopic,
+  // CreateOrUpdateMomentState,
 } from "@/app/types/moments";
 // import {
-//   trueRemoveMomentMessagesAndErrorsCallback,
-//   trueRemoveStepsMessagesAndErrorsCallback,
+//   removeMomentMessagesAndErrorsCallback,
+//   removeStepsMessagesAndErrorsCallback,
 // } from "../utilities/moments";
 
 // searchParams keys
@@ -142,11 +142,11 @@ export const subViewPages = {
 
 // export const formSectionTopicRemoves: {
 //   [K in FormSectionTopic]: (
-//     s: TrueCreateOrUpdateMomentState,
-//   ) => TrueCreateOrUpdateMomentState;
+//     s: CreateOrUpdateMomentState,
+//   ) => CreateOrUpdateMomentState;
 // } = {
-//   moment: trueRemoveMomentMessagesAndErrorsCallback,
-//   steps: trueRemoveStepsMessagesAndErrorsCallback,
+//   moment: removeMomentMessagesAndErrorsCallback,
+//   steps: removeStepsMessagesAndErrorsCallback,
 // };
 
 // default error messages

@@ -10,8 +10,8 @@ import * as GlocalServerComponents from "./server";
 import { Option, SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 import {
+  FalseCreateOrUpdateMomentState,
   CreateOrUpdateMomentState,
-  TrueCreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import {
   baseInputTexts,
@@ -28,10 +28,10 @@ export function FormValidationError({
   removeMessagesAndErrorsCallback,
 }: {
   error: string;
-  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: CreateOrUpdateMomentState,
-  ) => CreateOrUpdateMomentState; // could be more precise but true
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState; // could be more precise but true
 }) {
   function handleClick() {
     if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
@@ -59,10 +59,10 @@ export function TrueFormValidationError({
   removeMessagesAndErrorsCallback,
 }: {
   error: string;
-  setCreateOrUpdateMomentState?: SetState<TrueCreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: TrueCreateOrUpdateMomentState,
-  ) => TrueCreateOrUpdateMomentState; // could be more precise but true
+    s: CreateOrUpdateMomentState,
+  ) => CreateOrUpdateMomentState; // could be more precise but true
 }) {
   function handleClick() {
     if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
