@@ -183,27 +183,7 @@ export default async function MomentsPage({
   // ...This is complicated.
   // Eventually, theses promises are likely to be resolved by the client. And, their data can be expected to be adapted by the client.
   // If that's the case, their selects need to be explicit, and typed. Because if they're not, they're passing more data than needed to the client.
-  /* Here's a list of the current relevant "to-be-selects" from the adapt of this data: 
-  - .id
-  - .activity
-  - .name
-  - .isIndispensable
-  - .description
-  - .startDateAndTime
-  - .duration
-  - .endDateAndTime
-  - moment.destination
-  - moment.destinationId // preferring moment.destination.id
-  - .name
-  - moment.steps 
-  - .id
-  - .orderId
-  - .name
-  - .description
-  - .startDateAndTime
-  - .duration
-  - .endDateAndTime
-  */
+  // Additionally and as I've mentioned, in every model in my database, I'll need to have the field key right next after id which will house an encrypted version of the id that I'll be exposed to the client. (I can start thinking this through with Grevents v3 if I want.)
   const [
     userMoments,
     pastUserMoments,
