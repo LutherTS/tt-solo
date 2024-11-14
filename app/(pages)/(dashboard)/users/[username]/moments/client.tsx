@@ -730,8 +730,8 @@ export function PaginationButton({
 
 // steps animations data, children of MomentForms
 
-const SHARED_HEIGHT_DURATION = 0.2; // previously ADD__HEIGHT_DURATION
-const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION / 2; // MotionAddStepVisible opacity duration is purposefully shorter (currently twice shorter than MotionAddStepVisible height duration). In fact, instead of currently writing 0.1 I can just right height duration divided by 2 // previously ADD_SWITCH__OPACITY_DURATION
+const SHARED_HEIGHT_DURATION = 0.25; // previously ADD__HEIGHT_DURATION
+const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION * (2 / 3); // MotionAddStepVisible opacity duration is purposefully shorter (currently twice shorter than MotionAddStepVisible height duration). In fact, instead of currently writing 0.1 I can just right height duration divided by 2 // previously ADD_SWITCH__OPACITY_DURATION
 
 export function MomentForms({
   variant,
