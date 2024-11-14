@@ -98,7 +98,8 @@ import {
 
 // this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
 
-// NOTEWORTHY: This can be turned into a server component if I use CSS transitions instead of Framer Motion.
+// NOTEWORTHY: This could be turned into a server component if I use CSS transitions instead of Framer Motion.
+// But that's not even sure because it depends on useMotionValue with is updated via useMeasure.
 export function ViewsCarouselContainer({
   view,
   now,
@@ -249,6 +250,18 @@ export function ViewSegment({
     </div>
   );
 }
+
+/* IMPORTANT
+WHY I WILL NOT BE MAKING ANIMATIONS ON READMOMENTS VIEW AT THIS TIME
+For starters, the core of this project, the part that has the vetted design, is the form. The design is a reappropriation of Refactoring UI's Complex Form video. (I'll brag a little here and say two with its effective three forms-in-one, mine is the most complex.) This is to say that the reason why it's look and feel is so professional is because all of its research has already been done by professionals in this field, which is not my field. I don't make visual prototypes of applications. I can to a degree, and indeed, I am the one who made on my own the current ReadMomentsView look. But even so I was heavily inspired (I copied) by portions of the design that was made by Refactoring UI.
+So the first reason why I'm not making animations on ReadMomentsView is because its design is not definitive enough like MomentForms' is. Consequently, this design is a placeholder, so any further work on it would not only be wasted on a final version, but is also not the subject of this exercise.
+Second, because though aiming to have subViews as a carousel might be feasible at this time, complete with useMeasure, the same can't be said about individual subView pages which are obtained on the server. Basically, at all times the page already knows about the current page of the four subViews, but it doesn't know about the next or previous pages of these subViews.
+These can be allieviated by searching for the neighboring four pages of every current subView page alongside with the data of these subView pages themselves. If a user manually changed the URL beyond the current data we can do with a full page refresh, but within the scope of the intended normal user flow comes another problem. What if a user presses two pages further and immediate click for the next page?
+Fortunately, there is a React 19 API for this, useOptimistic. For the case where a user presses two pages further, a call to the database will still be made to center that page in the search and retrieve data from the next two pages. But while that call happens, we can still optimistically show data from what was the two-pages-further page in the meantime. However, if the next two pages have yet to have been resolved will the user click for the next page, then we would either have to deactivate the button during the true background loading (which I think is the best method), or optimistically replace the data with a loading skeleton in the meantime (...which could be the best method after all), so that useMeasure can still ready from something in the DOM every time.
+I honestly would love to explore with the first of these two approaches with useOptimistic and disabling the button since I'm not familiar with skeletons yet, but that would still require a revamping of page.tsx that is completely different from what I have right now. I would have to pass the params to the page's components to be resolved there and not on the page itself. I would have establish some sort of shell that doesn't waver nor re-renders every time the URL changes. I would have to change my read functions and change the way they are adapting their data from the server to the client, actually, I would have to have their promises resolved and treated by the client and not the server contrarily to what I'm doing right now. This exercise would require a complete revamping of the project so far, and obviously this is beyond the scope of my presentation for next Wednesday at time of writing. In fact, not only is this an incredible amount of work – which I know I might be tempted to tackle – it would make my talk more confusing. The simple, first step of resolving EVERYTHING from the server on page.tsx before passing it down to the pages' components themselves is the first step before even considering going further, Aurora-deep about React Server Components: https://www.youtube.com/watch?v=CvAySC5ex9c.
+...
+So... That's it. My work here is done. Even going on and making dummy data is not interesting per se, because ReadMomentsView is heavily subject to change and not the main topic of this talk. The only thing I need to do know is moments-3, where I can progressively show people the progress of the client boundary in the React Developer Tools. I'll just use my current dummy data to make my demo entry.
+*/
 
 export function ReadMomentsView({
   allUserMomentsToCRUD,
