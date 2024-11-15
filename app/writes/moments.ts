@@ -29,7 +29,7 @@ export async function createMomentFromFormData(
   userId: string,
 ) {
   const data = Object.assign(
-    dataCreateMomentWithoutDestination(
+    await dataCreateMomentWithoutDestination(
       activity,
       name,
       isIndispensable,
@@ -55,7 +55,7 @@ export async function createMomentAndDestination(
   userId: string,
 ) {
   const data = Object.assign(
-    dataCreateMomentWithoutDestination(
+    await dataCreateMomentWithoutDestination(
       activity,
       name,
       isIndispensable,
@@ -64,7 +64,7 @@ export async function createMomentAndDestination(
       duration,
       userId,
     ),
-    { destination: dataCreateMomentDestination(destinationName, userId) },
+    { destination: await dataCreateMomentDestination(destinationName, userId) },
   );
 
   return await prisma.moment.create({ select, data });
@@ -85,7 +85,7 @@ export async function updateMomentFromFormData(
 ) {
   const where = whereMomentId(momentId);
   const data = Object.assign(
-    dataCreateMomentWithoutDestination(
+    await dataCreateMomentWithoutDestination(
       activity,
       name,
       isIndispensable,
@@ -113,7 +113,7 @@ export async function updateMomentAndDestination(
 ) {
   const where = whereMomentId(momentId);
   const data = Object.assign(
-    dataCreateMomentWithoutDestination(
+    await dataCreateMomentWithoutDestination(
       activity,
       name,
       isIndispensable,
@@ -122,7 +122,7 @@ export async function updateMomentAndDestination(
       duration,
       userId,
     ),
-    { destination: dataCreateMomentDestination(destinationName, userId) },
+    { destination: await dataCreateMomentDestination(destinationName, userId) },
   );
 
   return await prisma.moment.update({ select, where, data });

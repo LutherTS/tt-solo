@@ -2,6 +2,7 @@ import { User, Destination, Moment, Step } from "@prisma/client";
 import { add, format, roundToNearestHours, sub } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
+import slugify from "slugify";
 
 import prisma from "./db";
 
@@ -208,7 +209,13 @@ async function seed() {
       );
 
       const momentsDataWithHashedKeys = momentsData.map((e, i) => {
-        return { ...e, id: momentsIds[i], key: momentsKeys[i] };
+        return {
+          ...e,
+          id: momentsIds[i],
+          key: momentsKeys[i],
+          // I need to make sure you can't have _ in your objective.
+          slug: slugify(e.objective, { replacement: "_", locale: "fr" }),
+        };
       });
 
       const destinationMoments = await Promise.all(

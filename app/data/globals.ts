@@ -44,3 +44,5 @@ export const navLinks: NavLink[] = [
     icon: "PaperAirplaneOutline",
   },
 ];
+
+export const defaultSaltRounds = 10;
