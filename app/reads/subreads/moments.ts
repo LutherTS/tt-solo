@@ -7,7 +7,6 @@ import { SelectMomentIdNameAndDates } from "@/app/types/moments";
 
 export const selectMomentDefault = {
   id: true,
-  key: true,
   activity: true,
   name: true,
   isIndispensable: true,

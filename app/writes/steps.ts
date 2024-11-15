@@ -14,7 +14,7 @@ export async function createStepFromSteps(
   endDateAndTime: string,
   momentId: string,
 ) {
-  const data = await dataCreateStep(
+  const data = dataCreateStep(
     orderId,
     name,
     description,

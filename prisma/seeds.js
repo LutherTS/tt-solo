@@ -1,12 +1,12 @@
 import { add, format, roundToNearestHours, sub } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
-import bcrypt from "bcrypt";
-import slugify from "slugify";
+// import { v4 as uuidv4 } from "uuid";
+// import bcrypt from "bcrypt";
+// import slugify from "slugify";
 
 import prisma from "./db.ts";
 
 const dateToInputDatetime = (date) => format(date, "yyyy-MM-dd'T'HH:mm");
-const defaultSaltRounds = 10;
+// const defaultSaltRounds = 10;
 
 async function seed() {
   console.log(`Defining time.`);
@@ -52,16 +52,7 @@ async function seed() {
     },
   ];
 
-  const usersIds = usersData.map(() => uuidv4());
-  const usersKeys = await Promise.all(
-    usersIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
-  );
-
-  const usersDataWithHashedKeys = usersData.map((e, i) => {
-    return { ...e, id: usersIds[i], key: usersKeys[i] };
-  });
-
-  console.log({ usersDataWithHashedKeys });
+  console.log({ usersData });
 
   console.log(`Seeding Users...`);
 
@@ -70,15 +61,13 @@ async function seed() {
   console.log(`Seeding all Users...`);
 
   const allUsers = await Promise.all(
-    usersDataWithHashedKeys.map(async (userData) => {
+    usersData.map(async (userData) => {
       return await prisma.user.upsert({
         where: {
           signInEmailAddress: userData.signInEmailAddress,
         },
         update: {},
         create: {
-          id: userData.id,
-          key: userData.key,
           signInEmailAddress: userData.signInEmailAddress,
           hashedPassword: userData.hashedPassword,
           username: userData.username,
@@ -115,17 +104,8 @@ async function seed() {
   console.log(`Seeding all Destinations...`);
 
   for (const user of users) {
-    const destinationsIds = destinationsData.map(() => uuidv4());
-    const destinationsKeys = await Promise.all(
-      destinationsIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
-    );
-
-    const destinationsDataWithHashedKeys = destinationsData.map((e, i) => {
-      return { ...e, id: destinationsIds[i], key: destinationsKeys[i] };
-    });
-
     const userDestinations = await Promise.all(
-      destinationsDataWithHashedKeys.map(async (destinationData) => {
+      destinationsData.map(async (destinationData) => {
         return await prisma.destination.upsert({
           where: {
             name_userId: {
@@ -135,8 +115,6 @@ async function seed() {
           },
           update: {},
           create: {
-            id: destinationData.id,
-            key: destinationData.key,
             name: destinationData.name,
             userId: user.id,
           },
@@ -202,23 +180,23 @@ async function seed() {
   for (const user of users) {
     const userDestinations = destinations.filter((e) => e.userId === user.id);
     for (const destination of userDestinations) {
-      const momentsIds = momentsData.map(() => uuidv4());
-      const momentsKeys = await Promise.all(
-        momentsIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
-      );
+      // const momentsIds = momentsData.map(() => uuidv4());
+      // const momentsKeys = await Promise.all(
+      //   momentsIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
+      // );
 
-      const momentsDataWithHashedKeys = momentsData.map((e, i) => {
-        return {
-          ...e,
-          id: momentsIds[i],
-          key: momentsKeys[i],
-          // I need to make sure you can't have _ in your objective.
-          slug: slugify(e.objective, { replacement: "_", locale: "fr" }),
-        };
-      });
+      // const momentsDataWithHashedKeys = momentsData.map((e, i) => {
+      //   return {
+      //     ...e,
+      //     id: momentsIds[i],
+      //     key: momentsKeys[i],
+      //     // I need to make sure you can't have _ in your objective.
+      //     slug: slugify(e.objective, { replacement: "_", locale: "fr" }),
+      //   };
+      // });
 
       const destinationMoments = await Promise.all(
-        momentsDataWithHashedKeys.map(async (momentData) => {
+        momentsData.map(async (momentData) => {
           return await prisma.moment.upsert({
             where: {
               name_userId: {
@@ -228,11 +206,11 @@ async function seed() {
             },
             update: {},
             create: {
-              id: momentData.id,
-              key: momentData.key,
+              // id: momentData.id,
+              // key: momentData.key,
               activity: momentData.activity,
               name: momentData.objective,
-              slug: momentData.slug,
+              // slug: momentData.slug,
               isIndispensable: momentData.isIndispensable,
               description: momentData.context,
               startDateAndTime: momentData.startDateAndTime,
@@ -298,17 +276,8 @@ async function seed() {
       map.set(j, durationTotal);
     }
 
-    const stepsIds = stepsData.map(() => uuidv4());
-    const stepsKeys = await Promise.all(
-      stepsIds.map(async (e) => await bcrypt.hash(e, defaultSaltRounds)),
-    );
-
-    const stepsDataWithHashedKeys = stepsData.map((e, i) => {
-      return { ...e, id: stepsIds[i], key: stepsKeys[i] };
-    });
-
     const momentSteps = await Promise.all(
-      stepsDataWithHashedKeys.map(async (stepData, index) => {
+      stepsData.map(async (stepData, index) => {
         return await prisma.step.upsert({
           where: {
             name_momentId: {
@@ -318,8 +287,6 @@ async function seed() {
           },
           update: {},
           create: {
-            id: stepData.id,
-            key: stepData.key,
             orderId: stepData.orderId,
             name: stepData.title,
             description: stepData.details,
