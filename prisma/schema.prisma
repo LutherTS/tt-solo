@@ -11,7 +11,8 @@ datasource db {
 }
 
 model User {
-  id                             String                    @id @default(uuid())
+  // now that all ids are made manually with uuidv4, @default(uuid()) is no longer meaningful
+  id                             String                    @id // @default(uuid())
   key                            String                    @unique
 
   signInEmailAddress             String                    @unique
@@ -36,7 +37,7 @@ model User {
 // Completing Grevents v3 is a Project. That is the anticipated hierarchy.
 
 model Destination {
-  id                             String                    @id @default(uuid())
+  id                             String                    @id // @default(uuid())
   key                            String                    @unique
 
   // the Destination's ideal
@@ -56,13 +57,15 @@ model Destination {
 }
 
 model Moment {
-  id                             String                    @id @default(uuid())
+  id                             String                    @id // @default(uuid())
   key                            String                    @unique
 
   // can potentially become its own model
   activity                       String
   // the Moment's objective
   name                           String
+  // the Moment's "end URL"
+  slug                           String
   // may return to being a string ("low", "mid", "high", "mandatory")
   isIndispensable                Boolean                   @default(false)
   // the Moment's context
@@ -89,10 +92,11 @@ model Moment {
   // Therefore, a new relation direct to the user needs to be implemented on the Moment model.
   // This also means that a validation will be needed to be made that the user connected and the destination connected need to have the same userId.
   @@unique([name, userId])
+  @@unique([slug, userId])
 }
 
 model Step {
-  id                             String                    @id @default(uuid())
+  id                             String                    @id // @default(uuid())
   key                            String                    @unique
 
   orderId                        Int

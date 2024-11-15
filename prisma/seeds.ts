@@ -233,6 +233,7 @@ async function seed() {
               key: momentData.key,
               activity: momentData.activity,
               name: momentData.objective,
+              slug: momentData.slug,
               isIndispensable: momentData.isIndispensable,
               description: momentData.context,
               startDateAndTime: momentData.startDateAndTime,

@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
+import slugify from "slugify";
 
 // in the end I decided this compute should indeed be done the closest from the call as possible
 import { endDateAndTime } from "@/app/utilities/moments";
@@ -21,12 +22,14 @@ export async function dataCreateMomentWithoutDestination(
 ): Promise<Prisma.MomentCreateWithoutDestinationInput> {
   const id = uuidv4();
   const key = await bcrypt.hash(id, defaultSaltRounds);
+  const slug = slugify(name, { replacement: "_", locale: "fr" });
 
   return {
     id,
     key,
     activity, // activite
     name, // objectif
+    slug,
     isIndispensable, // indispensable
     description, // contexte
     startDateAndTime, // momentDate
