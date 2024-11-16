@@ -15,6 +15,8 @@ import {
   CreateOrUpdateMomentState,
   MomentAdapted,
   MomentsAdapted,
+  ReadMomentsViewData,
+  UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { MOMENTID, subViews, TAKE, VIEW } from "@/app/data/moments";
@@ -374,21 +376,15 @@ export const defineSubView = (
 // for now since the promises are resolves on the server, this will be done on the server
 export const trueDefineSubView = (
   rawSubView: string | undefined,
-  userMomentsAdapted: readonly [
-    MomentsAdapted,
-    MomentsAdapted,
-    MomentsAdapted,
-    MomentsAdapted,
-  ],
+  userMomentsAdaptedCombined: UserMomentsAdaptedCombined,
 ): SubView => {
   if (isSubView(rawSubView)) return rawSubView;
   else {
-    const [
-      _userAllMomentsAdapted,
+    const {
       userPastMomentsAdapted,
       userCurrentMomentsAdapted,
       userFutureMomentsAdapted,
-    ] = userMomentsAdapted;
+    } = userMomentsAdaptedCombined;
 
     let initialSubView: SubView =
       userCurrentMomentsAdapted.dates.length > 0

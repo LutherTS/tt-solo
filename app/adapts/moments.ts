@@ -185,12 +185,14 @@ export const trueAdaptMoments = (
         // totalPage: maxPage,
       };
     }),
-    page,
-    total,
-    maxPage,
-    pageTotal: rawMoments.length,
-    pageFirstIndex: page * TAKE + 1,
-    pageLastIndex: page * TAKE + rawMoments.length,
+    pageDetails: {
+      page,
+      total,
+      maxPage,
+      pageTotal: rawMoments.length,
+      pageFirstIndex: page * TAKE + 1,
+      pageLastIndex: page * TAKE + rawMoments.length,
+    },
   };
 };
 

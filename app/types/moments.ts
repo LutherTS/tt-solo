@@ -16,6 +16,11 @@ import {
   VIEW,
 } from "@/app/data/moments";
 import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page";
+import {
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
+} from "../flows/fetch/moments";
+import { trueDeleteMomentServerFlow } from "../flows/server/moments";
 
 export type StepFromCRUD = {
   id: string;
@@ -108,14 +113,25 @@ export type UserMomentsToCRUD = {
   dates: MomentsDateToCRUD[];
 };
 
-export type MomentsAdapted = {
-  dates: DateAdapted[];
+export type PageDetails = {
   page: number;
   total: number;
   maxPage: number;
   pageTotal: number;
   pageFirstIndex: number;
   pageLastIndex: number;
+};
+
+export type MomentsAdapted = {
+  dates: DateAdapted[];
+  pageDetails: PageDetails;
+};
+
+export type UserMomentsAdaptedCombined = {
+  userAllMomentsAdapted: MomentsAdapted;
+  userPastMomentsAdapted: MomentsAdapted;
+  userCurrentMomentsAdapted: MomentsAdapted;
+  userFutureMomentsAdapted: MomentsAdapted;
 };
 
 export type View = "update-moment" | "read-moments" | "create-moment";
@@ -151,6 +167,16 @@ export type CreateOrUpdateMoment = (
   startMomentDate: string,
   steps: StepFromCRUD[],
   momentFromCRUD: MomentToCRUD | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+
+export type TrueCreateOrUpdateMoment = (
+  formData: FormData,
+  variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentAdapted | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
 ) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
@@ -242,6 +268,11 @@ export type DeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 
+// This can be dynamic. // Actually no, it's about the arguments, not the return type.
+export type TrueDeleteMoment = (
+  momentFromCRUD?: MomentAdapted,
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+
 export type RevalidateMoments = () => Promise<void>;
 
 // no longer used
@@ -290,3 +321,17 @@ export type FormSectionTopic = "moment" | "steps";
 export type MomentsPageSearchParams = Parameters<
   typeof MomentsPage
 >[0]["searchParams"];
+
+export type FetchReadMomentsViewData = ReturnType<
+  typeof fetchReadMomentsViewDataFlow
+>;
+
+export type ReadMomentsViewData = Awaited<
+  ReturnType<typeof fetchReadMomentsViewDataFlow>
+>;
+
+export type FetchMomentFormsData = ReturnType<typeof fetchMomentFormsDataFlow>;
+
+export type MomentFormsData = Awaited<
+  ReturnType<typeof fetchMomentFormsDataFlow>
+>;

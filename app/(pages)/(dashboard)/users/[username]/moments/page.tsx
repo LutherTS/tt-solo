@@ -13,6 +13,7 @@ import {
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
   SelectMomentDefault,
+  MomentAdapted,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -53,11 +54,13 @@ import {
   revalidateMomentsServerFlow,
   createOrUpdateMomentServerFlow,
   deleteMomentServerFlow,
+  trueCreateOrUpdateMomentServerFlow,
+  trueDeleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
 import {
-  fetchMomentFormsViewFlow,
-  fetchReadMomentsViewFlow,
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
 } from "@/app/flows/fetch/moments";
 
 /* Dummy Form Presenting Data 
@@ -126,33 +129,37 @@ export default async function MomentsPage({
   // HERE TO SEPARATE IN fetchReadMomentsViewFlow and fetchMomentFormsViewFlow
   // Decided. Even searchParams will be awaited on the fetch flows.
 
-  const readMomentsViewData = fetchReadMomentsViewFlow(now, user, searchParams);
+  const fetchReadMomentsViewData = fetchReadMomentsViewDataFlow(
+    now,
+    user,
+    searchParams,
+  );
 
   // first directly resolved on the server
-  const {
-    userAllMomentsAdapted,
-    userPastMomentsAdapted,
-    userCurrentMomentsAdapted,
-    userFutureMomentsAdapted,
-  } = await readMomentsViewData;
+  const readMomentsViewData = await fetchReadMomentsViewData;
 
-  const userMomentsAdapted = [
-    userAllMomentsAdapted,
-    userPastMomentsAdapted,
-    userCurrentMomentsAdapted,
-    userFutureMomentsAdapted,
-  ] as const;
+  // extra for current wiring
+  // const {
+  //   userAllMomentsAdapted,
+  //   userPastMomentsAdapted,
+  //   userCurrentMomentsAdapted,
+  //   userFutureMomentsAdapted,
+  // } = readMomentsViewData;
 
-  const maxPages = [
-    userAllMomentsAdapted.maxPage,
-    userPastMomentsAdapted.maxPage,
-    userCurrentMomentsAdapted.maxPage,
-    userFutureMomentsAdapted.maxPage,
-  ] as const;
+  // const userMomentsAdapted = [
+  //   userAllMomentsAdapted,
+  //   userPastMomentsAdapted,
+  //   userCurrentMomentsAdapted,
+  //   userFutureMomentsAdapted,
+  // ] as const;
 
-  const momentFormsViewData = fetchMomentFormsViewFlow(user);
+  const fetchMomentFormsView = fetchMomentFormsDataFlow(user);
 
-  const { destinationOptions } = await momentFormsViewData;
+  // first directly resolved on the server
+  const momentFormsData = await fetchMomentFormsView;
+
+  // extra for current wiring
+  // const { destinationOptions } = momentFormsData;
 
   // const userId = user.id; // unneeded soon here
 
@@ -328,11 +335,15 @@ export default async function MomentsPage({
   // console.log({ view, moment });
 
   // const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
-  const subView = trueDefineSubView(
-    searchParams?.[SUBVIEW],
-    userMomentsAdapted,
-  );
+  // const subView = trueDefineSubView(
+  //   searchParams?.[SUBVIEW],
+  //   readMomentsViewData,
+  // );
   // console.log({ subView });
+
+  // since subView depends on readMomentsViewData it might as well eventually be included in it // Done.
+
+  // I would argument that moment should be in momentFormsViewData, but I need moment to define view.
 
   // PART WRITE (a.k.a. server actions)
 
@@ -341,14 +352,14 @@ export default async function MomentsPage({
     variant: MomentFormVariant,
     startMomentDate: string,
     steps: StepFromCRUD[],
-    momentFromCRUD: MomentToCRUD | undefined,
+    momentFromCRUD: MomentAdapted | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
     // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
-    return await createOrUpdateMomentServerFlow(
+    return await trueCreateOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -366,11 +377,11 @@ export default async function MomentsPage({
   }
 
   async function deleteMoment(
-    momentFromCRUD: MomentToCRUD | undefined,
+    momentFromCRUD: MomentAdapted | undefined,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await deleteMomentServerFlow(
+    return await trueDeleteMomentServerFlow(
       momentFromCRUD, // DECODE NEEDED // Done.
       user,
     );
@@ -406,16 +417,19 @@ export default async function MomentsPage({
           // time (aligned across server and client for hydration cases)
           now={now}
           // reads
-          allUserMomentsToCRUD={userMomentsAdapted}
-          maxPages={maxPages}
-          destinationOptions={destinationOptions}
+          // allUserMomentsToCRUD={userMomentsAdapted}
+          // maxPages={maxPages}
+          // destinationOptions={destinationOptions}
+          // true reads
+          readMomentsViewData={readMomentsViewData}
+          momentFormsData={momentFormsData}
           // writes
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
           // states lifted to the URL
           view={view}
-          subView={subView}
+          // subView={subView}
           moment={moment}
         />
       </Suspense>

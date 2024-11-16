@@ -5,6 +5,7 @@ import {
 import {
   CONTAINS,
   INITIAL_PAGE,
+  SUBVIEW,
   subViewCountUserMomentsWithContains,
   subViewFindUserMomentsWithContains,
   subViewPages,
@@ -12,23 +13,30 @@ import {
 } from "@/app/data/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import { Option } from "@/app/types/globals";
-import { MomentsPageSearchParams, SubView } from "@/app/types/moments";
+import {
+  MomentsPageSearchParams,
+  SubView,
+  UserMomentsAdaptedCombined,
+} from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
-import { defineCurrentPage } from "@/app/utilities/moments";
+import { defineCurrentPage, trueDefineSubView } from "@/app/utilities/moments";
 
-export async function fetchReadMomentsViewFlow(
+export const fetchReadMomentsViewDataFlow = async (
   now: string,
   user: SelectUserIdAndUsername,
   searchParams: MomentsPageSearchParams,
-) {
+): Promise<{
+  userMomentsAdaptedCombined: UserMomentsAdaptedCombined;
+  subView: SubView;
+}> => {
   const userId = user.id;
 
   searchParams = await searchParams;
 
   const contains = searchParams?.[CONTAINS] || "";
 
-  const fetchSubViewInFetchReadMomentsViewFlowBound =
-    fetchSubViewInFetchReadMomentsViewFlow.bind(
+  const fetchSubViewDataInFetchReadMomentsViewDataFlowBound =
+    fetchSubViewDataInFetchReadMomentsViewDataFlow.bind(
       null,
       now,
       userId,
@@ -42,21 +50,31 @@ export async function fetchReadMomentsViewFlow(
     userCurrentMomentsAdapted,
     userFutureMomentsAdapted,
   ] = await Promise.all([
-    fetchSubViewInFetchReadMomentsViewFlowBound("all-moments"),
-    fetchSubViewInFetchReadMomentsViewFlowBound("past-moments"),
-    fetchSubViewInFetchReadMomentsViewFlowBound("current-moments"),
-    fetchSubViewInFetchReadMomentsViewFlowBound("future-moments"),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("all-moments"),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("past-moments"),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("current-moments"),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("future-moments"),
   ]);
 
-  return {
+  const userMomentsAdaptedCombined = {
     userAllMomentsAdapted,
     userPastMomentsAdapted,
     userCurrentMomentsAdapted,
     userFutureMomentsAdapted,
   };
-}
 
-export async function fetchSubViewInFetchReadMomentsViewFlow(
+  const subView = trueDefineSubView(
+    searchParams?.[SUBVIEW],
+    userMomentsAdaptedCombined,
+  );
+
+  return {
+    userMomentsAdaptedCombined,
+    subView,
+  };
+};
+
+export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
   now: string,
   userId: string,
   contains: string,
@@ -104,7 +122,7 @@ export async function fetchSubViewInFetchReadMomentsViewFlow(
   return userMomentsAdapted;
 }
 
-export async function fetchMomentFormsViewFlow(user: SelectUserIdAndUsername) {
+export async function fetchMomentFormsDataFlow(user: SelectUserIdAndUsername) {
   // read
   const userDestinations = await findDestinationsByUserId(user.id);
 

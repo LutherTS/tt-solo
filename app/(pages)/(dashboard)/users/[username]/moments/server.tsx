@@ -27,6 +27,16 @@ import {
   DeleteMoment,
   UserMomentsToCRUD,
   View,
+  ReadMomentsViewData,
+  MomentsAdapted,
+  MomentAdapted,
+  DestinationAdapted,
+  DateAdapted,
+  PageDetails,
+  StepAdapted,
+  MomentFormsData,
+  TrueCreateOrUpdateMoment,
+  TrueDeleteMoment,
 } from "@/app/types/moments";
 import { numStringToTimeString } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
@@ -35,9 +45,12 @@ export default function ServerCore({
   // time
   now,
   // reads
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
+  // allUserMomentsToCRUD,
+  // maxPages,
+  // destinationOptions,
+  // true reads
+  readMomentsViewData,
+  momentFormsData,
   // writes
   revalidateMoments,
   createOrUpdateMoment,
@@ -45,18 +58,20 @@ export default function ServerCore({
   // states lifted to the URL
   view,
   moment,
-  subView,
+  // subView,
 }: {
   now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
+  // allUserMomentsToCRUD: UserMomentsToCRUD[];
+  // maxPages: readonly [number, number, number, number];
+  // destinationOptions: Option[];
+  readMomentsViewData: ReadMomentsViewData;
+  momentFormsData: MomentFormsData;
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment: TrueDeleteMoment;
   view: View;
-  moment: MomentToCRUD | undefined;
-  subView: SubView;
+  moment: MomentAdapted | undefined;
+  // subView: SubView;
 }) {
   return (
     <>
@@ -64,14 +79,16 @@ export default function ServerCore({
       <GlobalServerComponents.Divider />
       <Main
         now={now}
-        allUserMomentsToCRUD={allUserMomentsToCRUD}
-        maxPages={maxPages}
-        destinationOptions={destinationOptions}
+        // allUserMomentsToCRUD={allUserMomentsToCRUD}
+        // maxPages={maxPages}
+        // destinationOptions={destinationOptions}
+        readMomentsViewData={readMomentsViewData}
+        momentFormsData={momentFormsData}
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
         view={view}
-        subView={subView}
+        // subView={subView}
         moment={moment}
       />
     </>
@@ -93,26 +110,30 @@ export function Header({ view }: { view: View }) {
 
 export function Main({
   now,
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
+  // allUserMomentsToCRUD,
+  // maxPages,
+  // destinationOptions,
+  readMomentsViewData,
+  momentFormsData,
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
   view,
   moment,
-  subView,
+  // subView,
 }: {
   now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
+  // allUserMomentsToCRUD: UserMomentsToCRUD[];
+  // maxPages: readonly [number, number, number, number];
+  // destinationOptions: Option[];
+  readMomentsViewData: ReadMomentsViewData;
+  momentFormsData: MomentFormsData;
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: TrueCreateOrUpdateMoment;
+  deleteMoment: TrueDeleteMoment;
   view: View;
-  moment: MomentToCRUD | undefined;
-  subView: SubView;
+  moment: MomentAdapted | undefined;
+  // subView: SubView;
 }) {
   return (
     <main>
@@ -121,14 +142,16 @@ export function Main({
         {/* where the client boundary currently begins */}
         <LocalClientComponents.ViewsCarouselContainer
           now={now}
-          allUserMomentsToCRUD={allUserMomentsToCRUD}
-          maxPages={maxPages}
-          destinationOptions={destinationOptions}
+          // allUserMomentsToCRUD={allUserMomentsToCRUD}
+          // maxPages={maxPages}
+          readMomentsViewData={readMomentsViewData}
+          momentFormsData={momentFormsData}
+          // destinationOptions={destinationOptions}
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
           view={view}
-          subView={subView}
+          // subView={subView}
           moment={moment}
         />
       </ViewsCarouselWrapper>
@@ -230,8 +253,8 @@ export function DestinationInDateCard({
   e2,
   realMoments,
 }: {
-  e2: MomentsDestinationToCRUD;
-  realMoments: MomentToCRUD[];
+  e2: DestinationAdapted;
+  realMoments: MomentAdapted[];
 }) {
   return (
     <div className="flex flex-col gap-y-8">
@@ -247,7 +270,7 @@ export function DestinationInDateCard({
       {e2.moments.map((e3, i3) => (
         // no longer from LocalClientComponents
         <MomentInDateCard
-          key={e3.id + e2.id} // because of userMoments duplicates
+          key={e3.key + e2.key} // because of userMoments duplicates
           e3={e3}
           i3={i3}
           realMoments={realMoments}
@@ -262,9 +285,9 @@ export function MomentInDateCard({
   i3,
   realMoments,
 }: {
-  e3: MomentToCRUD;
+  e3: MomentAdapted;
   i3: number;
-  realMoments: MomentToCRUD[];
+  realMoments: MomentAdapted[];
 }) {
   return (
     <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
@@ -294,14 +317,14 @@ export function MomentInDateCard({
       </p>
       <ol className="">
         {e3.steps.map((e4) => (
-          <StepInDateCard key={e4.id} e4={e4} />
+          <StepInDateCard key={e4.key} e4={e4} />
         ))}
       </ol>
     </div>
   );
 }
 
-export function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
+export function StepInDateCard({ e4 }: { e4: StepAdapted }) {
   return (
     <li className="text-sm font-light leading-loose text-neutral-500">
       <p>
@@ -312,20 +335,33 @@ export function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
   );
 }
 
-export function MomentsPageDetails({ e }: { e: MomentsDateToCRUD }) {
+// momentsTotal: number;
+// momentFirstIndex: number;
+// momentLastIndex: number;
+// allMomentsTotal: number;
+// currentPage: number;
+// totalPage: number;
+
+// The whole MomentsAdapted is overkill, so perhaps I should make this an object that I pass
+export function MomentsPageDetails({
+  pageDetails,
+}: {
+  pageDetails: PageDetails;
+}) {
   return (
     <p className="font-extralight text-neutral-800">
-      <span className="font-normal">{e.momentsTotal}</span> moment(s) affiché(s){" "}
+      <span className="font-normal">{pageDetails.pageTotal}</span> moment(s)
+      affiché(s){" "}
       <span className="font-normal">
         (
-        {e.momentFirstIndex !== e.momentLastIndex
-          ? `${e.momentFirstIndex}-${e.momentLastIndex}`
-          : `${e.momentFirstIndex}`}
+        {pageDetails.pageFirstIndex !== pageDetails.pageLastIndex
+          ? `${pageDetails.pageFirstIndex}-${pageDetails.pageLastIndex}`
+          : `${pageDetails.pageFirstIndex}`}
         )
       </span>{" "}
-      sur <span className="font-normal">{e.allMomentsTotal}</span> à la page{" "}
-      <span className="font-normal">{e.currentPage}</span> sur{" "}
-      <span className="font-normal">{e.totalPage}</span>
+      sur <span className="font-normal">{pageDetails.total}</span> à la page{" "}
+      <span className="font-normal">{pageDetails.page}</span> sur{" "}
+      <span className="font-normal">{pageDetails.pageTotal}</span>
     </p>
   );
 }
@@ -344,7 +380,7 @@ export function MomentInputs({
   setStartMomentDate,
 }: {
   variant: MomentFormVariant;
-  moment?: MomentToCRUD;
+  moment?: MomentAdapted;
   destinationOptions: Option[];
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   destinationSelect: boolean;

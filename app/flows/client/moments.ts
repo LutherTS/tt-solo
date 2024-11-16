@@ -25,6 +25,9 @@ import {
   DeleteMoment,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
+  MomentAdapted,
+  TrueCreateOrUpdateMoment,
+  TrueDeleteMoment,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -92,6 +95,66 @@ export const createOrUpdateMomentClientFlow = async (
   startMomentDate: string,
   steps: StepFromCRUD[],
   momentFromCRUD: MomentToCRUD | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
+  event.preventDefault();
+
+  const createOrUpdateMomentBound = createOrUpdateMoment.bind(
+    null,
+    new FormData(event.currentTarget),
+    variant,
+    startMomentDate,
+    steps,
+    momentFromCRUD,
+    destinationSelect,
+    activitySelect,
+  );
+  let state = await createOrUpdateMomentBound();
+
+  if (state?.isSuccess === false) {
+    // return { ...createOrUpdateMomentState, ...state, isSuccess: false };
+    return {
+      isSuccess: false,
+      error: { ...createOrUpdateMomentState?.error, ...state.error },
+    };
+  } else {
+    // IMPORTANT
+    // I'm sunsetting this feature, because in truth it does not scale as is. The way it should be done is that within the server action, I look on the server to see where the created or updated moment would appear on the three lists (past, present, future), including at what given page on these lists it would appear. Then I'd pass this data inside the state (meaning I will then justifiably have to distinguish CreateOrUpdateMomentState in two routes: error and success (!)), with a top enum that says whether it is in error or success state... or in truth I could just start with a boolean isSuccess. The boolean sends the relevant data to the client, and then the after flow handles the redirection correctly.
+    // At this time I can even save in the success path of the state the id of the element that's been created or updated, find a way to scroll down to it on the new view, and complete with a little animation that shows where it has been added.
+    // I would say that's a lot better than what I have right now, and a lot more thought out, so that's what I'll be exploring, hopefully before the 20 this month.
+
+    // This is going back to the server flow.
+
+    // const currentNow = dateToInputDatetime(new Date());
+
+    // if (compareDesc(endMomentDate, currentNow) === 1)
+    //   setSubView("past-moments");
+    // else if (compareAsc(startMomentDate, currentNow) === 1)
+    //   setSubView("future-moments");
+    // // present by default
+    // else setSubView("current-moments");
+
+    // resetting the whole form manually
+    if (variant === "creating") {
+      const momentForm = document.getElementById(
+        MOMENT_FORM_IDS[variant].momentForm,
+      ) as HTMLFormElement | null;
+      momentForm?.reset();
+    }
+
+    return state;
+  }
+};
+
+export const trueCreateOrUpdateMomentClientFlow = async (
+  event: FormEvent<HTMLFormElement>,
+  createOrUpdateMoment: TrueCreateOrUpdateMoment,
+  variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromCRUD[],
+  momentFromCRUD: MomentAdapted | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
@@ -245,6 +308,32 @@ export const falseDeleteMomentClientFlow = async (
 export const deleteMomentClientFlow = async (
   deleteMoment: DeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
+  if (deleteMoment) {
+    const deleteMomentBound = deleteMoment.bind(null, moment);
+    // spreading from the original state is currently unnecessary
+    const state = await deleteMomentBound();
+    return state;
+  } else {
+    return {
+      isSuccess: false,
+      error: {
+        momentMessages: {
+          message: "Erreur.",
+          subMessage:
+            "La fonction d'effacement du moment n'est pas disponible en interne.",
+        },
+        momentErrors: {},
+        stepsMessages: {},
+        stepsErrors: {},
+      },
+    };
+  }
+};
+
+export const trueDeleteMomentClientFlow = async (
+  deleteMoment: TrueDeleteMoment | undefined,
+  moment: MomentAdapted | undefined,
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (deleteMoment) {
     const deleteMomentBound = deleteMoment.bind(null, moment);
