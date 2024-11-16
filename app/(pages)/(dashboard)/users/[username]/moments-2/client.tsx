@@ -37,15 +37,15 @@ import * as LocalServerComponents from "./server";
 import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
-  FalseCreateOrUpdateMoment,
+  FalserCreateOrUpdateMoment,
   FalseCreateOrUpdateMomentState,
-  FalseDeleteMoment,
+  FalserDeleteMoment,
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
   MomentsSearchParamsKey,
   StepFormVariant,
-  StepFromCRUD,
+  StepFromClient,
   StepVisible,
   SubView,
   UserMomentsToCRUD,
@@ -78,9 +78,9 @@ import {
   toWordsing,
 } from "@/app/utilities/moments";
 import {
-  falseCreateOrUpdateMomentClientFlow,
+  falserCreateOrUpdateMomentClientFlow,
   falseCreateOrUpdateStepClientFlow,
-  falseDeleteMomentClientFlow,
+  falserDeleteMomentClientFlow,
   deleteStepClientFlow,
   falseResetMomentClientFlow,
   falseResetStepClientFlow,
@@ -106,8 +106,8 @@ export default function ClientCore({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: FalseCreateOrUpdateMoment;
-  deleteMoment: FalseDeleteMoment;
+  createOrUpdateMoment: FalserCreateOrUpdateMoment;
+  deleteMoment: FalserDeleteMoment;
 }) {
   console.log({ now });
 
@@ -158,8 +158,8 @@ export function Main({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: FalseCreateOrUpdateMoment;
-  deleteMoment: FalseDeleteMoment;
+  createOrUpdateMoment: FalserCreateOrUpdateMoment;
+  deleteMoment: FalserDeleteMoment;
   view: View;
   setView: SetState<View>;
   moment: MomentToCRUD | undefined;
@@ -603,8 +603,8 @@ export function MomentForms({
   destinationOptions: Option[];
   setView: SetState<View>;
   setSubView: SetState<SubView>;
-  createOrUpdateMoment: FalseCreateOrUpdateMoment;
-  deleteMoment?: FalseDeleteMoment;
+  createOrUpdateMoment: FalserCreateOrUpdateMoment;
+  deleteMoment?: FalserDeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
   allButtonsDisabled: boolean;
@@ -617,7 +617,7 @@ export function MomentForms({
     isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
 
-  const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
+  const momentSteps: StepFromClient[] | undefined = moment?.steps.map((e) => {
     return {
       id: e.id,
       intitule: e.title,
@@ -626,7 +626,7 @@ export function MomentForms({
     };
   });
 
-  let [steps, setSteps] = useState<StepFromCRUD[]>(
+  let [steps, setSteps] = useState<StepFromClient[]>(
     isVariantUpdatingMoment && momentSteps ? momentSteps : [],
   );
 
@@ -681,7 +681,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await falseCreateOrUpdateMomentClientFlow(
+      const state = await falserCreateOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -764,7 +764,7 @@ export function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await falseDeleteMomentClientFlow(deleteMoment, moment);
+        const state = await falserDeleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -1262,8 +1262,8 @@ export function StepForm({
   variant: StepFormVariant;
   momentFormVariant: MomentFormVariant;
   currentStepId: string;
-  steps: StepFromCRUD[];
-  setSteps: SetState<StepFromCRUD[]>;
+  steps: StepFromClient[];
+  setSteps: SetState<StepFromClient[]>;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;
@@ -1353,18 +1353,18 @@ export function ReorderItem({
   allButtonsDisabled,
   setStepDureeCreate,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   isAfterCurrentStep: boolean;
   momentFormVariant: MomentFormVariant;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   stepVisible: StepVisible;
   currentStepId: string;
   setCurrentStepId: SetState<string>;
   setStepVisible: SetState<StepVisible>;
   startMomentDate: string;
   stepAddingTime: number;
-  setSteps: SetState<StepFromCRUD[]>;
+  setSteps: SetState<StepFromClient[]>;
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;

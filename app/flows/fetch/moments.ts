@@ -1,11 +1,14 @@
 import {
   adaptDestinationsForMoment,
-  trueAdaptMoments,
+  adaptedViewAndMomentCombined,
+  adaptMomentKey,
+  adaptMoments,
+  adaptView,
 } from "@/app/adapts/moments";
 import {
   CONTAINS,
   INITIAL_PAGE,
-  MOMENTID,
+  MOMENTKEY,
   SUBVIEW,
   subViewCountUserMomentsWithContains,
   subViewFindUserMomentsWithContains,
@@ -21,13 +24,7 @@ import {
   UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
-import {
-  defineCurrentPage,
-  defineView,
-  trueDefineMoment,
-  trueDefineSubView,
-  trueDefineWithViewAndMoment,
-} from "@/app/utilities/moments";
+import { defineCurrentPage, trueDefineSubView } from "@/app/utilities/moments";
 
 export const fetchReadMomentsViewDataFlow = async (
   now: string,
@@ -120,7 +117,7 @@ export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
   );
 
   // adapt
-  const userMomentsAdapted = trueAdaptMoments(
+  const userMomentsAdapted = adaptMoments(
     userMoments,
     userMomentsPage,
     userMomentsTotal,
@@ -141,17 +138,16 @@ export async function fetchMomentFormsDataFlow(user: SelectUserIdAndUsername) {
   return { destinationOptions };
 }
 
-export async function fetchViewAndMomentFlow(
+export async function fetchViewAndMomentDataFlow(
   searchParams: MomentsPageSearchParams,
   user: SelectUserIdAndUsername,
 ) {
   searchParams = await searchParams;
 
-  let definedView = defineView(searchParams?.[VIEW]);
+  let adaptedView = adaptView(searchParams?.[VIEW]);
+  let adaptedMoment = await adaptMomentKey(searchParams?.[MOMENTKEY], user);
 
-  let definedMoment = await trueDefineMoment(searchParams?.[MOMENTID], user);
-
-  return trueDefineWithViewAndMoment(definedView, definedMoment);
+  return adaptedViewAndMomentCombined(adaptedView, adaptedMoment);
 }
 
 /* Notes

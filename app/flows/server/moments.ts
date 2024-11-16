@@ -15,9 +15,9 @@ import {
 } from "@/app/utilities/moments";
 import { CreateOrUpdateMomentSchema } from "@/app/validations/moments";
 import {
-  countCurrentUserMomentsShownBeforeMoment,
-  countFutureUserMomentsShownBeforeMoment,
-  countPastUserMomentsShownBeforeMoment,
+  countUserCurrentMomentsShownBeforeMoment,
+  countUserFutureMomentsShownBeforeMoment,
+  countUserPastMomentsShownBeforeMoment,
   findMomentByIdAndUserId,
   findMomentByNameAndUserId,
 } from "@/app/reads/moments";
@@ -40,7 +40,7 @@ import {
   MomentFormVariant,
   MomentToCRUD,
   SelectMomentIdNameAndDates,
-  StepFromCRUD,
+  StepFromClient,
   MomentAdapted,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
@@ -59,7 +59,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -384,7 +384,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countPastUserMomentsShownBeforeMoment,
+      countUserPastMomentsShownBeforeMoment,
     );
     console.log({
       isSuccess: true,
@@ -398,7 +398,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countFutureUserMomentsShownBeforeMoment,
+      countUserFutureMomentsShownBeforeMoment,
     );
     console.log({
       isSuccess: true,
@@ -411,7 +411,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countCurrentUserMomentsShownBeforeMoment,
+      countUserCurrentMomentsShownBeforeMoment,
     );
     console.log({
       isSuccess: true,
@@ -430,7 +430,7 @@ export const createOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -787,7 +787,7 @@ export const createOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countPastUserMomentsShownBeforeMoment,
+      countUserPastMomentsShownBeforeMoment,
     );
     return {
       isSuccess: true,
@@ -801,7 +801,7 @@ export const createOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countFutureUserMomentsShownBeforeMoment,
+      countUserFutureMomentsShownBeforeMoment,
     );
     return {
       isSuccess: true,
@@ -814,7 +814,7 @@ export const createOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countCurrentUserMomentsShownBeforeMoment,
+      countUserCurrentMomentsShownBeforeMoment,
     );
     return {
       isSuccess: true,
@@ -827,7 +827,7 @@ export const trueCreateOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentAdapted | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -1184,7 +1184,7 @@ export const trueCreateOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countPastUserMomentsShownBeforeMoment,
+      countUserPastMomentsShownBeforeMoment,
     );
     return {
       isSuccess: true,
@@ -1198,7 +1198,7 @@ export const trueCreateOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countFutureUserMomentsShownBeforeMoment,
+      countUserFutureMomentsShownBeforeMoment,
     );
     return {
       isSuccess: true,
@@ -1211,7 +1211,7 @@ export const trueCreateOrUpdateMomentServerFlow = async (
       userId,
       currentNow,
       moment,
-      countCurrentUserMomentsShownBeforeMoment,
+      countUserCurrentMomentsShownBeforeMoment,
     );
     return {
       isSuccess: true,
@@ -1221,7 +1221,7 @@ export const trueCreateOrUpdateMomentServerFlow = async (
 };
 
 const createStepsInCreateOrUpdateMomentServerFlow = async (
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentDate: string,
   momentId: string,
 ) => {

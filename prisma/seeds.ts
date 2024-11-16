@@ -1,13 +1,9 @@
 import { User, Destination, Moment, Step } from "@prisma/client";
 import { add, format, roundToNearestHours, sub } from "date-fns";
-// import { v4 as uuidv4 } from "uuid";
-// import bcrypt from "bcrypt";
-// import slugify from "slugify";
 
 import prisma from "./db";
 
 const dateToInputDatetime = (date: Date) => format(date, "yyyy-MM-dd'T'HH:mm");
-// const defaultSaltRounds = 10;
 
 async function seed() {
   console.log(`Defining time.`);

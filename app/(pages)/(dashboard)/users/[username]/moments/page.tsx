@@ -4,64 +4,34 @@ import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/server";
 import Core from "./server";
-import { Option } from "@/app/types/globals";
 import {
-  UserMomentsToCRUD,
-  StepFromCRUD,
-  MomentToCRUD,
+  StepFromClient,
   MomentFormVariant,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
-  SelectMomentDefault,
   MomentAdapted,
 } from "@/app/types/moments";
-import {
-  dateToInputDatetime,
-  defineCurrentPage,
-  defineMoment,
-  defineSubView,
-  defineView,
-  defineWithViewAndMoment,
-  trueDefineMoment,
-  trueDefineSubView,
-  trueDefineWithViewAndMoment,
-} from "@/app/utilities/moments";
+import { dateToInputDatetime } from "@/app/utilities/moments";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
-  INITIAL_PAGE,
-  MOMENTID,
+  MOMENTKEY,
   PASTUSERMOMENTSPAGE,
   SUBVIEW,
-  TAKE,
   USERMOMENTSPAGE,
   VIEW,
 } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
-  countCurrentUserMomentsWithContains,
-  countFutureUserMomentsWithContains,
-  countPastUserMomentsWithContains,
-  countUserAllMomentsWithContains,
-  findCurrentUserMomentsWithContains,
-  findFutureUserMomentsWithContains,
-  findPastUserMomentsWithContains,
-  findUserAllMomentsWithContains,
-} from "@/app/reads/moments";
-import { findDestinationsByUserId } from "@/app/reads/destinations";
-import {
   revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
   trueCreateOrUpdateMomentServerFlow,
   trueDeleteMomentServerFlow,
 } from "@/app/flows/server/moments";
-import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
 import {
   fetchMomentFormsDataFlow,
   fetchReadMomentsViewDataFlow,
-  fetchViewAndMomentFlow,
+  fetchViewAndMomentDataFlow,
 } from "@/app/flows/fetch/moments";
 
 /* Dummy Form Presenting Data 
@@ -103,7 +73,7 @@ export default async function MomentsPage({
     // now lifted to the URL
     [VIEW]?: string;
     [SUBVIEW]?: string;
-    [MOMENTID]?: string;
+    [MOMENTKEY]?: string;
   };
 }) {
   // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.
@@ -127,13 +97,12 @@ export default async function MomentsPage({
   // extremely important in order to use user in server actions without null
   const user = userFound;
 
-  // HERE TO SEPARATE IN fetchReadMomentsViewFlow and fetchMomentFormsViewFlow
-  // Decided. Even searchParams will be awaited on the fetch flows.
+  // fetches
 
-  const fetchViewAndMoment = fetchViewAndMomentFlow(searchParams, user);
+  const fetchViewAndMomentData = fetchViewAndMomentDataFlow(searchParams, user);
 
   // first directly resolved on the server at this time
-  const viewAndMomentData = await fetchViewAndMoment;
+  const viewAndMomentData = await fetchViewAndMomentData;
 
   const fetchReadMomentsViewData = fetchReadMomentsViewDataFlow(
     now,
@@ -144,199 +113,10 @@ export default async function MomentsPage({
   // first directly resolved on the server at this time
   const readMomentsViewData = await fetchReadMomentsViewData;
 
-  const fetchMomentFormsView = fetchMomentFormsDataFlow(user);
+  const fetchMomentFormsData = fetchMomentFormsDataFlow(user);
 
   // first directly resolved on the server at this time
-  const momentFormsData = await fetchMomentFormsView;
-
-  // extra for current wiring
-  // const { destinationOptions } = momentFormsData;
-
-  // const userId = user.id; // unneeded soon here
-
-  // searchParams = await searchParams;
-
-  // // that is one chill searchParam right here
-  // const contains = searchParams?.[CONTAINS] || "";
-  // // console.log({ contains });
-
-  // const [
-  //   userMomentsTotal,
-  //   pastUserMomentsTotal,
-  //   currentUserMomentsTotal,
-  //   futureUserMomentsTotal,
-  // ] = await Promise.all([
-  //   countUserAllMomentsWithContains(userId, contains),
-  //   countPastUserMomentsWithContains(userId, contains, now),
-  //   countCurrentUserMomentsWithContains(userId, contains, now),
-  //   countFutureUserMomentsWithContains(userId, contains, now),
-  // ]);
-  // // console.log({
-  // //   userMomentsTotal,
-  // //   pastUserMomentsTotal,
-  // //   currentUserMomentsTotal,
-  // //   futureUserMomentsTotal,
-  // // });
-
-  // const totals = [
-  //   userMomentsTotal,
-  //   pastUserMomentsTotal,
-  //   currentUserMomentsTotal,
-  //   futureUserMomentsTotal,
-  // ] as const;
-  // // console.log({ totals })
-
-  // // TAKE is page-dependent here. Therefore the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
-  // // const TAKE = 2; // TAKE is now a moments variable
-
-  // const maxPages = totals.map((e) => Math.ceil(e / TAKE));
-  // // console.log({ maxPages });
-
-  // const searchParamsPageKeys = [
-  //   USERMOMENTSPAGE,
-  //   PASTUSERMOMENTSPAGE,
-  //   CURRENTUSERMOMENTSPAGE,
-  //   FUTUREUSERMOMENTSPAGE,
-  // ] as const;
-
-  // const pages = searchParamsPageKeys.map((e, i) =>
-  //   defineCurrentPage(
-  //     INITIAL_PAGE,
-  //     // I had never seen that TypeScript syntax before.
-  //     // And it is not valid JavaScript.
-  //     Number(searchParams?.[e]),
-  //     maxPages[i],
-  //   ),
-  // );
-  // // console.log({ pages });
-
-  // const [
-  //   userMomentsPage,
-  //   pastUserMomentsPage,
-  //   currentUserMomentsPage,
-  //   futureUserMomentsPage,
-  // ] = pages;
-
-  // // ...This is complicated.
-  // // Eventually, theses promises are likely to be resolved by the client. And, their data can be expected to be adapted by the client.
-  // // If that's the case, their selects need to be explicit, and typed. Because if they're not, they're passing more data than needed to the client.
-  // // Additionally and as I've mentioned, in every model in my database, I'll need to have the field key right next after id which will house an encrypted version of the id that I'll be exposed to the client. (I can start thinking this through with Grevents v3 if I want.)
-  // const [
-  //   userMoments,
-  //   pastUserMoments,
-  //   currentUserMoments,
-  //   futureUserMoments,
-  // ]: SelectMomentDefault[][] = await Promise.all([
-  //   findUserAllMomentsWithContains(userId, contains, userMomentsPage),
-  //   findPastUserMomentsWithContains(userId, contains, now, pastUserMomentsPage),
-  //   findCurrentUserMomentsWithContains(
-  //     userId,
-  //     contains,
-  //     now,
-  //     currentUserMomentsPage,
-  //   ),
-  //   findFutureUserMomentsWithContains(
-  //     userId,
-  //     contains,
-  //     now,
-  //     futureUserMomentsPage,
-  //   ),
-  // ]);
-  // // console.log({
-  // //   userMoments,
-  // //   pastUserMoments,
-  // //   currentUserMoments,
-  // //   futureUserMoments,
-  // // });
-
-  // // const userDestinations = await findDestinationsByUserId(userId);
-  // // console.log({ userDestinations });
-
-  // // adapting data for the client
-
-  // const allUserMoments: SelectMomentDefault[][] = [
-  //   userMoments,
-  //   pastUserMoments,
-  //   currentUserMoments,
-  //   futureUserMoments,
-  // ];
-  // // console.log({ allUserMoments });
-
-  // const allUserMomentsToCRUD: UserMomentsToCRUD[] = adaptMoments(
-  //   allUserMoments,
-  //   pages,
-  //   totals,
-  //   maxPages,
-  // );
-  // // console.logs on demand...
-
-  // // const destinationOptions: Option[] =
-  // //   adaptDestinationsForMoment(userDestinations);
-  // // console.logs on demand...
-
-  // const { destinationOptions } = await fetchMomentFormsViewFlow(user);
-
-  // obtaining and interpreting view, moment and subView
-
-  // const uniqueShownSet = new Set<string>();
-
-  // allUserMomentsToCRUD.forEach((e) => {
-  //   e.dates.forEach((e2) => {
-  //     e2.destinations.forEach((e3) => {
-  //       e3.moments.forEach((e4) => {
-  //         uniqueShownSet.add(JSON.stringify(e4));
-  //       });
-  //     });
-  //   });
-  // });
-
-  // const uniqueShownMoments = [...uniqueShownSet].map((e) =>
-  //   JSON.parse(e),
-  // ) as MomentToCRUD[];
-  // // console.log({ uniqueShownMoments });
-
-  // searchParams = await searchParams;
-
-  // let definedView = defineView(searchParams?.[VIEW]);
-  // console.log({ definedView });
-
-  // No need to decode here, since this is still based on adapted data that is meant for the client.
-  // But this needs to change completely. It should not depend on uniqueShownMoments and it's the first thing I should solve tomorrow morning.
-  // The reason I did this is because I...
-  // ...OMG this might the first time I use useOptimistic tomorrow!!!!!
-  // So the reason I did this is because I want the update page to change instantaneously without needing to hit the database. However, I will need to do so here, to hit the database here. It's on the CLIENT that I will instead use useOptimistic so that while the database resolves, I can use the current data and start modifying the form based on current data.
-  // Then I give to the key of UpdateMomentView a mix of the moment's key and the view so that if at resolve it is the same key and the same view that definedMoment retrieve and land to, the component doesn't get remounted which would destroy the form completion that was done during awaiting.
-  // None of what I'll be doing here will be visible in my demo nor in my own code. The only way that I'll know so far that it works, is by delaying, through console.logs and by nothing breaking even though useOptimistic is implemented.
-  // Then I can even go further and directly play with the use hook. ...If I honestly can do this ALL this weekend, that will be all of React 19's relevant hooks being implemented in my project... Before the presentation.
-  // Imagine. My form will pretty much load instantaneously since even though it's the child of a Client Component, it won't have to wait for the server to fetch the moments of ReadMomentsView. And that could be quasi-true even for the UpdateMomentView.
-  // And that would allow me to present clearly the benefits of React 19 to my audience.
-  // Imagine. Imagine if that talk, despite or even thanks to my stuttering, is SO GOOD that it reaches the hear of Guillermo Rauch. Just imagine. Imagine. Dream. ...This is why I need to do this.
-  // ...
-  // It won't work though, the useOptimistic I mean, because the data changes are not happening on the same right at a given time.
-  // let definedMoment = await defineMoment(
-  //   searchParams?.[MOMENTID],
-  //   uniqueShownMoments,
-  // );
-  // let definedMoment = await trueDefineMoment(searchParams?.[MOMENTID], user);
-  // console.log({ definedMoment });
-
-  // const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
-  // const { view, moment } = trueDefineWithViewAndMoment(
-  //   definedView,
-  //   definedMoment,
-  // );
-  // console.log({ view, moment });
-
-  // const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
-  // const subView = trueDefineSubView(
-  //   searchParams?.[SUBVIEW],
-  //   readMomentsViewData,
-  // );
-  // console.log({ subView });
-
-  // since subView depends on readMomentsViewData it might as well eventually be included in it // Done.
-
-  // I would argument that moment should be in momentFormsViewData, but I need moment to define view.
+  const momentFormsData = await fetchMomentFormsData;
 
   // PART WRITE (a.k.a. server actions)
 
@@ -344,8 +124,8 @@ export default async function MomentsPage({
     formData: FormData,
     variant: MomentFormVariant,
     startMomentDate: string,
-    steps: StepFromCRUD[],
-    momentFromCRUD: MomentAdapted | undefined,
+    steps: StepFromClient[],
+    momentAdapted: MomentAdapted | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
@@ -357,7 +137,7 @@ export default async function MomentsPage({
       variant,
       startMomentDate,
       steps,
-      momentFromCRUD, // DECODE NEEDED // Done.
+      momentAdapted, // DECODE NEEDED // Done.
       destinationSelect,
       activitySelect,
       user,
@@ -370,12 +150,12 @@ export default async function MomentsPage({
   }
 
   async function deleteMoment(
-    momentFromCRUD: MomentAdapted | undefined,
+    momentAdapted: MomentAdapted | undefined,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
     return await trueDeleteMomentServerFlow(
-      momentFromCRUD, // DECODE NEEDED // Done.
+      momentAdapted, // DECODE NEEDED // Done.
       user,
     );
   }
@@ -410,10 +190,6 @@ export default async function MomentsPage({
           // time (aligned across server and client for hydration cases)
           now={now}
           // reads
-          // allUserMomentsToCRUD={userMomentsAdapted}
-          // maxPages={maxPages}
-          // destinationOptions={destinationOptions}
-          // true reads
           viewAndMomentData={viewAndMomentData}
           readMomentsViewData={readMomentsViewData}
           momentFormsData={momentFormsData}
@@ -421,22 +197,11 @@ export default async function MomentsPage({
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
-          // states lifted to the URL
-          // view={view}
-          // subView={subView}
-          // moment={moment}
         />
       </Suspense>
     </ErrorBoundary>
   );
 }
-
-// function StillServer({ children }: { children: React.ReactNode }) {
-//   return <>{children}</>;
-// }
-// While Next.js allows Server Components to wrap Client Components, Client Components can’t wrap Server Components without converting the entire wrapped portion to run on the client. -- ChatGPT
-
-// Also it is my belief that there shouldn't be ANY Suspense boundary without a parent Error boundary to go along.
 
 /* Notes
 Connection closed is unrelated to setView("read-moments");
@@ -478,4 +243,26 @@ Now aside from validations the only thing I'm missing from my server actions is 
 ...
 SOLVED:
 (I don't understand how inside the action user can be null when I'm returning if it's null in the function. ...Let's have some fun with this for one second. It's because the action can be placed anywhere in the parent function, it doesn't follow the regular flow of creation within the page. I can place it before notFound and the code doesn't break. So do I make it use the argument user created inside parent function, but the action is pretty much created before the user is verified. Maybe if obtaining the user and verify the user was one single action, one flow... That's something I could try.)
+
+OLD THOUGHTS
+// No need to decode here, since this is still based on adapted data that is meant for the client.
+// But this needs to change completely. It should not depend on uniqueShownMoments and it's the first thing I should solve tomorrow morning.
+// The reason I did this is because I...
+// ...OMG this might the first time I use useOptimistic tomorrow!!!!!
+// So the reason I did this is because I want the update page to change instantaneously without needing to hit the database. However, I will need to do so here, to hit the database here. It's on the CLIENT that I will instead use useOptimistic so that while the database resolves, I can use the current data and start modifying the form based on current data.
+// Then I give to the key of UpdateMomentView a mix of the moment's key and the view so that if at resolve it is the same key and the same view that definedMoment retrieve and land to, the component doesn't get remounted which would destroy the form completion that was done during awaiting.
+// None of what I'll be doing here will be visible in my demo nor in my own code. The only way that I'll know so far that it works, is by delaying, through console.logs and by nothing breaking even though useOptimistic is implemented.
+// Then I can even go further and directly play with the use hook. ...If I honestly can do this ALL this weekend, that will be all of React 19's relevant hooks being implemented in my project... Before the presentation.
+// Imagine. My form will pretty much load instantaneously since even though it's the child of a Client Component, it won't have to wait for the server to fetch the moments of ReadMomentsView. And that could be quasi-true even for the UpdateMomentView.
+// And that would allow me to present clearly the benefits of React 19 to my audience.
+// Imagine. Imagine if that talk, despite or even thanks to my stuttering, is SO GOOD that it reaches the hear of Guillermo Rauch. Just imagine. Imagine. Dream. ...This is why I need to do this.
+// ...
+// It won't work though, the useOptimistic I mean, because the data changes are not happening on the same right at a given time.
+
+// function StillServer({ children }: { children: React.ReactNode }) {
+//   return <>{children}</>;
+// }
+// While Next.js allows Server Components to wrap Client Components, Client Components can’t wrap Server Components without converting the entire wrapped portion to run on the client. -- ChatGPT
+
+// Also it is my belief that there shouldn't be ANY Suspense boundary without a parent Error boundary to go along.
 */

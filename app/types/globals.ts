@@ -11,7 +11,7 @@ export type Option = {
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 
 export type NavLink = {
-  id: number;
+  id: string;
   label: string;
   href: string;
   icon: Icons.IconName;

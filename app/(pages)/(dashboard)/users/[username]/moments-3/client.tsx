@@ -43,15 +43,15 @@ import {
   RevalidateMoments,
   MomentsSearchParamsKey,
   StepFormVariant,
-  StepFromCRUD,
+  StepFromClient,
   StepVisible,
   SubView,
   UserMomentsToCRUD,
   View,
   MomentsSearchParams,
   CreateOrUpdateMomentState,
-  CreateOrUpdateMoment,
-  DeleteMoment,
+  FalseCreateOrUpdateMoment,
+  FalseDeleteMoment,
 } from "@/app/types/moments";
 import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
@@ -82,9 +82,9 @@ import {
 import {
   deleteStepClientFlow,
   revalidateMomentsClientFlow,
-  createOrUpdateMomentClientFlow,
+  falseCreateOrUpdateMomentClientFlow,
   createOrUpdateStepClientFlow,
-  deleteMomentClientFlow,
+  falseDeleteMomentClientFlow,
   resetMomentClientFlow,
   resetStepClientFlow,
 } from "@/app/flows/client/moments";
@@ -116,8 +116,8 @@ export function ViewsCarouselContainer({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment: FalseDeleteMoment;
   moment: MomentToCRUD | undefined;
   subView: SubView;
 }) {
@@ -704,8 +704,8 @@ export function MomentForms({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment?: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment?: FalseDeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
   allButtonsDisabled: boolean;
@@ -719,7 +719,7 @@ export function MomentForms({
     isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
 
-  const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
+  const momentSteps: StepFromClient[] | undefined = moment?.steps.map((e) => {
     return {
       id: e.id,
       intitule: e.title,
@@ -728,7 +728,7 @@ export function MomentForms({
     };
   });
 
-  let [steps, setSteps] = useState<StepFromCRUD[]>(
+  let [steps, setSteps] = useState<StepFromClient[]>(
     isVariantUpdatingMoment && momentSteps ? momentSteps : [],
   );
 
@@ -788,7 +788,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentClientFlow(
+      const state = await falseCreateOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -871,7 +871,7 @@ export function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentClientFlow(deleteMoment, moment);
+        const state = await falseDeleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -1163,18 +1163,18 @@ export function ReorderItem({
   isAnimationDelayed,
   setIsAnimationDelayed,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   isAfterCurrentStep: boolean;
   momentFormVariant: MomentFormVariant;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   stepVisible: StepVisible;
   currentStepId: string;
   setCurrentStepId: SetState<string>;
   setStepVisible: SetState<StepVisible>;
   startMomentDate: string;
   stepAddingTime: number;
-  setSteps: SetState<StepFromCRUD[]>;
+  setSteps: SetState<StepFromClient[]>;
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
@@ -1351,7 +1351,7 @@ function MotionIsCurrentStepUpdating({
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
-  step: StepFromCRUD;
+  step: StepFromClient;
   startMomentDate: string;
   stepAddingTime: number;
   stepsCompoundDurations: number[];
@@ -1478,7 +1478,7 @@ function MotionAddStepVisible({
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
   cancelStepAction: () => void;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   isCancelStepPending: boolean;
   stepsCompoundDurations: number[];
   startMomentDate: string;
@@ -1576,8 +1576,8 @@ export function StepForm({
   variant: StepFormVariant;
   momentFormVariant: MomentFormVariant;
   currentStepId: string;
-  steps: StepFromCRUD[];
-  setSteps: SetState<StepFromCRUD[]>;
+  steps: StepFromClient[];
+  setSteps: SetState<StepFromClient[]>;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;

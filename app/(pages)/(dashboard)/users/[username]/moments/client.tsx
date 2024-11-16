@@ -41,27 +41,23 @@ import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
   MomentFormVariant,
-  MomentToCRUD,
   RevalidateMoments,
   MomentsSearchParamsKey,
   StepFormVariant,
-  StepFromCRUD,
+  StepFromClient,
   StepVisible,
   SubView,
-  UserMomentsToCRUD,
   View,
   MomentsSearchParams,
   CreateOrUpdateMomentState,
-  CreateOrUpdateMoment,
-  DeleteMoment,
   ReadMomentsViewData,
   MomentsAdapted,
   MomentAdapted,
   MomentFormsData,
-  TrueCreateOrUpdateMoment,
-  TrueDeleteMoment,
+  CreateOrUpdateMoment,
+  DeleteMoment,
 } from "@/app/types/moments";
-import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
+import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
@@ -90,13 +86,11 @@ import {
 import {
   deleteStepClientFlow,
   revalidateMomentsClientFlow,
-  createOrUpdateMomentClientFlow,
   createOrUpdateStepClientFlow,
-  deleteMomentClientFlow,
   resetMomentClientFlow,
   resetStepClientFlow,
-  trueCreateOrUpdateMomentClientFlow,
-  trueDeleteMomentClientFlow,
+  createOrUpdateMomentClientFlow,
+  deleteMomentClientFlow,
 } from "@/app/flows/client/moments";
 import {
   resetMomentAfterFlow,
@@ -109,31 +103,23 @@ import {
 // NOTEWORTHY: This could be turned into a server component if I use CSS transitions instead of Framer Motion.
 // But that's not even sure because it depends on useMotionValue with is updated via useMeasure.
 export function ViewsCarouselContainer({
-  view,
   now,
-  // allUserMomentsToCRUD,
-  // maxPages,
-  // destinationOptions,
+  view,
+  moment,
   readMomentsViewData,
   momentFormsData,
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  moment,
-  // subView,
 }: {
-  view: View;
   now: string;
-  // allUserMomentsToCRUD: UserMomentsToCRUD[];
-  // maxPages: readonly [number, number, number, number];
-  // destinationOptions: Option[];
+  view: View;
+  moment: MomentAdapted | undefined; // moment now only drops in MomentForms, so eventually (today) it could be included in momntFormsData // but no
   readMomentsViewData: ReadMomentsViewData;
   momentFormsData: MomentFormsData;
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: TrueCreateOrUpdateMoment;
-  deleteMoment: TrueDeleteMoment;
-  moment: MomentAdapted | undefined; // moment now only drops in MomentForms, so eventually (today) it could be included in momntFormsData
-  // subView: SubView;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
 }) {
   const [isCRUDOpSuccessful, setIsCRUDOpSuccessful] = useState(false);
   let currentViewHeight = useMotionValue(0); // 0 as a default to stay a number
@@ -184,7 +170,6 @@ export function ViewsCarouselContainer({
             key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
             variant="updating"
             moment={moment}
-            // destinationOptions={destinationOptions}
             momentFormsData={momentFormsData}
             createOrUpdateMoment={createOrUpdateMoment}
             deleteMoment={deleteMoment}
@@ -203,11 +188,8 @@ export function ViewsCarouselContainer({
           currentViewHeight={currentViewHeight}
         >
           <ReadMomentsView
-            // allUserMomentsToCRUD={allUserMomentsToCRUD}
-            // maxPages={maxPages}
-            readMomentsViewData={readMomentsViewData}
             view={view}
-            // subView={subView}
+            readMomentsViewData={readMomentsViewData}
             revalidateMoments={revalidateMoments}
             allButtonsDisabled={view !== "read-moments"}
           />
@@ -224,7 +206,6 @@ export function ViewsCarouselContainer({
           {/* CreateMomentView */}
           <MomentForms
             variant="creating"
-            // destinationOptions={destinationOptions}
             momentFormsData={momentFormsData}
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
@@ -279,29 +260,16 @@ So... That's it. My work here is done. Even going on and making dummy data is no
 */
 
 export function ReadMomentsView({
-  // allUserMomentsToCRUD,
-  // maxPages,
-  readMomentsViewData,
   view,
-  // subView,
+  readMomentsViewData,
   revalidateMoments,
   allButtonsDisabled,
 }: {
-  // allUserMomentsToCRUD: UserMomentsToCRUD[];
-  // maxPages: readonly [number, number, number, number];
-  readMomentsViewData: ReadMomentsViewData;
   view: View;
-  // subView: SubView;
+  readMomentsViewData: ReadMomentsViewData;
   revalidateMoments: RevalidateMoments;
   allButtonsDisabled: boolean;
 }) {
-  // const [
-  //   userAllMomentsAdapted,
-  //   userPastMomentsAdapted,
-  //   userCurrentMomentsAdapted,
-  //   userFutureMomentsAdapted,
-  // ] = allUserMomentsToCRUD;
-
   const {
     userAllMomentsAdapted,
     userPastMomentsAdapted,
@@ -318,16 +286,12 @@ export function ReadMomentsView({
     "future-moments": userFutureMomentsAdapted,
   };
 
-  // let realDisplayedMoments = userAllMomentsAdapted.dates;
-  // if (subView !== undefined && subViews.includes(subView))
-  //   realDisplayedMoments = realShowcaseMoments[subView].dates;
-
-  let trueRealDisplayedMoments = userAllMomentsAdapted;
+  let realDisplayedMoments = userAllMomentsAdapted;
   if (subView !== undefined && subViews.includes(subView))
-    trueRealDisplayedMoments = realShowcaseMoments[subView];
+    realDisplayedMoments = realShowcaseMoments[subView];
 
   let realMoments: MomentAdapted[] = [];
-  trueRealDisplayedMoments.dates.forEach((e) =>
+  realDisplayedMoments.dates.forEach((e) =>
     e.destinations.forEach((e2) =>
       e2.moments.forEach((e3) => realMoments.push(e3)),
     ),
@@ -363,7 +327,6 @@ export function ReadMomentsView({
     "future-moments": FUTUREUSERMOMENTSPAGE,
   };
 
-  // That's useless. I could get it from userMomentsAdapted
   const [
     maxPageAllMoments,
     maxPagePastMoments,
@@ -431,9 +394,9 @@ export function ReadMomentsView({
       event.preventDefault();
 
       if (event.altKey) {
-        rotateSubView("left"); // does not update the time because it speaks exclusively to the client // not anymore
+        rotateSubView("left");
       } else {
-        if (currentPage !== 1) handlePagination("left", subView); // updates the time because it speaks to the server (and the database)
+        if (currentPage !== 1) handlePagination("left", subView);
       }
     }
   });
@@ -443,10 +406,10 @@ export function ReadMomentsView({
       event.preventDefault();
 
       if (event.altKey) {
-        rotateSubView("right"); // does not update the time because it speaks exclusively to the client // not anymore
+        rotateSubView("right");
       } else {
         if (currentPage !== subViewMaxPages[subView])
-          handlePagination("right", subView); // updates the time because it speaks to the server (and the database)
+          handlePagination("right", subView);
       }
     }
   });
@@ -507,10 +470,10 @@ export function ReadMomentsView({
         searchParams={searchParams}
         debouncedHandleSearch={debouncedHandleSearch}
       />
-      {trueRealDisplayedMoments.dates.length > 0 ? (
+      {realDisplayedMoments.dates.length > 0 ? (
         <>
           {/* notice I only render what's visible for now */}
-          {trueRealDisplayedMoments.dates.map((e, i, a) => (
+          {realDisplayedMoments.dates.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <div className="space-y-8">
                 <LocalServerComponents.DateCard
@@ -532,7 +495,7 @@ export function ReadMomentsView({
               </div>
               {i === a.length - 1 && (
                 <LocalServerComponents.MomentsPageDetails
-                  pageDetails={trueRealDisplayedMoments.pageDetails}
+                  pageDetails={realDisplayedMoments.pageDetails}
                 />
               )}
             </div>
@@ -775,7 +738,6 @@ const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION * (2 / 3); // MotionAddSt
 export function MomentForms({
   variant,
   moment,
-  // destinationOptions,
   momentFormsData,
   createOrUpdateMoment,
   deleteMoment,
@@ -785,10 +747,9 @@ export function MomentForms({
 }: {
   variant: MomentFormVariant;
   moment?: MomentAdapted;
-  // destinationOptions: Option[];
   momentFormsData: MomentFormsData;
-  createOrUpdateMoment: TrueCreateOrUpdateMoment;
-  deleteMoment?: TrueDeleteMoment;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment?: DeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
   allButtonsDisabled: boolean;
@@ -805,7 +766,7 @@ export function MomentForms({
     isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
 
-  const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
+  const momentSteps: StepFromClient[] | undefined = moment?.steps.map((e) => {
     return {
       id: e.key,
       intitule: e.title,
@@ -814,7 +775,7 @@ export function MomentForms({
     };
   });
 
-  let [steps, setSteps] = useState<StepFromCRUD[]>(
+  let [steps, setSteps] = useState<StepFromClient[]>(
     isVariantUpdatingMoment && momentSteps ? momentSteps : [],
   );
 
@@ -876,7 +837,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await trueCreateOrUpdateMomentClientFlow(
+      const state = await createOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -961,7 +922,7 @@ export function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await trueDeleteMomentClientFlow(deleteMoment, moment);
+        const state = await deleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -1256,18 +1217,18 @@ export function ReorderItem({
   isAnimationDelayed,
   setIsAnimationDelayed,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   isAfterCurrentStep: boolean;
   momentFormVariant: MomentFormVariant;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   stepVisible: StepVisible;
   currentStepId: string;
   setCurrentStepId: SetState<string>;
   setStepVisible: SetState<StepVisible>;
   startMomentDate: string;
   stepAddingTime: number;
-  setSteps: SetState<StepFromCRUD[]>;
+  setSteps: SetState<StepFromClient[]>;
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
@@ -1368,7 +1329,7 @@ export function ReorderItem({
           bounceStiffness: 900,
           bounceDamping: 50,
         }}
-        // whileDrag={{ opacity: 0.5 }} // buggy though
+        whileDrag={{ opacity: 0.5 }} // buggy though
       >
         <div className={clsx("flex flex-col gap-y-8", "pb-9")}>
           <div className="flex select-none items-baseline justify-between">
@@ -1451,7 +1412,7 @@ function MotionIsCurrentStepUpdating({
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
-  step: StepFromCRUD;
+  step: StepFromClient;
   startMomentDate: string;
   stepAddingTime: number;
   stepsCompoundDurations: number[];
@@ -1578,7 +1539,7 @@ function MotionAddStepVisible({
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
   cancelStepAction: () => void;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   isCancelStepPending: boolean;
   stepsCompoundDurations: number[];
   startMomentDate: string;
@@ -1676,8 +1637,8 @@ export function StepForm({
   variant: StepFormVariant;
   momentFormVariant: MomentFormVariant;
   currentStepId: string;
-  steps: StepFromCRUD[];
-  setSteps: SetState<StepFromCRUD[]>;
+  steps: StepFromClient[];
+  setSteps: SetState<StepFromClient[]>;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;

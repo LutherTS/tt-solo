@@ -33,7 +33,7 @@ export function Divider() {
   );
 }
 
-function FormDescriptionOrError({
+function FalseFormDescriptionOrError({
   error,
   description,
   setCreateOrUpdateMomentState,
@@ -51,7 +51,7 @@ function FormDescriptionOrError({
       {error &&
       setCreateOrUpdateMomentState &&
       removeMessagesAndErrorsCallback ? (
-        <GlobalClientComponents.FormValidationError
+        <GlobalClientComponents.FalseFormValidationError
           error={error}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
           removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
@@ -63,7 +63,7 @@ function FormDescriptionOrError({
   );
 }
 
-function TrueFormDescriptionOrError({
+function FormDescriptionOrError({
   error,
   description,
   setCreateOrUpdateMomentState,
@@ -81,7 +81,7 @@ function TrueFormDescriptionOrError({
       {error &&
       setCreateOrUpdateMomentState &&
       removeMessagesAndErrorsCallback ? (
-        <GlobalClientComponents.TrueFormValidationError
+        <GlobalClientComponents.FormValidationError
           error={error}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
           removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
@@ -137,7 +137,7 @@ export function Section({
             <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
             <div className="flex flex-col gap-y-2">
               {description && showDescription && (
-                <FormDescriptionOrError
+                <FalseFormDescriptionOrError
                   error={error}
                   description={description}
                   setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
@@ -147,7 +147,9 @@ export function Section({
                 />
               )}
               {subError ? (
-                <GlobalClientComponents.FormValidationError error={subError} />
+                <GlobalClientComponents.FalseFormValidationError
+                  error={subError}
+                />
               ) : (
                 <>
                   {addendum && showAddendum && (
@@ -222,7 +224,7 @@ export function FormSection({
             <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
             <div className="flex flex-col gap-y-2">
               {description && showDescription && (
-                <TrueFormDescriptionOrError
+                <FormDescriptionOrError
                   error={error}
                   description={description}
                   setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
@@ -232,7 +234,9 @@ export function FormSection({
                 />
               )}
               {subError ? (
-                <GlobalClientComponents.FormValidationError error={subError} />
+                <GlobalClientComponents.FalseFormValidationError
+                  error={subError}
+                />
               ) : (
                 <>
                   {addendum && showAddendum && (
@@ -537,7 +541,7 @@ For now I just want all of my components to be Client Components. It's once the 
 const globalServerComponents = {
   PageTitle,
   Divider,
-  FormDescriptionOrError,
+  FormDescriptionOrError: FalseFormDescriptionOrError,
   Section,
   FormSection,
   InputValidationError,

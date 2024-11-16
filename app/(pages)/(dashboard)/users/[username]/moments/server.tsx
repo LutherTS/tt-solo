@@ -14,31 +14,19 @@ import {
 } from "@/app/data/moments";
 import {
   MomentFormVariant,
-  MomentsDateToCRUD,
-  MomentsDestinationToCRUD,
-  MomentToCRUD,
   RevalidateMoments,
-  StepFromCRUD,
-  StepToCRUD,
+  StepFromClient,
   StepVisible,
-  SubView,
-  CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
-  DeleteMoment,
-  UserMomentsToCRUD,
   View,
   ReadMomentsViewData,
-  MomentsAdapted,
   MomentAdapted,
   DestinationAdapted,
-  DateAdapted,
   PageDetails,
   StepAdapted,
   MomentFormsData,
-  TrueCreateOrUpdateMoment,
-  TrueDeleteMoment,
-  MomentsSearchParams,
-  MomentsPageSearchParams,
+  CreateOrUpdateMoment,
+  DeleteMoment,
   ViewAndMomentData,
 } from "@/app/types/moments";
 import { numStringToTimeString } from "@/app/utilities/moments";
@@ -48,35 +36,21 @@ export default function ServerCore({
   // time
   now,
   // reads
-  // allUserMomentsToCRUD,
-  // maxPages,
-  // destinationOptions,
-  // true reads
+  viewAndMomentData,
   readMomentsViewData,
   momentFormsData,
   // writes
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  // states lifted to the URL
-  // view,
-  // moment,
-  // subView,
-  viewAndMomentData,
 }: {
   now: string;
-  // allUserMomentsToCRUD: UserMomentsToCRUD[];
-  // maxPages: readonly [number, number, number, number];
-  // destinationOptions: Option[];
   viewAndMomentData: ViewAndMomentData;
   readMomentsViewData: ReadMomentsViewData;
   momentFormsData: MomentFormsData;
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: TrueCreateOrUpdateMoment;
-  deleteMoment: TrueDeleteMoment;
-  // view: View;
-  // moment: MomentAdapted | undefined;
-  // subView: SubView;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
 }) {
   // There could be some UI above that would be prerended before view and moment are event defined. That's why I have to await searchParams here for now and not on the page.
   const { view, moment } = viewAndMomentData;
@@ -87,17 +61,13 @@ export default function ServerCore({
       <GlobalServerComponents.Divider />
       <Main
         now={now}
-        // allUserMomentsToCRUD={allUserMomentsToCRUD}
-        // maxPages={maxPages}
-        // destinationOptions={destinationOptions}
+        view={view}
+        moment={moment}
         readMomentsViewData={readMomentsViewData}
         momentFormsData={momentFormsData}
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
-        view={view}
-        // subView={subView}
-        moment={moment}
       />
     </>
   );
@@ -118,30 +88,22 @@ export function Header({ view }: { view: View }) {
 
 export function Main({
   now,
-  // allUserMomentsToCRUD,
-  // maxPages,
-  // destinationOptions,
+  view,
+  moment,
   readMomentsViewData,
   momentFormsData,
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  view,
-  moment,
-  // subView,
 }: {
   now: string;
-  // allUserMomentsToCRUD: UserMomentsToCRUD[];
-  // maxPages: readonly [number, number, number, number];
-  // destinationOptions: Option[];
+  view: View;
+  moment: MomentAdapted | undefined;
   readMomentsViewData: ReadMomentsViewData;
   momentFormsData: MomentFormsData;
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: TrueCreateOrUpdateMoment;
-  deleteMoment: TrueDeleteMoment;
-  view: View;
-  moment: MomentAdapted | undefined;
-  // subView: SubView;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
 }) {
   return (
     <main>
@@ -150,17 +112,13 @@ export function Main({
         {/* where the client boundary currently begins */}
         <LocalClientComponents.ViewsCarouselContainer
           now={now}
-          // allUserMomentsToCRUD={allUserMomentsToCRUD}
-          // maxPages={maxPages}
+          view={view}
+          moment={moment}
           readMomentsViewData={readMomentsViewData}
           momentFormsData={momentFormsData}
-          // destinationOptions={destinationOptions}
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
-          view={view}
-          // subView={subView}
-          moment={moment}
         />
       </ViewsCarouselWrapper>
     </main>
@@ -622,7 +580,7 @@ export function StepVisibleCreating({
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
   cancelStepAction: () => void;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   isCancelStepPending: boolean;
   stepsCompoundDurations: number[];
   startMomentDate: string;
@@ -828,10 +786,10 @@ export function StepInputs({
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
+  step?: StepFromClient;
   startMomentDate: string;
-  stepsCompoundDurations: number[];
-  step?: StepFromCRUD;
   stepAddingTime?: number;
+  stepsCompoundDurations: number[];
 }) {
   return (
     <>
@@ -959,7 +917,7 @@ export function StepContents({
   startMomentDate,
   stepAddingTime,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   hasAPreviousStepUpdating: boolean;
   startMomentDate: string;

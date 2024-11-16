@@ -6,24 +6,16 @@ import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-
 import {
   MomentsSearchParams,
   FalseCreateOrUpdateMomentState,
-  StepFromCRUD,
+  StepFromClient,
   View,
   MomentToCRUD,
   SubView,
   UserMomentsToCRUD,
   SelectMomentIdNameAndDates,
   CreateOrUpdateMomentState,
-  MomentAdapted,
-  MomentsAdapted,
-  ReadMomentsViewData,
-  UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { MOMENTID, subViews, TAKE, VIEW } from "@/app/data/moments";
-import { decodeHashidToUUID, encodeUUIDWithHashids } from "./globals";
-import { findMomentByIdAndUserId } from "../reads/moments";
-import { adaptMoment } from "../adapts/moments";
-import { SelectUserIdAndUsername } from "../types/users";
+import { MOMENTKEY, subViews, TAKE, VIEW } from "@/app/data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -183,8 +175,8 @@ export const scrollToTopOfDesiredView = (
     searchParams,
   ) as TypedURLSearchParams<MomentsSearchParams>;
 
-  if (desiredView !== "update-moment") newSearchParams.delete(MOMENTID);
-  else if (momentId) newSearchParams.set(MOMENTID, momentId);
+  if (desiredView !== "update-moment") newSearchParams.delete(MOMENTKEY);
+  else if (momentId) newSearchParams.set(MOMENTKEY, momentId);
 
   newSearchParams.set(VIEW, desiredView);
 
@@ -200,7 +192,7 @@ export const scrollToSection = (sectionId: string) => {
 };
 
 // makes an array of all the adding times of a step up to that step (step 0 has the compound duration of step 0, step 1 has the compound duration of steps 0 and 1, etc.)
-export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
+export const makeStepsCompoundDurationsArray = (steps: StepFromClient[]) => {
   const stepsCompoundDurationsArray: number[] = [];
   let compoundDuration = 0;
   for (let i = 0; i < steps.length; i++) {
@@ -282,26 +274,6 @@ export const defineMoment = async (
 ): Promise<MomentToCRUD | undefined> => {
   if (!rawMomentId) return undefined;
   else return uniqueShownMoments.find((e) => e.id === rawMomentId);
-  // else
-  //   return uniqueShownMoments.find(
-  //     (e) => e.id === decodeHashidToUUID(rawMomentId),
-  //   );
-};
-
-export const trueDefineMoment = async (
-  rawMomentKey: string | undefined,
-  user: SelectUserIdAndUsername,
-): Promise<MomentAdapted | undefined> => {
-  if (!rawMomentKey) return undefined;
-  else {
-    const moment = await findMomentByIdAndUserId(
-      decodeHashidToUUID(rawMomentKey),
-      user.id,
-    );
-
-    if (!moment) return undefined;
-    else return adaptMoment(moment);
-  }
 };
 
 // defines both the view and moment depending on one another, so that the "update-moment" cannot be shown if there is no moment
@@ -309,24 +281,6 @@ export const defineWithViewAndMoment = (
   view: View,
   moment: MomentToCRUD | undefined,
 ): { view: View; moment: MomentToCRUD | undefined } => {
-  switch (view) {
-    case "update-moment":
-      if (moment) return { view, moment };
-      else return { view: "read-moments", moment };
-    case "read-moments":
-      return { view, moment: undefined };
-    case "create-moment":
-      return { view, moment: undefined };
-
-    default:
-      return { view, moment };
-  }
-};
-
-export const trueDefineWithViewAndMoment = (
-  view: View,
-  moment: MomentAdapted | undefined,
-): { view: View; moment: MomentAdapted | undefined } => {
   switch (view) {
     case "update-moment":
       if (moment) return { view, moment };
@@ -366,32 +320,6 @@ export const defineSubView = (
         : realFutureMoments.dates.length > 0
           ? "future-moments"
           : realPastMoments.dates.length > 0
-            ? "past-moments"
-            : "all-moments";
-
-    return initialSubView;
-  }
-};
-
-// for now since the promises are resolves on the server, this will be done on the server
-export const trueDefineSubView = (
-  rawSubView: string | undefined,
-  userMomentsAdaptedCombined: UserMomentsAdaptedCombined,
-): SubView => {
-  if (isSubView(rawSubView)) return rawSubView;
-  else {
-    const {
-      userPastMomentsAdapted,
-      userCurrentMomentsAdapted,
-      userFutureMomentsAdapted,
-    } = userMomentsAdaptedCombined;
-
-    let initialSubView: SubView =
-      userCurrentMomentsAdapted.dates.length > 0
-        ? "current-moments"
-        : userFutureMomentsAdapted.dates.length > 0
-          ? "future-moments"
-          : userPastMomentsAdapted.dates.length > 0
             ? "past-moments"
             : "all-moments";
 

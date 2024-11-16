@@ -5,10 +5,65 @@ import {
   SelectMomentDefault,
   MomentsAdapted,
   UserMomentsToCRUD,
+  View,
+  MomentAdapted,
 } from "@/app/types/moments";
-import { encodeUUIDWithHashids } from "../utilities/globals";
+import {
+  decodeHashidToUUID,
+  encodeUUIDWithHashids,
+} from "@/app/utilities/globals";
+import { SelectUserIdAndUsername } from "@/app/types/users";
+import { findMomentByIdAndUserId } from "@/app/reads/moments";
 
-export const adaptMoments = (
+export const adaptView = (rawView: string | undefined): View => {
+  switch (rawView) {
+    case "update-moment":
+      return "update-moment";
+    case "read-moments":
+      return "read-moments";
+    case "create-moment":
+      return "create-moment";
+
+    default:
+      return "create-moment";
+  }
+};
+
+export const adaptMomentKey = async (
+  rawMomentKey: string | undefined,
+  user: SelectUserIdAndUsername,
+): Promise<MomentAdapted | undefined> => {
+  if (!rawMomentKey) return undefined;
+  else {
+    const moment = await findMomentByIdAndUserId(
+      decodeHashidToUUID(rawMomentKey),
+      user.id,
+    );
+
+    if (!moment) return undefined;
+    else return adaptMoment(moment);
+  }
+};
+
+export const adaptedViewAndMomentCombined = (
+  view: View,
+  moment: MomentAdapted | undefined,
+): { view: View; moment: MomentAdapted | undefined } => {
+  switch (view) {
+    case "update-moment":
+      if (moment) return { view, moment };
+      else return { view: "read-moments", moment };
+    case "read-moments":
+      return { view, moment: undefined };
+    case "create-moment":
+      return { view, moment: undefined };
+
+    default:
+      return { view, moment };
+  }
+};
+
+export const falseAdaptMoments = (
   rawMoments: SelectMomentDefault[][],
   pages: number[],
   totals: readonly [number, number, number, number],
@@ -112,7 +167,7 @@ export const adaptMoments = (
     };
   });
 
-export const trueAdaptMoments = (
+export const adaptMoments = (
   rawMoments: SelectMomentDefault[],
   page: number,
   total: number,
@@ -123,14 +178,14 @@ export const trueAdaptMoments = (
       ...new Set(
         rawMoments.map((moment) => moment.startDateAndTime.split("T")[0]),
       ),
-    ].map((e3) => {
+    ].map((e) => {
       return {
-        date: e3,
+        date: e,
         destinations: [
           // this set used to filter strings, but now it has to filter objects
           ...new Set(
             rawMoments
-              .filter((moment) => moment.startDateAndTime.startsWith(e3))
+              .filter((moment) => moment.startDateAndTime.startsWith(e))
               .map((moment) => {
                 const momentDestinationId = encodeUUIDWithHashids(
                   moment.destination.id,
@@ -138,7 +193,6 @@ export const trueAdaptMoments = (
 
                 // to get the object as a string...
                 return JSON.stringify({
-                  // id: moment.destination.id,
                   key: momentDestinationId,
                   destinationIdeal: moment.destination.name,
                 });
@@ -156,15 +210,15 @@ export const trueAdaptMoments = (
             return 0;
             // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#sorting_array_of_objects
           })
-          .map((e4) => {
+          .map((e2) => {
             return {
-              key: e4.key as string,
-              destinationIdeal: e4.destinationIdeal as string,
+              key: e2.key as string,
+              destinationIdeal: e2.destinationIdeal as string,
               moments: rawMoments
                 .filter(
                   (moment) =>
-                    moment.destination.name === e4.destinationIdeal &&
-                    moment.startDateAndTime.startsWith(e3),
+                    moment.destination.name === e2.destinationIdeal &&
+                    moment.startDateAndTime.startsWith(e),
                 )
                 // organizes moments per destination chronologically
                 .sort((a, b) => {
@@ -174,15 +228,9 @@ export const trueAdaptMoments = (
                   if (startDateAndTimeB > startDateAndTimeA) return 1;
                   return 0;
                 })
-                .map((e5) => adaptMoment(e5)),
+                .map((e3) => adaptMoment(e3)),
             };
           }),
-        // momentsTotal: rawMoments.length,
-        // momentFirstIndex: page * TAKE + 1,
-        // momentLastIndex: page * TAKE + rawMoments.length,
-        // allMomentsTotal: total,
-        // currentPage: page,
-        // totalPage: maxPage,
       };
     }),
     pageDetails: {
@@ -238,17 +286,8 @@ export const adaptDestinationsForMoment = (
     })
     .map((e) => {
       return {
-        // I'll have to think someday about bcrypting my keys because they show in the React Developer Tools. Maybe just having an entry in the database that is called key which would be the id of the entry encrypted.
-        // This will be especially necessary in order not retrieve ids from the database but sometimes rather retrieve keys instead. (Still it'd might be necessary in params or searchParams but I'm not sure.) Next time.
-        // UPDATE
-        // Keys are now implemented. For now I'm only going to use them here since I don't want to disrupt how I'm using moment ids for the UpdateMomentView. But in the future, they'll be thoroughly implemented in my projects, and I rely on self-made, probably even AI-driven slug for new entries getting created. One way or the other, slug are going to be just as important as, and could even replace, these database keys.
         key: encodeUUIDWithHashids(e.id),
         label: e.name,
         value: e.name,
       };
     });
-
-/* Notes
-Just like that, none of my ids are sent... Not sure.
-If I do these current adapts on the client, which is likely since in an optimal fashion, each component would have to read their promises themselves and adapt the data, 
-*/

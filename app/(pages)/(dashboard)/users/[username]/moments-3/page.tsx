@@ -7,7 +7,7 @@ import Core from "./server";
 import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
-  StepFromCRUD,
+  StepFromClient,
   MomentToCRUD,
   MomentFormVariant,
   CreateOrUpdateMomentError,
@@ -27,7 +27,7 @@ import {
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
   INITIAL_PAGE,
-  MOMENTID,
+  MOMENTKEY,
   PASTUSERMOMENTSPAGE,
   SUBVIEW,
   TAKE,
@@ -36,14 +36,14 @@ import {
 } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
-  countCurrentUserMomentsWithContains,
-  countFutureUserMomentsWithContains,
-  countPastUserMomentsWithContains,
-  countUserAllMomentsWithContains,
-  findCurrentUserMomentsWithContains,
-  findFutureUserMomentsWithContains,
-  findPastUserMomentsWithContains,
-  findUserAllMomentsWithContains,
+  countUserCurrentMomentsWithContains,
+  countUserFutureMomentsWithContains,
+  countUserPastMomentsWithContains,
+  falseCountUserAllMomentsWithContains,
+  findUserCurrentMomentsWithContains,
+  findUserFutureMomentsWithContains,
+  findUserPastMomentsWithContains,
+  falseFindUserAllMomentsWithContains,
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
@@ -51,7 +51,10 @@ import {
   createOrUpdateMomentServerFlow,
   deleteMomentServerFlow,
 } from "@/app/flows/server/moments";
-import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
+import {
+  adaptDestinationsForMoment,
+  falseAdaptMoments,
+} from "@/app/adapts/moments";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -72,7 +75,7 @@ export default async function MomentsPage({
     // now lifted to the URL
     [VIEW]?: string;
     [SUBVIEW]?: string;
-    [MOMENTID]?: string;
+    [MOMENTKEY]?: string;
   };
 }) {
   let now = dateToInputDatetime(new Date());
@@ -104,10 +107,10 @@ export default async function MomentsPage({
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ] = await Promise.all([
-    countUserAllMomentsWithContains(userId, contains),
-    countPastUserMomentsWithContains(userId, contains, now),
-    countCurrentUserMomentsWithContains(userId, contains, now),
-    countFutureUserMomentsWithContains(userId, contains, now),
+    falseCountUserAllMomentsWithContains(userId, contains),
+    countUserPastMomentsWithContains(userId, contains, now),
+    countUserCurrentMomentsWithContains(userId, contains, now),
+    countUserFutureMomentsWithContains(userId, contains, now),
   ]);
   // console.log({
   //   userMomentsTotal,
@@ -148,20 +151,20 @@ export default async function MomentsPage({
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      findUserAllMomentsWithContains(userId, contains, userMomentsPage),
-      findPastUserMomentsWithContains(
+      falseFindUserAllMomentsWithContains(userId, contains, userMomentsPage),
+      findUserPastMomentsWithContains(
         userId,
         contains,
         now,
         pastUserMomentsPage,
       ),
-      findCurrentUserMomentsWithContains(
+      findUserCurrentMomentsWithContains(
         userId,
         contains,
         now,
         currentUserMomentsPage,
       ),
-      findFutureUserMomentsWithContains(
+      findUserFutureMomentsWithContains(
         userId,
         contains,
         now,
@@ -188,7 +191,7 @@ export default async function MomentsPage({
   ];
   // console.log({ allUserMoments });
 
-  const allUserMomentsToCRUD: UserMomentsToCRUD[] = adaptMoments(
+  const allUserMomentsToCRUD: UserMomentsToCRUD[] = falseAdaptMoments(
     allUserMoments,
     pages,
     totals,
@@ -223,7 +226,7 @@ export default async function MomentsPage({
   // console.log({ definedView });
 
   let definedMoment = await defineMoment(
-    searchParams?.[MOMENTID],
+    searchParams?.[MOMENTKEY],
     uniqueShownMoments,
   );
   // console.log({ definedMoment });
@@ -240,7 +243,7 @@ export default async function MomentsPage({
     formData: FormData,
     variant: MomentFormVariant,
     startMomentDate: string,
-    steps: StepFromCRUD[],
+    steps: StepFromClient[],
     momentFromCRUD: MomentToCRUD | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,

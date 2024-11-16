@@ -12,15 +12,14 @@ import {
   // CreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import {
-  countCurrentUserMomentsWithContains,
-  countFutureUserMomentsWithContains,
-  countPastUserMomentsWithContains,
+  countUserCurrentMomentsWithContains,
+  countUserFutureMomentsWithContains,
+  countUserPastMomentsWithContains,
+  findUserCurrentMomentsWithContains,
+  findUserFutureMomentsWithContains,
+  findUserPastMomentsWithContains,
   countUserAllMomentsWithContains,
-  findCurrentUserMomentsWithContains,
-  findFutureUserMomentsWithContains,
-  findPastUserMomentsWithContains,
-  trueCountUserAllMomentsWithContains,
-  trueFindUserAllMomentsWithContains,
+  findUserAllMomentsWithContains,
 } from "../reads/moments";
 // import {
 //   removeMomentMessagesAndErrorsCallback,
@@ -36,7 +35,7 @@ export const CURRENTUSERMOMENTSPAGE = "currentUserMomentsPage" as const;
 export const FUTUREUSERMOMENTSPAGE = "futureUserMomentsPage" as const;
 export const VIEW = "view" as const;
 export const SUBVIEW = "subView" as const;
-export const MOMENTID = "momentId" as const;
+export const MOMENTKEY = "momentKey" as const;
 
 // currently unused
 export const MOMENTS_SEARCH_PARAMS_KEYS = [
@@ -47,7 +46,7 @@ export const MOMENTS_SEARCH_PARAMS_KEYS = [
   FUTUREUSERMOMENTSPAGE,
   VIEW,
   SUBVIEW,
-  MOMENTID,
+  MOMENTKEY,
 ] as const;
 
 // initial and lowest moments page number
@@ -152,20 +151,30 @@ export const subViewPages = {
 } as const;
 
 export const subViewCountUserMomentsWithContains = {
-  "all-moments": trueCountUserAllMomentsWithContains,
-  "past-moments": countPastUserMomentsWithContains,
-  "current-moments": countCurrentUserMomentsWithContains,
-  "future-moments": countFutureUserMomentsWithContains,
+  "all-moments": countUserAllMomentsWithContains,
+  "past-moments": countUserPastMomentsWithContains,
+  "current-moments": countUserCurrentMomentsWithContains,
+  "future-moments": countUserFutureMomentsWithContains,
 } as const;
 
 export const subViewFindUserMomentsWithContains = {
-  "all-moments": trueFindUserAllMomentsWithContains,
-  "past-moments": findPastUserMomentsWithContains,
-  "current-moments": findCurrentUserMomentsWithContains,
-  "future-moments": findFutureUserMomentsWithContains,
+  "all-moments": findUserAllMomentsWithContains,
+  "past-moments": findUserPastMomentsWithContains,
+  "current-moments": findUserCurrentMomentsWithContains,
+  "future-moments": findUserFutureMomentsWithContains,
 } as const;
 
-// countUserMomentsWithContains
+// default error messages
+
+export const DEFAULT_MOMENT_MESSAGE =
+  "Erreurs sur le renseignement moment du formulaire.";
+export const DEFAULT_MOMENT_SUBMESSAGE =
+  "Veuillez vérifier les champs concernés.";
+
+export const DEFAULT_STEP_MESSAGE =
+  "Erreurs sur le renseignement étapes du formulaire.";
+export const DEFAULT_STEP_SUBMESSAGE =
+  "Veuillez vérifier les champs concernés.";
 
 // form section topic removeMessagesAndErrorsCallbacks
 // THIS SHOULD HAVE NEVER BEEN HERE SINCE IT'S UNIQUE TO FORMSECTION.
@@ -179,15 +188,3 @@ export const subViewFindUserMomentsWithContains = {
 //   moment: removeMomentMessagesAndErrorsCallback,
 //   steps: removeStepsMessagesAndErrorsCallback,
 // };
-
-// default error messages
-
-export const DEFAULT_MOMENT_MESSAGE =
-  "Erreurs sur le renseignement moment du formulaire.";
-export const DEFAULT_MOMENT_SUBMESSAGE =
-  "Veuillez vérifier les champs concernés.";
-
-export const DEFAULT_STEP_MESSAGE =
-  "Erreurs sur le renseignement étapes du formulaire.";
-export const DEFAULT_STEP_SUBMESSAGE =
-  "Veuillez vérifier les champs concernés.";

@@ -9,7 +9,7 @@ import {
   CONTAINS,
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
-  MOMENTID,
+  MOMENTKEY,
   PASTUSERMOMENTSPAGE,
   SUBVIEW,
   USERMOMENTSPAGE,
@@ -19,11 +19,11 @@ import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page
 import {
   fetchMomentFormsDataFlow,
   fetchReadMomentsViewDataFlow,
-  fetchViewAndMomentFlow,
-} from "../flows/fetch/moments";
-import { trueDeleteMomentServerFlow } from "../flows/server/moments";
+  fetchViewAndMomentDataFlow,
+} from "@/app/flows/fetch/moments";
 
-export type StepFromCRUD = {
+// previously StepFromCRUD, retains the previous id paradigm
+export type StepFromClient = {
   id: string;
   intitule: string;
   details: string;
@@ -32,16 +32,6 @@ export type StepFromCRUD = {
 
 export type StepToCRUD = {
   id: string;
-  orderId: number;
-  title: string;
-  details: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-};
-
-export type StepAdapted = {
-  key: string; // changed id to key
   orderId: number;
   title: string;
   details: string;
@@ -63,29 +53,10 @@ export type MomentToCRUD = {
   destinationIdeal: string;
 };
 
-export type MomentAdapted = {
-  key: string; // changed id to key
-  activity: string;
-  objective: string;
-  isIndispensable: boolean;
-  context: string;
-  startDateAndTime: string;
-  duration: string;
-  endDateAndTime: string;
-  steps: StepAdapted[];
-  destinationIdeal: string;
-};
-
 export type MomentsDestinationToCRUD = {
   id: string;
   destinationIdeal: string;
   moments: MomentToCRUD[];
-};
-
-export type DestinationAdapted = {
-  key: string; // changed id to key
-  destinationIdeal: string;
-  moments: MomentAdapted[];
 };
 
 export type MomentsDateToCRUD = {
@@ -99,19 +70,42 @@ export type MomentsDateToCRUD = {
   totalPage: number;
 };
 
+export type UserMomentsToCRUD = {
+  dates: MomentsDateToCRUD[];
+};
+
+export type StepAdapted = {
+  key: string; // changed id to key
+  orderId: number;
+  title: string;
+  details: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+};
+
+export type MomentAdapted = {
+  key: string; // changed id to key
+  activity: string;
+  objective: string;
+  isIndispensable: boolean;
+  context: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+  steps: StepAdapted[];
+  destinationIdeal: string;
+};
+
+export type DestinationAdapted = {
+  key: string; // changed id to key
+  destinationIdeal: string;
+  moments: MomentAdapted[];
+};
+
 export type DateAdapted = {
   date: string;
   destinations: DestinationAdapted[];
-  // momentsTotal: number;
-  // momentFirstIndex: number;
-  // momentLastIndex: number;
-  // allMomentsTotal: number;
-  // currentPage: number;
-  // totalPage: number;
-};
-
-export type UserMomentsToCRUD = {
-  dates: MomentsDateToCRUD[];
 };
 
 export type PageDetails = {
@@ -152,31 +146,31 @@ export type MomentFormVariant = DefaultFormVariant;
 export type StepFormVariant = DefaultFormVariant;
 
 // Now the action types will also be kept here, to be manually shared wherever the actions are to be used.
-export type FalseCreateOrUpdateMoment = (
+export type FalserCreateOrUpdateMoment = (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
 ) => Promise<FalseCreateOrUpdateMomentState>;
 
-export type CreateOrUpdateMoment = (
+export type FalseCreateOrUpdateMoment = (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
 ) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 
-export type TrueCreateOrUpdateMoment = (
+export type CreateOrUpdateMoment = (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentAdapted | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -261,16 +255,16 @@ export type CreateOrUpdateMomentSuccess = {
   };
 };
 
-export type FalseDeleteMoment = (
+export type FalserDeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<FalseCreateOrUpdateMomentState>;
 
-export type DeleteMoment = (
+export type FalseDeleteMoment = (
   momentFromCRUD?: MomentToCRUD,
 ) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 
 // This can be dynamic. // Actually no, it's about the arguments, not the return type.
-export type TrueDeleteMoment = (
+export type DeleteMoment = (
   momentFromCRUD?: MomentAdapted,
 ) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 
@@ -304,7 +298,7 @@ export type MomentsSearchParamsKey =
   | typeof CURRENTUSERMOMENTSPAGE
   | typeof FUTUREUSERMOMENTSPAGE
   | typeof VIEW
-  | typeof MOMENTID;
+  | typeof MOMENTKEY;
 
 export type MomentsSearchParams = {
   [CONTAINS]: string;
@@ -314,7 +308,7 @@ export type MomentsSearchParams = {
   [FUTUREUSERMOMENTSPAGE]: string;
   [VIEW]: View;
   [SUBVIEW]: SubView;
-  [MOMENTID]: string;
+  [MOMENTKEY]: string;
 };
 
 export type FormSectionTopic = "moment" | "steps";
@@ -322,6 +316,8 @@ export type FormSectionTopic = "moment" | "steps";
 export type MomentsPageSearchParams = Parameters<
   typeof MomentsPage
 >[0]["searchParams"];
+
+// fetch types
 
 export type FetchReadMomentsViewData = ReturnType<
   typeof fetchReadMomentsViewDataFlow
@@ -337,8 +333,10 @@ export type MomentFormsData = Awaited<
   ReturnType<typeof fetchMomentFormsDataFlow>
 >;
 
-export type FetchViewAndMomentData = ReturnType<typeof fetchViewAndMomentFlow>;
+export type FetchViewAndMomentData = ReturnType<
+  typeof fetchViewAndMomentDataFlow
+>;
 
 export type ViewAndMomentData = Awaited<
-  ReturnType<typeof fetchViewAndMomentFlow>
+  ReturnType<typeof fetchViewAndMomentDataFlow>
 >;

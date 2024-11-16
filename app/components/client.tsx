@@ -22,7 +22,7 @@ import {
 
 // Components
 
-export function FormValidationError({
+export function FalseFormValidationError({
   error,
   setCreateOrUpdateMomentState,
   removeMessagesAndErrorsCallback,
@@ -53,7 +53,7 @@ export function FormValidationError({
   );
 }
 
-export function TrueFormValidationError({
+export function FormValidationError({
   error,
   setCreateOrUpdateMomentState,
   removeMessagesAndErrorsCallback,
@@ -824,8 +824,8 @@ export function Button({
 }
 
 const globalClientComponents = {
-  FormValidationError,
-  TrueFormValidationError,
+  FormValidationError: FalseFormValidationError,
+  TrueFormValidationError: FormValidationError,
   InputText,
   InputTextControlled,
   SelectWithOptionsControlled,

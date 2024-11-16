@@ -16,13 +16,13 @@ import {
   MomentsDestinationToCRUD,
   MomentToCRUD,
   RevalidateMoments,
-  StepFromCRUD,
+  StepFromClient,
   StepToCRUD,
   StepVisible,
   SubView,
-  CreateOrUpdateMoment,
+  FalseCreateOrUpdateMoment,
   CreateOrUpdateMomentState,
-  DeleteMoment,
+  FalseDeleteMoment,
   UserMomentsToCRUD,
   View,
 } from "@/app/types/moments";
@@ -50,8 +50,8 @@ export default function ServerCore({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment: FalseDeleteMoment;
   view: View;
   moment: MomentToCRUD | undefined;
   subView: SubView;
@@ -106,8 +106,8 @@ export function Main({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment: FalseDeleteMoment;
   view: View;
   moment: MomentToCRUD | undefined;
   subView: SubView;
@@ -584,7 +584,7 @@ export function StepVisibleCreating({
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
   cancelStepAction: () => void;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   isCancelStepPending: boolean;
   stepsCompoundDurations: number[];
   startMomentDate: string;
@@ -787,7 +787,7 @@ export function StepInputs({
   setStepDuree: SetState<string>;
   startMomentDate: string;
   stepsCompoundDurations: number[];
-  step?: StepFromCRUD;
+  step?: StepFromClient;
   stepAddingTime?: number;
 }) {
   return (
@@ -916,7 +916,7 @@ export function StepContents({
   startMomentDate,
   stepAddingTime,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   hasAPreviousStepUpdating: boolean;
   startMomentDate: string;

@@ -11,23 +11,23 @@ import {
   VIEW,
 } from "@/app/data/moments";
 import {
-  FalseDeleteMoment,
+  FalserDeleteMoment,
   MomentFormVariant,
   MomentToCRUD,
   StepFormVariant,
-  StepFromCRUD,
+  StepFromClient,
   StepVisible,
-  FalseCreateOrUpdateMoment,
+  FalserCreateOrUpdateMoment,
   FalseCreateOrUpdateMomentState,
   SubView,
   CreateOrUpdateMomentState,
-  CreateOrUpdateMoment,
-  DeleteMoment,
+  FalseCreateOrUpdateMoment,
+  FalseDeleteMoment,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
   MomentAdapted,
-  TrueCreateOrUpdateMoment,
-  TrueDeleteMoment,
+  CreateOrUpdateMoment,
+  DeleteMoment,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -37,12 +37,12 @@ import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 import { SetState } from "@/app/types/globals";
 
 // best be to prepare the state right here
-export const falseCreateOrUpdateMomentClientFlow = async (
+export const falserCreateOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
-  createOrUpdateMoment: FalseCreateOrUpdateMoment,
+  createOrUpdateMoment: FalserCreateOrUpdateMoment,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -88,12 +88,12 @@ export const falseCreateOrUpdateMomentClientFlow = async (
   }
 };
 
-export const createOrUpdateMomentClientFlow = async (
+export const falseCreateOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
-  createOrUpdateMoment: CreateOrUpdateMoment,
+  createOrUpdateMoment: FalseCreateOrUpdateMoment,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -148,12 +148,12 @@ export const createOrUpdateMomentClientFlow = async (
   }
 };
 
-export const trueCreateOrUpdateMomentClientFlow = async (
+export const createOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
-  createOrUpdateMoment: TrueCreateOrUpdateMoment,
+  createOrUpdateMoment: CreateOrUpdateMoment,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentAdapted | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -174,28 +174,11 @@ export const trueCreateOrUpdateMomentClientFlow = async (
   let state = await createOrUpdateMomentBound();
 
   if (state?.isSuccess === false) {
-    // return { ...createOrUpdateMomentState, ...state, isSuccess: false };
     return {
       isSuccess: false,
       error: { ...createOrUpdateMomentState?.error, ...state.error },
     };
   } else {
-    // IMPORTANT
-    // I'm sunsetting this feature, because in truth it does not scale as is. The way it should be done is that within the server action, I look on the server to see where the created or updated moment would appear on the three lists (past, present, future), including at what given page on these lists it would appear. Then I'd pass this data inside the state (meaning I will then justifiably have to distinguish CreateOrUpdateMomentState in two routes: error and success (!)), with a top enum that says whether it is in error or success state... or in truth I could just start with a boolean isSuccess. The boolean sends the relevant data to the client, and then the after flow handles the redirection correctly.
-    // At this time I can even save in the success path of the state the id of the element that's been created or updated, find a way to scroll down to it on the new view, and complete with a little animation that shows where it has been added.
-    // I would say that's a lot better than what I have right now, and a lot more thought out, so that's what I'll be exploring, hopefully before the 20 this month.
-
-    // This is going back to the server flow.
-
-    // const currentNow = dateToInputDatetime(new Date());
-
-    // if (compareDesc(endMomentDate, currentNow) === 1)
-    //   setSubView("past-moments");
-    // else if (compareAsc(startMomentDate, currentNow) === 1)
-    //   setSubView("future-moments");
-    // // present by default
-    // else setSubView("current-moments");
-
     // resetting the whole form manually
     if (variant === "creating") {
       const momentForm = document.getElementById(
@@ -211,7 +194,7 @@ export const trueCreateOrUpdateMomentClientFlow = async (
 // reset is only on the creating variant of MomentForms
 export const falseResetMomentClientFlow = (
   setStartMomentDate: SetState<string>,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   variant: MomentFormVariant,
   setInputSwitchKey: SetState<string>,
@@ -247,7 +230,7 @@ export const falseResetMomentClientFlow = (
 
 export const resetMomentClientFlow = (
   setStartMomentDate: SetState<string>,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   variant: MomentFormVariant,
   setInputSwitchKey: SetState<string>,
@@ -282,8 +265,8 @@ export const resetMomentClientFlow = (
 };
 
 // delete is only on the updating variant of MomentForms
-export const falseDeleteMomentClientFlow = async (
-  deleteMoment: FalseDeleteMoment | undefined,
+export const falserDeleteMomentClientFlow = async (
+  deleteMoment: FalserDeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
 ): Promise<FalseCreateOrUpdateMomentState> => {
   if (deleteMoment) {
@@ -305,8 +288,8 @@ export const falseDeleteMomentClientFlow = async (
   }
 };
 
-export const deleteMomentClientFlow = async (
-  deleteMoment: DeleteMoment | undefined,
+export const falseDeleteMomentClientFlow = async (
+  deleteMoment: FalseDeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (deleteMoment) {
@@ -331,13 +314,12 @@ export const deleteMomentClientFlow = async (
   }
 };
 
-export const trueDeleteMomentClientFlow = async (
-  deleteMoment: TrueDeleteMoment | undefined,
+export const deleteMomentClientFlow = async (
+  deleteMoment: DeleteMoment | undefined,
   moment: MomentAdapted | undefined,
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (deleteMoment) {
     const deleteMomentBound = deleteMoment.bind(null, moment);
-    // spreading from the original state is currently unnecessary
     const state = await deleteMomentBound();
     return state;
   } else {
@@ -373,10 +355,10 @@ export const revalidateMomentsClientFlow = async (
 export const falseCreateOrUpdateStepClientFlow = (
   event: FormEvent<HTMLFormElement>,
   duree: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   variant: StepFormVariant,
   currentStepId: string,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
 ): FalseCreateOrUpdateMomentState => {
@@ -476,7 +458,7 @@ export const falseCreateOrUpdateStepClientFlow = (
     duree,
   };
 
-  let newSteps: StepFromCRUD[] = [];
+  let newSteps: StepFromClient[] = [];
   if (variant === "creating") newSteps = [...steps, step];
   if (variant === "updating")
     newSteps = steps.map((e) => {
@@ -493,10 +475,10 @@ export const falseCreateOrUpdateStepClientFlow = (
 export const createOrUpdateStepClientFlow = (
   event: FormEvent<HTMLFormElement>,
   duree: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   variant: StepFormVariant,
   currentStepId: string,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setIsAnimationDelayed?: SetState<boolean>,
@@ -609,7 +591,7 @@ export const createOrUpdateStepClientFlow = (
     duree,
   };
 
-  let newSteps: StepFromCRUD[] = [];
+  let newSteps: StepFromClient[] = [];
   if (variant === "creating") newSteps = [...steps, step];
   if (variant === "updating")
     newSteps = steps.map((e) => {
@@ -658,9 +640,9 @@ export const resetStepClientFlow = (
 };
 
 export const deleteStepClientFlow = (
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   currentStepId: string,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   setStepDureeCreate: SetState<string>,
 ): void => {

@@ -31,19 +31,19 @@ export const focusVisibleTexts = clsx(
 
 export const navLinks: NavLink[] = [
   {
-    id: 0,
+    id: "Paramètres",
     label: "Paramètres",
     href: "/settings",
     icon: "Cog8ToothOutline",
   },
   {
-    id: 1,
+    id: "Moments",
     label: "Moments",
     href: "/moments",
     icon: "CalendarDaysOutline",
   },
   {
-    id: 2,
+    id: "Destinations",
     label: "Destinations",
     href: "/destinations",
     icon: "PaperAirplaneOutline",
