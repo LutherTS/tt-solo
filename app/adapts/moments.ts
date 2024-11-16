@@ -177,14 +177,20 @@ export const trueAdaptMoments = (
                 .map((e5) => adaptMoment(e5)),
             };
           }),
-        momentsTotal: rawMoments.length,
-        momentFirstIndex: page * TAKE + 1,
-        momentLastIndex: page * TAKE + rawMoments.length,
-        allMomentsTotal: total,
-        currentPage: page,
-        totalPage: maxPage,
+        // momentsTotal: rawMoments.length,
+        // momentFirstIndex: page * TAKE + 1,
+        // momentLastIndex: page * TAKE + rawMoments.length,
+        // allMomentsTotal: total,
+        // currentPage: page,
+        // totalPage: maxPage,
       };
     }),
+    page,
+    total,
+    maxPage,
+    pageTotal: rawMoments.length,
+    pageFirstIndex: page * TAKE + 1,
+    pageLastIndex: page * TAKE + rawMoments.length,
   };
 };
 

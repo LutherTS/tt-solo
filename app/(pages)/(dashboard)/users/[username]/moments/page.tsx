@@ -21,6 +21,9 @@ import {
   defineSubView,
   defineView,
   defineWithViewAndMoment,
+  trueDefineMoment,
+  trueDefineSubView,
+  trueDefineWithViewAndMoment,
 } from "@/app/utilities/moments";
 import {
   CONTAINS,
@@ -52,7 +55,10 @@ import {
   deleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
-import { fetchMomentFormsViewFlow } from "@/app/flows/fetch/moments";
+import {
+  fetchMomentFormsViewFlow,
+  fetchReadMomentsViewFlow,
+} from "@/app/flows/fetch/moments";
 
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 
@@ -120,178 +126,176 @@ export default async function MomentsPage({
   // HERE TO SEPARATE IN fetchReadMomentsViewFlow and fetchMomentFormsViewFlow
   // Decided. Even searchParams will be awaited on the fetch flows.
 
-  const userId = user.id; // unneeded soon here
+  const readMomentsViewData = fetchReadMomentsViewFlow(now, user, searchParams);
 
-  searchParams = await searchParams;
+  // first directly resolved on the server
+  const {
+    userAllMomentsAdapted,
+    userPastMomentsAdapted,
+    userCurrentMomentsAdapted,
+    userFutureMomentsAdapted,
+  } = await readMomentsViewData;
 
-  // that is one chill searchParam right here
-  const contains = searchParams?.[CONTAINS] || "";
-  // console.log({ contains });
+  const userMomentsAdapted = [
+    userAllMomentsAdapted,
+    userPastMomentsAdapted,
+    userCurrentMomentsAdapted,
+    userFutureMomentsAdapted,
+  ] as const;
 
-  const [
-    userMomentsTotal,
-    pastUserMomentsTotal,
-    currentUserMomentsTotal,
-    futureUserMomentsTotal,
-  ] = await Promise.all([
-    countUserAllMomentsWithContains(userId, contains),
-    countPastUserMomentsWithContains(userId, contains, now),
-    countCurrentUserMomentsWithContains(userId, contains, now),
-    countFutureUserMomentsWithContains(userId, contains, now),
-  ]);
-  // console.log({
+  const maxPages = [
+    userAllMomentsAdapted.maxPage,
+    userPastMomentsAdapted.maxPage,
+    userCurrentMomentsAdapted.maxPage,
+    userFutureMomentsAdapted.maxPage,
+  ] as const;
+
+  const momentFormsViewData = fetchMomentFormsViewFlow(user);
+
+  const { destinationOptions } = await momentFormsViewData;
+
+  // const userId = user.id; // unneeded soon here
+
+  // searchParams = await searchParams;
+
+  // // that is one chill searchParam right here
+  // const contains = searchParams?.[CONTAINS] || "";
+  // // console.log({ contains });
+
+  // const [
   //   userMomentsTotal,
   //   pastUserMomentsTotal,
   //   currentUserMomentsTotal,
   //   futureUserMomentsTotal,
-  // });
+  // ] = await Promise.all([
+  //   countUserAllMomentsWithContains(userId, contains),
+  //   countPastUserMomentsWithContains(userId, contains, now),
+  //   countCurrentUserMomentsWithContains(userId, contains, now),
+  //   countFutureUserMomentsWithContains(userId, contains, now),
+  // ]);
+  // // console.log({
+  // //   userMomentsTotal,
+  // //   pastUserMomentsTotal,
+  // //   currentUserMomentsTotal,
+  // //   futureUserMomentsTotal,
+  // // });
 
-  const totals = [
-    userMomentsTotal,
-    pastUserMomentsTotal,
-    currentUserMomentsTotal,
-    futureUserMomentsTotal,
-  ] as const;
-  // console.log({ totals })
+  // const totals = [
+  //   userMomentsTotal,
+  //   pastUserMomentsTotal,
+  //   currentUserMomentsTotal,
+  //   futureUserMomentsTotal,
+  // ] as const;
+  // // console.log({ totals })
 
-  // TAKE is page-dependent here. Therefore the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
-  // const TAKE = 2; // TAKE is now a moments variable
+  // // TAKE is page-dependent here. Therefore the page is where it should remain, so that the maintainer of the page can decide how many moments they want without needing to access the read methods.
+  // // const TAKE = 2; // TAKE is now a moments variable
 
-  const maxPages = totals.map((e) => Math.ceil(e / TAKE));
-  // console.log({ maxPages });
+  // const maxPages = totals.map((e) => Math.ceil(e / TAKE));
+  // // console.log({ maxPages });
 
-  const trueMaxPages = [
-    Math.ceil(totals[0] / TAKE),
-    Math.ceil(totals[1] / TAKE),
-    Math.ceil(totals[2] / TAKE),
-    Math.ceil(totals[3] / TAKE),
-  ] as const;
+  // const searchParamsPageKeys = [
+  //   USERMOMENTSPAGE,
+  //   PASTUSERMOMENTSPAGE,
+  //   CURRENTUSERMOMENTSPAGE,
+  //   FUTUREUSERMOMENTSPAGE,
+  // ] as const;
 
-  const searchParamsPageKeys = [
-    USERMOMENTSPAGE,
-    PASTUSERMOMENTSPAGE,
-    CURRENTUSERMOMENTSPAGE,
-    FUTUREUSERMOMENTSPAGE,
-  ] as const;
+  // const pages = searchParamsPageKeys.map((e, i) =>
+  //   defineCurrentPage(
+  //     INITIAL_PAGE,
+  //     // I had never seen that TypeScript syntax before.
+  //     // And it is not valid JavaScript.
+  //     Number(searchParams?.[e]),
+  //     maxPages[i],
+  //   ),
+  // );
+  // // console.log({ pages });
 
-  const pages = searchParamsPageKeys.map((e, i) =>
-    defineCurrentPage(
-      INITIAL_PAGE,
-      // I had never seen that TypeScript syntax before.
-      // And it is not valid JavaScript.
-      Number(searchParams?.[e]),
-      maxPages[i],
-    ),
-  );
-  // console.log({ pages });
+  // const [
+  //   userMomentsPage,
+  //   pastUserMomentsPage,
+  //   currentUserMomentsPage,
+  //   futureUserMomentsPage,
+  // ] = pages;
 
-  const truePages = [
-    defineCurrentPage(
-      INITIAL_PAGE,
-      Number(searchParams?.[searchParamsPageKeys[0]]),
-      maxPages[0],
-    ),
-    defineCurrentPage(
-      INITIAL_PAGE,
-      Number(searchParams?.[searchParamsPageKeys[1]]),
-      maxPages[1],
-    ),
-    defineCurrentPage(
-      INITIAL_PAGE,
-      Number(searchParams?.[searchParamsPageKeys[2]]),
-      maxPages[2],
-    ),
-    defineCurrentPage(
-      INITIAL_PAGE,
-      Number(searchParams?.[searchParamsPageKeys[3]]),
-      maxPages[3],
-    ),
-  ] as const;
-
-  const [
-    userMomentsPage,
-    pastUserMomentsPage,
-    currentUserMomentsPage,
-    futureUserMomentsPage,
-  ] = pages;
-
-  // ...This is complicated.
-  // Eventually, theses promises are likely to be resolved by the client. And, their data can be expected to be adapted by the client.
-  // If that's the case, their selects need to be explicit, and typed. Because if they're not, they're passing more data than needed to the client.
-  // Additionally and as I've mentioned, in every model in my database, I'll need to have the field key right next after id which will house an encrypted version of the id that I'll be exposed to the client. (I can start thinking this through with Grevents v3 if I want.)
-  const [
-    userMoments,
-    pastUserMoments,
-    currentUserMoments,
-    futureUserMoments,
-  ]: SelectMomentDefault[][] = await Promise.all([
-    findUserAllMomentsWithContains(userId, contains, userMomentsPage),
-    findPastUserMomentsWithContains(userId, contains, now, pastUserMomentsPage),
-    findCurrentUserMomentsWithContains(
-      userId,
-      contains,
-      now,
-      currentUserMomentsPage,
-    ),
-    findFutureUserMomentsWithContains(
-      userId,
-      contains,
-      now,
-      futureUserMomentsPage,
-    ),
-  ]);
-  // console.log({
+  // // ...This is complicated.
+  // // Eventually, theses promises are likely to be resolved by the client. And, their data can be expected to be adapted by the client.
+  // // If that's the case, their selects need to be explicit, and typed. Because if they're not, they're passing more data than needed to the client.
+  // // Additionally and as I've mentioned, in every model in my database, I'll need to have the field key right next after id which will house an encrypted version of the id that I'll be exposed to the client. (I can start thinking this through with Grevents v3 if I want.)
+  // const [
   //   userMoments,
   //   pastUserMoments,
   //   currentUserMoments,
   //   futureUserMoments,
-  // });
+  // ]: SelectMomentDefault[][] = await Promise.all([
+  //   findUserAllMomentsWithContains(userId, contains, userMomentsPage),
+  //   findPastUserMomentsWithContains(userId, contains, now, pastUserMomentsPage),
+  //   findCurrentUserMomentsWithContains(
+  //     userId,
+  //     contains,
+  //     now,
+  //     currentUserMomentsPage,
+  //   ),
+  //   findFutureUserMomentsWithContains(
+  //     userId,
+  //     contains,
+  //     now,
+  //     futureUserMomentsPage,
+  //   ),
+  // ]);
+  // // console.log({
+  // //   userMoments,
+  // //   pastUserMoments,
+  // //   currentUserMoments,
+  // //   futureUserMoments,
+  // // });
 
-  // const userDestinations = await findDestinationsByUserId(userId);
-  // console.log({ userDestinations });
+  // // const userDestinations = await findDestinationsByUserId(userId);
+  // // console.log({ userDestinations });
 
-  // adapting data for the client
+  // // adapting data for the client
 
-  const allUserMoments: SelectMomentDefault[][] = [
-    userMoments,
-    pastUserMoments,
-    currentUserMoments,
-    futureUserMoments,
-  ];
-  // console.log({ allUserMoments });
+  // const allUserMoments: SelectMomentDefault[][] = [
+  //   userMoments,
+  //   pastUserMoments,
+  //   currentUserMoments,
+  //   futureUserMoments,
+  // ];
+  // // console.log({ allUserMoments });
 
-  const allUserMomentsToCRUD: UserMomentsToCRUD[] = adaptMoments(
-    allUserMoments,
-    pages,
-    totals,
-    maxPages,
-  );
-  // console.logs on demand...
+  // const allUserMomentsToCRUD: UserMomentsToCRUD[] = adaptMoments(
+  //   allUserMoments,
+  //   pages,
+  //   totals,
+  //   maxPages,
+  // );
+  // // console.logs on demand...
 
-  // const destinationOptions: Option[] =
-  //   adaptDestinationsForMoment(userDestinations);
-  // console.logs on demand...
+  // // const destinationOptions: Option[] =
+  // //   adaptDestinationsForMoment(userDestinations);
+  // // console.logs on demand...
 
-  const { destinationOptions } = await fetchMomentFormsViewFlow(user);
+  // const { destinationOptions } = await fetchMomentFormsViewFlow(user);
 
   // obtaining and interpreting view, moment and subView
 
-  const uniqueShownSet = new Set<string>();
+  // const uniqueShownSet = new Set<string>();
 
-  allUserMomentsToCRUD.forEach((e) => {
-    e.dates.forEach((e2) => {
-      e2.destinations.forEach((e3) => {
-        e3.moments.forEach((e4) => {
-          uniqueShownSet.add(JSON.stringify(e4));
-        });
-      });
-    });
-  });
+  // allUserMomentsToCRUD.forEach((e) => {
+  //   e.dates.forEach((e2) => {
+  //     e2.destinations.forEach((e3) => {
+  //       e3.moments.forEach((e4) => {
+  //         uniqueShownSet.add(JSON.stringify(e4));
+  //       });
+  //     });
+  //   });
+  // });
 
-  const uniqueShownMoments = [...uniqueShownSet].map((e) =>
-    JSON.parse(e),
-  ) as MomentToCRUD[];
-  // console.log({ uniqueShownMoments });
+  // const uniqueShownMoments = [...uniqueShownSet].map((e) =>
+  //   JSON.parse(e),
+  // ) as MomentToCRUD[];
+  // // console.log({ uniqueShownMoments });
 
   let definedView = defineView(searchParams?.[VIEW]);
   // console.log({ definedView });
@@ -309,16 +313,25 @@ export default async function MomentsPage({
   // Imagine. Imagine if that talk, despite or even thanks to my stuttering, is SO GOOD that it reaches the hear of Guillermo Rauch. Just imagine. Imagine. Dream. ...This is why I need to do this.
   // ...
   // It won't work though, the useOptimistic I mean, because the data changes are not happening on the same right at a given time.
-  let definedMoment = await defineMoment(
-    searchParams?.[MOMENTID],
-    uniqueShownMoments,
-  );
+  // let definedMoment = await defineMoment(
+  //   searchParams?.[MOMENTID],
+  //   uniqueShownMoments,
+  // );
+  let definedMoment = await trueDefineMoment(searchParams?.[MOMENTID], user);
   // console.log({ definedMoment });
 
-  const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
+  // const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
+  const { view, moment } = trueDefineWithViewAndMoment(
+    definedView,
+    definedMoment,
+  );
   // console.log({ view, moment });
 
-  const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
+  // const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
+  const subView = trueDefineSubView(
+    searchParams?.[SUBVIEW],
+    userMomentsAdapted,
+  );
   // console.log({ subView });
 
   // PART WRITE (a.k.a. server actions)
@@ -393,7 +406,7 @@ export default async function MomentsPage({
           // time (aligned across server and client for hydration cases)
           now={now}
           // reads
-          allUserMomentsToCRUD={allUserMomentsToCRUD}
+          allUserMomentsToCRUD={userMomentsAdapted}
           maxPages={maxPages}
           destinationOptions={destinationOptions}
           // writes

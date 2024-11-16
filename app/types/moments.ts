@@ -96,12 +96,12 @@ export type MomentsDateToCRUD = {
 export type DateAdapted = {
   date: string;
   destinations: DestinationAdapted[];
-  momentsTotal: number;
-  momentFirstIndex: number;
-  momentLastIndex: number;
-  allMomentsTotal: number;
-  currentPage: number;
-  totalPage: number;
+  // momentsTotal: number;
+  // momentFirstIndex: number;
+  // momentLastIndex: number;
+  // allMomentsTotal: number;
+  // currentPage: number;
+  // totalPage: number;
 };
 
 export type UserMomentsToCRUD = {
@@ -110,6 +110,12 @@ export type UserMomentsToCRUD = {
 
 export type MomentsAdapted = {
   dates: DateAdapted[];
+  page: number;
+  total: number;
+  maxPage: number;
+  pageTotal: number;
+  pageFirstIndex: number;
+  pageLastIndex: number;
 };
 
 export type View = "update-moment" | "read-moments" | "create-moment";

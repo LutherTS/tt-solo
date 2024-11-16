@@ -14,12 +14,14 @@ import {
   SelectMomentIdNameAndDates,
   CreateOrUpdateMomentState,
   MomentAdapted,
+  MomentsAdapted,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { MOMENTID, subViews, TAKE, VIEW } from "@/app/data/moments";
 import { decodeHashidToUUID, encodeUUIDWithHashids } from "./globals";
 import { findMomentByIdAndUserId } from "../reads/moments";
 import { adaptMoment } from "../adapts/moments";
+import { SelectUserIdAndUsername } from "../types/users";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -286,13 +288,13 @@ export const defineMoment = async (
 
 export const trueDefineMoment = async (
   rawMomentKey: string | undefined,
-  userId: string,
+  user: SelectUserIdAndUsername,
 ): Promise<MomentAdapted | undefined> => {
   if (!rawMomentKey) return undefined;
   else {
     const moment = await findMomentByIdAndUserId(
       decodeHashidToUUID(rawMomentKey),
-      userId,
+      user.id,
     );
 
     if (!moment) return undefined;
@@ -305,6 +307,24 @@ export const defineWithViewAndMoment = (
   view: View,
   moment: MomentToCRUD | undefined,
 ): { view: View; moment: MomentToCRUD | undefined } => {
+  switch (view) {
+    case "update-moment":
+      if (moment) return { view, moment };
+      else return { view: "read-moments", moment };
+    case "read-moments":
+      return { view, moment: undefined };
+    case "create-moment":
+      return { view, moment: undefined };
+
+    default:
+      return { view, moment };
+  }
+};
+
+export const trueDefineWithViewAndMoment = (
+  view: View,
+  moment: MomentAdapted | undefined,
+): { view: View; moment: MomentAdapted | undefined } => {
   switch (view) {
     case "update-moment":
       if (moment) return { view, moment };
@@ -344,6 +364,38 @@ export const defineSubView = (
         : realFutureMoments.dates.length > 0
           ? "future-moments"
           : realPastMoments.dates.length > 0
+            ? "past-moments"
+            : "all-moments";
+
+    return initialSubView;
+  }
+};
+
+// for now since the promises are resolves on the server, this will be done on the server
+export const trueDefineSubView = (
+  rawSubView: string | undefined,
+  userMomentsAdapted: readonly [
+    MomentsAdapted,
+    MomentsAdapted,
+    MomentsAdapted,
+    MomentsAdapted,
+  ],
+): SubView => {
+  if (isSubView(rawSubView)) return rawSubView;
+  else {
+    const [
+      _userAllMomentsAdapted,
+      userPastMomentsAdapted,
+      userCurrentMomentsAdapted,
+      userFutureMomentsAdapted,
+    ] = userMomentsAdapted;
+
+    let initialSubView: SubView =
+      userCurrentMomentsAdapted.dates.length > 0
+        ? "current-moments"
+        : userFutureMomentsAdapted.dates.length > 0
+          ? "future-moments"
+          : userPastMomentsAdapted.dates.length > 0
             ? "past-moments"
             : "all-moments";
 

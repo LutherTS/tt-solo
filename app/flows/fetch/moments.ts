@@ -36,15 +36,23 @@ export async function fetchReadMomentsViewFlow(
       searchParams,
     );
 
+  const [
+    userAllMomentsAdapted,
+    userPastMomentsAdapted,
+    userCurrentMomentsAdapted,
+    userFutureMomentsAdapted,
+  ] = await Promise.all([
+    fetchSubViewInFetchReadMomentsViewFlowBound("all-moments"),
+    fetchSubViewInFetchReadMomentsViewFlowBound("past-moments"),
+    fetchSubViewInFetchReadMomentsViewFlowBound("current-moments"),
+    fetchSubViewInFetchReadMomentsViewFlowBound("future-moments"),
+  ]);
+
   return {
-    userAllMomentsAdapted:
-      await fetchSubViewInFetchReadMomentsViewFlowBound("all-moments"),
-    userPastMomentsAdapted:
-      await fetchSubViewInFetchReadMomentsViewFlowBound("past-moments"),
-    userCurrentMomentsAdapted:
-      await fetchSubViewInFetchReadMomentsViewFlowBound("current-moments"),
-    userFutureMomentsAdapted:
-      await fetchSubViewInFetchReadMomentsViewFlowBound("future-moments"),
+    userAllMomentsAdapted,
+    userPastMomentsAdapted,
+    userCurrentMomentsAdapted,
+    userFutureMomentsAdapted,
   };
 }
 
