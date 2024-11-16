@@ -102,7 +102,7 @@ export default async function MomentsPage({
   const fetchViewAndMomentData = fetchViewAndMomentDataFlow(searchParams, user);
 
   // first directly resolved on the server at this time
-  const viewAndMomentData = await fetchViewAndMomentData;
+  // const viewAndMomentData = await fetchViewAndMomentData;
 
   const fetchReadMomentsViewData = fetchReadMomentsViewDataFlow(
     now,
@@ -111,12 +111,20 @@ export default async function MomentsPage({
   );
 
   // first directly resolved on the server at this time
-  const readMomentsViewData = await fetchReadMomentsViewData;
+  // const readMomentsViewData = await fetchReadMomentsViewData;
 
   const fetchMomentFormsData = fetchMomentFormsDataFlow(user);
 
   // first directly resolved on the server at this time
-  const momentFormsData = await fetchMomentFormsData;
+  // const momentFormsData = await fetchMomentFormsData;
+
+  // even faster
+  const [viewAndMomentData, readMomentsViewData, momentFormsData] =
+    await Promise.all([
+      fetchViewAndMomentData,
+      fetchReadMomentsViewData,
+      fetchMomentFormsData,
+    ]);
 
   // PART WRITE (a.k.a. server actions)
 
