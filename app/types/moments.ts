@@ -19,6 +19,7 @@ import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page
 import {
   fetchMomentFormsDataFlow,
   fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentFlow,
 } from "../flows/fetch/moments";
 import { trueDeleteMomentServerFlow } from "../flows/server/moments";
 
@@ -117,9 +118,9 @@ export type PageDetails = {
   page: number;
   total: number;
   maxPage: number;
-  pageTotal: number;
-  pageFirstIndex: number;
-  pageLastIndex: number;
+  momentsTotal: number;
+  momentsFirstIndex: number;
+  momentsLastIndex: number;
 };
 
 export type MomentsAdapted = {
@@ -334,4 +335,10 @@ export type FetchMomentFormsData = ReturnType<typeof fetchMomentFormsDataFlow>;
 
 export type MomentFormsData = Awaited<
   ReturnType<typeof fetchMomentFormsDataFlow>
+>;
+
+export type FetchViewAndMomentData = ReturnType<typeof fetchViewAndMomentFlow>;
+
+export type ViewAndMomentData = Awaited<
+  ReturnType<typeof fetchViewAndMomentFlow>
 >;

@@ -37,6 +37,9 @@ import {
   MomentFormsData,
   TrueCreateOrUpdateMoment,
   TrueDeleteMoment,
+  MomentsSearchParams,
+  MomentsPageSearchParams,
+  ViewAndMomentData,
 } from "@/app/types/moments";
 import { numStringToTimeString } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
@@ -56,23 +59,28 @@ export default function ServerCore({
   createOrUpdateMoment,
   deleteMoment,
   // states lifted to the URL
-  view,
-  moment,
+  // view,
+  // moment,
   // subView,
+  viewAndMomentData,
 }: {
   now: string;
   // allUserMomentsToCRUD: UserMomentsToCRUD[];
   // maxPages: readonly [number, number, number, number];
   // destinationOptions: Option[];
+  viewAndMomentData: ViewAndMomentData;
   readMomentsViewData: ReadMomentsViewData;
   momentFormsData: MomentFormsData;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: TrueCreateOrUpdateMoment;
   deleteMoment: TrueDeleteMoment;
-  view: View;
-  moment: MomentAdapted | undefined;
+  // view: View;
+  // moment: MomentAdapted | undefined;
   // subView: SubView;
 }) {
+  // There could be some UI above that would be prerended before view and moment are event defined. That's why I have to await searchParams here for now and not on the page.
+  const { view, moment } = viewAndMomentData;
+
   return (
     <>
       <Header view={view} />
@@ -335,14 +343,6 @@ export function StepInDateCard({ e4 }: { e4: StepAdapted }) {
   );
 }
 
-// momentsTotal: number;
-// momentFirstIndex: number;
-// momentLastIndex: number;
-// allMomentsTotal: number;
-// currentPage: number;
-// totalPage: number;
-
-// The whole MomentsAdapted is overkill, so perhaps I should make this an object that I pass
 export function MomentsPageDetails({
   pageDetails,
 }: {
@@ -350,18 +350,18 @@ export function MomentsPageDetails({
 }) {
   return (
     <p className="font-extralight text-neutral-800">
-      <span className="font-normal">{pageDetails.pageTotal}</span> moment(s)
+      <span className="font-normal">{pageDetails.momentsTotal}</span> moment(s)
       affiché(s){" "}
       <span className="font-normal">
         (
-        {pageDetails.pageFirstIndex !== pageDetails.pageLastIndex
-          ? `${pageDetails.pageFirstIndex}-${pageDetails.pageLastIndex}`
-          : `${pageDetails.pageFirstIndex}`}
+        {pageDetails.momentsFirstIndex !== pageDetails.momentsLastIndex
+          ? `${pageDetails.momentsFirstIndex}-${pageDetails.momentsLastIndex}`
+          : `${pageDetails.momentsFirstIndex}`}
         )
       </span>{" "}
       sur <span className="font-normal">{pageDetails.total}</span> à la page{" "}
       <span className="font-normal">{pageDetails.page}</span> sur{" "}
-      <span className="font-normal">{pageDetails.pageTotal}</span>
+      <span className="font-normal">{pageDetails.maxPage}</span>
     </p>
   );
 }

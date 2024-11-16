@@ -61,6 +61,7 @@ import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
 import {
   fetchMomentFormsDataFlow,
   fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentFlow,
 } from "@/app/flows/fetch/moments";
 
 /* Dummy Form Presenting Data 
@@ -129,33 +130,23 @@ export default async function MomentsPage({
   // HERE TO SEPARATE IN fetchReadMomentsViewFlow and fetchMomentFormsViewFlow
   // Decided. Even searchParams will be awaited on the fetch flows.
 
+  const fetchViewAndMoment = fetchViewAndMomentFlow(searchParams, user);
+
+  // first directly resolved on the server at this time
+  const viewAndMomentData = await fetchViewAndMoment;
+
   const fetchReadMomentsViewData = fetchReadMomentsViewDataFlow(
     now,
     user,
     searchParams,
   );
 
-  // first directly resolved on the server
+  // first directly resolved on the server at this time
   const readMomentsViewData = await fetchReadMomentsViewData;
-
-  // extra for current wiring
-  // const {
-  //   userAllMomentsAdapted,
-  //   userPastMomentsAdapted,
-  //   userCurrentMomentsAdapted,
-  //   userFutureMomentsAdapted,
-  // } = readMomentsViewData;
-
-  // const userMomentsAdapted = [
-  //   userAllMomentsAdapted,
-  //   userPastMomentsAdapted,
-  //   userCurrentMomentsAdapted,
-  //   userFutureMomentsAdapted,
-  // ] as const;
 
   const fetchMomentFormsView = fetchMomentFormsDataFlow(user);
 
-  // first directly resolved on the server
+  // first directly resolved on the server at this time
   const momentFormsData = await fetchMomentFormsView;
 
   // extra for current wiring
@@ -304,7 +295,9 @@ export default async function MomentsPage({
   // ) as MomentToCRUD[];
   // // console.log({ uniqueShownMoments });
 
-  let definedView = defineView(searchParams?.[VIEW]);
+  // searchParams = await searchParams;
+
+  // let definedView = defineView(searchParams?.[VIEW]);
   // console.log({ definedView });
 
   // No need to decode here, since this is still based on adapted data that is meant for the client.
@@ -324,14 +317,14 @@ export default async function MomentsPage({
   //   searchParams?.[MOMENTID],
   //   uniqueShownMoments,
   // );
-  let definedMoment = await trueDefineMoment(searchParams?.[MOMENTID], user);
+  // let definedMoment = await trueDefineMoment(searchParams?.[MOMENTID], user);
   // console.log({ definedMoment });
 
   // const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
-  const { view, moment } = trueDefineWithViewAndMoment(
-    definedView,
-    definedMoment,
-  );
+  // const { view, moment } = trueDefineWithViewAndMoment(
+  //   definedView,
+  //   definedMoment,
+  // );
   // console.log({ view, moment });
 
   // const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
@@ -421,6 +414,7 @@ export default async function MomentsPage({
           // maxPages={maxPages}
           // destinationOptions={destinationOptions}
           // true reads
+          viewAndMomentData={viewAndMomentData}
           readMomentsViewData={readMomentsViewData}
           momentFormsData={momentFormsData}
           // writes
@@ -428,9 +422,9 @@ export default async function MomentsPage({
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
           // states lifted to the URL
-          view={view}
+          // view={view}
           // subView={subView}
-          moment={moment}
+          // moment={moment}
         />
       </Suspense>
     </ErrorBoundary>

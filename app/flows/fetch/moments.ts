@@ -5,11 +5,13 @@ import {
 import {
   CONTAINS,
   INITIAL_PAGE,
+  MOMENTID,
   SUBVIEW,
   subViewCountUserMomentsWithContains,
   subViewFindUserMomentsWithContains,
   subViewPages,
   TAKE,
+  VIEW,
 } from "@/app/data/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import { Option } from "@/app/types/globals";
@@ -19,7 +21,13 @@ import {
   UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
-import { defineCurrentPage, trueDefineSubView } from "@/app/utilities/moments";
+import {
+  defineCurrentPage,
+  defineView,
+  trueDefineMoment,
+  trueDefineSubView,
+  trueDefineWithViewAndMoment,
+} from "@/app/utilities/moments";
 
 export const fetchReadMomentsViewDataFlow = async (
   now: string,
@@ -131,6 +139,19 @@ export async function fetchMomentFormsDataFlow(user: SelectUserIdAndUsername) {
     adaptDestinationsForMoment(userDestinations);
 
   return { destinationOptions };
+}
+
+export async function fetchViewAndMomentFlow(
+  searchParams: MomentsPageSearchParams,
+  user: SelectUserIdAndUsername,
+) {
+  searchParams = await searchParams;
+
+  let definedView = defineView(searchParams?.[VIEW]);
+
+  let definedMoment = await trueDefineMoment(searchParams?.[MOMENTID], user);
+
+  return trueDefineWithViewAndMoment(definedView, definedMoment);
 }
 
 /* Notes

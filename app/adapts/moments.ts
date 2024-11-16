@@ -189,9 +189,9 @@ export const trueAdaptMoments = (
       page,
       total,
       maxPage,
-      pageTotal: rawMoments.length,
-      pageFirstIndex: page * TAKE + 1,
-      pageLastIndex: page * TAKE + rawMoments.length,
+      momentsTotal: rawMoments.length,
+      momentsFirstIndex: (page - 1) * TAKE + 1,
+      momentsLastIndex: (page - 1) * TAKE + rawMoments.length,
     },
   };
 };
