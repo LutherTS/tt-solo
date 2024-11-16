@@ -1341,13 +1341,13 @@ export function ReorderItem({
         value={step}
         dragListener={false}
         dragControls={controls}
-        transition={{ layout: { duration: 0 } }}
+        transition={{ layout: { duration: 0 } }} // still buggy when adding duration, so sticking to 0
         // layout="position" // or "preserve-aspect"
         dragTransition={{
           bounceStiffness: 900,
           bounceDamping: 50,
         }}
-        whileDrag={{ opacity: 0.5 }} // buggy though
+        // whileDrag={{ opacity: 0.5 }} // buggy though
       >
         <div className={clsx("flex flex-col gap-y-8", "pb-9")}>
           <div className="flex select-none items-baseline justify-between">

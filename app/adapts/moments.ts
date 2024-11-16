@@ -182,28 +182,32 @@ export const adaptMoments = (
         rawMoments.map((moment) => moment.startDateAndTime.split("T")[0]),
       ),
     ].map((e) => {
+      const map = new Map<
+        string,
+        {
+          key: string;
+          destinationIdeal: string;
+        }
+      >();
+
+      rawMoments
+        .filter((moment) => moment.startDateAndTime.startsWith(e))
+        .forEach((moment) => {
+          const momentDestinationId = encodeUUIDWithHashids(
+            moment.destination.id,
+          );
+
+          map.set(momentDestinationId, {
+            key: momentDestinationId,
+            destinationIdeal: moment.destination.name,
+          });
+        });
+
+      const destinations = [...map.values()];
+
       return {
         date: e,
-        destinations: [
-          // this set used to filter strings, but now it has to filter objects
-          ...new Set(
-            rawMoments
-              .filter((moment) => moment.startDateAndTime.startsWith(e))
-              .map((moment) => {
-                const momentDestinationId = encodeUUIDWithHashids(
-                  moment.destination.id,
-                );
-
-                // to get the object as a string...
-                return JSON.stringify({
-                  key: momentDestinationId,
-                  destinationIdeal: moment.destination.name,
-                });
-              }),
-          ),
-        ]
-          // ...and then as a string back to an object
-          .map((e) => JSON.parse(e))
+        destinations: destinations
           // organizes destinations per day alphabetically
           .sort((a, b) => {
             const destinationA = a.destinationIdeal.toLowerCase();
@@ -215,8 +219,8 @@ export const adaptMoments = (
           })
           .map((e2) => {
             return {
-              key: e2.key as string,
-              destinationIdeal: e2.destinationIdeal as string,
+              key: e2.key,
+              destinationIdeal: e2.destinationIdeal,
               moments: rawMoments
                 .filter(
                   (moment) =>

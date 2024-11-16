@@ -1,5 +1,3 @@
-// "use server" at the top implies for React 19 that the file is made of Server Actions, NOT Server Components. It's only for "use client" that it means the file is made exclusively of strictly Client Components.
-
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
@@ -52,7 +50,6 @@ export default function ServerCore({
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
 }) {
-  // There could be some UI above that would be prerended before view and moment are event defined. That's why I have to await searchParams here for now and not on the page.
   const { view, moment } = viewAndMomentData;
 
   return (
@@ -234,7 +231,6 @@ export function DestinationInDateCard({
         </p>
       </div>
       {e2.moments.map((e3, i3) => (
-        // no longer from LocalClientComponents
         <MomentInDateCard
           key={e3.key + e2.key} // because of userMoments duplicates
           e3={e3}
@@ -589,15 +585,11 @@ export function StepVisibleCreating({
   const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
   return (
-    // was a form, but forms can't be nested
-
-    // I really could go the extra mile with the disabled props here but since these are entirely synchronous client actions it's objectively an overkill... for now.
     <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Ajouter une étape
         </p>{" "}
-        {/* I also could go the extra mile of componentizing the buttons as Client Components, but they're fine as children even if StepVisibleCreating is a Server Component... for now: I just don't know about importing raw buttons in a Server Component me personally. */}
         <GlobalClientComponents.Button
           form={form}
           variant="destroy-step"
@@ -672,7 +664,6 @@ export function StepVisibleCreate({
   allButtonsDisabled: boolean;
 }) {
   return (
-    // This is complicated. This is a Server Component. Even though honestly the div could have been removed and this would have been just a Client Component. Yes, I can replace the div by a Fragment and keep it a Server Component. But I want to keep the div so that StepVisibleCreate is semantically aligned with StepVisibleCreating, and also because it is possible in the future that I add more content here, such as descriptions or anything, which can simply be server-side rendered.
     <div>
       <GlobalClientComponents.Button
         type="button"

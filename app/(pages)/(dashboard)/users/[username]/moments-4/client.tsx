@@ -1,4 +1,4 @@
-"use client"; // It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll through the whole file, find that component, and manually export it.
+"use client";
 
 import {
   FormEvent,
@@ -99,9 +99,6 @@ import {
 } from "@/app/flows/after/moments";
 
 // this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
-
-// NOTEWORTHY: This could be turned into a server component if I use CSS transitions instead of Framer Motion.
-// But that's not even sure because it depends on useMotionValue with is updated via useMeasure.
 export function ViewsCarouselContainer({
   now,
   view,
@@ -114,7 +111,7 @@ export function ViewsCarouselContainer({
 }: {
   now: string;
   view: View;
-  moment: MomentAdapted | undefined; // moment now only drops in MomentForms, so eventually (today) it could be included in momntFormsData // but no
+  moment: MomentAdapted | undefined;
   readMomentsViewData: ReadMomentsViewData;
   momentFormsData: MomentFormsData;
   revalidateMoments: RevalidateMoments;
@@ -141,14 +138,12 @@ export function ViewsCarouselContainer({
   return (
     <motion.div
       className="flex"
-      // an error will return -1, if ever the screen shows empty
       animate={{
         x: `-${views.indexOf(view) * 100}%`,
       }}
       initial={false}
       transition={{
         type: "spring",
-        // if the transition is from a successful write operation (from the CRUD but excluding R or read) go with config A, else go with config B
         bounce: isCRUDOpSuccessful ? 0.2 : 0,
         duration: isCRUDOpSuccessful ? 0.4 : 0.2,
       }}
@@ -218,7 +213,6 @@ export function ViewsCarouselContainer({
   );
 }
 
-// NOTEWORTHY: To my knowledge, this is the furthest I could push down the client boundary because useMeasure as a hook reads from the DOM itself, unique to each user's browsing environment.
 export function ViewSegment({
   id,
   currentView,
@@ -230,9 +224,7 @@ export function ViewSegment({
   currentViewHeight: MotionValue<number>;
   children: React.ReactNode;
 }) {
-  // usually I should use bounds instead of { height } so that I'm allowed to name bounds whatever I want
   const [ref, { height }] = useMeasure();
-  // making TypeScript happy
   const reference = ref as Ref<HTMLDivElement>;
 
   if (id === currentView) currentViewHeight.set(height);
@@ -246,18 +238,6 @@ export function ViewSegment({
     </div>
   );
 }
-
-/* IMPORTANT
-WHY I WILL NOT BE MAKING ANIMATIONS ON READMOMENTS VIEW AT THIS TIME
-For starters, the core of this project, the part that has the vetted design, is the form. The design is a reappropriation of Refactoring UI's Complex Form video. (I'll brag a little here and say two with its effective three forms-in-one, mine is the most complex.) This is to say that the reason why it's look and feel is so professional is because all of its research has already been done by professionals in this field, which is not my field. I don't make visual prototypes of applications. I can to a degree, and indeed, I am the one who made on my own the current ReadMomentsView look. But even so I was heavily inspired (I copied) by portions of the design that was made by Refactoring UI.
-So the first reason why I'm not making animations on ReadMomentsView is because its design is not definitive enough like MomentForms' is. Consequently, this design is a placeholder, so any further work on it would not only be wasted on a final version, but is also not the subject of this exercise.
-Second, because though aiming to have subViews as a carousel might be feasible at this time, complete with useMeasure, the same can't be said about individual subView pages which are obtained on the server. Basically, at all times the page already knows about the current page of the four subViews, but it doesn't know about the next or previous pages of these subViews.
-These can be allieviated by searching for the neighboring four pages of every current subView page alongside with the data of these subView pages themselves. If a user manually changed the URL beyond the current data we can do with a full page refresh, but within the scope of the intended normal user flow comes another problem. What if a user presses two pages further and immediate click for the next page?
-Fortunately, there is a React 19 API for this, useOptimistic. For the case where a user presses two pages further, a call to the database will still be made to center that page in the search and retrieve data from the next two pages. But while that call happens, we can still optimistically show data from what was the two-pages-further page in the meantime. However, if the next two pages have yet to have been resolved will the user click for the next page, then we would either have to deactivate the button during the true background loading (which I think is the best method), or optimistically replace the data with a loading skeleton in the meantime (...which could be the best method after all), so that useMeasure can still ready from something in the DOM every time.
-I honestly would love to explore with the first of these two approaches with useOptimistic and disabling the button since I'm not familiar with skeletons yet, but that would still require a revamping of page.tsx that is completely different from what I have right now. I would have to pass the params to the page's components to be resolved there and not on the page itself. I would have establish some sort of shell that doesn't waver nor re-renders every time the URL changes. I would have to change my read functions and change the way they are adapting their data from the server to the client, actually, I would have to have their promises resolved and treated by the client and not the server contrarily to what I'm doing right now. This exercise would require a complete revamping of the project so far, and obviously this is beyond the scope of my presentation for next Wednesday at time of writing. In fact, not only is this an incredible amount of work – which I know I might be tempted to tackle – it would make my talk more confusing. The simple, first step of resolving EVERYTHING from the server on page.tsx before passing it down to the pages' components themselves is the first step before even considering going further, Aurora-deep about React Server Components: https://www.youtube.com/watch?v=CvAySC5ex9c.
-...
-So... That's it. My work here is done. Even going on and making dummy data is not interesting per se, because ReadMomentsView is heavily subject to change and not the main topic of this talk. The only thing I need to do know is moments-3, where I can progressively show people the progress of the client boundary in the React Developer Tools. I'll just use my current dummy data to make my demo entry.
-*/
 
 export function ReadMomentsView({
   view,
@@ -301,7 +281,6 @@ export function ReadMomentsView({
   const pathname = usePathname();
   const { replace } = useRouter();
 
-  // because of debounce I'm exceptionally not turning this handler into an action
   function handleSearch(term: string) {
     const newSearchParams = new URLSearchParams(
       searchParams,
@@ -352,7 +331,6 @@ export function ReadMomentsView({
     subViewMaxPages[subView],
   );
 
-  // for now search and pagination will remain handlers
   function handlePagination(direction: "left" | "right", subView: SubView) {
     const newSearchParams = new URLSearchParams(
       searchParams,
@@ -418,7 +396,6 @@ export function ReadMomentsView({
 
   const { scrollY } = useScroll();
 
-  // again, debounce-bound so not turned into an action
   const settingScrollPosition = (latest: number) => setScrollPosition(latest);
 
   const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
@@ -484,7 +461,6 @@ export function ReadMomentsView({
                   {e.destinations.map((e2) => {
                     return (
                       <LocalServerComponents.DestinationInDateCard
-                        // you we're not at fault per se, there was a real bug
                         key={e2.key + i.toString()}
                         e2={e2}
                         realMoments={realMoments}
@@ -532,7 +508,6 @@ export function ReadMomentsView({
   );
 }
 
-// sure I can get the spans to be Server Components but this really is a whole
 export function SetSubViewButton({
   e,
   subView,
@@ -540,10 +515,8 @@ export function SetSubViewButton({
   e: SubView;
   subView: SubView;
 }) {
-  // this needs to be inside the component because its entirely specific to the component
   const className = "px-4 py-2 h-9 flex items-center justify-center";
 
-  // I prefer each Client Component that interact with the URL to have their own searchParams, pathname, push/replace trilogy.
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -673,7 +646,6 @@ export function UpdateMomentViewButton({
   const { push } = useRouter();
   const pathname = usePathname();
 
-  // Just a good old handler. On the fly, I write handlers as traditional functions and actions as arrow functions.
   function handleUpdateMomentView() {
     const moment = realMoments.find((e0) => e0.key === e3.key);
 
@@ -718,7 +690,6 @@ export function PaginationButton({
 
   return (
     <button
-      // hum... // because I'm providing external arguments, and actually handlePagination is also external
       onClick={() => handlePagination(direction, subView)}
       disabled={allButtonsDisabled || disabled}
       className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
@@ -732,8 +703,8 @@ export function PaginationButton({
 
 // steps animations data, children of MomentForms
 
-const SHARED_HEIGHT_DURATION = 0.25; // previously ADD__HEIGHT_DURATION
-const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION * (2 / 3); // MotionAddStepVisible opacity duration is purposefully shorter (currently twice shorter than MotionAddStepVisible height duration). In fact, instead of currently writing 0.1 I can just right height duration divided by 2 // previously ADD_SWITCH__OPACITY_DURATION
+const SHARED_HEIGHT_DURATION = 0.25;
+const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION * (2 / 3);
 
 export function MomentForms({
   variant,
@@ -761,7 +732,6 @@ export function MomentForms({
 
   const isVariantUpdatingMoment = variant === "updating" && moment;
 
-  // datetime-local input is now controlled for dynamic moment and steps times
   let [startMomentDate, setStartMomentDate] = useState(
     isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
@@ -788,14 +758,12 @@ export function MomentForms({
     !isVariantUpdatingMoment ? "creating" : "create",
   );
 
-  // number input also controlled for expected dynamic changes to moment timing even before confirm the step while changing its duration
   let [stepDureeCreate, setStepDureeCreate] = useState(STEP_DURATION_ORIGINAL);
   let [stepDureeUpdate, setStepDureeUpdate] = useState(
     currentStep ? currentStep.duree : STEP_DURATION_ORIGINAL,
   );
 
   let momentAddingTime = steps.reduce((acc, curr) => {
-    // it is understood that curr.id === currentStepId can only happen when stepVisible === "updating"
     if (curr.id === currentStepId && stepVisible === "updating")
       return acc + +stepDureeUpdate;
     else return acc + +curr.duree;
@@ -881,10 +849,8 @@ export function MomentForms({
     startResetMomentTransition(() => {
       const noConfirm =
         // @ts-ignore might not work on mobile but it's a bonus
-        event.nativeEvent.explicitOriginalTarget?.type !== "reset"; // could be improved later in case an even upper reset buton triggers this reset action
+        event.nativeEvent.explicitOriginalTarget?.type !== "reset";
 
-      // retroactive high level JavaScript, but honestly this should be done on any action that uses a confirm, assuming that action can be triggered externally and automatically
-      // This allows that wherever I reset the form but triggering its HTML reset, it gets fully reset including controlled fields and default states, and even resets its cascading "children forms" since this resetMoment actually triggers the reset of stepFromCreating.
       if (
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ?")
@@ -1020,8 +986,6 @@ export function MomentForms({
         createOrUpdateMomentState={createOrUpdateMomentState}
         setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
       />
-      {/* <Form */}
-      {/* action={createOrUpdateMomentAction} // It still works despite the TypeScript error, but I don't know where it will break and I don't need it right now. Again, regular HTML/CSS/JS and regular React should always be prioritized if they do the work and don't significantly hinder the developer experience. */}
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentAction}
@@ -1071,7 +1035,6 @@ export function MomentForms({
           >
             <AnimatePresence initial={false}>
               {steps.map((step, index) => {
-                // this needs to stay up there because it depends from an information obtained in MomentForms (even though I am now passing it down as a property)
                 let stepAddingTime =
                   index === 0 ? 0 : stepsCompoundDurations[index - 1];
 
@@ -1273,9 +1236,6 @@ export function ReorderItem({
 
   const [isRestoreStepPending, startRestoreStepTransition] = useTransition();
 
-  // The jumping is simply due to a current lack of animations
-  // ...which I may or may not end up modifying.
-  // ...And did indeed end up modifying.
   const restoreStepAction = () => {
     startRestoreStepTransition(() => {
       setStepVisible("create");
@@ -1288,7 +1248,6 @@ export function ReorderItem({
 
   const [isModifyStepPending, startModifyStepTransition] = useTransition();
 
-  // just like restoreStepAction, there's no need to import this action from an external file (at least at this time) since it is very specific to ReorderItem
   const modifyStepAction = () => {
     startModifyStepTransition(() => {
       setCurrentStepId(step.id);
@@ -1305,7 +1264,6 @@ export function ReorderItem({
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
       transition={{
-        // delays must be conditional
         opacity: {
           duration: SHARED_OPACITY_DURATION,
           delay: isAnimationDelayed ? SHARED_HEIGHT_DURATION : 0,
@@ -1324,12 +1282,10 @@ export function ReorderItem({
         dragListener={false}
         dragControls={controls}
         transition={{ layout: { duration: 0 } }}
-        // layout="position" // or "preserve-aspect"
         dragTransition={{
           bounceStiffness: 900,
           bounceDamping: 50,
         }}
-        whileDrag={{ opacity: 0.5 }} // buggy though
       >
         <div className={clsx("flex flex-col gap-y-8", "pb-9")}>
           <div className="flex select-none items-baseline justify-between">
@@ -1573,7 +1529,7 @@ function MotionAddStepVisible({
                     animate={"visible"}
                     exit={"hidden"}
                     transition={{ duration: SHARED_OPACITY_DURATION }}
-                    className="pb-9" // formerly shared between StepsSummaries
+                    className="pb-9"
                   >
                     <LocalServerComponents.StepVisibleCreating
                       key={stepVisible}
@@ -1677,15 +1633,12 @@ export function StepForm({
 
   const resetStepAction = (event: FormEvent<HTMLFormElement>) => {
     startResetStepTransition(() => {
-      // do not confirm if reset is not triggered by stepFormCreating
       const noConfirm =
         // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
         event.nativeEvent.explicitOriginalTarget?.form?.id !==
-        // triggers confirm only if original intent is from stepFormCreating
         MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
 
       if (
-        // Attention please: this right here HARD LEVEL JAVASCRIPT.
         noConfirm ||
         confirm("Êtes-vous sûr de vouloir réinitialiser cette étape ?")
       ) {
