@@ -13,6 +13,7 @@ import {
   UserMomentsToCRUD,
   SelectMomentIdNameAndDates,
   CreateOrUpdateMomentState,
+  UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { MOMENTKEY, subViews, TAKE, VIEW } from "@/app/data/moments";
@@ -296,7 +297,7 @@ export const defineWithViewAndMoment = (
 };
 
 // type predicate for the subView searchParam
-const isSubView = (value: any): value is SubView => {
+export const isSubView = (value: any): value is SubView => {
   return subViews.includes(value);
 };
 

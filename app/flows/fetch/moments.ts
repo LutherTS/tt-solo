@@ -3,6 +3,7 @@ import {
   adaptedViewAndMomentCombined,
   adaptMomentKey,
   adaptMoments,
+  adaptSubView,
   adaptView,
 } from "@/app/adapts/moments";
 import {
@@ -24,7 +25,7 @@ import {
   UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
-import { defineCurrentPage, trueDefineSubView } from "@/app/utilities/moments";
+import { defineCurrentPage } from "@/app/utilities/moments";
 
 export const fetchReadMomentsViewDataFlow = async (
   now: string,
@@ -68,7 +69,7 @@ export const fetchReadMomentsViewDataFlow = async (
     userFutureMomentsAdapted,
   };
 
-  const subView = trueDefineSubView(
+  const subView = adaptSubView(
     searchParams?.[SUBVIEW],
     userMomentsAdaptedCombined,
   );

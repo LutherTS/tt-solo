@@ -7,6 +7,8 @@ import {
   UserMomentsToCRUD,
   View,
   MomentAdapted,
+  UserMomentsAdaptedCombined,
+  SubView,
 } from "@/app/types/moments";
 import {
   decodeHashidToUUID,
@@ -14,6 +16,7 @@ import {
 } from "@/app/utilities/globals";
 import { SelectUserIdAndUsername } from "@/app/types/users";
 import { findMomentByIdAndUserId } from "@/app/reads/moments";
+import { isSubView } from "@/app/utilities/moments";
 
 export const adaptView = (rawView: string | undefined): View => {
   switch (rawView) {
@@ -271,6 +274,31 @@ export const adaptMoment = (moment: SelectMomentDefault) => {
     }),
     destinationIdeal: moment.destination.name,
   };
+};
+
+export const adaptSubView = (
+  rawSubView: string | undefined,
+  userMomentsAdaptedCombined: UserMomentsAdaptedCombined,
+): SubView => {
+  if (isSubView(rawSubView)) return rawSubView;
+  else {
+    const {
+      userPastMomentsAdapted,
+      userCurrentMomentsAdapted,
+      userFutureMomentsAdapted,
+    } = userMomentsAdaptedCombined;
+
+    let initialSubView: SubView =
+      userCurrentMomentsAdapted.dates.length > 0
+        ? "current-moments"
+        : userFutureMomentsAdapted.dates.length > 0
+          ? "future-moments"
+          : userPastMomentsAdapted.dates.length > 0
+            ? "past-moments"
+            : "all-moments";
+
+    return initialSubView;
+  }
 };
 
 export const adaptDestinationsForMoment = (
