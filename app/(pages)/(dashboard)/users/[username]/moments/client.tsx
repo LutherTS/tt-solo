@@ -5,6 +5,7 @@ import {
   MouseEvent,
   Ref,
   TransitionStartFunction,
+  use,
   // useCallback,
   useEffect,
   useState,
@@ -50,12 +51,12 @@ import {
   View,
   MomentsSearchParams,
   CreateOrUpdateMomentState,
-  ReadMomentsViewData,
   MomentsAdapted,
   MomentAdapted,
-  MomentFormsData,
   CreateOrUpdateMoment,
   DeleteMoment,
+  FetchReadMomentsViewData,
+  FetchMomentFormsData,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
@@ -106,17 +107,17 @@ export function ViewsCarouselContainer({
   now,
   view,
   moment,
-  readMomentsViewData,
-  momentFormsData,
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
 }: {
   now: string;
   view: View;
   moment: MomentAdapted | undefined; // moment now only drops in MomentForms, so eventually (today) it could be included in momntFormsData // but no
-  readMomentsViewData: ReadMomentsViewData;
-  momentFormsData: MomentFormsData;
+  fetchReadMomentsViewData: FetchReadMomentsViewData;
+  fetchMomentFormsData: FetchMomentFormsData;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
@@ -165,18 +166,23 @@ export function ViewsCarouselContainer({
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
+          {/* SUSPENDED */}
           {/* UpdateMomentView */}
-          <MomentForms
-            key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
-            variant="updating"
-            moment={moment}
-            momentFormsData={momentFormsData}
-            createOrUpdateMoment={createOrUpdateMoment}
-            deleteMoment={deleteMoment}
-            now={now}
-            setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            allButtonsDisabled={view !== "update-moment"}
-          />
+          <GlobalServerComponents.DefaultErrorBoundary>
+            <GlobalServerComponents.DefaultSuspense>
+              <MomentForms
+                key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+                variant="updating"
+                moment={moment}
+                fetchMomentFormsData={fetchMomentFormsData}
+                createOrUpdateMoment={createOrUpdateMoment}
+                deleteMoment={deleteMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+                allButtonsDisabled={view !== "update-moment"}
+              />
+            </GlobalServerComponents.DefaultSuspense>
+          </GlobalServerComponents.DefaultErrorBoundary>
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
@@ -187,12 +193,17 @@ export function ViewsCarouselContainer({
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
-          <ReadMomentsView
-            view={view}
-            readMomentsViewData={readMomentsViewData}
-            revalidateMoments={revalidateMoments}
-            allButtonsDisabled={view !== "read-moments"}
-          />
+          {/* SUSPENDED */}
+          <GlobalServerComponents.DefaultErrorBoundary>
+            <GlobalServerComponents.DefaultSuspense>
+              <ReadMomentsView
+                view={view}
+                fetchReadMomentsViewData={fetchReadMomentsViewData}
+                revalidateMoments={revalidateMoments}
+                allButtonsDisabled={view !== "read-moments"}
+              />
+            </GlobalServerComponents.DefaultSuspense>
+          </GlobalServerComponents.DefaultErrorBoundary>
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
@@ -203,15 +214,20 @@ export function ViewsCarouselContainer({
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
+          {/* SUSPENDED */}
           {/* CreateMomentView */}
-          <MomentForms
-            variant="creating"
-            momentFormsData={momentFormsData}
-            createOrUpdateMoment={createOrUpdateMoment}
-            now={now}
-            setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            allButtonsDisabled={view !== "create-moment"}
-          />
+          <GlobalServerComponents.DefaultErrorBoundary>
+            <GlobalServerComponents.DefaultSuspense>
+              <MomentForms
+                variant="creating"
+                fetchMomentFormsData={fetchMomentFormsData}
+                createOrUpdateMoment={createOrUpdateMoment}
+                now={now}
+                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+                allButtonsDisabled={view !== "create-moment"}
+              />
+            </GlobalServerComponents.DefaultSuspense>
+          </GlobalServerComponents.DefaultErrorBoundary>
         </ViewSegment>
       </LocalServerComponents.PageSegment>
     </motion.div>
@@ -261,15 +277,17 @@ So... That's it. My work here is done. Even going on and making dummy data is no
 
 export function ReadMomentsView({
   view,
-  readMomentsViewData,
+  fetchReadMomentsViewData,
   revalidateMoments,
   allButtonsDisabled,
 }: {
   view: View;
-  readMomentsViewData: ReadMomentsViewData;
+  fetchReadMomentsViewData: FetchReadMomentsViewData;
   revalidateMoments: RevalidateMoments;
   allButtonsDisabled: boolean;
 }) {
+  const readMomentsViewData = use(fetchReadMomentsViewData);
+
   const {
     userAllMomentsAdapted,
     userPastMomentsAdapted,
@@ -738,7 +756,7 @@ const SHARED_OPACITY_DURATION = SHARED_HEIGHT_DURATION * (2 / 3); // MotionAddSt
 export function MomentForms({
   variant,
   moment,
-  momentFormsData,
+  fetchMomentFormsData,
   createOrUpdateMoment,
   deleteMoment,
   now,
@@ -747,7 +765,7 @@ export function MomentForms({
 }: {
   variant: MomentFormVariant;
   moment?: MomentAdapted;
-  momentFormsData: MomentFormsData;
+  fetchMomentFormsData: FetchMomentFormsData;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
@@ -757,7 +775,7 @@ export function MomentForms({
 }) {
   const nowRoundedUpTenMinutes = roundTimeUpTenMinutes(now);
 
-  const { destinationOptions } = momentFormsData;
+  const { destinationOptions } = use(fetchMomentFormsData);
 
   const isVariantUpdatingMoment = variant === "updating" && moment;
 

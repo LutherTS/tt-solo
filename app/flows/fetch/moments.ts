@@ -27,6 +27,22 @@ import {
 import { SelectUserIdAndUsername } from "@/app/types/users";
 import { defineCurrentPage } from "@/app/utilities/moments";
 
+import { delay } from "@/app/utilities/globals";
+
+export async function fetchViewAndMomentDataFlow(
+  searchParams: MomentsPageSearchParams,
+  user: SelectUserIdAndUsername,
+) {
+  // await delay(5000, () => console.log("After 5 seconds")); // The reason why the whole UI blocks with this is because I need the view-moment combo to properly show the text. (I could load everything but the text if I wanted though, but I think other components currently depend on that centrality.)
+
+  searchParams = await searchParams;
+
+  let adaptedView = adaptView(searchParams?.[VIEW]);
+  let adaptedMoment = await adaptMomentKey(searchParams?.[MOMENTKEY], user);
+
+  return adaptedViewAndMomentCombined(adaptedView, adaptedMoment);
+}
+
 export const fetchReadMomentsViewDataFlow = async (
   now: string,
   user: SelectUserIdAndUsername,
@@ -35,6 +51,8 @@ export const fetchReadMomentsViewDataFlow = async (
   userMomentsAdaptedCombined: UserMomentsAdaptedCombined;
   subView: SubView;
 }> => {
+  // await delay(20000, () => console.log("After 20 seconds")); // with this and the use hook, since I delay the ReadMomentsView, I can already see and use the CreateMomentView in the meantime
+
   const userId = user.id;
 
   searchParams = await searchParams;
@@ -137,18 +155,6 @@ export async function fetchMomentFormsDataFlow(user: SelectUserIdAndUsername) {
     adaptDestinationsForMoment(userDestinations);
 
   return { destinationOptions };
-}
-
-export async function fetchViewAndMomentDataFlow(
-  searchParams: MomentsPageSearchParams,
-  user: SelectUserIdAndUsername,
-) {
-  searchParams = await searchParams;
-
-  let adaptedView = adaptView(searchParams?.[VIEW]);
-  let adaptedMoment = await adaptMomentKey(searchParams?.[MOMENTKEY], user);
-
-  return adaptedViewAndMomentCombined(adaptedView, adaptedMoment);
 }
 
 /* Notes

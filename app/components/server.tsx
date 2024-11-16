@@ -18,6 +18,8 @@ import {
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
 } from "@/app/utilities/moments";
+import { ErrorBoundary } from "react-error-boundary";
+import { Suspense } from "react";
 
 // Components
 
@@ -534,6 +536,38 @@ export function FallbackFlex({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function DefaultErrorBoundary({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <ErrorBoundary
+      fallback={
+        <FallbackFlex>
+          <p>Une erreur est survenue.</p>
+        </FallbackFlex>
+      }
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+
+export function DefaultSuspense({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <FallbackFlex>
+          <p>Loading...</p>
+        </FallbackFlex>
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
+
 /* Notes
 For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.
 */
@@ -552,6 +586,8 @@ const globalServerComponents = {
   FieldFlex,
   FieldTitle,
   FallbackFlex,
+  DefaultErrorBoundary,
+  DefaultSuspense,
 } as const;
 
 export type GlobalServerComponentsName = keyof typeof globalServerComponents;

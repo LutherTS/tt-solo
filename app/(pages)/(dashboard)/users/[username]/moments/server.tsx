@@ -19,41 +19,41 @@ import {
   StepVisible,
   CreateOrUpdateMomentState,
   View,
-  ReadMomentsViewData,
   MomentAdapted,
   DestinationAdapted,
   PageDetails,
   StepAdapted,
-  MomentFormsData,
   CreateOrUpdateMoment,
   DeleteMoment,
-  ViewAndMomentData,
+  FetchViewAndMomentData,
+  FetchReadMomentsViewData,
+  FetchMomentFormsData,
 } from "@/app/types/moments";
 import { numStringToTimeString } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
-export default function ServerCore({
+export default async function ServerCore({
   // time
   now,
-  // reads
-  viewAndMomentData,
-  readMomentsViewData,
-  momentFormsData,
+  // reads as promises
+  fetchViewAndMomentData,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
   // writes
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
 }: {
   now: string;
-  viewAndMomentData: ViewAndMomentData;
-  readMomentsViewData: ReadMomentsViewData;
-  momentFormsData: MomentFormsData;
+  fetchViewAndMomentData: FetchViewAndMomentData;
+  fetchReadMomentsViewData: FetchReadMomentsViewData;
+  fetchMomentFormsData: FetchMomentFormsData;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
 }) {
   // There could be some UI above that would be prerended before view and moment are event defined. That's why I have to await searchParams here for now and not on the page.
-  const { view, moment } = viewAndMomentData;
+  const { view, moment } = await fetchViewAndMomentData; // Can't use (and don't need to use) use in a Server Component.
 
   return (
     <>
@@ -63,8 +63,8 @@ export default function ServerCore({
         now={now}
         view={view}
         moment={moment}
-        readMomentsViewData={readMomentsViewData}
-        momentFormsData={momentFormsData}
+        fetchReadMomentsViewData={fetchReadMomentsViewData}
+        fetchMomentFormsData={fetchMomentFormsData}
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
@@ -90,8 +90,8 @@ export function Main({
   now,
   view,
   moment,
-  readMomentsViewData,
-  momentFormsData,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
@@ -99,8 +99,8 @@ export function Main({
   now: string;
   view: View;
   moment: MomentAdapted | undefined;
-  readMomentsViewData: ReadMomentsViewData;
-  momentFormsData: MomentFormsData;
+  fetchReadMomentsViewData: FetchReadMomentsViewData;
+  fetchMomentFormsData: FetchMomentFormsData;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
@@ -114,8 +114,8 @@ export function Main({
           now={now}
           view={view}
           moment={moment}
-          readMomentsViewData={readMomentsViewData}
-          momentFormsData={momentFormsData}
+          fetchReadMomentsViewData={fetchReadMomentsViewData}
+          fetchMomentFormsData={fetchMomentFormsData}
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}

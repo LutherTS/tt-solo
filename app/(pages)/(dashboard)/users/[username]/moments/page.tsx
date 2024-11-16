@@ -1,5 +1,3 @@
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/server";
@@ -55,7 +53,11 @@ S'assurer que toutes les fonctionnalités marchent sans problème, avant une fut
 */
 
 export const dynamic = "force-dynamic";
-// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still sometimes it says static route...
+// https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // Still sometimes it says static route... But I can see the moments when it's a dynamic, the icon at the bottom left toggles difference if I comment or uncomment the line above.
+
+// Le plus important, et ça l'est tellement que je l'écris en français... C'est que ça marche. use marche. Quand je delay la fonction fetchReadMomentsViewDataFlow alors que je me rends sur la view "create-moment", ma vue est déjà chargée et utilisable, pendant que le ReadMomentsView se charge, et est accessible et qu'on puisse y voir écrit "Loading..."
+
+// Maintenant là où je touche vraiment le plafond, c'est de savoir comment ça marchera en réel, surtout par rapport au cache. C'est un niveau haut dessus, mais là j'ai déjà atteint mon premier somment pour aujourd'hui.
 
 export default async function MomentsPage({
   params,
@@ -101,30 +103,13 @@ export default async function MomentsPage({
 
   const fetchViewAndMomentData = fetchViewAndMomentDataFlow(searchParams, user);
 
-  // first directly resolved on the server at this time
-  // const viewAndMomentData = await fetchViewAndMomentData;
-
   const fetchReadMomentsViewData = fetchReadMomentsViewDataFlow(
     now,
     user,
     searchParams,
   );
 
-  // first directly resolved on the server at this time
-  // const readMomentsViewData = await fetchReadMomentsViewData;
-
   const fetchMomentFormsData = fetchMomentFormsDataFlow(user);
-
-  // first directly resolved on the server at this time
-  // const momentFormsData = await fetchMomentFormsData;
-
-  // even faster
-  const [viewAndMomentData, readMomentsViewData, momentFormsData] =
-    await Promise.all([
-      fetchViewAndMomentData,
-      fetchReadMomentsViewData,
-      fetchMomentFormsData,
-    ]);
 
   // PART WRITE (a.k.a. server actions)
 
@@ -180,34 +165,24 @@ export default async function MomentsPage({
   // My mental model on this is the following. With inline server actions, server actions are created and only existing when you visit the page. They're not a /createOrUpdateMoment in your codebase opened at all times, they are only temporarily created once you request the page where they take effect. Therefore, if you are not authenticated on the page, its actions do not even exist since the page return an error before instantiating the actions. So basically, a project with only inline server actions would launch with ZERO exposed APIs.
   return (
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
-    <ErrorBoundary
-      fallback={
-        <GlobalServerComponents.FallbackFlex>
-          <p>Une erreur est survenue.</p>
-        </GlobalServerComponents.FallbackFlex>
-      }
-    >
-      <Suspense
-        fallback={
-          <GlobalServerComponents.FallbackFlex>
-            <p>Loading...</p>
-          </GlobalServerComponents.FallbackFlex>
-        }
-      >
+
+    // SUSPENDED
+    <GlobalServerComponents.DefaultErrorBoundary>
+      <GlobalServerComponents.DefaultSuspense>
         <Core
           // time (aligned across server and client for hydration cases)
           now={now}
-          // reads
-          viewAndMomentData={viewAndMomentData}
-          readMomentsViewData={readMomentsViewData}
-          momentFormsData={momentFormsData}
+          // reads as promises
+          fetchViewAndMomentData={fetchViewAndMomentData}
+          fetchReadMomentsViewData={fetchReadMomentsViewData}
+          fetchMomentFormsData={fetchMomentFormsData}
           // writes
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
         />
-      </Suspense>
-    </ErrorBoundary>
+      </GlobalServerComponents.DefaultSuspense>
+    </GlobalServerComponents.DefaultErrorBoundary>
   );
 }
 
