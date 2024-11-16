@@ -15,6 +15,7 @@ import {
   USERMOMENTSPAGE,
   VIEW,
 } from "@/app/data/moments";
+import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page";
 
 export type StepFromCRUD = {
   id: string;
@@ -25,6 +26,16 @@ export type StepFromCRUD = {
 
 export type StepToCRUD = {
   id: string;
+  orderId: number;
+  title: string;
+  details: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+};
+
+export type StepAdapted = {
+  key: string; // changed id to key
   orderId: number;
   title: string;
   details: string;
@@ -46,10 +57,29 @@ export type MomentToCRUD = {
   destinationIdeal: string;
 };
 
+export type MomentAdapted = {
+  key: string; // changed id to key
+  activity: string;
+  objective: string;
+  isIndispensable: boolean;
+  context: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+  steps: StepAdapted[];
+  destinationIdeal: string;
+};
+
 export type MomentsDestinationToCRUD = {
   id: string;
   destinationIdeal: string;
   moments: MomentToCRUD[];
+};
+
+export type DestinationAdapted = {
+  key: string; // changed id to key
+  destinationIdeal: string;
+  moments: MomentAdapted[];
 };
 
 export type MomentsDateToCRUD = {
@@ -63,8 +93,23 @@ export type MomentsDateToCRUD = {
   totalPage: number;
 };
 
+export type DateAdapted = {
+  date: string;
+  destinations: DestinationAdapted[];
+  momentsTotal: number;
+  momentFirstIndex: number;
+  momentLastIndex: number;
+  allMomentsTotal: number;
+  currentPage: number;
+  totalPage: number;
+};
+
 export type UserMomentsToCRUD = {
   dates: MomentsDateToCRUD[];
+};
+
+export type MomentsAdapted = {
+  dates: DateAdapted[];
 };
 
 export type View = "update-moment" | "read-moments" | "create-moment";
@@ -235,3 +280,7 @@ export type MomentsSearchParams = {
 };
 
 export type FormSectionTopic = "moment" | "steps";
+
+export type MomentsPageSearchParams = Parameters<
+  typeof MomentsPage
+>[0]["searchParams"];

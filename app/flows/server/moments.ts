@@ -47,6 +47,7 @@ import {
   DEFAULT_MOMENT_MESSAGE,
   DEFAULT_MOMENT_SUBMESSAGE,
 } from "@/app/data/moments";
+import { decodeHashidToUUID } from "@/app/utilities/globals";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
 // Now shifting to ServerFlow, ClientFlow, AfterFlow.
@@ -662,6 +663,8 @@ export const createOrUpdateMomentServerFlow = async (
 
     // That's a duplicate with "updating", but "updating" begins different. I insist on having both flows in their own if statements.
 
+    // IMPORTANT. FOR NOW I HAVEN'T YET ENCODED MY DESTINATION IDS
+    // Actually I don't need to decode them here because I use their names as strings deal with destinations in this form, since they're unique per user.
     const destinationEntry = await findDestinationIdByNameAndUserId(
       destination,
       userId,
@@ -719,7 +722,7 @@ export const createOrUpdateMomentServerFlow = async (
         },
       };
 
-    let momentId = momentFromCRUD.id;
+    let momentId = decodeHashidToUUID(momentFromCRUD.id);
 
     const destinationEntry = await findDestinationIdByNameAndUserId(
       destination,
@@ -917,7 +920,7 @@ export const deleteMomentServerFlow = async (
       },
     };
 
-  const momentId = momentFromCRUD.id;
+  const momentId = decodeHashidToUUID(momentFromCRUD.id);
 
   // verify if the moment still exists at time of deletion
   const moment = await findMomentByIdAndUserId(momentId, user.id);

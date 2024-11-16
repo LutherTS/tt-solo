@@ -39,11 +39,11 @@ import {
   countCurrentUserMomentsWithContains,
   countFutureUserMomentsWithContains,
   countPastUserMomentsWithContains,
-  countUserMomentsWithContains,
+  countUserAllMomentsWithContains,
   findCurrentUserMomentsWithContains,
   findFutureUserMomentsWithContains,
   findPastUserMomentsWithContains,
-  findUserMomentsWithContains,
+  findUserAllMomentsWithContains,
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
@@ -104,7 +104,7 @@ export default async function MomentsPage({
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ] = await Promise.all([
-    countUserMomentsWithContains(userId, contains),
+    countUserAllMomentsWithContains(userId, contains),
     countPastUserMomentsWithContains(userId, contains, now),
     countCurrentUserMomentsWithContains(userId, contains, now),
     countFutureUserMomentsWithContains(userId, contains, now),
@@ -148,7 +148,7 @@ export default async function MomentsPage({
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      findUserMomentsWithContains(userId, contains, userMomentsPage),
+      findUserAllMomentsWithContains(userId, contains, userMomentsPage),
       findPastUserMomentsWithContains(
         userId,
         contains,

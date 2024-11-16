@@ -11,6 +11,17 @@ import {
   // FormSectionTopic,
   // CreateOrUpdateMomentState,
 } from "@/app/types/moments";
+import {
+  countCurrentUserMomentsWithContains,
+  countFutureUserMomentsWithContains,
+  countPastUserMomentsWithContains,
+  countUserAllMomentsWithContains,
+  findCurrentUserMomentsWithContains,
+  findFutureUserMomentsWithContains,
+  findPastUserMomentsWithContains,
+  trueCountUserAllMomentsWithContains,
+  trueFindUserAllMomentsWithContains,
+} from "../reads/moments";
 // import {
 //   removeMomentMessagesAndErrorsCallback,
 //   removeStepsMessagesAndErrorsCallback,
@@ -78,24 +89,28 @@ export const MOMENT_FORM_IDS: { [K in MomentFormVariant]: MomentFormIds } = {
 
 // select options
 
-export const activityOptions: Option[] = [
-  { key: 1, label: "Atelier", value: "Atelier" },
-  { key: 2, label: "Comité", value: "Comité" },
-  { key: 3, label: "Conférence", value: "Conférence" },
-  { key: 4, label: "Entretien individuel", value: "Entretien individuel" },
-  { key: 5, label: "Embauche", value: "Embauche" },
-  { key: 6, label: "Pomodoro", value: "Pomodoro" },
-  { key: 7, label: "Intégration", value: "Intégration" },
-  { key: 8, label: "Partage d'informations", value: "Partage d'informations" },
-  { key: 9, label: "Présentation", value: "Présentation" },
-  { key: 10, label: "Réseautage", value: "Réseautage" },
-  { key: 11, label: "Rituel agile", value: "Rituel agile" },
-  { key: 12, label: "Résolution de problème", value: "Résolution de problème" },
-  { key: 13, label: "Rendez-vous client", value: "Rendez-vous client" },
-  { key: 14, label: "Réunion commerciale", value: "Réunion commerciale" },
-  { key: 15, label: "Suivi de projet", value: "Suivi de projet" },
-  { key: 16, label: "Séminaire", value: "Séminaire" },
+const activityOptionsStrings = [
+  "Atelier",
+  "Comité",
+  "Conférence",
+  "Entretien individuel",
+  "Embauche",
+  "Pomodoro",
+  "Intégration",
+  "Partage d'informations",
+  "Présentation",
+  "Réseautage",
+  "Rituel agile",
+  "Résolution de problème",
+  "Rendez-vous client",
+  "Réunion commerciale",
+  "Suivi de projet",
+  "Séminaire",
 ];
+
+export const activityOptions: Option[] = activityOptionsStrings.map((e) => {
+  return { key: e, label: e, value: e };
+});
 
 // form defaults
 
@@ -134,7 +149,23 @@ export const subViewPages = {
   "past-moments": PASTUSERMOMENTSPAGE,
   "current-moments": CURRENTUSERMOMENTSPAGE,
   "future-moments": FUTUREUSERMOMENTSPAGE,
-};
+} as const;
+
+export const subViewCountUserMomentsWithContains = {
+  "all-moments": trueCountUserAllMomentsWithContains,
+  "past-moments": countPastUserMomentsWithContains,
+  "current-moments": countCurrentUserMomentsWithContains,
+  "future-moments": countFutureUserMomentsWithContains,
+} as const;
+
+export const subViewFindUserMomentsWithContains = {
+  "all-moments": trueFindUserAllMomentsWithContains,
+  "past-moments": findPastUserMomentsWithContains,
+  "current-moments": findCurrentUserMomentsWithContains,
+  "future-moments": findFutureUserMomentsWithContains,
+} as const;
+
+// countUserMomentsWithContains
 
 // form section topic removeMessagesAndErrorsCallbacks
 // THIS SHOULD HAVE NEVER BEEN HERE SINCE IT'S UNIQUE TO FORMSECTION.

@@ -1,6 +1,11 @@
+import Hashids from "hashids";
 import clsx from "clsx";
 
-import { NavLink } from "../types/globals";
+import { NavLink } from "@/app/types/globals";
+
+// core Hashids instance
+
+export const hashids = new Hashids(process.env.HASHIDS_SALT, 10);
 
 // Grouped style classes
 
@@ -44,5 +49,3 @@ export const navLinks: NavLink[] = [
     icon: "PaperAirplaneOutline",
   },
 ];
-
-export const defaultSaltRounds = 10;

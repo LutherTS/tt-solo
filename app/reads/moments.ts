@@ -24,9 +24,23 @@ const select = selectMomentDefault;
 
 // Counts
 
-export async function countUserMomentsWithContains(
+// preemptive renaming to address collision
+export async function countUserAllMomentsWithContains(
   userId: string,
   contains: string,
+) {
+  const where = Object.assign(
+    whereUserMoments(userId),
+    whereContains(contains),
+  );
+
+  return await prisma.moment.count({ where });
+}
+
+export async function trueCountUserAllMomentsWithContains(
+  userId: string,
+  contains: string,
+  _nowString: string,
 ) {
   const where = Object.assign(
     whereUserMoments(userId),
@@ -146,9 +160,33 @@ export async function countFutureUserMomentsShownBeforeMoment(
 
 // FindManys
 
-export async function findUserMomentsWithContains(
+// preemptive renaming to address collision
+export async function findUserAllMomentsWithContains(
   userId: string,
   contains: string,
+  userMomentsPage: number,
+) {
+  const where = Object.assign(
+    whereUserMoments(userId),
+    whereContains(contains),
+  );
+  const orderBy = [orderByMomentsStartDesc, orderByMomentsNameAsc];
+  const take = TAKE;
+  const skip = Math.max(0, userMomentsPage - 1) * TAKE;
+
+  return await prisma.moment.findMany({
+    select,
+    where,
+    orderBy,
+    take,
+    skip,
+  });
+}
+
+export async function trueFindUserAllMomentsWithContains(
+  userId: string,
+  contains: string,
+  _nowString: string,
   userMomentsPage: number,
 ) {
   const where = Object.assign(
@@ -254,6 +292,7 @@ export async function findMomentByIdAndUserId(id: string, userId: string) {
   const where = whereMomentIdAndUserId(id, userId);
 
   return await prisma.moment.findUnique({
+    select,
     where,
   });
 }

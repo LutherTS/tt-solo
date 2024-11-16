@@ -13,9 +13,13 @@ import {
   UserMomentsToCRUD,
   SelectMomentIdNameAndDates,
   CreateOrUpdateMomentState,
+  MomentAdapted,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import { MOMENTID, subViews, TAKE, VIEW } from "@/app/data/moments";
+import { decodeHashidToUUID, encodeUUIDWithHashids } from "./globals";
+import { findMomentByIdAndUserId } from "../reads/moments";
+import { adaptMoment } from "../adapts/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -267,13 +271,33 @@ export const defineView = (rawView: string | undefined): View => {
   }
 };
 
-// defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page
+// defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page // didn't need to be async too
 export const defineMoment = async (
   rawMomentId: string | undefined,
   uniqueShownMoments: MomentToCRUD[],
 ): Promise<MomentToCRUD | undefined> => {
   if (!rawMomentId) return undefined;
   else return uniqueShownMoments.find((e) => e.id === rawMomentId);
+  // else
+  //   return uniqueShownMoments.find(
+  //     (e) => e.id === decodeHashidToUUID(rawMomentId),
+  //   );
+};
+
+export const trueDefineMoment = async (
+  rawMomentKey: string | undefined,
+  userId: string,
+): Promise<MomentAdapted | undefined> => {
+  if (!rawMomentKey) return undefined;
+  else {
+    const moment = await findMomentByIdAndUserId(
+      decodeHashidToUUID(rawMomentKey),
+      userId,
+    );
+
+    if (!moment) return undefined;
+    else return adaptMoment(moment);
+  }
 };
 
 // defines both the view and moment depending on one another, so that the "update-moment" cannot be shown if there is no moment

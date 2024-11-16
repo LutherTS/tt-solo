@@ -39,11 +39,11 @@ import {
   countCurrentUserMomentsWithContains,
   countFutureUserMomentsWithContains,
   countPastUserMomentsWithContains,
-  countUserMomentsWithContains,
+  countUserAllMomentsWithContains,
   findCurrentUserMomentsWithContains,
   findFutureUserMomentsWithContains,
   findPastUserMomentsWithContains,
-  findUserMomentsWithContains,
+  findUserAllMomentsWithContains,
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
@@ -52,6 +52,7 @@ import {
   deleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
+import { fetchMomentFormsViewFlow } from "@/app/flows/fetch/moments";
 
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 
@@ -103,8 +104,7 @@ export default async function MomentsPage({
 
   // params and searchParams are awaited in the RC 2 and in stable Next.js 15
   // this simple line assigns the resolved params promise to the params variable already use in the code
-  params = await params;
-  searchParams = await searchParams;
+  params = await params; // Eventually it is not the page but its main component that's going to await the params...? Yes. Because there may eventually be part of the page, UI that could be loaded and pre-rendered without the need for the params to have been awaited on the whole page. It's just that for now I voluntarily want the whole page to freeze and not even show anything if there is no user found. Which makes sense. People shouldn't even have any idea what the page is supposed to look like if they're not authenticated.
 
   const username = params.username;
   // console.log({ username });
@@ -117,7 +117,12 @@ export default async function MomentsPage({
   // extremely important in order to use user in server actions without null
   const user = userFound;
 
-  const userId = user.id;
+  // HERE TO SEPARATE IN fetchReadMomentsViewFlow and fetchMomentFormsViewFlow
+  // Decided. Even searchParams will be awaited on the fetch flows.
+
+  const userId = user.id; // unneeded soon here
+
+  searchParams = await searchParams;
 
   // that is one chill searchParam right here
   const contains = searchParams?.[CONTAINS] || "";
@@ -129,7 +134,7 @@ export default async function MomentsPage({
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ] = await Promise.all([
-    countUserMomentsWithContains(userId, contains),
+    countUserAllMomentsWithContains(userId, contains),
     countPastUserMomentsWithContains(userId, contains, now),
     countCurrentUserMomentsWithContains(userId, contains, now),
     countFutureUserMomentsWithContains(userId, contains, now),
@@ -155,6 +160,13 @@ export default async function MomentsPage({
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log({ maxPages });
 
+  const trueMaxPages = [
+    Math.ceil(totals[0] / TAKE),
+    Math.ceil(totals[1] / TAKE),
+    Math.ceil(totals[2] / TAKE),
+    Math.ceil(totals[3] / TAKE),
+  ] as const;
+
   const searchParamsPageKeys = [
     USERMOMENTSPAGE,
     PASTUSERMOMENTSPAGE,
@@ -173,6 +185,29 @@ export default async function MomentsPage({
   );
   // console.log({ pages });
 
+  const truePages = [
+    defineCurrentPage(
+      INITIAL_PAGE,
+      Number(searchParams?.[searchParamsPageKeys[0]]),
+      maxPages[0],
+    ),
+    defineCurrentPage(
+      INITIAL_PAGE,
+      Number(searchParams?.[searchParamsPageKeys[1]]),
+      maxPages[1],
+    ),
+    defineCurrentPage(
+      INITIAL_PAGE,
+      Number(searchParams?.[searchParamsPageKeys[2]]),
+      maxPages[2],
+    ),
+    defineCurrentPage(
+      INITIAL_PAGE,
+      Number(searchParams?.[searchParamsPageKeys[3]]),
+      maxPages[3],
+    ),
+  ] as const;
+
   const [
     userMomentsPage,
     pastUserMomentsPage,
@@ -190,7 +225,7 @@ export default async function MomentsPage({
     currentUserMoments,
     futureUserMoments,
   ]: SelectMomentDefault[][] = await Promise.all([
-    findUserMomentsWithContains(userId, contains, userMomentsPage),
+    findUserAllMomentsWithContains(userId, contains, userMomentsPage),
     findPastUserMomentsWithContains(userId, contains, now, pastUserMomentsPage),
     findCurrentUserMomentsWithContains(
       userId,
@@ -212,7 +247,7 @@ export default async function MomentsPage({
   //   futureUserMoments,
   // });
 
-  const userDestinations = await findDestinationsByUserId(userId);
+  // const userDestinations = await findDestinationsByUserId(userId);
   // console.log({ userDestinations });
 
   // adapting data for the client
@@ -232,12 +267,12 @@ export default async function MomentsPage({
     maxPages,
   );
   // console.logs on demand...
-  // console.log(allUserMomentsToCRUD[0].dates[0]);
 
-  const destinationOptions: Option[] =
-    adaptDestinationsForMoment(userDestinations);
+  // const destinationOptions: Option[] =
+  //   adaptDestinationsForMoment(userDestinations);
   // console.logs on demand...
-  console.log(destinationOptions);
+
+  const { destinationOptions } = await fetchMomentFormsViewFlow(user);
 
   // obtaining and interpreting view, moment and subView
 
@@ -261,6 +296,19 @@ export default async function MomentsPage({
   let definedView = defineView(searchParams?.[VIEW]);
   // console.log({ definedView });
 
+  // No need to decode here, since this is still based on adapted data that is meant for the client.
+  // But this needs to change completely. It should not depend on uniqueShownMoments and it's the first thing I should solve tomorrow morning.
+  // The reason I did this is because I...
+  // ...OMG this might the first time I use useOptimistic tomorrow!!!!!
+  // So the reason I did this is because I want the update page to change instantaneously without needing to hit the database. However, I will need to do so here, to hit the database here. It's on the CLIENT that I will instead use useOptimistic so that while the database resolves, I can use the current data and start modifying the form based on current data.
+  // Then I give to the key of UpdateMomentView a mix of the moment's key and the view so that if at resolve it is the same key and the same view that definedMoment retrieve and land to, the component doesn't get remounted which would destroy the form completion that was done during awaiting.
+  // None of what I'll be doing here will be visible in my demo nor in my own code. The only way that I'll know so far that it works, is by delaying, through console.logs and by nothing breaking even though useOptimistic is implemented.
+  // Then I can even go further and directly play with the use hook. ...If I honestly can do this ALL this weekend, that will be all of React 19's relevant hooks being implemented in my project... Before the presentation.
+  // Imagine. My form will pretty much load instantaneously since even though it's the child of a Client Component, it won't have to wait for the server to fetch the moments of ReadMomentsView. And that could be quasi-true even for the UpdateMomentView.
+  // And that would allow me to present clearly the benefits of React 19 to my audience.
+  // Imagine. Imagine if that talk, despite or even thanks to my stuttering, is SO GOOD that it reaches the hear of Guillermo Rauch. Just imagine. Imagine. Dream. ...This is why I need to do this.
+  // ...
+  // It won't work though, the useOptimistic I mean, because the data changes are not happening on the same right at a given time.
   let definedMoment = await defineMoment(
     searchParams?.[MOMENTID],
     uniqueShownMoments,
@@ -292,7 +340,7 @@ export default async function MomentsPage({
       variant,
       startMomentDate,
       steps,
-      momentFromCRUD,
+      momentFromCRUD, // DECODE NEEDED // Done.
       destinationSelect,
       activitySelect,
       user,
@@ -309,7 +357,10 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await deleteMomentServerFlow(momentFromCRUD, user);
+    return await deleteMomentServerFlow(
+      momentFromCRUD, // DECODE NEEDED // Done.
+      user,
+    );
   }
 
   // insisting on : Promise<void> to keep in sync with the flow
