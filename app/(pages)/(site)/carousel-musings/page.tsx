@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { LeftClientButton, RightClientButton } from "./client-buttons";
+import Form from "next/form";
 
 export default async function Page({
   searchParams,
@@ -37,13 +39,34 @@ const Carousel = ({
           <div key={index}>{item}</div>
         ))}
       </div>
-      <LeftClientButton currentIndex={currentIndex} />
+      {/* <LeftClientButton currentIndex={currentIndex} /> */}
+      <PreviousIndexFormAndButton currentIndex={currentIndex} />
       <RightClientButton currentIndex={currentIndex} />
     </div>
+  );
+};
+
+const PreviousIndexFormAndButton = ({
+  currentIndex,
+}: {
+  currentIndex: number;
+}) => {
+  async function previousIndex() {
+    "use server";
+    console.log("Previous.", currentIndex);
+    redirect("/carousel-musings");
+  }
+
+  return (
+    <Form action={previousIndex}>
+      <button type="submit">Previous</button>
+    </Form>
   );
 };
 
 /* Notes
 Switching pages with redirect provokes a full refresh. (Which is weird because I don't remember it being like this on my moments page?) So that's why a client component as usual would be required for navigation.
 Exactly. So always prefer useRouter to get navigation client-side without hard refreshes.
+...
+Wait. What if I was using the Form component to enforce client-side animations on... I has no effect, it's redirect that makes a GET 303 which has to be a full page refresh. It's only logical that client-side navigation requires Client Components.
 */

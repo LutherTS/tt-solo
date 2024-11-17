@@ -72,10 +72,10 @@ export function FormValidationError({
   return (
     <p
       className={clsx(
-        "max-w-prose text-sm text-pink-500",
+        "max-w-prose text-sm text-pink-500 transition-colors",
         setCreateOrUpdateMomentState &&
           removeMessagesAndErrorsCallback &&
-          "hover:cursor-pointer",
+          "hover:cursor-pointer hover:text-pink-400 active:text-pink-600",
       )}
       onClick={handleClick}
     >

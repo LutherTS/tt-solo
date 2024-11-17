@@ -1355,7 +1355,8 @@ export function ReorderItem({
               className={clsx(
                 "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
                 "transition-colors",
-                stepVisible !== "updating" && "hover:text-neutral-400",
+                stepVisible !== "updating" &&
+                  "hover:cursor-pointer hover:text-neutral-400", // can't work on active because it's inconsistent. (buggy)
               )}
               onPointerDown={(event) => {
                 if (stepVisible !== "updating") controls.start(event);
