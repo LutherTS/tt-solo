@@ -18,7 +18,7 @@ import {
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import { Option } from "@/app/types/globals";
 import {
-  MomentsPageSearchParams,
+  MomentsPageSearchParamsRaw,
   SubView,
   UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
@@ -28,7 +28,7 @@ import { defineCurrentPage } from "@/app/utilities/moments";
 // import { delay } from "@/app/utilities/globals";
 
 export async function fetchViewAndMomentDataFlow(
-  searchParams: MomentsPageSearchParams,
+  searchParams: MomentsPageSearchParamsRaw,
   user: SelectUserIdAndUsername,
 ) {
   // await delay(5000, () => console.log("After 5 seconds")); // The reason why the whole UI blocks with this is because I need the view-moment combo to properly show the text. (I could load everything but the text if I wanted though, but I think other components currently depend on that centrality.)
@@ -47,7 +47,7 @@ export async function fetchViewAndMomentDataFlow(
 export const fetchReadMomentsViewDataFlow = async (
   now: string,
   user: SelectUserIdAndUsername,
-  searchParams: MomentsPageSearchParams,
+  searchParams: MomentsPageSearchParamsRaw,
 ): Promise<{
   userMomentsAdaptedCombined: UserMomentsAdaptedCombined;
   subView: SubView;
@@ -107,7 +107,7 @@ export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
   now: string,
   userId: string,
   contains: string,
-  searchParams: MomentsPageSearchParams,
+  searchParams: MomentsPageSearchParamsRaw,
   subView: SubView,
 ) {
   const countUserMomentsWithContains =

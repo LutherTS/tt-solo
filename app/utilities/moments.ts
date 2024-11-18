@@ -4,7 +4,7 @@ import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 import {
-  MomentsSearchParams,
+  MomentsPageSearchParamsHandled,
   FalseCreateOrUpdateMomentState,
   StepFromClient,
   View,
@@ -13,7 +13,6 @@ import {
   UserMomentsToCRUD,
   SelectMomentIdNameAndDates,
   CreateOrUpdateMomentState,
-  UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
@@ -180,7 +179,7 @@ export const scrollToTopOfDesiredView = (
 ) => {
   const newSearchParams = new URLSearchParams(
     searchParams,
-  ) as TypedURLSearchParams<MomentsSearchParams>;
+  ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
 
   if (desiredView !== views.UPDATE_MOMENT)
     newSearchParams.delete(momentsPageSearchParamsKeys.MOMENT_KEY);

@@ -41,14 +41,13 @@ import {
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
-  MomentsSearchParamsKey,
   StepFormVariant,
   StepFromClient,
   StepVisible,
   SubView,
   UserMomentsToCRUD,
   View,
-  MomentsSearchParams,
+  MomentsPageSearchParamsHandled,
   CreateOrUpdateMomentState,
   FalseCreateOrUpdateMoment,
   FalseDeleteMoment,
@@ -275,7 +274,7 @@ export function ReadMomentsView({
   function handleSearch(term: string) {
     const newSearchParams = new URLSearchParams(
       searchParams,
-    ) as TypedURLSearchParams<MomentsSearchParams>;
+    ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
 
     if (term) newSearchParams.set(momentsPageSearchParamsKeys.CONTAINS, term);
     else newSearchParams.delete(momentsPageSearchParamsKeys.CONTAINS);
@@ -317,7 +316,7 @@ export function ReadMomentsView({
   function handlePagination(direction: "left" | "right", subView: SubView) {
     const newSearchParams = new URLSearchParams(
       searchParams,
-    ) as TypedURLSearchParams<MomentsSearchParams>;
+    ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
 
     if (direction === "left")
       newSearchParams.set(

@@ -299,11 +299,7 @@ export const falserCreateOrUpdateMomentServerFlow = async (
 
     const momentId = moment.id;
 
-    await createStepsInCreateOrUpdateMomentServerFlow(
-      steps,
-      startMomentDate,
-      momentId,
-    );
+    await createStepsSubFlow(steps, startMomentDate, momentId);
   } else {
     // if (variant === "updating") {
     if (!momentFromCRUD)
@@ -359,11 +355,7 @@ export const falserCreateOrUpdateMomentServerFlow = async (
 
     await deleteMomentStepsByMomentId(momentId);
 
-    await createStepsInCreateOrUpdateMomentServerFlow(
-      steps,
-      startMomentDate,
-      momentId,
-    );
+    await createStepsSubFlow(steps, startMomentDate, momentId);
   }
 
   const username = user.username;
@@ -699,11 +691,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
 
     const momentId = moment.id;
 
-    await createStepsInCreateOrUpdateMomentServerFlow(
-      steps,
-      startMomentDate,
-      momentId,
-    );
+    await createStepsSubFlow(steps, startMomentDate, momentId);
   } else {
     // if (variant === "updating") {
     if (!momentFromCRUD)
@@ -762,11 +750,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
 
     await deleteMomentStepsByMomentId(momentId);
 
-    await createStepsInCreateOrUpdateMomentServerFlow(
-      steps,
-      startMomentDate,
-      momentId,
-    );
+    await createStepsSubFlow(steps, startMomentDate, momentId);
   }
 
   const username = user.username;
@@ -1096,11 +1080,7 @@ export const createOrUpdateMomentServerFlow = async (
 
     const momentId = moment.id;
 
-    await createStepsInCreateOrUpdateMomentServerFlow(
-      steps,
-      startMomentDate,
-      momentId,
-    );
+    await createStepsSubFlow(steps, startMomentDate, momentId);
   } else {
     // if (variant === "updating") {
     if (!momentFromCRUD)
@@ -1159,14 +1139,10 @@ export const createOrUpdateMomentServerFlow = async (
 
     await deleteMomentStepsByMomentId(momentId);
 
-    await createStepsInCreateOrUpdateMomentServerFlow(
-      steps,
-      startMomentDate,
-      momentId,
-    );
+    await createStepsSubFlow(steps, startMomentDate, momentId);
   }
 
-  const success = await createSuccessInCreateOrUpdateMomentServerFlow({
+  const success = await createSuccessSubFlow({
     userId,
     moment,
   });
@@ -1179,7 +1155,7 @@ export const createOrUpdateMomentServerFlow = async (
   return success;
 };
 
-const createSuccessInCreateOrUpdateMomentServerFlow = async ({
+const createSuccessSubFlow = async ({
   userId,
   moment,
 }: {
@@ -1233,7 +1209,7 @@ const createSuccessInCreateOrUpdateMomentServerFlow = async ({
   }
 };
 
-const createStepsInCreateOrUpdateMomentServerFlow = async (
+const createStepsSubFlow = async (
   steps: StepFromClient[],
   momentDate: string,
   momentId: string,
@@ -1313,7 +1289,7 @@ export const falserDeleteMomentServerFlow = async (
   return null;
 };
 
-export const deleteMomentServerFlow = async (
+export const falseDeleteMomentServerFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
@@ -1360,7 +1336,7 @@ export const deleteMomentServerFlow = async (
   return { isSuccess: true, success: {} };
 };
 
-export const trueDeleteMomentServerFlow = async (
+export const deleteMomentServerFlow = async (
   momentFromCRUD: MomentAdapted | undefined,
   user: SelectUserIdAndUsername,
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
@@ -1380,8 +1356,10 @@ export const trueDeleteMomentServerFlow = async (
 
   const momentId = decodeHashidToUUID(momentFromCRUD.key);
 
+  const userId = user.id;
+
   // verify if the moment still exists at time of deletion
-  const moment = await findMomentByIdAndUserId(momentId, user.id);
+  const moment = await findMomentByIdAndUserId(momentId, userId);
 
   if (!moment)
     return {
@@ -1398,13 +1376,18 @@ export const trueDeleteMomentServerFlow = async (
       },
     };
 
+  const success = await createSuccessSubFlow({
+    userId,
+    moment,
+  });
+
   await deleteMomentByMomentId(moment.id);
 
   const username = user.username;
 
   revalidatePath(`/users/${username}/moments`);
 
-  return { isSuccess: true, success: {} };
+  return success;
 };
 
 export const revalidateMomentsServerFlow = async (

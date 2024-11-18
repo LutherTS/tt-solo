@@ -43,7 +43,6 @@ import {
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
-  MomentsSearchParamsKey,
   StepFormVariant,
   StepFromClient,
   StepVisible,

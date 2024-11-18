@@ -14,7 +14,7 @@ import {
   CreateOrUpdateMomentState,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
-  MomentsSearchParams,
+  MomentsPageSearchParamsHandled,
 } from "@/app/types/moments";
 import {
   scrollToSection,
@@ -91,34 +91,48 @@ export const createOrUpdateMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    const newSearchParams = new URLSearchParams(
+    isSuccessTrueSubFlow(
       searchParams,
-    ) as TypedURLSearchParams<MomentsSearchParams>;
-
-    newSearchParams.set(momentsPageSearchParamsKeys.VIEW, views.READ_MOMENTS);
-    newSearchParams.delete(momentsPageSearchParamsKeys.MOMENT_KEY);
-
-    if (createOrUpdateMomentState.success.subView)
-      newSearchParams.set(
-        momentsPageSearchParamsKeys.SUB_VIEW,
-        createOrUpdateMomentState.success.subView,
-      );
-    if (
-      createOrUpdateMomentState.success.subView &&
-      createOrUpdateMomentState.success.countPage
-    )
-      if (createOrUpdateMomentState.success.countPage === 1)
-        newSearchParams.delete(
-          subViewsPages[createOrUpdateMomentState.success.subView],
-        );
-      else
-        newSearchParams.set(
-          subViewsPages[createOrUpdateMomentState.success.subView],
-          createOrUpdateMomentState.success.countPage.toString(),
-        );
-
-    push(`${pathname}?${newSearchParams.toString()}`);
+      push,
+      pathname,
+      createOrUpdateMomentState,
+    );
   }
+};
+
+const isSuccessTrueSubFlow = (
+  searchParams: ReadonlyURLSearchParams,
+  push: (href: string, options?: NavigateOptions) => void,
+  pathname: string,
+  createOrUpdateMomentState: CreateOrUpdateMomentSuccess,
+) => {
+  const newSearchParams = new URLSearchParams(
+    searchParams,
+  ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
+
+  newSearchParams.set(momentsPageSearchParamsKeys.VIEW, views.READ_MOMENTS);
+  newSearchParams.delete(momentsPageSearchParamsKeys.MOMENT_KEY);
+
+  if (createOrUpdateMomentState.success.subView)
+    newSearchParams.set(
+      momentsPageSearchParamsKeys.SUB_VIEW,
+      createOrUpdateMomentState.success.subView,
+    );
+  if (
+    createOrUpdateMomentState.success.subView &&
+    createOrUpdateMomentState.success.countPage
+  )
+    if (createOrUpdateMomentState.success.countPage === 1)
+      newSearchParams.delete(
+        subViewsPages[createOrUpdateMomentState.success.subView],
+      );
+    else
+      newSearchParams.set(
+        subViewsPages[createOrUpdateMomentState.success.subView],
+        createOrUpdateMomentState.success.countPage.toString(),
+      );
+
+  push(`${pathname}?${newSearchParams.toString()}`);
 };
 
 // scrolls back to yourMoment's section at the top after resetting the form
@@ -159,6 +173,13 @@ export const deleteMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    scrollToTopOfDesiredView(views.READ_MOMENTS, searchParams, push, pathname);
+    // scrollToTopOfDesiredView(views.READ_MOMENTS, searchParams, push, pathname); // it automatically scrolls to top here
+
+    isSuccessTrueSubFlow(
+      searchParams,
+      push,
+      pathname,
+      createOrUpdateMomentState,
+    );
   }
 };

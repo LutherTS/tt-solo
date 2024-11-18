@@ -1,12 +1,13 @@
 /* PREVENTING CIRCULAR DEPENDENCIES
 The should be NO IMPORTS OTHER TYPES in the data file. Any variable, or object or whatever that requires a mix of data and utilities import (as it happened) NEEDS TO MADE ON THE FILE WHERE IT IS USED. (Looking at you, formSectionTopicRemoves.)
+...So far so good though...
 */
 
 import { Option } from "@/app/types/globals";
 import {
   MomentFormIds,
   MomentFormVariant,
-  MomentsSearchParamsKey,
+  MomentsPageSearchParamsKeyOfPages,
   SubView,
   View,
   // FormSectionTopic,
@@ -40,12 +41,26 @@ export const momentsPageSearchParamsKeys = {
   MOMENT_KEY: "momentkey",
 } as const;
 
-// const searchParamsPageKeys = [
-//   momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
-//   momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,
-//   momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
-//   momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
-// ] as const;
+export const MOMENTS_PAGE_SEARCH_PARAMS_KEYS = Object.values(
+  momentsPageSearchParamsKeys,
+) as ReadonlyArray<
+  (typeof momentsPageSearchParamsKeys)[keyof typeof momentsPageSearchParamsKeys]
+>;
+
+export const momentsPageSearchParamsKeysOfPages = {
+  USER_ALL_MOMENTS_PAGE: momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
+  USER_PAST_MOMENTS_PAGE: momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,
+  USER_CURRENT_MOMENTS_PAGE:
+    momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
+  USER_FUTURE_MOMENTS_PAGE:
+    momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
+} as const;
+
+export const MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES = Object.values(
+  momentsPageSearchParamsKeysOfPages,
+) as ReadonlyArray<
+  (typeof momentsPageSearchParamsKeysOfPages)[keyof typeof momentsPageSearchParamsKeysOfPages]
+>;
 
 // initial and lowest moments page number
 export const INITIAL_PAGE = 1;
@@ -140,7 +155,7 @@ export const SUBVIEWS = Object.values(subViews) as ReadonlyArray<
 >;
 
 export const subViewsMomentsPageSearchParamsKeys: {
-  [K in SubView]: MomentsSearchParamsKey;
+  [K in SubView]: MomentsPageSearchParamsKeyOfPages;
 } = {
   [subViews.ALL_MOMENTS]: momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
   [subViews.PAST_MOMENTS]: momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,

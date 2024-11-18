@@ -26,6 +26,7 @@ import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   TAKE,
+  MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
 } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
@@ -42,7 +43,7 @@ import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
   revalidateMomentsServerFlow,
   falseCreateOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
+  falseDeleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import {
   adaptDestinationsForMoment,
@@ -123,14 +124,7 @@ export default async function MomentsPage({
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log({ maxPages });
 
-  const searchParamsPageKeys = [
-    momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
-    momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,
-    momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
-    momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
-  ] as const;
-
-  const pages = searchParamsPageKeys.map((e, i) =>
+  const pages = MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES.map((e, i) =>
     defineCurrentPage(INITIAL_PAGE, Number(searchParams?.[e]), maxPages[i]),
   );
   // console.log({ pages });
@@ -265,7 +259,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await deleteMomentServerFlow(momentFromCRUD, user);
+    return await falseDeleteMomentServerFlow(momentFromCRUD, user);
   }
 
   async function revalidateMoments(): Promise<void> {

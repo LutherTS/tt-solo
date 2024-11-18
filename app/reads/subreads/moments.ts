@@ -26,10 +26,6 @@ export const selectMomentDefault = {
   },
 } satisfies Prisma.MomentSelect;
 
-export const selectMomentId = {
-  id: true,
-} satisfies Prisma.MomentSelect;
-
 export const selectMomentIdNameAndDates = {
   id: true,
   name: true,

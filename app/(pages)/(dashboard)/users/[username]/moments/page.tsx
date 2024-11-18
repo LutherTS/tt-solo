@@ -15,7 +15,7 @@ import { findUserIdByUsername } from "@/app/reads/users";
 import {
   revalidateMomentsServerFlow,
   createOrUpdateMomentServerFlow,
-  trueDeleteMomentServerFlow,
+  deleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import {
   fetchMomentFormsDataFlow,
@@ -138,7 +138,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await trueDeleteMomentServerFlow(
+    return await deleteMomentServerFlow(
       momentAdapted, // DECODE NEEDED // Done.
       user,
     );
