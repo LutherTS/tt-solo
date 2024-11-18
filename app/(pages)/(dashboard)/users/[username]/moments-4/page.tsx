@@ -23,7 +23,7 @@ import {
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
   revalidateMomentsServerFlow,
-  trueCreateOrUpdateMomentServerFlow,
+  createOrUpdateMomentServerFlow,
   trueDeleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import {
@@ -115,7 +115,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await trueCreateOrUpdateMomentServerFlow(
+    return await createOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,

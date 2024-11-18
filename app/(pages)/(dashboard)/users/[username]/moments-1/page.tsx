@@ -38,9 +38,9 @@ import {
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
-  falseDeleteMomentServerFlow,
+  falserDeleteMomentServerFlow,
   revalidateMomentsServerFlow,
-  falseCreateOrUpdateMomentServerFlow,
+  falserCreateOrUpdateMomentServerFlow,
 } from "@/app/flows/server/moments";
 import { FallbackFlex } from "@/app/components/__components__";
 import {
@@ -204,7 +204,7 @@ export default async function MomentsPage({
   ): Promise<FalseCreateOrUpdateMomentState> {
     "use server";
 
-    return await falseCreateOrUpdateMomentServerFlow(
+    return await falserCreateOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -221,7 +221,7 @@ export default async function MomentsPage({
   ): Promise<FalseCreateOrUpdateMomentState> {
     "use server";
 
-    return await falseDeleteMomentServerFlow(momentFromCRUD, user);
+    return await falserDeleteMomentServerFlow(momentFromCRUD, user);
   }
 
   async function revalidateMoments(): Promise<void> {

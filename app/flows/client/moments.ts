@@ -6,7 +6,7 @@ import { compareAsc, compareDesc } from "date-fns";
 import {
   DEFAULT_STEP_MESSAGE,
   DEFAULT_STEP_SUBMESSAGE,
-  MOMENT_FORM_IDS,
+  momentFormIds,
   STEP_DURATION_ORIGINAL,
   VIEW,
 } from "@/app/data/moments";
@@ -79,7 +79,7 @@ export const falserCreateOrUpdateMomentClientFlow = async (
     // resetting the whole form manually
     if (variant === "creating") {
       const momentForm = document.getElementById(
-        MOMENT_FORM_IDS[variant].momentForm,
+        momentFormIds[variant].momentForm,
       ) as HTMLFormElement | null;
       momentForm?.reset();
     }
@@ -139,7 +139,7 @@ export const falseCreateOrUpdateMomentClientFlow = async (
     // resetting the whole form manually
     if (variant === "creating") {
       const momentForm = document.getElementById(
-        MOMENT_FORM_IDS[variant].momentForm,
+        momentFormIds[variant].momentForm,
       ) as HTMLFormElement | null;
       momentForm?.reset();
     }
@@ -182,7 +182,7 @@ export const createOrUpdateMomentClientFlow = async (
     // resetting the whole form manually
     if (variant === "creating") {
       const momentForm = document.getElementById(
-        MOMENT_FORM_IDS[variant].momentForm,
+        momentFormIds[variant].momentForm,
       ) as HTMLFormElement | null;
       momentForm?.reset();
     }
@@ -218,7 +218,7 @@ export const falseResetMomentClientFlow = (
 
   // resetting the create step form along
   const stepFormCreating = document.getElementById(
-    MOMENT_FORM_IDS[variant].stepFormCreating,
+    momentFormIds[variant].stepFormCreating,
   ) as HTMLFormElement | null;
   stepFormCreating?.reset();
 
@@ -254,7 +254,7 @@ export const resetMomentClientFlow = (
 
   // resetting the create step form along
   const stepFormCreating = document.getElementById(
-    MOMENT_FORM_IDS[variant].stepFormCreating,
+    momentFormIds[variant].stepFormCreating,
   ) as HTMLFormElement | null;
   stepFormCreating?.reset();
 

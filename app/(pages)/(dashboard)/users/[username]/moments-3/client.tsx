@@ -59,15 +59,15 @@ import {
   CURRENTUSERMOMENTSPAGE,
   FUTUREUSERMOMENTSPAGE,
   INITIAL_PAGE,
-  MOMENT_FORM_IDS,
+  momentFormIds,
   PASTUSERMOMENTSPAGE,
   SEARCH_FORM_ID,
   STEP_DURATION_ORIGINAL,
   SUBVIEW,
-  subViews,
-  subViewTitles,
+  SUBVIEWS,
+  subViewsTitles,
   USERMOMENTSPAGE,
-  views,
+  VIEWS,
 } from "@/app/data/moments";
 import {
   defineCurrentPage,
@@ -128,7 +128,7 @@ export function ViewsCarouselContainer({
     <motion.div
       className="flex"
       animate={{
-        x: `-${views.indexOf(view) * 100}%`,
+        x: `-${VIEWS.indexOf(view) * 100}%`,
       }}
       initial={false}
       transition={{
@@ -260,7 +260,7 @@ export function ReadMomentsView({
   };
 
   let realDisplayedMoments = realAllMoments.dates;
-  if (subView !== undefined && subViews.includes(subView))
+  if (subView !== undefined && SUBVIEWS.includes(subView))
     realDisplayedMoments = realShowcaseMoments[subView].dates;
 
   let realMoments: MomentToCRUD[] = [];
@@ -348,7 +348,7 @@ export function ReadMomentsView({
     rotateSearchParams(
       direction,
       SUBVIEW,
-      subViews,
+      SUBVIEWS,
       subView,
       searchParams,
       pathname,
@@ -421,7 +421,7 @@ export function ReadMomentsView({
       {/* spacer for divider (through space-y-8 though) */}
       <div></div>
       <div className={clsx("flex flex-wrap gap-4")}>
-        {subViews.map((e) => (
+        {SUBVIEWS.map((e) => (
           <SetSubViewButton key={e} e={e} subView={subView} />
         ))}
         <RevalidateMomentsButton
@@ -523,7 +523,7 @@ export function SetSubViewButton({
       )}
     >
       {/* real occupied space */}
-      <span className="invisible static">{subViewTitles[e]}</span>
+      <span className="invisible static">{subViewsTitles[e]}</span>
       {/* gradient text */}
       <span
         className={clsx(
@@ -531,7 +531,7 @@ export function SetSubViewButton({
           "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
         )}
       >
-        {subViewTitles[e]}
+        {subViewsTitles[e]}
       </span>
       {/* white background */}
       <div
@@ -972,14 +972,14 @@ export function MomentForms({
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentAction}
-        id={MOMENT_FORM_IDS[variant].momentForm}
+        id={momentFormIds[variant].momentForm}
         noValidate
       >
         <GlobalServerComponents.FormSection
           topic="moment"
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
-          id={MOMENT_FORM_IDS[variant].yourMoment}
+          id={momentFormIds[variant].yourMoment}
           error={createOrUpdateMomentState?.error?.momentMessages?.message}
           subError={
             createOrUpdateMomentState?.error?.momentMessages?.subMessage
@@ -1005,7 +1005,7 @@ export function MomentForms({
           topic="steps"
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          id={MOMENT_FORM_IDS[variant].itsSteps}
+          id={momentFormIds[variant].itsSteps}
           error={createOrUpdateMomentState?.error?.stepsMessages?.message}
           subError={createOrUpdateMomentState?.error?.stepsMessages?.subMessage}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
@@ -1196,7 +1196,7 @@ export function ReorderItem({
   const hasAPreviousStepUpdating =
     isAfterCurrentStep && stepVisible === "updating";
 
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
+  const form = momentFormIds[momentFormVariant].stepFormUpdating;
 
   // deleteStepAction
 
@@ -1589,8 +1589,8 @@ export function StepForm({
 }) {
   const stepFormId =
     variant === "updating"
-      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
-      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+      ? momentFormIds[momentFormVariant].stepFormUpdating
+      : momentFormIds[momentFormVariant].stepFormCreating;
 
   // createOrUpdateStepAction
 
@@ -1619,7 +1619,7 @@ export function StepForm({
       const noConfirm =
         // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
         event.nativeEvent.explicitOriginalTarget?.form?.id !==
-        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+        momentFormIds[momentFormVariant].stepFormCreating;
 
       if (
         noConfirm ||

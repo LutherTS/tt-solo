@@ -12,8 +12,10 @@ import {
   MOMENTKEY,
   PASTUSERMOMENTSPAGE,
   SUBVIEW,
+  subViews,
   USERMOMENTSPAGE,
   VIEW,
+  views,
 } from "@/app/data/moments";
 import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page";
 import {
@@ -129,13 +131,9 @@ export type UserMomentsAdaptedCombined = {
   userFutureMomentsAdapted: MomentsAdapted;
 };
 
-export type View = "update-moment" | "read-moments" | "create-moment";
+export type View = (typeof views)[keyof typeof views];
 
-export type SubView =
-  | "all-moments"
-  | "past-moments"
-  | "current-moments"
-  | "future-moments";
+export type SubView = (typeof subViews)[keyof typeof subViews];
 
 export type StepVisible = "create" | "creating" | "updating";
 

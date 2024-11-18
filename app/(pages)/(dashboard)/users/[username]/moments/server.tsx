@@ -8,9 +8,9 @@ import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import { Option, SetState } from "@/app/types/globals";
 import {
-  activityOptions,
-  MOMENT_FORM_IDS,
-  viewTitles,
+  ACTIVITY_OPTIONS,
+  momentFormIds,
+  viewsTitles,
 } from "@/app/data/moments";
 import {
   MomentFormVariant,
@@ -78,7 +78,7 @@ export function Header({ view }: { view: View }) {
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
+          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
           <LocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>
@@ -352,7 +352,7 @@ export function MomentInputs({
   const isVariantUpdatingMoment = variant === "updating" && moment;
 
   const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = activityOptions.map((e) => e.value);
+  const activityValues = ACTIVITY_OPTIONS.map((e) => e.value);
 
   return (
     <>
@@ -430,7 +430,7 @@ export function MomentInputs({
             : ""
         }
         placeholder="Choisissez..."
-        options={activityOptions}
+        options={ACTIVITY_OPTIONS}
         fieldFlexIsNotLabel
         required={false}
         errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
@@ -586,7 +586,7 @@ export function StepVisibleCreating({
   startMomentDate: string;
   allButtonsDisabled: boolean;
 }) {
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+  const form = momentFormIds[momentFormVariant].stepFormCreating;
 
   return (
     // was a form, but forms can't be nested

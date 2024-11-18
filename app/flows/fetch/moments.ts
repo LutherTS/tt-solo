@@ -11,9 +11,9 @@ import {
   INITIAL_PAGE,
   MOMENTKEY,
   SUBVIEW,
-  subViewCountUserMomentsWithContains,
-  subViewFindUserMomentsWithContains,
-  subViewPages,
+  subViewsCountUserMomentsWithContains,
+  subViewsFindUserMomentsWithContains,
+  subViewsPages,
   TAKE,
   VIEW,
 } from "@/app/data/moments";
@@ -106,7 +106,7 @@ export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
   subView: SubView,
 ) {
   const countUserMomentsWithContains =
-    subViewCountUserMomentsWithContains[subView];
+    subViewsCountUserMomentsWithContains[subView];
 
   const userMomentsTotal = await countUserMomentsWithContains(
     userId,
@@ -116,7 +116,7 @@ export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
 
   const userMomentsMaxPage = Math.ceil(userMomentsTotal / TAKE);
 
-  const MOMENTSPAGE = subViewPages[subView];
+  const MOMENTSPAGE = subViewsPages[subView];
 
   const userMomentsPage = defineCurrentPage(
     INITIAL_PAGE,
@@ -125,7 +125,7 @@ export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
   );
 
   const findUserMomentsWithContains =
-    subViewFindUserMomentsWithContains[subView];
+    subViewsFindUserMomentsWithContains[subView];
 
   // read
   const userMoments = await findUserMomentsWithContains(

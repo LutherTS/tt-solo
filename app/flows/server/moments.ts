@@ -42,11 +42,13 @@ import {
   SelectMomentIdNameAndDates,
   StepFromClient,
   MomentAdapted,
+  SubView,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
 import {
   DEFAULT_MOMENT_MESSAGE,
   DEFAULT_MOMENT_SUBMESSAGE,
+  subViews,
 } from "@/app/data/moments";
 import { decodeHashidToUUID } from "@/app/utilities/globals";
 
@@ -55,7 +57,7 @@ import { decodeHashidToUUID } from "@/app/utilities/globals";
 
 // Some errors to me are like showstoppers, they erase all other errors to single-handedly focus on themselves.
 
-export const falseCreateOrUpdateMomentServerFlow = async (
+export const falserCreateOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -426,7 +428,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
   return null;
 };
 
-export const createOrUpdateMomentServerFlow = async (
+export const falseCreateOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -823,7 +825,7 @@ export const createOrUpdateMomentServerFlow = async (
   }
 };
 
-export const trueCreateOrUpdateMomentServerFlow = async (
+export const createOrUpdateMomentServerFlow = async (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
@@ -1168,13 +1170,28 @@ export const trueCreateOrUpdateMomentServerFlow = async (
     );
   }
 
+  const success = await createSuccessInCreateOrUpdateMomentServerFlow({
+    userId,
+    moment,
+  });
+
   const username = user.username;
 
   // revalidatePath should be above since the code below will return the state with its success properties
   revalidatePath(`/users/${username}/moments`);
 
+  return success;
+};
+
+const createSuccessInCreateOrUpdateMomentServerFlow = async ({
+  userId,
+  moment,
+}: {
+  userId: string;
+  moment: SelectMomentIdNameAndDates;
+}) => {
   // closer to functions reduce inevitable time issues
-  currentNow = dateToInputDatetime(new Date());
+  const currentNow = dateToInputDatetime(new Date());
 
   if (
     // if the end of the moment is before now, it's "past-moments"
@@ -1187,8 +1204,8 @@ export const trueCreateOrUpdateMomentServerFlow = async (
       countUserPastMomentsShownBeforeMoment,
     );
     return {
-      isSuccess: true,
-      success: { moment, countPage, subView: "past-moments" },
+      isSuccess: true as true,
+      success: { moment, countPage, subView: subViews.PAST_MOMENTS },
     };
   } else if (
     // if the start of the moment is after now, it's "future-moments"
@@ -1201,8 +1218,8 @@ export const trueCreateOrUpdateMomentServerFlow = async (
       countUserFutureMomentsShownBeforeMoment,
     );
     return {
-      isSuccess: true,
-      success: { moment, countPage, subView: "future-moments" },
+      isSuccess: true as true,
+      success: { moment, countPage, subView: subViews.FUTURE_MOMENTS },
     };
   }
   // present by default // else, it can only be "current-moments"
@@ -1214,8 +1231,8 @@ export const trueCreateOrUpdateMomentServerFlow = async (
       countUserCurrentMomentsShownBeforeMoment,
     );
     return {
-      isSuccess: true,
-      success: { moment, countPage, subView: "current-moments" },
+      isSuccess: true as true,
+      success: { moment, countPage, subView: subViews.CURRENT_MOMENTS },
     };
   }
 };
@@ -1257,7 +1274,7 @@ const createStepsInCreateOrUpdateMomentServerFlow = async (
   }
 };
 
-export const falseDeleteMomentServerFlow = async (
+export const falserDeleteMomentServerFlow = async (
   momentFromCRUD: MomentToCRUD | undefined,
   user: SelectUserIdAndUsername,
   version?: "v3",

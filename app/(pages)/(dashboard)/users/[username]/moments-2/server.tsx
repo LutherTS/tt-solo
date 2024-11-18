@@ -7,9 +7,9 @@ import * as GlobalServerComponents from "@/app/components/server";
 import * as GlobalClientComponents from "@/app/components/client";
 import { Option, SetState } from "@/app/types/globals";
 import {
-  activityOptions,
-  MOMENT_FORM_IDS,
-  viewTitles,
+  ACTIVITY_OPTIONS,
+  momentFormIds,
+  viewsTitles,
 } from "@/app/data/moments";
 import {
   FalserCreateOrUpdateMoment,
@@ -76,7 +76,7 @@ export function Header({
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
+          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
           <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </HeaderSegment>
       </PageSegment>
@@ -327,7 +327,7 @@ export function MomentInputs({
   const isVariantUpdatingMoment = variant === "updating" && moment;
 
   const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = activityOptions.map((e) => e.value);
+  const activityValues = ACTIVITY_OPTIONS.map((e) => e.value);
 
   return (
     <>
@@ -405,7 +405,7 @@ export function MomentInputs({
             : ""
         }
         placeholder="Choisissez..."
-        options={activityOptions}
+        options={ACTIVITY_OPTIONS}
         fieldFlexIsNotLabel
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
@@ -554,7 +554,7 @@ export function StepVisibleCreating({
   startMomentDate: string;
   allButtonsDisabled: boolean;
 }) {
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+  const form = momentFormIds[momentFormVariant].stepFormCreating;
 
   return (
     <div className="flex flex-col gap-y-8">

@@ -16,7 +16,7 @@ import {
   UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { MOMENTKEY, subViews, TAKE, VIEW } from "@/app/data/moments";
+import { MOMENTKEY, SUBVIEWS, TAKE, VIEW } from "@/app/data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -298,7 +298,7 @@ export const defineWithViewAndMoment = (
 
 // type predicate for the subView searchParam
 export const isSubView = (value: any): value is SubView => {
-  return subViews.includes(value);
+  return SUBVIEWS.includes(value);
 };
 
 // defines the current read-moments view subView from the subView searchParam whether it is specified (as a string) or not (as undefined)

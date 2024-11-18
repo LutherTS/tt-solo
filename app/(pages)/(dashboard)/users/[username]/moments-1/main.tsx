@@ -92,14 +92,14 @@ import {
   PASTUSERMOMENTSPAGE,
   USERMOMENTSPAGE,
   SEARCH_FORM_ID,
-  activityOptions,
-  subViewTitles,
-  viewTitles,
-  subViews,
-  MOMENT_FORM_IDS,
+  ACTIVITY_OPTIONS,
+  subViewsTitles,
+  viewsTitles,
+  SUBVIEWS,
+  momentFormIds,
   STEP_DURATION_ORIGINAL,
   INITIAL_PAGE,
-  views,
+  VIEWS,
 } from "@/app/data/moments";
 import {
   falseCreateOrUpdateMomentAfterFlow,
@@ -190,7 +190,7 @@ export default function Main({
             "flex justify-between py-8 align-baseline",
           )}
         >
-          <PageTitle title={viewTitles[view]} />
+          <PageTitle title={viewsTitles[view]} />
           <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </div>
       </div>
@@ -199,7 +199,7 @@ export default function Main({
         <motion.div
           className="flex"
           animate={{
-            x: `-${views.indexOf(view) * 100}%`,
+            x: `-${VIEWS.indexOf(view) * 100}%`,
           }}
           initial={false}
           transition={{
@@ -349,7 +349,7 @@ function ReadMomentsView({
   };
 
   let realDisplayedMoments = realAllMoments.dates;
-  if (subView !== undefined && subViews.includes(subView))
+  if (subView !== undefined && SUBVIEWS.includes(subView))
     realDisplayedMoments = realShowcaseMoments[subView].dates;
 
   let realMoments: MomentToCRUD[] = [];
@@ -426,7 +426,7 @@ function ReadMomentsView({
   }
 
   const rotateSubView = (direction: "left" | "right") =>
-    rotateStates(direction, setSubView, subViews, subView);
+    rotateStates(direction, setSubView, SUBVIEWS, subView);
 
   useKeypress("ArrowLeft", (event: KeyboardEvent) => {
     if (view === "read-moments") {
@@ -494,7 +494,7 @@ function ReadMomentsView({
       {/* spacer for divider (through space-y-8 though) */}
       <div></div>
       <div className={clsx("flex flex-wrap gap-4")}>
-        {subViews.map((e) => (
+        {SUBVIEWS.map((e) => (
           <SetSubViewButton
             key={e}
             setSubView={setSubView}
@@ -829,13 +829,13 @@ function MomentForms({
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentAction}
-        id={MOMENT_FORM_IDS[variant].momentForm}
+        id={momentFormIds[variant].momentForm}
         noValidate
       >
         <Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
-          id={MOMENT_FORM_IDS[variant].yourMoment}
+          id={momentFormIds[variant].yourMoment}
           error={createOrUpdateMomentState?.momentMessages?.message}
           subError={createOrUpdateMomentState?.momentMessages?.subMessage}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
@@ -861,7 +861,7 @@ function MomentForms({
         <Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          id={MOMENT_FORM_IDS[variant].itsSteps}
+          id={momentFormIds[variant].itsSteps}
           error={createOrUpdateMomentState?.stepsMessages?.message}
           subError={createOrUpdateMomentState?.stepsMessages?.subMessage}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
@@ -1078,7 +1078,7 @@ function SetSubViewButton({
       )}
     >
       {/* real occupied space */}
-      <span className="invisible static">{subViewTitles[e]}</span>
+      <span className="invisible static">{subViewsTitles[e]}</span>
       {/* gradient text */}
       <span
         className={clsx(
@@ -1086,7 +1086,7 @@ function SetSubViewButton({
           "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
         )}
       >
-        {subViewTitles[e]}
+        {subViewsTitles[e]}
       </span>
       {/* white background */}
       <div
@@ -1383,8 +1383,8 @@ function StepForm({
 }) {
   const stepFormId =
     variant === "updating"
-      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
-      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+      ? momentFormIds[momentFormVariant].stepFormUpdating
+      : momentFormIds[momentFormVariant].stepFormCreating;
 
   // createOrUpdateStepAction
 
@@ -1412,7 +1412,7 @@ function StepForm({
       const noConfirm =
         // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
         event.nativeEvent.explicitOriginalTarget?.form?.id !==
-        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+        momentFormIds[momentFormVariant].stepFormCreating;
 
       if (
         noConfirm ||
@@ -1466,7 +1466,7 @@ function MomentInputs({
   const isVariantUpdatingMoment = variant === "updating" && moment;
 
   const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = activityOptions.map((e) => e.value);
+  const activityValues = ACTIVITY_OPTIONS.map((e) => e.value);
 
   return (
     <>
@@ -1553,7 +1553,7 @@ function MomentInputs({
             : ""
         }
         placeholder="Choisissez..."
-        options={activityOptions}
+        options={ACTIVITY_OPTIONS}
         fieldFlexIsNotLabel
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
@@ -1661,7 +1661,7 @@ function ReorderItem({
   const hasAPreviousStepUpdating =
     isAfterCurrentStep && stepVisible === "updating";
 
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
+  const form = momentFormIds[momentFormVariant].stepFormUpdating;
 
   // deleteStepAction
 
@@ -1886,7 +1886,7 @@ function StepVisibleCreating({
   stepsCompoundDurations: number[];
   startMomentDate: string;
 }) {
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+  const form = momentFormIds[momentFormVariant].stepFormCreating;
 
   return (
     // was a form, but forms can't be nested

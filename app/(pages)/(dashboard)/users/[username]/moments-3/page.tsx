@@ -48,7 +48,7 @@ import {
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
   revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
+  falseCreateOrUpdateMomentServerFlow,
   deleteMomentServerFlow,
 } from "@/app/flows/server/moments";
 import {
@@ -250,7 +250,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await createOrUpdateMomentServerFlow(
+    return await falseCreateOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,

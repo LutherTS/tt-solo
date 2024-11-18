@@ -37,17 +37,16 @@ export const VIEW = "view" as const;
 export const SUBVIEW = "subView" as const;
 export const MOMENTKEY = "momentKey" as const;
 
-// currently unused
-export const MOMENTS_SEARCH_PARAMS_KEYS = [
-  CONTAINS,
-  USERMOMENTSPAGE,
-  PASTUSERMOMENTSPAGE,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
-  VIEW,
-  SUBVIEW,
-  MOMENTKEY,
-] as const;
+export const momentsPageSearchParamsKeys = {
+  CONTAINS: "contains",
+  USER_ALL_MOMENTS_PAGE: "userallmomentspage",
+  USER_PAST_MOMENTS_PAGE: "userpagemomentspage",
+  USER_CURRENT_MOMENTS_PAGE: "usercurrentmomentspage",
+  USER_FUTURE_MOMENTS_PAGE: "userfuturemomentspage",
+  VIEW: "view",
+  SUBVIEW: "subview",
+  MOMENTKEY: "momentkey",
+} as const;
 
 // initial and lowest moments page number
 export const INITIAL_PAGE = 1;
@@ -63,6 +62,7 @@ export const SEARCH_FORM_ID = "search-form";
 On data files:
 If I make a dictionary of ids with keys, the name is in all caps.
 If it's an array, the name is in camelCase.
+...Actually I am now going for the opposite to emphasis consistency in the order of an array which an object does not require.
 */
 
 const makeMomentFormIds = (suffix: string): MomentFormIds => {
@@ -75,20 +75,14 @@ const makeMomentFormIds = (suffix: string): MomentFormIds => {
   };
 };
 
-const updateMomentFormSuffix = "update-moment-form";
-const UPDATE_MOMENT_FORM_IDS = makeMomentFormIds(updateMomentFormSuffix);
-
-const createMomentFormSuffix = "create-moment-form";
-const CREATE_MOMENT_FORM_IDS = makeMomentFormIds(createMomentFormSuffix);
-
-export const MOMENT_FORM_IDS: { [K in MomentFormVariant]: MomentFormIds } = {
-  updating: UPDATE_MOMENT_FORM_IDS,
-  creating: CREATE_MOMENT_FORM_IDS,
+export const momentFormIds: { [K in MomentFormVariant]: MomentFormIds } = {
+  updating: makeMomentFormIds("update-moment-form"),
+  creating: makeMomentFormIds("create-moment-form"),
 };
 
 // select options
 
-const activityOptionsStrings = [
+const ACTIVITY_OPTIONS_STRINGS = [
   "Atelier",
   "Comité",
   "Conférence",
@@ -107,7 +101,7 @@ const activityOptionsStrings = [
   "Séminaire",
 ];
 
-export const activityOptions: Option[] = activityOptionsStrings.map((e) => {
+export const ACTIVITY_OPTIONS: Option[] = ACTIVITY_OPTIONS_STRINGS.map((e) => {
   return { key: e, label: e, value: e };
 });
 
@@ -115,56 +109,83 @@ export const activityOptions: Option[] = activityOptionsStrings.map((e) => {
 
 export const STEP_DURATION_ORIGINAL = "10";
 
-// views and subviews
+// views
 
-export const views = [
-  "update-moment",
-  "read-moments",
-  "create-moment",
-] as const;
-
-export const viewTitles: { [K in View]: string } = {
-  "update-moment": "Éditez",
-  "read-moments": "Vos moments",
-  "create-moment": "Créez",
-};
-
-export const subViews = [
-  "all-moments",
-  "past-moments",
-  "current-moments",
-  "future-moments",
-] as const;
-
-export const subViewTitles: { [K in SubView]: string } = {
-  "all-moments": "Tous",
-  "past-moments": "Passés",
-  "current-moments": "Actuels",
-  "future-moments": "Futurs",
-};
-
-export const subViewPages = {
-  "all-moments": USERMOMENTSPAGE,
-  "past-moments": PASTUSERMOMENTSPAGE,
-  "current-moments": CURRENTUSERMOMENTSPAGE,
-  "future-moments": FUTUREUSERMOMENTSPAGE,
+export const views = {
+  UPDATE_MOMENT: "update-moment",
+  READ_MOMENTS: "read-moments",
+  CREATE_MOMENT: "create-moment",
 } as const;
 
-export const subViewCountUserMomentsWithContains = {
-  "all-moments": countUserAllMomentsWithContains,
-  "past-moments": countUserPastMomentsWithContains,
-  "current-moments": countUserCurrentMomentsWithContains,
-  "future-moments": countUserFutureMomentsWithContains,
+export const VIEWS = Object.values(views) as ReadonlyArray<
+  (typeof views)[keyof typeof views]
+>;
+
+export const viewsTitles: { [K in View]: string } = {
+  [views.UPDATE_MOMENT]: "Éditez",
+  [views.READ_MOMENTS]: "Vos moments",
+  [views.CREATE_MOMENT]: "Créez",
+};
+
+// subViews
+
+export const subViews = {
+  ALL_MOMENTS: "all-moments",
+  PAST_MOMENTS: "past-moments",
+  CURRENT_MOMENTS: "current-moments",
+  FUTURE_MOMENTS: "future-moments",
 } as const;
 
-export const subViewFindUserMomentsWithContains = {
-  "all-moments": findUserAllMomentsWithContains,
-  "past-moments": findUserPastMomentsWithContains,
-  "current-moments": findUserCurrentMomentsWithContains,
-  "future-moments": findUserFutureMomentsWithContains,
+export const SUBVIEWS = Object.values(subViews) as ReadonlyArray<
+  (typeof subViews)[keyof typeof subViews]
+>;
+
+export const subViewsTitles: { [K in SubView]: string } = {
+  [subViews.ALL_MOMENTS]: "Tous",
+  [subViews.PAST_MOMENTS]: "Passés",
+  [subViews.CURRENT_MOMENTS]: "Actuels",
+  [subViews.FUTURE_MOMENTS]: "Futurs",
+};
+
+export const subViewsPages = {
+  [subViews.ALL_MOMENTS]: USERMOMENTSPAGE,
+  [subViews.PAST_MOMENTS]: PASTUSERMOMENTSPAGE,
+  [subViews.CURRENT_MOMENTS]: CURRENTUSERMOMENTSPAGE,
+  [subViews.FUTURE_MOMENTS]: FUTUREUSERMOMENTSPAGE,
+} as const;
+
+export const subViewsCountUserMomentsWithContains = {
+  [subViews.ALL_MOMENTS]: countUserAllMomentsWithContains,
+  [subViews.PAST_MOMENTS]: countUserPastMomentsWithContains,
+  [subViews.CURRENT_MOMENTS]: countUserCurrentMomentsWithContains,
+  [subViews.FUTURE_MOMENTS]: countUserFutureMomentsWithContains,
+} as const;
+
+export const subViewsFindUserMomentsWithContains = {
+  [subViews.ALL_MOMENTS]: findUserAllMomentsWithContains,
+  [subViews.PAST_MOMENTS]: findUserPastMomentsWithContains,
+  [subViews.CURRENT_MOMENTS]: findUserCurrentMomentsWithContains,
+  [subViews.FUTURE_MOMENTS]: findUserFutureMomentsWithContains,
 } as const;
 
 // default error messages
+
+const defaultErrorMessages = {
+  MESSAGE: "Erreurs sur le renseignement moment du formulaire.",
+  SUB_MESSAGE: "Veuillez vérifier les champs concernés.",
+};
+
+export const defaultMomentErrorMessages = {
+  MESSAGE: defaultErrorMessages.MESSAGE,
+  SUB_MESSAGE: defaultErrorMessages.SUB_MESSAGE,
+};
+
+defaultMomentErrorMessages.MESSAGE;
+
+export const defaultStepsErrorMessages = {
+  MESSAGE: defaultErrorMessages.MESSAGE,
+  SUB_MESSAGE: defaultErrorMessages.SUB_MESSAGE,
+};
 
 export const DEFAULT_MOMENT_MESSAGE =
   "Erreurs sur le renseignement moment du formulaire.";

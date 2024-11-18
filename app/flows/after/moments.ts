@@ -2,10 +2,10 @@ import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-
 import { ReadonlyURLSearchParams } from "next/navigation";
 
 import {
-  MOMENT_FORM_IDS,
+  momentFormIds,
   MOMENTKEY,
   SUBVIEW,
-  subViewPages,
+  subViewsPages,
   VIEW,
 } from "@/app/data/moments";
 import {
@@ -37,10 +37,10 @@ export const falseCreateOrUpdateMomentAfterFlow = (
   if (createOrUpdateMomentState) {
     switch (createOrUpdateMomentState.errorScrollPriority) {
       case "moment":
-        scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+        scrollToSection(momentFormIds[variant].yourMoment);
         break;
       case "steps":
-        scrollToSection(MOMENT_FORM_IDS[variant].itsSteps);
+        scrollToSection(momentFormIds[variant].itsSteps);
         break;
 
       default:
@@ -74,10 +74,10 @@ export const createOrUpdateMomentAfterFlow = (
   if (createOrUpdateMomentState?.isSuccess === false) {
     switch (createOrUpdateMomentState.error.errorScrollPriority) {
       case "moment":
-        scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+        scrollToSection(momentFormIds[variant].yourMoment);
         break;
       case "steps":
-        scrollToSection(MOMENT_FORM_IDS[variant].itsSteps);
+        scrollToSection(momentFormIds[variant].itsSteps);
         break;
 
       default:
@@ -107,11 +107,11 @@ export const createOrUpdateMomentAfterFlow = (
     )
       if (createOrUpdateMomentState.success.countPage === 1)
         newSearchParams.delete(
-          subViewPages[createOrUpdateMomentState.success.subView],
+          subViewsPages[createOrUpdateMomentState.success.subView],
         );
       else
         newSearchParams.set(
-          subViewPages[createOrUpdateMomentState.success.subView],
+          subViewsPages[createOrUpdateMomentState.success.subView],
           createOrUpdateMomentState.success.countPage.toString(),
         );
 
@@ -122,7 +122,7 @@ export const createOrUpdateMomentAfterFlow = (
 // scrolls back to yourMoment's section at the top after resetting the form
 // (every time resetMomentFormAction is done)
 export const resetMomentAfterFlow = (variant: MomentFormVariant) => {
-  scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+  scrollToSection(momentFormIds[variant].yourMoment);
 };
 
 // scrolls back to yourMoment's section if there's a mistake, or leads to the top of "read-moments" after the moment is successfully deleted
@@ -134,7 +134,7 @@ export const falseDeleteMomentAfterFlow = (
   setIsCRUDOpSuccessful: SetState<boolean>,
 ) => {
   if (createOrUpdateMomentState) {
-    scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+    scrollToSection(momentFormIds[variant].yourMoment);
   } else {
     setIsCRUDOpSuccessful(true);
 
@@ -153,7 +153,7 @@ export const deleteMomentAfterFlow = (
   pathname: string,
 ) => {
   if (createOrUpdateMomentState?.isSuccess === false) {
-    scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+    scrollToSection(momentFormIds[variant].yourMoment);
   } else {
     setIsCRUDOpSuccessful(true);
 
