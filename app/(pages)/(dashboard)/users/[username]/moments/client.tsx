@@ -60,21 +60,17 @@ import {
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
+  momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   momentFormIds,
-  PASTUSERMOMENTSPAGE,
   SEARCH_FORM_ID,
   STEP_DURATION_ORIGINAL,
-  SUBVIEW,
   subViews,
   SUBVIEWS,
   subViewsTitles,
-  USERMOMENTSPAGE,
   views,
   VIEWS,
+  subViewsMomentsPageSearchParamsKeys,
 } from "@/app/data/moments";
 import {
   defineCurrentPage,
@@ -327,25 +323,22 @@ export function ReadMomentsView({
       searchParams,
     ) as TypedURLSearchParams<MomentsSearchParams>;
 
-    if (term) newSearchParams.set(CONTAINS, term);
-    else newSearchParams.delete(CONTAINS);
+    if (term) newSearchParams.set(momentsPageSearchParamsKeys.CONTAINS, term);
+    else newSearchParams.delete(momentsPageSearchParamsKeys.CONTAINS);
 
-    newSearchParams.delete(USERMOMENTSPAGE);
-    newSearchParams.delete(PASTUSERMOMENTSPAGE);
-    newSearchParams.delete(CURRENTUSERMOMENTSPAGE);
-    newSearchParams.delete(FUTUREUSERMOMENTSPAGE);
+    newSearchParams.delete(momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE);
+    newSearchParams.delete(momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE);
+    newSearchParams.delete(
+      momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
+    );
+    newSearchParams.delete(
+      momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
+    );
 
     replace(`${pathname}?${newSearchParams.toString()}`);
   } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
-
-  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
-    [subViews.ALL_MOMENTS]: USERMOMENTSPAGE,
-    [subViews.PAST_MOMENTS]: PASTUSERMOMENTSPAGE,
-    [subViews.CURRENT_MOMENTS]: CURRENTUSERMOMENTSPAGE,
-    [subViews.FUTURE_MOMENTS]: FUTUREUSERMOMENTSPAGE,
-  };
 
   const [
     maxPageAllMoments,
@@ -368,7 +361,7 @@ export function ReadMomentsView({
 
   const currentPage = defineCurrentPage(
     INITIAL_PAGE,
-    Number(searchParams.get(subViewSearchParams[subView])),
+    Number(searchParams.get(subViewsMomentsPageSearchParamsKeys[subView])),
     subViewMaxPages[subView],
   );
 
@@ -380,20 +373,20 @@ export function ReadMomentsView({
 
     if (direction === "left")
       newSearchParams.set(
-        subViewSearchParams[subView],
+        subViewsMomentsPageSearchParamsKeys[subView],
         Math.max(INITIAL_PAGE, currentPage - 1).toString(),
       );
     else
       newSearchParams.set(
-        subViewSearchParams[subView],
+        subViewsMomentsPageSearchParamsKeys[subView],
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
     if (
-      newSearchParams.get(subViewSearchParams[subView]) ===
+      newSearchParams.get(subViewsMomentsPageSearchParamsKeys[subView]) ===
       INITIAL_PAGE.toString()
     )
-      newSearchParams.delete(subViewSearchParams[subView]);
+      newSearchParams.delete(subViewsMomentsPageSearchParamsKeys[subView]);
 
     replace(`${pathname}?${newSearchParams.toString()}`);
   }
@@ -401,7 +394,7 @@ export function ReadMomentsView({
   const rotateSubView = (direction: "left" | "right") =>
     rotateSearchParams(
       direction,
-      SUBVIEW,
+      momentsPageSearchParamsKeys.SUB_VIEW,
       SUBVIEWS,
       subView,
       searchParams,
@@ -570,7 +563,7 @@ export function SetSubViewButton({
 
   function handleSubView() {
     const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set(SUBVIEW, e);
+    newSearchParams.set(momentsPageSearchParamsKeys.SUB_VIEW, e);
     replace(`${pathname}?${newSearchParams.toString()}`);
   }
 
@@ -670,10 +663,12 @@ export function SearchForm({
   return (
     <form id={SEARCH_FORM_ID} noValidate>
       <GlobalClientComponents.InputText
-        id={CONTAINS}
-        name={CONTAINS}
+        id={momentsPageSearchParamsKeys.CONTAINS}
+        name={momentsPageSearchParamsKeys.CONTAINS}
         placeholder="Cherchez parmi vos moments..."
-        defaultValue={searchParams.get(CONTAINS)?.toString()}
+        defaultValue={searchParams
+          .get(momentsPageSearchParamsKeys.CONTAINS)
+          ?.toString()}
         onChange={(e) => {
           debouncedHandleSearch(e.currentTarget.value);
         }}

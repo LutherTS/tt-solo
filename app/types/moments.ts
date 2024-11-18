@@ -6,15 +6,8 @@ import {
   selectMomentIdNameAndDates,
 } from "@/app/reads/subreads/moments";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
-  MOMENTKEY,
-  PASTUSERMOMENTSPAGE,
-  SUBVIEW,
+  momentsPageSearchParamsKeys,
   subViews,
-  USERMOMENTSPAGE,
-  VIEW,
   views,
 } from "@/app/data/moments";
 import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page";
@@ -290,23 +283,23 @@ export type MomentFormIds = {
 };
 
 export type MomentsSearchParamsKey =
-  | typeof CONTAINS
-  | typeof USERMOMENTSPAGE
-  | typeof PASTUSERMOMENTSPAGE
-  | typeof CURRENTUSERMOMENTSPAGE
-  | typeof FUTUREUSERMOMENTSPAGE
-  | typeof VIEW
-  | typeof MOMENTKEY;
+  | typeof momentsPageSearchParamsKeys.CONTAINS
+  | typeof momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE
+  | typeof momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE
+  | typeof momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE
+  | typeof momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE
+  | typeof momentsPageSearchParamsKeys.VIEW
+  | typeof momentsPageSearchParamsKeys.MOMENT_KEY;
 
 export type MomentsSearchParams = {
-  [CONTAINS]: string;
-  [USERMOMENTSPAGE]: string;
-  [PASTUSERMOMENTSPAGE]: string;
-  [CURRENTUSERMOMENTSPAGE]: string;
-  [FUTUREUSERMOMENTSPAGE]: string;
-  [VIEW]: View;
-  [SUBVIEW]: SubView;
-  [MOMENTKEY]: string;
+  [momentsPageSearchParamsKeys.CONTAINS]: string;
+  [momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.VIEW]: View;
+  [momentsPageSearchParamsKeys.SUB_VIEW]: SubView;
+  [momentsPageSearchParamsKeys.MOMENT_KEY]: string;
 };
 
 export type FormSectionTopic = "moment" | "steps";

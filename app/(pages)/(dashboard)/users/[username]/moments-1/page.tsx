@@ -17,13 +17,9 @@ import {
   defineCurrentPage,
 } from "@/app/utilities/moments";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
+  momentsPageSearchParamsKeys,
   INITIAL_PAGE,
-  PASTUSERMOMENTSPAGE,
   TAKE,
-  USERMOMENTSPAGE,
 } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
@@ -58,11 +54,11 @@ export default async function MomentsPage({
     username: string;
   };
   searchParams?: {
-    [CONTAINS]?: string;
-    [USERMOMENTSPAGE]?: string;
-    [PASTUSERMOMENTSPAGE]?: string;
-    [CURRENTUSERMOMENTSPAGE]?: string;
-    [FUTUREUSERMOMENTSPAGE]?: string;
+    [momentsPageSearchParamsKeys.CONTAINS]?: string;
+    [momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE]?: string;
   };
 }) {
   let now = dateToInputDatetime(new Date());
@@ -86,7 +82,7 @@ export default async function MomentsPage({
 
   searchParams = await searchParams;
 
-  const contains = searchParams?.[CONTAINS] || "";
+  const contains = searchParams?.[momentsPageSearchParamsKeys.CONTAINS] || "";
   // console.log({ contains });
 
   const [
@@ -119,10 +115,10 @@ export default async function MomentsPage({
   // console.log({ maxPages });
 
   const searchParamsPageKeys = [
-    USERMOMENTSPAGE,
-    PASTUSERMOMENTSPAGE,
-    CURRENTUSERMOMENTSPAGE,
-    FUTUREUSERMOMENTSPAGE,
+    momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
+    momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,
+    momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
+    momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
   ] as const;
 
   const pages = searchParamsPageKeys.map((e, i) =>

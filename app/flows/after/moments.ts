@@ -3,10 +3,8 @@ import { ReadonlyURLSearchParams } from "next/navigation";
 
 import {
   momentFormIds,
-  MOMENTKEY,
-  SUBVIEW,
+  momentsPageSearchParamsKeys,
   subViewsPages,
-  VIEW,
   views,
 } from "@/app/data/moments";
 import {
@@ -97,11 +95,14 @@ export const createOrUpdateMomentAfterFlow = (
       searchParams,
     ) as TypedURLSearchParams<MomentsSearchParams>;
 
-    newSearchParams.set(VIEW, views.READ_MOMENTS);
-    newSearchParams.delete(MOMENTKEY);
+    newSearchParams.set(momentsPageSearchParamsKeys.VIEW, views.READ_MOMENTS);
+    newSearchParams.delete(momentsPageSearchParamsKeys.MOMENT_KEY);
 
     if (createOrUpdateMomentState.success.subView)
-      newSearchParams.set(SUBVIEW, createOrUpdateMomentState.success.subView);
+      newSearchParams.set(
+        momentsPageSearchParamsKeys.SUB_VIEW,
+        createOrUpdateMomentState.success.subView,
+      );
     if (
       createOrUpdateMomentState.success.subView &&
       createOrUpdateMomentState.success.countPage

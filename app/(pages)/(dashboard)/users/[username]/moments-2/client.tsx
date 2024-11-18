@@ -53,20 +53,17 @@ import {
 } from "@/app/types/moments";
 import { Option, SetState } from "@/app/types/globals";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
+  momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   momentFormIds,
-  PASTUSERMOMENTSPAGE,
   SEARCH_FORM_ID,
   STEP_DURATION_ORIGINAL,
   subViews,
   SUBVIEWS,
   subViewsTitles,
-  USERMOMENTSPAGE,
   views,
   VIEWS,
+  subViewsMomentsPageSearchParamsKeys,
 } from "@/app/data/moments";
 import {
   defineCurrentPage,
@@ -382,25 +379,18 @@ export function ReadMomentsView({
   function handleSearch(term: string) {
     const params = new URLSearchParams(searchParams);
 
-    if (term) params.set(CONTAINS, term);
-    else params.delete(CONTAINS);
+    if (term) params.set(momentsPageSearchParamsKeys.CONTAINS, term);
+    else params.delete(momentsPageSearchParamsKeys.CONTAINS);
 
-    params.delete(USERMOMENTSPAGE);
-    params.delete(PASTUSERMOMENTSPAGE);
-    params.delete(CURRENTUSERMOMENTSPAGE);
-    params.delete(FUTUREUSERMOMENTSPAGE);
+    params.delete(momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE);
+    params.delete(momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE);
+    params.delete(momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE);
+    params.delete(momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE);
 
     replace(`${pathname}?${params.toString()}`);
   }
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
-
-  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
-    [subViews.ALL_MOMENTS]: USERMOMENTSPAGE,
-    [subViews.PAST_MOMENTS]: PASTUSERMOMENTSPAGE,
-    [subViews.CURRENT_MOMENTS]: CURRENTUSERMOMENTSPAGE,
-    [subViews.FUTURE_MOMENTS]: FUTUREUSERMOMENTSPAGE,
-  };
 
   const [
     maxPageAllMoments,
@@ -418,7 +408,7 @@ export function ReadMomentsView({
 
   const currentPage = defineCurrentPage(
     INITIAL_PAGE,
-    Number(searchParams.get(subViewSearchParams[subView])),
+    Number(searchParams.get(subViewsMomentsPageSearchParamsKeys[subView])),
     subViewMaxPages[subView],
   );
 
@@ -426,17 +416,20 @@ export function ReadMomentsView({
     const params = new URLSearchParams(searchParams);
     if (direction === "left")
       params.set(
-        subViewSearchParams[subView],
+        subViewsMomentsPageSearchParamsKeys[subView],
         Math.max(INITIAL_PAGE, currentPage - 1).toString(),
       );
     else
       params.set(
-        subViewSearchParams[subView],
+        subViewsMomentsPageSearchParamsKeys[subView],
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
-    if (params.get(subViewSearchParams[subView]) === INITIAL_PAGE.toString())
-      params.delete(subViewSearchParams[subView]);
+    if (
+      params.get(subViewsMomentsPageSearchParamsKeys[subView]) ===
+      INITIAL_PAGE.toString()
+    )
+      params.delete(subViewsMomentsPageSearchParamsKeys[subView]);
 
     replace(`${pathname}?${params.toString()}`);
   }
@@ -1147,10 +1140,12 @@ export function SearchForm({
   return (
     <form id={SEARCH_FORM_ID} noValidate>
       <GlobalClientComponents.InputText
-        id={CONTAINS}
-        name={CONTAINS}
+        id={momentsPageSearchParamsKeys.CONTAINS}
+        name={momentsPageSearchParamsKeys.CONTAINS}
         placeholder="Cherchez parmi vos moments..."
-        defaultValue={searchParams.get(CONTAINS)?.toString()}
+        defaultValue={searchParams
+          .get(momentsPageSearchParamsKeys.CONTAINS)
+          ?.toString()}
         onChange={(e) => {
           debouncedHandleSearch(e.currentTarget.value);
         }}

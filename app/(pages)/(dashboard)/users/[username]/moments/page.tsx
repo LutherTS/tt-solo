@@ -10,16 +10,7 @@ import {
   MomentAdapted,
 } from "@/app/types/moments";
 import { dateToInputDatetime } from "@/app/utilities/moments";
-import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
-  MOMENTKEY,
-  PASTUSERMOMENTSPAGE,
-  SUBVIEW,
-  USERMOMENTSPAGE,
-  VIEW,
-} from "@/app/data/moments";
+import { momentsPageSearchParamsKeys } from "@/app/data/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
   revalidateMomentsServerFlow,
@@ -67,15 +58,15 @@ export default async function MomentsPage({
     username: string;
   };
   searchParams?: {
-    [CONTAINS]?: string;
-    [USERMOMENTSPAGE]?: string;
-    [PASTUSERMOMENTSPAGE]?: string;
-    [CURRENTUSERMOMENTSPAGE]?: string;
-    [FUTUREUSERMOMENTSPAGE]?: string;
+    [momentsPageSearchParamsKeys.CONTAINS]?: string;
+    [momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE]?: string;
     // now lifted to the URL
-    [VIEW]?: string;
-    [SUBVIEW]?: string;
-    [MOMENTKEY]?: string;
+    [momentsPageSearchParamsKeys.VIEW]?: string;
+    [momentsPageSearchParamsKeys.SUB_VIEW]?: string;
+    [momentsPageSearchParamsKeys.MOMENT_KEY]?: string;
   };
 }) {
   // VERY IMPORTANT. PREFER DATE AS A STRING TO AVOID TIMEZONE ISSUES, and in the input datetime-local format to easily interact with forms.

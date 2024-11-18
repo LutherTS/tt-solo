@@ -7,16 +7,13 @@ import {
   adaptView,
 } from "@/app/adapts/moments";
 import {
-  CONTAINS,
+  momentsPageSearchParamsKeys,
   INITIAL_PAGE,
-  MOMENTKEY,
-  SUBVIEW,
   subViews,
   subViewsCountUserMomentsWithContains,
   subViewsFindUserMomentsWithContains,
   subViewsPages,
   TAKE,
-  VIEW,
 } from "@/app/data/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import { Option } from "@/app/types/globals";
@@ -38,8 +35,11 @@ export async function fetchViewAndMomentDataFlow(
 
   searchParams = await searchParams;
 
-  let adaptedView = adaptView(searchParams?.[VIEW]);
-  let adaptedMoment = await adaptMomentKey(searchParams?.[MOMENTKEY], user);
+  let adaptedView = adaptView(searchParams?.[momentsPageSearchParamsKeys.VIEW]);
+  let adaptedMoment = await adaptMomentKey(
+    searchParams?.[momentsPageSearchParamsKeys.MOMENT_KEY],
+    user,
+  );
 
   return adaptedViewAndMomentCombined(adaptedView, adaptedMoment);
 }
@@ -58,7 +58,7 @@ export const fetchReadMomentsViewDataFlow = async (
 
   searchParams = await searchParams;
 
-  const contains = searchParams?.[CONTAINS] || "";
+  const contains = searchParams?.[momentsPageSearchParamsKeys.CONTAINS] || "";
 
   const fetchSubViewDataInFetchReadMomentsViewDataFlowBound =
     fetchSubViewDataInFetchReadMomentsViewDataFlow.bind(
@@ -93,7 +93,7 @@ export const fetchReadMomentsViewDataFlow = async (
   };
 
   const subView = adaptSubView(
-    searchParams?.[SUBVIEW],
+    searchParams?.[momentsPageSearchParamsKeys.SUB_VIEW],
     userMomentsAdaptedCombined,
   );
 
@@ -196,22 +196,22 @@ Completely optimized:
 // ] = [
 //   defineCurrentPage(
 //     INITIAL_PAGE,
-//     Number(searchParams?.[USERMOMENTSPAGE]),
+//     Number(searchParams?.[momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE]),
 //     userAllMomentsMaxPage,
 //   ),
 //   defineCurrentPage(
 //     INITIAL_PAGE,
-//     Number(searchParams?.[PASTUSERMOMENTSPAGE]),
+//     Number(searchParams?.[momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE]),
 //     userPastMomentsMaxPage,
 //   ),
 //   defineCurrentPage(
 //     INITIAL_PAGE,
-//     Number(searchParams?.[CURRENTUSERMOMENTSPAGE]),
+//     Number(searchParams?.[momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE]),
 //     userCurrentMomentsMaxPage,
 //   ),
 //   defineCurrentPage(
 //     INITIAL_PAGE,
-//     Number(searchParams?.[FUTUREUSERMOMENTSPAGE]),
+//     Number(searchParams?.[momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE]),
 //     userFutureMomentsMaxPage,
 //   ),
 // ];

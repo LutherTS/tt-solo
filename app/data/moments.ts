@@ -6,6 +6,7 @@ import { Option } from "@/app/types/globals";
 import {
   MomentFormIds,
   MomentFormVariant,
+  MomentsSearchParamsKey,
   SubView,
   View,
   // FormSectionTopic,
@@ -28,15 +29,6 @@ import {
 
 // searchParams keys
 
-export const CONTAINS = "contains" as const;
-export const USERMOMENTSPAGE = "userMomentsPage" as const;
-export const PASTUSERMOMENTSPAGE = "pastUserMomentsPage" as const;
-export const CURRENTUSERMOMENTSPAGE = "currentUserMomentsPage" as const;
-export const FUTUREUSERMOMENTSPAGE = "futureUserMomentsPage" as const;
-export const VIEW = "view" as const;
-export const SUBVIEW = "subView" as const;
-export const MOMENTKEY = "momentKey" as const;
-
 export const momentsPageSearchParamsKeys = {
   CONTAINS: "contains",
   USER_ALL_MOMENTS_PAGE: "userallmomentspage",
@@ -44,9 +36,16 @@ export const momentsPageSearchParamsKeys = {
   USER_CURRENT_MOMENTS_PAGE: "usercurrentmomentspage",
   USER_FUTURE_MOMENTS_PAGE: "userfuturemomentspage",
   VIEW: "view",
-  SUBVIEW: "subview",
-  MOMENTKEY: "momentkey",
+  SUB_VIEW: "subview",
+  MOMENT_KEY: "momentkey",
 } as const;
+
+// const searchParamsPageKeys = [
+//   momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
+//   momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,
+//   momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
+//   momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
+// ] as const;
 
 // initial and lowest moments page number
 export const INITIAL_PAGE = 1;
@@ -140,6 +139,17 @@ export const SUBVIEWS = Object.values(subViews) as ReadonlyArray<
   (typeof subViews)[keyof typeof subViews]
 >;
 
+export const subViewsMomentsPageSearchParamsKeys: {
+  [K in SubView]: MomentsSearchParamsKey;
+} = {
+  [subViews.ALL_MOMENTS]: momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
+  [subViews.PAST_MOMENTS]: momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,
+  [subViews.CURRENT_MOMENTS]:
+    momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
+  [subViews.FUTURE_MOMENTS]:
+    momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
+};
+
 export const subViewsTitles: { [K in SubView]: string } = {
   [subViews.ALL_MOMENTS]: "Tous",
   [subViews.PAST_MOMENTS]: "Passés",
@@ -148,10 +158,12 @@ export const subViewsTitles: { [K in SubView]: string } = {
 };
 
 export const subViewsPages = {
-  [subViews.ALL_MOMENTS]: USERMOMENTSPAGE,
-  [subViews.PAST_MOMENTS]: PASTUSERMOMENTSPAGE,
-  [subViews.CURRENT_MOMENTS]: CURRENTUSERMOMENTSPAGE,
-  [subViews.FUTURE_MOMENTS]: FUTUREUSERMOMENTSPAGE,
+  [subViews.ALL_MOMENTS]: momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE,
+  [subViews.PAST_MOMENTS]: momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE,
+  [subViews.CURRENT_MOMENTS]:
+    momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
+  [subViews.FUTURE_MOMENTS]:
+    momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
 } as const;
 
 export const subViewsCountUserMomentsWithContains = {

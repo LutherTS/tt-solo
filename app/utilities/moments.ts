@@ -17,11 +17,10 @@ import {
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
-  MOMENTKEY,
+  momentsPageSearchParamsKeys,
   subViews,
   SUBVIEWS,
   TAKE,
-  VIEW,
   views,
 } from "@/app/data/moments";
 
@@ -183,10 +182,12 @@ export const scrollToTopOfDesiredView = (
     searchParams,
   ) as TypedURLSearchParams<MomentsSearchParams>;
 
-  if (desiredView !== views.UPDATE_MOMENT) newSearchParams.delete(MOMENTKEY);
-  else if (momentId) newSearchParams.set(MOMENTKEY, momentId);
+  if (desiredView !== views.UPDATE_MOMENT)
+    newSearchParams.delete(momentsPageSearchParamsKeys.MOMENT_KEY);
+  else if (momentId)
+    newSearchParams.set(momentsPageSearchParamsKeys.MOMENT_KEY, momentId);
 
-  newSearchParams.set(VIEW, desiredView);
+  newSearchParams.set(momentsPageSearchParamsKeys.VIEW, desiredView);
 
   push(`${pathname}?${newSearchParams.toString()}`);
 

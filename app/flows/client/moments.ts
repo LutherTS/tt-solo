@@ -6,9 +6,10 @@ import { compareAsc, compareDesc } from "date-fns";
 import {
   defaultStepsErrorMessages,
   momentFormIds,
+  momentsPageSearchParamsKeys,
   STEP_DURATION_ORIGINAL,
   subViews,
-  VIEW,
+  views,
 } from "@/app/data/moments";
 import {
   FalserDeleteMoment,
@@ -349,7 +350,9 @@ export const revalidateMomentsClientFlow = async (
   await revalidateMoments();
   button.form?.reset(); // Indeed. Better for type safety.
 
-  replace(`${pathname}?${VIEW}=read-moments`); // It could have made more sense to have the redirection in an after flow. But since it doesn't depend on data received from the server (for now?), I can let this slide.
+  replace(
+    `${pathname}?${momentsPageSearchParamsKeys.VIEW}=${views.READ_MOMENTS}`,
+  ); // It could have made more sense to have the redirection in an after flow. But since it doesn't depend on data received from the server (for now?), I can let this slide.
 };
 
 export const falseCreateOrUpdateStepClientFlow = (
