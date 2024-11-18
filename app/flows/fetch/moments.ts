@@ -27,7 +27,7 @@ import {
 import { SelectUserIdAndUsername } from "@/app/types/users";
 import { defineCurrentPage } from "@/app/utilities/moments";
 
-import { delay } from "@/app/utilities/globals";
+// import { delay } from "@/app/utilities/globals";
 
 export async function fetchViewAndMomentDataFlow(
   searchParams: MomentsPageSearchParams,

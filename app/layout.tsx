@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TekTIME solo",
-  description: "My TekTIME demo, now with a database",
+  // title: "TekTIME solo",
+  // description: "My TekTIME demo, now with a database",
+  title: "React Paris Meetup demo",
+  description: "Incrementally adopting React 19 (via Next.js 15)",
 };
 
 export default function RootLayout({

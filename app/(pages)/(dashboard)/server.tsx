@@ -78,7 +78,7 @@ export function SideNavContents() {
           );
         })}
       </div>
-      <div
+      {/* <div
         className={clsx(
           "relative size-16 flex-shrink-0",
           "mb-0, mr-4",
@@ -93,7 +93,7 @@ export function SideNavContents() {
           fill // https://nextjs.org/docs/pages/api-reference/components/image#fill
           priority // https://nextjs.org/docs/pages/api-reference/components/image#priority
         />
-      </div>
+      </div> */}
     </div>
   );
 }

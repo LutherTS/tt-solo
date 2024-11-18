@@ -1,5 +1,7 @@
 import * as Switch from "@radix-ui/react-switch";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
+import { ErrorBoundary } from "react-error-boundary";
+import { Suspense } from "react";
 
 import * as Icons from "@/app/icons";
 import * as GlobalClientComponents from "./client";
@@ -18,8 +20,6 @@ import {
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
 } from "@/app/utilities/moments";
-import { ErrorBoundary } from "react-error-boundary";
-import { Suspense } from "react";
 
 // Components
 
