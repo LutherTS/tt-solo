@@ -180,22 +180,10 @@ export const defaultMomentErrorMessages = {
   SUB_MESSAGE: defaultErrorMessages.SUB_MESSAGE,
 };
 
-defaultMomentErrorMessages.MESSAGE;
-
 export const defaultStepsErrorMessages = {
   MESSAGE: defaultErrorMessages.MESSAGE,
   SUB_MESSAGE: defaultErrorMessages.SUB_MESSAGE,
 };
-
-export const DEFAULT_MOMENT_MESSAGE =
-  "Erreurs sur le renseignement moment du formulaire.";
-export const DEFAULT_MOMENT_SUBMESSAGE =
-  "Veuillez vérifier les champs concernés.";
-
-export const DEFAULT_STEP_MESSAGE =
-  "Erreurs sur le renseignement étapes du formulaire.";
-export const DEFAULT_STEP_SUBMESSAGE =
-  "Veuillez vérifier les champs concernés.";
 
 // form section topic removeMessagesAndErrorsCallbacks
 // THIS SHOULD HAVE NEVER BEEN HERE SINCE IT'S UNIQUE TO FORMSECTION.

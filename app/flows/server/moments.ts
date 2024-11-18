@@ -45,11 +45,7 @@ import {
   SubView,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
-import {
-  DEFAULT_MOMENT_MESSAGE,
-  DEFAULT_MOMENT_SUBMESSAGE,
-  subViews,
-} from "@/app/data/moments";
+import { defaultMomentErrorMessages, subViews } from "@/app/data/moments";
 import { decodeHashidToUUID } from "@/app/utilities/globals";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.
@@ -73,8 +69,8 @@ export const falserCreateOrUpdateMomentServerFlow = async (
   if (!isValid(new Date(startMomentDate)))
     return {
       momentMessages: {
-        message: DEFAULT_MOMENT_MESSAGE,
-        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        message: defaultMomentErrorMessages.MESSAGE,
+        subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
       },
       momentErrors: {
         momentStartDateAndTime: ["Veuillez saisir une date valide."],
@@ -96,8 +92,8 @@ export const falserCreateOrUpdateMomentServerFlow = async (
     if (isStartMomentDateBeforeMinFromCurrentNow === 1)
       return {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           momentStartDateAndTime: [
@@ -114,8 +110,8 @@ export const falserCreateOrUpdateMomentServerFlow = async (
   if (destination === null) {
     return {
       momentMessages: {
-        message: DEFAULT_MOMENT_MESSAGE,
-        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        message: defaultMomentErrorMessages.MESSAGE,
+        subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
       },
       momentErrors: {
         destinationName: [
@@ -132,8 +128,8 @@ export const falserCreateOrUpdateMomentServerFlow = async (
   if (activite === null) {
     return {
       momentMessages: {
-        message: DEFAULT_MOMENT_MESSAGE,
-        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        message: defaultMomentErrorMessages.MESSAGE,
+        subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
       },
       momentErrors: {
         destinationName: [
@@ -187,8 +183,8 @@ export const falserCreateOrUpdateMomentServerFlow = async (
   if (!validatedFields.success) {
     return {
       momentMessages: {
-        message: DEFAULT_MOMENT_MESSAGE,
-        subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+        message: defaultMomentErrorMessages.MESSAGE,
+        subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
       },
       momentErrors: validatedFields.error.flatten().fieldErrors,
       errorScrollPriority: "moment",
@@ -257,8 +253,8 @@ export const falserCreateOrUpdateMomentServerFlow = async (
     if (preexistingMoment)
       return {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           momentName: ["Vous avez déjà un moment de ce même nom."],
@@ -446,8 +442,8 @@ export const falseCreateOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           momentStartDateAndTime: ["Veuillez saisir une date valide."],
@@ -472,8 +468,8 @@ export const falseCreateOrUpdateMomentServerFlow = async (
         isSuccess: false,
         error: {
           momentMessages: {
-            message: DEFAULT_MOMENT_MESSAGE,
-            subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+            message: defaultMomentErrorMessages.MESSAGE,
+            subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
           },
           momentErrors: {
             momentStartDateAndTime: [
@@ -493,8 +489,8 @@ export const falseCreateOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           destinationName: [
@@ -514,8 +510,8 @@ export const falseCreateOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           destinationName: [
@@ -575,8 +571,8 @@ export const falseCreateOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: validatedFields.error.flatten().fieldErrors,
         errorScrollPriority: "moment",
@@ -654,8 +650,8 @@ export const falseCreateOrUpdateMomentServerFlow = async (
         isSuccess: false,
         error: {
           momentMessages: {
-            message: DEFAULT_MOMENT_MESSAGE,
-            subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+            message: defaultMomentErrorMessages.MESSAGE,
+            subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
           },
           momentErrors: {
             momentName: ["Vous avez déjà un moment de ce même nom."],
@@ -843,8 +839,8 @@ export const createOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           momentStartDateAndTime: ["Veuillez saisir une date valide."],
@@ -869,8 +865,8 @@ export const createOrUpdateMomentServerFlow = async (
         isSuccess: false,
         error: {
           momentMessages: {
-            message: DEFAULT_MOMENT_MESSAGE,
-            subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+            message: defaultMomentErrorMessages.MESSAGE,
+            subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
           },
           momentErrors: {
             momentStartDateAndTime: [
@@ -890,8 +886,8 @@ export const createOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           destinationName: [
@@ -911,8 +907,8 @@ export const createOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: {
           destinationName: [
@@ -972,8 +968,8 @@ export const createOrUpdateMomentServerFlow = async (
       isSuccess: false,
       error: {
         momentMessages: {
-          message: DEFAULT_MOMENT_MESSAGE,
-          subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+          message: defaultMomentErrorMessages.MESSAGE,
+          subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
         },
         momentErrors: validatedFields.error.flatten().fieldErrors,
         errorScrollPriority: "moment",
@@ -1051,8 +1047,8 @@ export const createOrUpdateMomentServerFlow = async (
         isSuccess: false,
         error: {
           momentMessages: {
-            message: DEFAULT_MOMENT_MESSAGE,
-            subMessage: DEFAULT_MOMENT_SUBMESSAGE,
+            message: defaultMomentErrorMessages.MESSAGE,
+            subMessage: defaultMomentErrorMessages.SUB_MESSAGE,
           },
           momentErrors: {
             momentName: ["Vous avez déjà un moment de ce même nom."],

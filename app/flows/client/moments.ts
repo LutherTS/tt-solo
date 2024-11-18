@@ -4,8 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import { compareAsc, compareDesc } from "date-fns";
 
 import {
-  DEFAULT_STEP_MESSAGE,
-  DEFAULT_STEP_SUBMESSAGE,
+  defaultStepsErrorMessages,
   momentFormIds,
   STEP_DURATION_ORIGINAL,
   VIEW,
@@ -401,8 +400,8 @@ export const falseCreateOrUpdateStepClientFlow = (
     return {
       ...createOrUpdateMomentState,
       stepsMessages: {
-        message: DEFAULT_STEP_MESSAGE,
-        subMessage: DEFAULT_STEP_SUBMESSAGE,
+        message: defaultStepsErrorMessages.MESSAGE,
+        subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
       },
       stepsErrors: validatedFields.error.flatten().fieldErrors,
     };
@@ -417,8 +416,8 @@ export const falseCreateOrUpdateStepClientFlow = (
     return {
       ...createOrUpdateMomentState,
       stepsMessages: {
-        message: DEFAULT_STEP_MESSAGE,
-        subMessage: DEFAULT_STEP_SUBMESSAGE,
+        message: defaultStepsErrorMessages.MESSAGE,
+        subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
       },
       stepsErrors: {
         stepName: [
@@ -432,8 +431,8 @@ export const falseCreateOrUpdateStepClientFlow = (
     return {
       ...createOrUpdateMomentState,
       stepsMessages: {
-        message: DEFAULT_STEP_MESSAGE,
-        subMessage: DEFAULT_STEP_SUBMESSAGE,
+        message: defaultStepsErrorMessages.MESSAGE,
+        subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
       },
       stepsErrors: {
         stepDescription: [
@@ -527,8 +526,8 @@ export const createOrUpdateStepClientFlow = (
       error: {
         ...createOrUpdateMomentState?.error,
         stepsMessages: {
-          message: DEFAULT_STEP_MESSAGE,
-          subMessage: DEFAULT_STEP_SUBMESSAGE,
+          message: defaultStepsErrorMessages.MESSAGE,
+          subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
         },
         stepsErrors: validatedFields.error.flatten().fieldErrors,
       },
@@ -546,8 +545,8 @@ export const createOrUpdateStepClientFlow = (
       error: {
         ...createOrUpdateMomentState?.error,
         stepsMessages: {
-          message: DEFAULT_STEP_MESSAGE,
-          subMessage: DEFAULT_STEP_SUBMESSAGE,
+          message: defaultStepsErrorMessages.MESSAGE,
+          subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
         },
         stepsErrors: {
           stepName: [
@@ -564,8 +563,8 @@ export const createOrUpdateStepClientFlow = (
       error: {
         ...createOrUpdateMomentState?.error,
         stepsMessages: {
-          message: DEFAULT_STEP_MESSAGE,
-          subMessage: DEFAULT_STEP_SUBMESSAGE,
+          message: defaultStepsErrorMessages.MESSAGE,
+          subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
         },
         stepsErrors: {
           stepDescription: [
