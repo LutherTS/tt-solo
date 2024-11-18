@@ -9,6 +9,7 @@ import { Option, SetState } from "@/app/types/globals";
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
+  views,
   viewsTitles,
 } from "@/app/data/moments";
 import {
@@ -100,15 +101,15 @@ export function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
-        if (view === "update-moment") setMoment(undefined);
+        if (view === views.UPDATE_MOMENT) setMoment(undefined);
         setScrollToTop(desiredView, setView);
       }}
     >
       {(() => {
         switch (desiredView) {
-          case "read-moments":
+          case views.READ_MOMENTS:
             return <>Vos moments</>;
-          case "create-moment":
+          case views.CREATE_MOMENT:
             return <>Créez un moment</>;
           default:
             return null;

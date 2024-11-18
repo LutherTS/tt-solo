@@ -100,6 +100,7 @@ import {
   STEP_DURATION_ORIGINAL,
   INITIAL_PAGE,
   VIEWS,
+  views,
 } from "@/app/data/moments";
 import {
   falseCreateOrUpdateMomentAfterFlow,
@@ -149,9 +150,9 @@ export default function Main({
 }) {
   console.log({ now });
 
-  // let [view, setView] = useState<View>("read-moments");
+  // let [view, setView] = useState<View>(views.READ_MOMENTS);
   // starting directly with the create form for now
-  let [view, setView] = useState<View>("create-moment");
+  let [view, setView] = useState<View>(views.CREATE_MOMENT);
 
   const [
     _realUserMoments,
@@ -214,7 +215,7 @@ export default function Main({
         >
           <ViewWrapper>
             <ViewContainer
-              id="update-moment"
+              id={views.UPDATE_MOMENT}
               currentView={view}
               currentViewHeight={currentViewHeight}
             >
@@ -235,7 +236,7 @@ export default function Main({
           </ViewWrapper>
           <ViewWrapper>
             <ViewContainer
-              id="read-moments"
+              id={views.READ_MOMENTS}
               currentView={view}
               currentViewHeight={currentViewHeight}
             >
@@ -253,7 +254,7 @@ export default function Main({
           </ViewWrapper>
           <ViewWrapper>
             <ViewContainer
-              id="create-moment"
+              id={views.CREATE_MOMENT}
               currentView={view}
               currentViewHeight={currentViewHeight}
             >
@@ -429,7 +430,7 @@ function ReadMomentsView({
     rotateStates(direction, setSubView, SUBVIEWS, subView);
 
   useKeypress("ArrowLeft", (event: KeyboardEvent) => {
-    if (view === "read-moments") {
+    if (view === views.READ_MOMENTS) {
       event.preventDefault();
 
       if (event.altKey) {
@@ -441,7 +442,7 @@ function ReadMomentsView({
   });
 
   useKeypress("ArrowRight", (event: KeyboardEvent) => {
-    if (view === "read-moments") {
+    if (view === views.READ_MOMENTS) {
       event.preventDefault();
 
       if (event.altKey) {
@@ -462,7 +463,7 @@ function ReadMomentsView({
   const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (view === "read-moments") debouncedSettingScrollPosition(latest);
+    if (view === views.READ_MOMENTS) debouncedSettingScrollPosition(latest);
     else debouncedSettingScrollPosition(0);
   });
 
@@ -1018,14 +1019,14 @@ function SetViewButton({
 }) {
   function defineDesiredView(view: View) {
     switch (view) {
-      case "update-moment":
-        return "read-moments";
-      case "read-moments":
-        return "create-moment";
-      case "create-moment":
-        return "read-moments";
+      case views.UPDATE_MOMENT:
+        return views.READ_MOMENTS;
+      case views.READ_MOMENTS:
+        return views.CREATE_MOMENT;
+      case views.CREATE_MOMENT:
+        return views.READ_MOMENTS;
       default:
-        return "read-moments";
+        return views.READ_MOMENTS;
     }
   }
 
@@ -1036,15 +1037,15 @@ function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
-        if (view === "update-moment") setMoment(undefined);
+        if (view === views.UPDATE_MOMENT) setMoment(undefined);
         setScrollToTop(desiredView, setView);
       }}
     >
       {(() => {
         switch (desiredView) {
-          case "read-moments":
+          case views.READ_MOMENTS:
             return <>Vos moments</>;
-          case "create-moment":
+          case views.CREATE_MOMENT:
             return <>Créez un moment</>;
           default:
             return null;
@@ -1252,7 +1253,7 @@ function MomentInDateCard({
 }) {
   function setUpdateMomentView() {
     setMoment(realMoments.find((e0) => e0.id === e3.id));
-    setScrollToTop("update-moment", setView);
+    setScrollToTop(views.UPDATE_MOMENT, setView);
   }
 
   return (

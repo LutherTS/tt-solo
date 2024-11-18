@@ -1,4 +1,4 @@
-import { TAKE } from "@/app/data/moments";
+import { TAKE, VIEWS, views } from "@/app/data/moments";
 import { Option } from "@/app/types/globals";
 import { SelectDestinationForMoment } from "@/app/types/destinations";
 import {
@@ -19,16 +19,18 @@ import { findMomentByIdAndUserId } from "@/app/reads/moments";
 import { isSubView } from "@/app/utilities/moments";
 
 export const adaptView = (rawView: string | undefined): View => {
+  // if (VIEWS.includes(rawView)) return rawView
+
   switch (rawView) {
-    case "update-moment":
-      return "update-moment";
-    case "read-moments":
-      return "read-moments";
-    case "create-moment":
-      return "create-moment";
+    case views.UPDATE_MOMENT:
+      return rawView;
+    case views.READ_MOMENTS:
+      return rawView;
+    case views.CREATE_MOMENT:
+      return rawView;
 
     default:
-      return "create-moment";
+      return views.CREATE_MOMENT;
   }
 };
 
@@ -53,12 +55,12 @@ export const adaptedViewAndMomentCombined = (
   moment: MomentAdapted | undefined,
 ): { view: View; moment: MomentAdapted | undefined } => {
   switch (view) {
-    case "update-moment":
+    case views.UPDATE_MOMENT:
       if (moment) return { view, moment };
-      else return { view: "read-moments", moment };
-    case "read-moments":
+      else return { view: views.READ_MOMENTS, moment };
+    case views.READ_MOMENTS:
       return { view, moment: undefined };
-    case "create-moment":
+    case views.CREATE_MOMENT:
       return { view, moment: undefined };
 
     default:

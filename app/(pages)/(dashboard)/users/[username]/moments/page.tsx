@@ -55,7 +55,7 @@ S'assurer que toutes les fonctionnalités marchent sans problème, avant une fut
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // Still sometimes it says static route... But I can see the moments when it's a dynamic, the icon at the bottom left toggles difference if I comment or uncomment the line above.
 
-// Le plus important, et ça l'est tellement que je l'écris en français... C'est que ça marche. use marche. Quand je delay la fonction fetchReadMomentsViewDataFlow alors que je me rends sur la view "create-moment", ma vue est déjà chargée et utilisable, pendant que le ReadMomentsView se charge, et est accessible et qu'on puisse y voir écrit "Loading..."
+// Le plus important, et ça l'est tellement que je l'écris en français... C'est que ça marche. use marche. Quand je delay la fonction fetchReadMomentsViewDataFlow alors que je me rends sur la view views.CREATE_MOMENT, ma vue est déjà chargée et utilisable, pendant que le ReadMomentsView se charge, et est accessible et qu'on puisse y voir écrit "Loading..."
 
 // Maintenant là où je touche vraiment le plafond, c'est de savoir comment ça marchera en réel, surtout par rapport au cache. C'est un niveau haut dessus, mais là j'ai déjà atteint mon premier somment pour aujourd'hui.
 
@@ -187,7 +187,7 @@ export default async function MomentsPage({
 }
 
 /* Notes
-Connection closed is unrelated to setView("read-moments");
+Connection closed is unrelated to setView(views.READ_MOMENTS);
 That's actually the issue, it's passing hooks as arguments that trigger the error Connection closed.
 Crossing the server and the client works with onClick too, it just does not have access to the formData.
 ALERT! 

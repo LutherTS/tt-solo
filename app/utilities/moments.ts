@@ -16,7 +16,7 @@ import {
   UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { MOMENTKEY, SUBVIEWS, TAKE, VIEW } from "@/app/data/moments";
+import { MOMENTKEY, SUBVIEWS, TAKE, VIEW, views } from "@/app/data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -176,7 +176,7 @@ export const scrollToTopOfDesiredView = (
     searchParams,
   ) as TypedURLSearchParams<MomentsSearchParams>;
 
-  if (desiredView !== "update-moment") newSearchParams.delete(MOMENTKEY);
+  if (desiredView !== views.UPDATE_MOMENT) newSearchParams.delete(MOMENTKEY);
   else if (momentId) newSearchParams.set(MOMENTKEY, momentId);
 
   newSearchParams.set(VIEW, desiredView);
@@ -242,12 +242,12 @@ export const removeMomentMessagesAndErrorsCallback = (
 // defines the desired view to shift to from a view depending on that original view
 export const defineDesiredView = (view: View) => {
   switch (view) {
-    case "update-moment":
-      return "read-moments";
-    case "read-moments":
-      return "create-moment";
-    case "create-moment":
-      return "read-moments";
+    case views.UPDATE_MOMENT:
+      return views.READ_MOMENTS;
+    case views.READ_MOMENTS:
+      return views.CREATE_MOMENT;
+    case views.CREATE_MOMENT:
+      return views.READ_MOMENTS;
     default:
       return view;
   }
@@ -256,15 +256,15 @@ export const defineDesiredView = (view: View) => {
 // defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
 export const defineView = (rawView: string | undefined): View => {
   switch (rawView) {
-    case "update-moment":
-      return "update-moment";
-    case "read-moments":
-      return "read-moments";
-    case "create-moment":
-      return "create-moment";
+    case views.UPDATE_MOMENT:
+      return views.UPDATE_MOMENT;
+    case views.READ_MOMENTS:
+      return views.READ_MOMENTS;
+    case views.CREATE_MOMENT:
+      return views.CREATE_MOMENT;
 
     default:
-      return "create-moment";
+      return views.CREATE_MOMENT;
   }
 };
 
@@ -277,18 +277,18 @@ export const defineMoment = async (
   else return uniqueShownMoments.find((e) => e.id === rawMomentId);
 };
 
-// defines both the view and moment depending on one another, so that the "update-moment" cannot be shown if there is no moment
+// defines both the view and moment depending on one another, so that the views.UPDATE_MOMENT cannot be shown if there is no moment
 export const defineWithViewAndMoment = (
   view: View,
   moment: MomentToCRUD | undefined,
 ): { view: View; moment: MomentToCRUD | undefined } => {
   switch (view) {
-    case "update-moment":
+    case views.UPDATE_MOMENT:
       if (moment) return { view, moment };
-      else return { view: "read-moments", moment };
-    case "read-moments":
+      else return { view: views.READ_MOMENTS, moment };
+    case views.READ_MOMENTS:
       return { view, moment: undefined };
-    case "create-moment":
+    case views.CREATE_MOMENT:
       return { view, moment: undefined };
 
     default:

@@ -67,6 +67,7 @@ import {
   SUBVIEWS,
   subViewsTitles,
   USERMOMENTSPAGE,
+  views,
   VIEWS,
 } from "@/app/data/moments";
 import {
@@ -142,10 +143,10 @@ export function ViewsCarouselContainer({
       }}
     >
       <LocalServerComponents.PageSegment
-        isSegmentContainerInvisible={view !== "update-moment"}
+        isSegmentContainerInvisible={view !== views.UPDATE_MOMENT}
       >
         <ViewSegment
-          id="update-moment"
+          id={views.UPDATE_MOMENT}
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
@@ -159,15 +160,15 @@ export function ViewsCarouselContainer({
             deleteMoment={deleteMoment}
             now={now}
             setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            allButtonsDisabled={view !== "update-moment"}
+            allButtonsDisabled={view !== views.UPDATE_MOMENT}
           />
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
-        isSegmentContainerInvisible={view !== "read-moments"}
+        isSegmentContainerInvisible={view !== views.READ_MOMENTS}
       >
         <ViewSegment
-          id="read-moments"
+          id={views.READ_MOMENTS}
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
@@ -177,15 +178,15 @@ export function ViewsCarouselContainer({
             view={view}
             subView={subView}
             revalidateMoments={revalidateMoments}
-            allButtonsDisabled={view !== "read-moments"}
+            allButtonsDisabled={view !== views.READ_MOMENTS}
           />
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
-        isSegmentContainerInvisible={view !== "create-moment"}
+        isSegmentContainerInvisible={view !== views.CREATE_MOMENT}
       >
         <ViewSegment
-          id="create-moment"
+          id={views.CREATE_MOMENT}
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
@@ -196,7 +197,7 @@ export function ViewsCarouselContainer({
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
             setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            allButtonsDisabled={view !== "create-moment"}
+            allButtonsDisabled={view !== views.CREATE_MOMENT}
           />
         </ViewSegment>
       </LocalServerComponents.PageSegment>
@@ -356,7 +357,7 @@ export function ReadMomentsView({
     );
 
   useKeypress("ArrowLeft", (event: KeyboardEvent) => {
-    if (view === "read-moments") {
+    if (view === views.READ_MOMENTS) {
       event.preventDefault();
 
       if (event.altKey) {
@@ -368,7 +369,7 @@ export function ReadMomentsView({
   });
 
   useKeypress("ArrowRight", (event: KeyboardEvent) => {
-    if (view === "read-moments") {
+    if (view === views.READ_MOMENTS) {
       event.preventDefault();
 
       if (event.altKey) {
@@ -389,7 +390,7 @@ export function ReadMomentsView({
   const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (view === "read-moments") debouncedSettingScrollPosition(latest);
+    if (view === views.READ_MOMENTS) debouncedSettingScrollPosition(latest);
     else debouncedSettingScrollPosition(0);
   });
 
@@ -635,7 +636,7 @@ export function UpdateMomentViewButton({
     const moment = realMoments.find((e0) => e0.id === e3.id);
 
     scrollToTopOfDesiredView(
-      "update-moment",
+      views.UPDATE_MOMENT,
       searchParams,
       push,
       pathname,
@@ -1662,10 +1663,10 @@ export function SetViewButton({ view }: { view: View }) {
     >
       {(() => {
         switch (desiredView) {
-          // no case "update-moment", since moment-specific
-          case "read-moments":
+          // no case views.UPDATE_MOMENT, since moment-specific
+          case views.READ_MOMENTS:
             return <>Vos moments</>;
-          case "create-moment":
+          case views.CREATE_MOMENT:
             return <>Créez un moment</>;
           default:
             return null;

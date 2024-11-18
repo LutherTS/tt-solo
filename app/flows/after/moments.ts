@@ -7,6 +7,7 @@ import {
   SUBVIEW,
   subViewsPages,
   VIEW,
+  views,
 } from "@/app/data/moments";
 import {
   FalseCreateOrUpdateMomentState,
@@ -55,7 +56,7 @@ export const falseCreateOrUpdateMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    setScrollToTop("read-moments", setView);
+    setScrollToTop(views.READ_MOMENTS, setView);
     // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
   }
 };
@@ -96,7 +97,7 @@ export const createOrUpdateMomentAfterFlow = (
       searchParams,
     ) as TypedURLSearchParams<MomentsSearchParams>;
 
-    newSearchParams.set(VIEW, "read-moments");
+    newSearchParams.set(VIEW, views.READ_MOMENTS);
     newSearchParams.delete(MOMENTKEY);
 
     if (createOrUpdateMomentState.success.subView)
@@ -125,7 +126,7 @@ export const resetMomentAfterFlow = (variant: MomentFormVariant) => {
   scrollToSection(momentFormIds[variant].yourMoment);
 };
 
-// scrolls back to yourMoment's section if there's a mistake, or leads to the top of "read-moments" after the moment is successfully deleted
+// scrolls back to yourMoment's section if there's a mistake, or leads to the top of views.READ_MOMENTS after the moment is successfully deleted
 // (every time deleteMomentAction is done)
 export const falseDeleteMomentAfterFlow = (
   variant: MomentFormVariant,
@@ -138,7 +139,7 @@ export const falseDeleteMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    setScrollToTop("read-moments", setView);
+    setScrollToTop(views.READ_MOMENTS, setView);
   }
 };
 
@@ -157,6 +158,6 @@ export const deleteMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
+    scrollToTopOfDesiredView(views.READ_MOMENTS, searchParams, push, pathname);
   }
 };
