@@ -1,4 +1,4 @@
-import { TAKE, VIEWS, views } from "@/app/data/moments";
+import { subViews, TAKE, VIEWS, views } from "@/app/data/moments";
 import { Option } from "@/app/types/globals";
 import { SelectDestinationForMoment } from "@/app/types/destinations";
 import {
@@ -296,12 +296,12 @@ export const adaptSubView = (
 
     let initialSubView: SubView =
       userCurrentMomentsAdapted.dates.length > 0
-        ? "current-moments"
+        ? subViews.CURRENT_MOMENTS
         : userFutureMomentsAdapted.dates.length > 0
-          ? "future-moments"
+          ? subViews.FUTURE_MOMENTS
           : userPastMomentsAdapted.dates.length > 0
-            ? "past-moments"
-            : "all-moments";
+            ? subViews.PAST_MOMENTS
+            : subViews.ALL_MOMENTS;
 
     return initialSubView;
   }

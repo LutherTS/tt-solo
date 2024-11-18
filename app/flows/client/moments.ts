@@ -7,6 +7,7 @@ import {
   defaultStepsErrorMessages,
   momentFormIds,
   STEP_DURATION_ORIGINAL,
+  subViews,
   VIEW,
 } from "@/app/data/moments";
 import {
@@ -69,11 +70,11 @@ export const falserCreateOrUpdateMomentClientFlow = async (
     const currentNow = dateToInputDatetime(new Date());
 
     if (compareDesc(endMomentDate, currentNow) === 1)
-      setSubView("past-moments");
+      setSubView(subViews.PAST_MOMENTS);
     else if (compareAsc(startMomentDate, currentNow) === 1)
-      setSubView("future-moments");
+      setSubView(subViews.FUTURE_MOMENTS);
     // present by default
-    else setSubView("current-moments");
+    else setSubView(subViews.CURRENT_MOMENTS);
 
     // resetting the whole form manually
     if (variant === "creating") {
@@ -129,11 +130,11 @@ export const falseCreateOrUpdateMomentClientFlow = async (
     // const currentNow = dateToInputDatetime(new Date());
 
     // if (compareDesc(endMomentDate, currentNow) === 1)
-    //   setSubView("past-moments");
+    //   setSubView(subViews.PAST_MOMENTS);
     // else if (compareAsc(startMomentDate, currentNow) === 1)
-    //   setSubView("future-moments");
+    //   setSubView(subViews.FUTURE_MOMENTS);
     // // present by default
-    // else setSubView("current-moments");
+    // else setSubView(subViews.CURRENT_MOMENTS);
 
     // resetting the whole form manually
     if (variant === "creating") {

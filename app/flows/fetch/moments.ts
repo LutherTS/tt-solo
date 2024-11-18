@@ -11,6 +11,7 @@ import {
   INITIAL_PAGE,
   MOMENTKEY,
   SUBVIEW,
+  subViews,
   subViewsCountUserMomentsWithContains,
   subViewsFindUserMomentsWithContains,
   subViewsPages,
@@ -74,10 +75,14 @@ export const fetchReadMomentsViewDataFlow = async (
     userCurrentMomentsAdapted,
     userFutureMomentsAdapted,
   ] = await Promise.all([
-    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("all-moments"),
-    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("past-moments"),
-    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("current-moments"),
-    fetchSubViewDataInFetchReadMomentsViewDataFlowBound("future-moments"),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound(subViews.ALL_MOMENTS),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound(subViews.PAST_MOMENTS),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound(
+      subViews.CURRENT_MOMENTS,
+    ),
+    fetchSubViewDataInFetchReadMomentsViewDataFlowBound(
+      subViews.FUTURE_MOMENTS,
+    ),
   ]);
 
   const userMomentsAdaptedCombined = {

@@ -16,7 +16,14 @@ import {
   UserMomentsAdaptedCombined,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { MOMENTKEY, SUBVIEWS, TAKE, VIEW, views } from "@/app/data/moments";
+import {
+  MOMENTKEY,
+  subViews,
+  SUBVIEWS,
+  TAKE,
+  VIEW,
+  views,
+} from "@/app/data/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -317,12 +324,12 @@ export const defineSubView = (
 
     let initialSubView: SubView =
       realCurrentMoments.dates.length > 0
-        ? "current-moments"
+        ? subViews.CURRENT_MOMENTS
         : realFutureMoments.dates.length > 0
-          ? "future-moments"
+          ? subViews.FUTURE_MOMENTS
           : realPastMoments.dates.length > 0
-            ? "past-moments"
-            : "all-moments";
+            ? subViews.PAST_MOMENTS
+            : subViews.ALL_MOMENTS;
 
     return initialSubView;
   }

@@ -68,6 +68,7 @@ import {
   SEARCH_FORM_ID,
   STEP_DURATION_ORIGINAL,
   SUBVIEW,
+  subViews,
   SUBVIEWS,
   subViewsTitles,
   USERMOMENTSPAGE,
@@ -261,10 +262,10 @@ export function ReadMomentsView({
   const { subView } = readMomentsViewData;
 
   const realShowcaseMoments: { [K in SubView]: MomentsAdapted } = {
-    "all-moments": userAllMomentsAdapted,
-    "past-moments": userPastMomentsAdapted,
-    "current-moments": userCurrentMomentsAdapted,
-    "future-moments": userFutureMomentsAdapted,
+    [subViews.ALL_MOMENTS]: userAllMomentsAdapted,
+    [subViews.PAST_MOMENTS]: userPastMomentsAdapted,
+    [subViews.CURRENT_MOMENTS]: userCurrentMomentsAdapted,
+    [subViews.FUTURE_MOMENTS]: userFutureMomentsAdapted,
   };
 
   let realDisplayedMoments = userAllMomentsAdapted;
@@ -301,10 +302,10 @@ export function ReadMomentsView({
   const debouncedHandleSearch = debounce(handleSearch, 500);
 
   const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
-    "all-moments": USERMOMENTSPAGE,
-    "past-moments": PASTUSERMOMENTSPAGE,
-    "current-moments": CURRENTUSERMOMENTSPAGE,
-    "future-moments": FUTUREUSERMOMENTSPAGE,
+    [subViews.ALL_MOMENTS]: USERMOMENTSPAGE,
+    [subViews.PAST_MOMENTS]: PASTUSERMOMENTSPAGE,
+    [subViews.CURRENT_MOMENTS]: CURRENTUSERMOMENTSPAGE,
+    [subViews.FUTURE_MOMENTS]: FUTUREUSERMOMENTSPAGE,
   };
 
   const [
@@ -320,10 +321,10 @@ export function ReadMomentsView({
   ];
 
   let subViewMaxPages: { [K in SubView]: number } = {
-    "all-moments": maxPageAllMoments,
-    "past-moments": maxPagePastMoments,
-    "current-moments": maxPageCurrentMoments,
-    "future-moments": maxPageFutureMoments,
+    [subViews.ALL_MOMENTS]: maxPageAllMoments,
+    [subViews.PAST_MOMENTS]: maxPagePastMoments,
+    [subViews.CURRENT_MOMENTS]: maxPageCurrentMoments,
+    [subViews.FUTURE_MOMENTS]: maxPageFutureMoments,
   };
 
   const currentPage = defineCurrentPage(

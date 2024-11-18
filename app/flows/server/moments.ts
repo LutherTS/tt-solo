@@ -375,7 +375,7 @@ export const falserCreateOrUpdateMomentServerFlow = async (
   currentNow = dateToInputDatetime(new Date());
 
   if (
-    // if the end of the moment is before now, it's "past-moments"
+    // if the end of the moment is before now, it's subViews.PAST_MOMENTS
     compareDesc(moment.endDateAndTime, currentNow) === 1
   ) {
     const { countPage } = await makeConditionalSuccessStateProperties(
@@ -386,10 +386,10 @@ export const falserCreateOrUpdateMomentServerFlow = async (
     );
     console.log({
       isSuccess: true,
-      success: { moment, countPage, subView: "past-moments" },
+      success: { moment, countPage, subView: subViews.PAST_MOMENTS },
     });
   } else if (
-    // if the start of the moment is after now, it's "future-moments"
+    // if the start of the moment is after now, it's subViews.FUTURE_MOMENTS
     compareAsc(moment.startDateAndTime, currentNow) === 1
   ) {
     const { countPage } = await makeConditionalSuccessStateProperties(
@@ -400,10 +400,10 @@ export const falserCreateOrUpdateMomentServerFlow = async (
     );
     console.log({
       isSuccess: true,
-      success: { moment, countPage, subView: "future-moments" },
+      success: { moment, countPage, subView: subViews.FUTURE_MOMENTS },
     });
   }
-  // present by default // else, it can only be "current-moments"
+  // present by default // else, it can only be subViews.CURRENT_MOMENTS
   else {
     const { countPage } = await makeConditionalSuccessStateProperties(
       userId,
@@ -413,7 +413,7 @@ export const falserCreateOrUpdateMomentServerFlow = async (
     );
     console.log({
       isSuccess: true,
-      success: { moment, countPage, subView: "current-moments" },
+      success: { moment, countPage, subView: subViews.CURRENT_MOMENTS },
     });
   } // works
   // I have all the data that I need. I just need to put it in the success portion of the upcoming TrueCreateOrUpdateMomentState.
@@ -778,7 +778,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
   currentNow = dateToInputDatetime(new Date());
 
   if (
-    // if the end of the moment is before now, it's "past-moments"
+    // if the end of the moment is before now, it's subViews.PAST_MOMENTS
     compareDesc(moment.endDateAndTime, currentNow) === 1
   ) {
     const { countPage } = await makeConditionalSuccessStateProperties(
@@ -789,10 +789,10 @@ export const falseCreateOrUpdateMomentServerFlow = async (
     );
     return {
       isSuccess: true,
-      success: { moment, countPage, subView: "past-moments" },
+      success: { moment, countPage, subView: subViews.PAST_MOMENTS },
     };
   } else if (
-    // if the start of the moment is after now, it's "future-moments"
+    // if the start of the moment is after now, it's subViews.FUTURE_MOMENTS
     compareAsc(moment.startDateAndTime, currentNow) === 1
   ) {
     const { countPage } = await makeConditionalSuccessStateProperties(
@@ -803,10 +803,10 @@ export const falseCreateOrUpdateMomentServerFlow = async (
     );
     return {
       isSuccess: true,
-      success: { moment, countPage, subView: "future-moments" },
+      success: { moment, countPage, subView: subViews.FUTURE_MOMENTS },
     };
   }
-  // present by default // else, it can only be "current-moments"
+  // present by default // else, it can only be subViews.CURRENT_MOMENTS
   else {
     const { countPage } = await makeConditionalSuccessStateProperties(
       userId,
@@ -816,7 +816,7 @@ export const falseCreateOrUpdateMomentServerFlow = async (
     );
     return {
       isSuccess: true,
-      success: { moment, countPage, subView: "current-moments" },
+      success: { moment, countPage, subView: subViews.CURRENT_MOMENTS },
     };
   }
 };
@@ -1190,7 +1190,7 @@ const createSuccessInCreateOrUpdateMomentServerFlow = async ({
   const currentNow = dateToInputDatetime(new Date());
 
   if (
-    // if the end of the moment is before now, it's "past-moments"
+    // if the end of the moment is before now, it's subViews.PAST_MOMENTS
     compareDesc(moment.endDateAndTime, currentNow) === 1
   ) {
     const { countPage } = await makeConditionalSuccessStateProperties(
@@ -1204,7 +1204,7 @@ const createSuccessInCreateOrUpdateMomentServerFlow = async ({
       success: { moment, countPage, subView: subViews.PAST_MOMENTS },
     };
   } else if (
-    // if the start of the moment is after now, it's "future-moments"
+    // if the start of the moment is after now, it's subViews.FUTURE_MOMENTS
     compareAsc(moment.startDateAndTime, currentNow) === 1
   ) {
     const { countPage } = await makeConditionalSuccessStateProperties(
@@ -1218,7 +1218,7 @@ const createSuccessInCreateOrUpdateMomentServerFlow = async ({
       success: { moment, countPage, subView: subViews.FUTURE_MOMENTS },
     };
   }
-  // present by default // else, it can only be "current-moments"
+  // present by default // else, it can only be subViews.CURRENT_MOMENTS
   else {
     const { countPage } = await makeConditionalSuccessStateProperties(
       userId,
