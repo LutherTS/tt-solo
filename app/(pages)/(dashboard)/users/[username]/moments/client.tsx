@@ -351,7 +351,7 @@ export function ReadMomentsView({
     userFutureMomentsAdapted.pageDetails.maxPage,
   ];
 
-  let subViewMaxPages: { [K in SubView]: number } = {
+  let subViewsMaxPages: { [K in SubView]: number } = {
     [subViews.ALL_MOMENTS]: maxPageAllMoments,
     [subViews.PAST_MOMENTS]: maxPagePastMoments,
     [subViews.CURRENT_MOMENTS]: maxPageCurrentMoments,
@@ -361,7 +361,7 @@ export function ReadMomentsView({
   const currentPage = defineCurrentPage(
     INITIAL_PAGE,
     Number(searchParams.get(subViewsMomentsPageSearchParamsKeys[subView])),
-    subViewMaxPages[subView],
+    subViewsMaxPages[subView],
   );
 
   // for now search and pagination will remain handlers
@@ -378,7 +378,7 @@ export function ReadMomentsView({
     else
       newSearchParams.set(
         subViewsMomentsPageSearchParamsKeys[subView],
-        Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
+        Math.min(subViewsMaxPages[subView], currentPage + 1).toString(),
       );
 
     if (
@@ -420,7 +420,7 @@ export function ReadMomentsView({
       if (event.altKey) {
         rotateSubView("right");
       } else {
-        if (currentPage !== subViewMaxPages[subView])
+        if (currentPage !== subViewsMaxPages[subView])
           handlePagination("right", subView);
       }
     }
@@ -526,7 +526,7 @@ export function ReadMomentsView({
               direction="right"
               subView={subView}
               disabled={
-                allButtonsDisabled || currentPage === subViewMaxPages[subView]
+                allButtonsDisabled || currentPage === subViewsMaxPages[subView]
               }
               icon="ArrowRightSolid"
               allButtonsDisabled={allButtonsDisabled}

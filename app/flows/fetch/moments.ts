@@ -44,14 +44,14 @@ export async function fetchViewAndMomentDataFlow(
   return adaptedViewAndMomentCombined(adaptedView, adaptedMoment);
 }
 
-export const fetchReadMomentsViewDataFlow = async (
+export async function fetchReadMomentsViewDataFlow(
   now: string,
   user: SelectUserIdAndUsername,
   searchParams: MomentsPageSearchParamsRaw,
 ): Promise<{
   userMomentsAdaptedCombined: UserMomentsAdaptedCombined;
   subView: SubView;
-}> => {
+}> {
   // await delay(20000, () => console.log("After 20 seconds")); // with this and the use hook, since I delay the ReadMomentsView, I can already see and use the CreateMomentView in the meantime
 
   const userId = user.id;
@@ -61,13 +61,7 @@ export const fetchReadMomentsViewDataFlow = async (
   const contains = searchParams?.[momentsPageSearchParamsKeys.CONTAINS] || "";
 
   const fetchSubViewDataInFetchReadMomentsViewDataFlowBound =
-    fetchSubViewDataInFetchReadMomentsViewDataFlow.bind(
-      null,
-      now,
-      userId,
-      contains,
-      searchParams,
-    );
+    fetchSubViewDataSubFlow.bind(null, now, userId, contains, searchParams);
 
   const [
     userAllMomentsAdapted,
@@ -101,15 +95,15 @@ export const fetchReadMomentsViewDataFlow = async (
     userMomentsAdaptedCombined,
     subView,
   };
-};
+}
 
-export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
+const fetchSubViewDataSubFlow = async (
   now: string,
   userId: string,
   contains: string,
   searchParams: MomentsPageSearchParamsRaw,
   subView: SubView,
-) {
+) => {
   const countUserMomentsWithContains =
     subViewsCountUserMomentsWithContains[subView];
 
@@ -149,7 +143,7 @@ export async function fetchSubViewDataInFetchReadMomentsViewDataFlow(
   );
 
   return userMomentsAdapted;
-}
+};
 
 export async function fetchMomentFormsDataFlow(user: SelectUserIdAndUsername) {
   // read

@@ -1,4 +1,4 @@
-import { subViews, TAKE, VIEWS, views } from "@/app/data/moments";
+import { subViews, TAKE, views } from "@/app/data/moments";
 import { Option } from "@/app/types/globals";
 import { SelectDestinationForMoment } from "@/app/types/destinations";
 import {
@@ -19,8 +19,6 @@ import { findMomentByIdAndUserId } from "@/app/reads/moments";
 import { isSubView } from "@/app/utilities/moments";
 
 export const adaptView = (rawView: string | undefined): View => {
-  // if (VIEWS.includes(rawView)) return rawView
-
   switch (rawView) {
     case views.UPDATE_MOMENT:
       return rawView;
@@ -253,7 +251,7 @@ export const adaptMoments = (
   };
 };
 
-export const adaptMoment = (moment: SelectMomentDefault) => {
+const adaptMoment = (moment: SelectMomentDefault) => {
   const momentKey = encodeUUIDWithHashids(moment.id);
 
   return {
