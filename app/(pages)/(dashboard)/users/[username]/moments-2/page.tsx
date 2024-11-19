@@ -1,6 +1,4 @@
-import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { ErrorBoundary } from "react-error-boundary";
 
 import * as GlobalServerComponents from "@/app/components/server";
 import Core from "./server";
