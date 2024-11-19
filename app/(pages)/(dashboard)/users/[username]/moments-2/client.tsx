@@ -63,7 +63,7 @@ import {
   views,
   VIEWS,
   subViewsMomentsPageSearchParamsKeys,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,

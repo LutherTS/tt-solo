@@ -1,4 +1,4 @@
-import { subViews, TAKE, views } from "@/app/data/moments";
+import { subViews, TAKE, views } from "@/app/constants/moments";
 import { Option } from "@/app/types/globals";
 import { SelectDestinationForMoment } from "@/app/types/destinations";
 import {
@@ -16,20 +16,11 @@ import {
 } from "@/app/utilities/globals";
 import { SelectUserIdAndUsername } from "@/app/types/users";
 import { findMomentByIdAndUserId } from "@/app/reads/moments";
-import { isSubView } from "@/app/utilities/moments";
+import { isSubView, isView } from "@/app/utilities/moments";
 
 export const adaptView = (rawView: string | undefined): View => {
-  switch (rawView) {
-    case views.UPDATE_MOMENT:
-      return rawView;
-    case views.READ_MOMENTS:
-      return rawView;
-    case views.CREATE_MOMENT:
-      return rawView;
-
-    default:
-      return views.CREATE_MOMENT;
-  }
+  if (isView(rawView)) return rawView;
+  else return views.CREATE_MOMENT;
 };
 
 export const adaptMomentKey = async (

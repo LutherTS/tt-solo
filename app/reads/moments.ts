@@ -18,7 +18,7 @@ import {
   whereUserMoments,
 } from "./subreads/moments";
 import { SelectMomentIdNameAndDates } from "../types/moments";
-import { TAKE } from "../data/moments";
+import { TAKE } from "../constants/moments";
 
 const select = selectMomentDefault;
 

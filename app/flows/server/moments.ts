@@ -42,10 +42,9 @@ import {
   SelectMomentIdNameAndDates,
   StepFromClient,
   MomentAdapted,
-  SubView,
 } from "@/app/types/moments";
 import { SelectUserIdAndUsername } from "@/app/types/users";
-import { defaultMomentErrorMessages, subViews } from "@/app/data/moments";
+import { defaultMomentErrorMessages, subViews } from "@/app/constants/moments";
 import { decodeHashidToUUID } from "@/app/utilities/globals";
 
 // Differences in naming. For server actions, it's createOrUpdateMomentFlow. For their client actions counterpart, it's createOrUpdateMomentActionflow.

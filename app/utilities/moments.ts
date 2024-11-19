@@ -20,8 +20,9 @@ import {
   subViews,
   SUBVIEWS,
   TAKE,
+  VIEWS,
   views,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -260,19 +261,15 @@ export const defineDesiredView = (view: View) => {
   }
 };
 
+// type predicate for the subView searchParam
+export const isView = (value: any): value is View => {
+  return VIEWS.includes(value);
+};
+
 // defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
 export const defineView = (rawView: string | undefined): View => {
-  switch (rawView) {
-    case views.UPDATE_MOMENT:
-      return views.UPDATE_MOMENT;
-    case views.READ_MOMENTS:
-      return views.READ_MOMENTS;
-    case views.CREATE_MOMENT:
-      return views.CREATE_MOMENT;
-
-    default:
-      return views.CREATE_MOMENT;
-  }
+  if (isView(rawView)) return rawView;
+  else return views.CREATE_MOMENT;
 };
 
 // defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page // didn't need to be async too

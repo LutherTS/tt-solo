@@ -15,7 +15,7 @@ import {
   baseInputTexts,
   focusVisibleTexts,
   notDatetimeLocalPadding,
-} from "@/app/data/globals";
+} from "@/app/constants/globals";
 import {
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,

@@ -10,7 +10,7 @@ import {
   MomentAdapted,
 } from "@/app/types/moments";
 import { dateToInputDatetime } from "@/app/utilities/moments";
-import { momentsPageSearchParamsKeys } from "@/app/data/moments";
+import { momentsPageSearchParamsKeys } from "@/app/constants/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
   revalidateMomentsServerFlow,

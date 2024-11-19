@@ -22,7 +22,7 @@ import {
   INITIAL_PAGE,
   TAKE,
   MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
   countUserCurrentMomentsWithContains,

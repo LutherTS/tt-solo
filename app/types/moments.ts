@@ -9,7 +9,7 @@ import {
   momentsPageSearchParamsKeysOfPages,
   subViews,
   views,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page";
 import {
   fetchMomentFormsDataFlow,

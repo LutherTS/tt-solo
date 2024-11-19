@@ -6,7 +6,7 @@ import {
   momentsPageSearchParamsKeys,
   subViewsPages,
   views,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import {
   FalseCreateOrUpdateMomentState,
   View,
@@ -16,11 +16,7 @@ import {
   CreateOrUpdateMomentSuccess,
   MomentsPageSearchParamsHandled,
 } from "@/app/types/moments";
-import {
-  scrollToSection,
-  scrollToTopOfDesiredView,
-  setScrollToTop,
-} from "@/app/utilities/moments";
+import { scrollToSection, setScrollToTop } from "@/app/utilities/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 
 // scrolls back to the section of the form that possesses new errors
@@ -172,8 +168,6 @@ export const deleteMomentAfterFlow = (
     scrollToSection(momentFormIds[variant].yourMoment);
   } else {
     setIsCRUDOpSuccessful(true);
-
-    // scrollToTopOfDesiredView(views.READ_MOMENTS, searchParams, push, pathname); // it automatically scrolls to top here
 
     isSuccessTrueSubFlow(
       searchParams,

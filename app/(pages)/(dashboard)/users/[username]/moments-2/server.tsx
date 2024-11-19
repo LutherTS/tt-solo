@@ -11,7 +11,7 @@ import {
   momentFormIds,
   views,
   viewsTitles,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import {
   FalserCreateOrUpdateMoment,
   FalseCreateOrUpdateMomentState,

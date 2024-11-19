@@ -14,7 +14,7 @@ import {
   subViewsFindUserMomentsWithContains,
   subViewsPages,
   TAKE,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import { Option } from "@/app/types/globals";
 import {

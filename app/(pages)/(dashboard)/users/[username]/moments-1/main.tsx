@@ -98,7 +98,7 @@ import {
   views,
   subViews,
   subViewsMomentsPageSearchParamsKeys,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import {
   falseCreateOrUpdateMomentAfterFlow,
   falseDeleteMomentAfterFlow,

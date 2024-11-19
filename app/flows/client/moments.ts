@@ -10,7 +10,7 @@ import {
   STEP_DURATION_ORIGINAL,
   subViews,
   views,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import {
   FalserDeleteMoment,
   MomentFormVariant,

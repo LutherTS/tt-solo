@@ -11,7 +11,7 @@ import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
-} from "@/app/data/moments";
+} from "@/app/constants/moments";
 import {
   MomentFormVariant,
   RevalidateMoments,

@@ -1,4 +1,4 @@
-import { hashids } from "@/app/data/globals";
+import { hashids } from "@/app/constants/globals";
 
 // Encode UUID
 export const encodeUUIDWithHashids = (uuid: string) => {
