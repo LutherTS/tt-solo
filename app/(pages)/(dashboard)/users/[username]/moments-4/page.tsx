@@ -133,21 +133,19 @@ export default async function MomentsPage({
   }
 
   return (
-    <GlobalServerComponents.DefaultErrorBoundary>
-      <GlobalServerComponents.DefaultSuspense>
-        <Core
-          // time (aligned across server and client for hydration cases)
-          now={now}
-          // reads
-          viewAndMomentData={viewAndMomentData}
-          readMomentsViewData={readMomentsViewData}
-          momentFormsData={momentFormsData}
-          // writes
-          revalidateMoments={revalidateMoments}
-          createOrUpdateMoment={createOrUpdateMoment}
-          deleteMoment={deleteMoment}
-        />
-      </GlobalServerComponents.DefaultSuspense>
-    </GlobalServerComponents.DefaultErrorBoundary>
+    <GlobalServerComponents.ErrorBoundarySuspense>
+      <Core
+        // time (aligned across server and client for hydration cases)
+        now={now}
+        // reads
+        viewAndMomentData={viewAndMomentData}
+        readMomentsViewData={readMomentsViewData}
+        momentFormsData={momentFormsData}
+        // writes
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+      />
+    </GlobalServerComponents.ErrorBoundarySuspense>
   );
 }

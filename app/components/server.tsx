@@ -1,7 +1,11 @@
 import * as Switch from "@radix-ui/react-switch";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
-import { ErrorBoundary } from "react-error-boundary";
-import { Suspense } from "react";
+import {
+  ErrorBoundary,
+  ErrorBoundaryProps,
+  ErrorBoundaryPropsWithRender,
+} from "react-error-boundary";
+import { ExoticComponent, Suspense, SuspenseProps } from "react";
 
 import * as Icons from "@/app/icons";
 import * as GlobalClientComponents from "./client";
@@ -536,35 +540,51 @@ export function FallbackFlex({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function DefaultErrorBoundary({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function DefaultErrorBoundaryFallback() {
   return (
-    <ErrorBoundary
-      fallback={
-        <FallbackFlex>
-          <p>Une erreur est survenue.</p>
-        </FallbackFlex>
-      }
-    >
-      {children}
-    </ErrorBoundary>
+    <FallbackFlex>
+      <p>Une erreur est survenue.</p>
+    </FallbackFlex>
   );
 }
 
-export function DefaultSuspense({ children }: { children: React.ReactNode }) {
+function DefaultSuspenseFallback() {
   return (
-    <Suspense
-      fallback={
-        <FallbackFlex>
-          <p>Loading...</p>
-        </FallbackFlex>
-      }
-    >
-      {children}
-    </Suspense>
+    <FallbackFlex>
+      <p>Loading...</p>
+    </FallbackFlex>
+  );
+}
+
+export function ErrorBoundarySuspense({
+  ErrorBoundaryFallBack,
+  SuspenseFallback,
+  children,
+}: {
+  ErrorBoundaryFallBack?: React.ReactNode;
+  SuspenseFallback?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <ErrorBoundary
+        fallback={
+          ErrorBoundaryFallBack ? (
+            ErrorBoundaryFallBack
+          ) : (
+            <DefaultErrorBoundaryFallback />
+          )
+        }
+      >
+        <Suspense
+          fallback={
+            SuspenseFallback ? SuspenseFallback : <DefaultSuspenseFallback />
+          }
+        >
+          {children}
+        </Suspense>
+      </ErrorBoundary>
+    </>
   );
 }
 
@@ -586,8 +606,7 @@ const globalServerComponents = {
   FieldFlex,
   FieldTitle,
   FallbackFlex,
-  DefaultErrorBoundary,
-  DefaultSuspense,
+  ErrorBoundarySuspense,
 } as const;
 
 export type GlobalServerComponentsName = keyof typeof globalServerComponents;

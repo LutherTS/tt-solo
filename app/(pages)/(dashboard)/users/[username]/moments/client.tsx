@@ -165,21 +165,19 @@ export function ViewsCarouselContainer({
         >
           {/* SUSPENDED */}
           {/* UpdateMomentView */}
-          <GlobalServerComponents.DefaultErrorBoundary>
-            <GlobalServerComponents.DefaultSuspense>
-              <MomentForms
-                key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
-                variant="updating"
-                moment={moment}
-                fetchMomentFormsData={fetchMomentFormsData}
-                createOrUpdateMoment={createOrUpdateMoment}
-                deleteMoment={deleteMoment}
-                now={now}
-                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-                allButtonsDisabled={view !== views.UPDATE_MOMENT}
-              />
-            </GlobalServerComponents.DefaultSuspense>
-          </GlobalServerComponents.DefaultErrorBoundary>
+          <GlobalServerComponents.ErrorBoundarySuspense>
+            <MomentForms
+              key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
+              variant="updating"
+              moment={moment}
+              fetchMomentFormsData={fetchMomentFormsData}
+              createOrUpdateMoment={createOrUpdateMoment}
+              deleteMoment={deleteMoment}
+              now={now}
+              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              allButtonsDisabled={view !== views.UPDATE_MOMENT}
+            />
+          </GlobalServerComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
@@ -191,16 +189,14 @@ export function ViewsCarouselContainer({
           currentViewHeight={currentViewHeight}
         >
           {/* SUSPENDED */}
-          <GlobalServerComponents.DefaultErrorBoundary>
-            <GlobalServerComponents.DefaultSuspense>
-              <ReadMomentsView
-                view={view}
-                fetchReadMomentsViewData={fetchReadMomentsViewData}
-                revalidateMoments={revalidateMoments}
-                allButtonsDisabled={view !== views.READ_MOMENTS}
-              />
-            </GlobalServerComponents.DefaultSuspense>
-          </GlobalServerComponents.DefaultErrorBoundary>
+          <GlobalServerComponents.ErrorBoundarySuspense>
+            <ReadMomentsView
+              view={view}
+              fetchReadMomentsViewData={fetchReadMomentsViewData}
+              revalidateMoments={revalidateMoments}
+              allButtonsDisabled={view !== views.READ_MOMENTS}
+            />
+          </GlobalServerComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
@@ -213,18 +209,16 @@ export function ViewsCarouselContainer({
         >
           {/* SUSPENDED */}
           {/* CreateMomentView */}
-          <GlobalServerComponents.DefaultErrorBoundary>
-            <GlobalServerComponents.DefaultSuspense>
-              <MomentForms
-                variant="creating"
-                fetchMomentFormsData={fetchMomentFormsData}
-                createOrUpdateMoment={createOrUpdateMoment}
-                now={now}
-                setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-                allButtonsDisabled={view !== views.CREATE_MOMENT}
-              />
-            </GlobalServerComponents.DefaultSuspense>
-          </GlobalServerComponents.DefaultErrorBoundary>
+          <GlobalServerComponents.ErrorBoundarySuspense>
+            <MomentForms
+              variant="creating"
+              fetchMomentFormsData={fetchMomentFormsData}
+              createOrUpdateMoment={createOrUpdateMoment}
+              now={now}
+              setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
+              allButtonsDisabled={view !== views.CREATE_MOMENT}
+            />
+          </GlobalServerComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </LocalServerComponents.PageSegment>
     </motion.div>

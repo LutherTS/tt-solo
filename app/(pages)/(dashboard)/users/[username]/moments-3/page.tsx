@@ -269,37 +269,23 @@ export default async function MomentsPage({
   }
 
   return (
-    <ErrorBoundary
-      fallback={
-        <GlobalServerComponents.FallbackFlex>
-          <p>Une erreur est survenue.</p>
-        </GlobalServerComponents.FallbackFlex>
-      }
-    >
-      <Suspense
-        fallback={
-          <GlobalServerComponents.FallbackFlex>
-            <p>Loading...</p>
-          </GlobalServerComponents.FallbackFlex>
-        }
-      >
-        <Core
-          // time (aligned across server and client for hydration cases)
-          now={now}
-          // reads
-          allUserMomentsToCRUD={allUserMomentsToCRUD}
-          maxPages={maxPages}
-          destinationOptions={destinationOptions}
-          // writes
-          revalidateMoments={revalidateMoments}
-          createOrUpdateMoment={createOrUpdateMoment}
-          deleteMoment={deleteMoment}
-          // states lifted to the URL
-          view={view}
-          subView={subView}
-          moment={moment}
-        />
-      </Suspense>
-    </ErrorBoundary>
+    <GlobalServerComponents.ErrorBoundarySuspense>
+      <Core
+        // time (aligned across server and client for hydration cases)
+        now={now}
+        // reads
+        allUserMomentsToCRUD={allUserMomentsToCRUD}
+        maxPages={maxPages}
+        destinationOptions={destinationOptions}
+        // writes
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+        // states lifted to the URL
+        view={view}
+        subView={subView}
+        moment={moment}
+      />
+    </GlobalServerComponents.ErrorBoundarySuspense>
   );
 }

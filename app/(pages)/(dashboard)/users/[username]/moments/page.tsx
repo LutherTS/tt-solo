@@ -26,7 +26,7 @@ import {
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 
 Développement de feature
-Faire un formulaire indéniable pour le projet.
+Faire un formulaire indéniable pour le projet. (nouveau)
 
 De mon point de vue, ce projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice. 
 
@@ -158,22 +158,20 @@ export default async function MomentsPage({
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
 
     // SUSPENDED
-    <GlobalServerComponents.DefaultErrorBoundary>
-      <GlobalServerComponents.DefaultSuspense>
-        <Core
-          // time (aligned across server and client for hydration cases)
-          now={now}
-          // reads as promises
-          fetchViewAndMomentData={fetchViewAndMomentData}
-          fetchReadMomentsViewData={fetchReadMomentsViewData}
-          fetchMomentFormsData={fetchMomentFormsData}
-          // writes
-          revalidateMoments={revalidateMoments}
-          createOrUpdateMoment={createOrUpdateMoment}
-          deleteMoment={deleteMoment}
-        />
-      </GlobalServerComponents.DefaultSuspense>
-    </GlobalServerComponents.DefaultErrorBoundary>
+    <GlobalServerComponents.ErrorBoundarySuspense>
+      <Core
+        // time (aligned across server and client for hydration cases)
+        now={now}
+        // reads as promises
+        fetchViewAndMomentData={fetchViewAndMomentData}
+        fetchReadMomentsViewData={fetchReadMomentsViewData}
+        fetchMomentFormsData={fetchMomentFormsData}
+        // writes
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+      />
+    </GlobalServerComponents.ErrorBoundarySuspense>
   );
 }
 
