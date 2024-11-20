@@ -16,3 +16,6 @@ export const decodeHashidToUUID = (hashid: string) => {
 // Delays a function for testing
 export const delay = <T>(ms: number, fn: () => T): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(fn()), ms));
+
+// Because there is no nullish-safe && operator
+export const isNullish = (value: any) => value === null || value === undefined;

@@ -106,26 +106,6 @@ import {
 } from "@/app/flows/after/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
-/* Dummy Form Presenting Data 
-Devenir tech lead sur TekTIME. 
-Développement de feature
-Faire un formulaire indéniable pour TekTIME.
-
-De mon point de vue, TekTIME a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice. 
-
-Réaliser la div d'une étape
-S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.
-10 minutes
-
-Implémenter le système de coulissement des étapes
-Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.
-20 minutes
-
-Finir de vérifier le formulaire
-S'assurer que toutes les fonctionnalités marchent sans problèmes, avant une future phase de nettoyage de code et de mises en composants.
-30 minutes
-*/
-
 // Main Component
 
 export default function Main({

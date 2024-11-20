@@ -26,7 +26,7 @@ import {
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 
 Développement de feature
-Faire un formulaire indéniable pour le projet.
+Faire un formulaire indéniable pour le projet. (nouveau)
 
 De mon point de vue, ce projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice. 
 

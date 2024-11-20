@@ -826,7 +826,7 @@ export function StepInputs({
       >
         <p className="text-sm font-medium text-blue-900">
           commence à{" "}
-          {step // && stepAddingTime (can equal 0 which is falsy)
+          {step // && stepAddingTime (can equal 0 which is falsy) // if something happens, use isNullish
             ? format(
                 add(startMomentDate, {
                   minutes: stepAddingTime,

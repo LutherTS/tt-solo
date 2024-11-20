@@ -557,8 +557,8 @@ function DefaultSuspenseFallback() {
 }
 
 export function ErrorBoundarySuspense({
-  ErrorBoundaryFallBack,
-  SuspenseFallback,
+  ErrorBoundaryFallBack = <DefaultErrorBoundaryFallback />,
+  SuspenseFallback = <DefaultSuspenseFallback />,
   children,
 }: {
   ErrorBoundaryFallBack?: React.ReactNode;
@@ -567,22 +567,8 @@ export function ErrorBoundarySuspense({
 }) {
   return (
     <>
-      <ErrorBoundary
-        fallback={
-          ErrorBoundaryFallBack ? (
-            ErrorBoundaryFallBack
-          ) : (
-            <DefaultErrorBoundaryFallback />
-          )
-        }
-      >
-        <Suspense
-          fallback={
-            SuspenseFallback ? SuspenseFallback : <DefaultSuspenseFallback />
-          }
-        >
-          {children}
-        </Suspense>
+      <ErrorBoundary fallback={ErrorBoundaryFallBack}>
+        <Suspense fallback={SuspenseFallback}>{children}</Suspense>
       </ErrorBoundary>
     </>
   );
