@@ -355,7 +355,7 @@ export function MomentInputs({
           />
         )}
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalClientComponents.SelectWithOptions
         label="Destination"
         description="Choisissez la destination que cherche à atteindre ce moment."
         addendum="Ou définissez-la vous-même via le bouton ci-dessus."
@@ -378,7 +378,7 @@ export function MomentInputs({
           setSelect={setDestinationSelect}
           text={"Définir la destination"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalClientComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Activité"
         description="Définissez le type d'activité qui va correspondre à votre problématique."
@@ -395,7 +395,7 @@ export function MomentInputs({
           text={"Choisir l'activité"}
         />
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalClientComponents.SelectWithOptions
         label="Activité"
         description="Choisissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou définissez-le vous-même via le bouton ci-dessus."
@@ -416,7 +416,7 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Définir l'activité"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalClientComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Objectif"
         name="objectif"
@@ -425,7 +425,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentName}
       />
-      <GlobalServerComponents.InputSwitch
+      <GlobalClientComponents.InputSwitch
         key={inputSwitchKey}
         label="Indispensable ?"
         name="indispensable"
