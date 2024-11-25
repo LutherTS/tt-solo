@@ -22,6 +22,7 @@ import {
   fetchReadMomentsViewDataFlow,
   fetchViewAndMomentDataFlow,
 } from "@/app/flows/fetch/moments";
+import { use } from "react";
 
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 
@@ -73,6 +74,7 @@ export default async function MomentsPage({
   const username = params.username;
 
   const userFound = await findUserIdByUsername(username);
+  // const userFound = use(findUserIdByUsername(username)); // "When fetching data in a Server Component, prefer async and await over use. async and await pick up rendering from the point where await was invoked, whereas use re-renders the component after the data is resolved." https://19.react.dev/reference/react/use (More like it just doesn't work in Server Components.)
 
   if (!userFound) return notFound();
 
