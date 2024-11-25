@@ -25,52 +25,11 @@ import {
   PageDetails,
   CreateOrUpdateMoment,
   DeleteMoment,
-  FetchViewAndMomentData,
   FetchReadMomentsViewData,
   FetchMomentFormsData,
 } from "@/app/types/moments";
 import { numStringToTimeString } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
-
-export default async function ServerCore({
-  // time
-  now,
-  // reads as promises
-  fetchViewAndMomentData,
-  fetchReadMomentsViewData,
-  fetchMomentFormsData,
-  // writes
-  revalidateMoments,
-  createOrUpdateMoment,
-  deleteMoment,
-}: {
-  now: string;
-  fetchViewAndMomentData: FetchViewAndMomentData;
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
-  fetchMomentFormsData: FetchMomentFormsData;
-  revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
-}) {
-  const { view, moment } = await fetchViewAndMomentData;
-
-  return (
-    <>
-      <Header view={view} />
-      <GlobalServerComponents.Divider />
-      <Main
-        now={now}
-        view={view}
-        moment={moment}
-        fetchReadMomentsViewData={fetchReadMomentsViewData}
-        fetchMomentFormsData={fetchMomentFormsData}
-        revalidateMoments={revalidateMoments}
-        createOrUpdateMoment={createOrUpdateMoment}
-        deleteMoment={deleteMoment}
-      />
-    </>
-  );
-}
 
 export function Header({ view }: { view: View }) {
   return (
@@ -680,7 +639,6 @@ export function StepContents({
 }
 
 const localServerComponents = {
-  ServerCore,
   Header,
   PageSegment,
   SegmentWrapper,
