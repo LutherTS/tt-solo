@@ -68,7 +68,7 @@ export const INITIAL_PAGE = 1;
 // global take (limit in SQL) for all four subViews
 export const TAKE = 2;
 
-// HTML ids
+// HTML ids // could eventually all be inside one single object
 
 export const SEARCH_FORM_ID = "search-form";
 

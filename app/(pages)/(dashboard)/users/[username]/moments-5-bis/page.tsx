@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/server";
-import Core from "./server";
+import Core from "./components/server/local";
 import {
   StepFromClient,
   MomentFormVariant,
