@@ -1,9 +1,11 @@
+// No directive. page.tsx here is meant to be a strict RSC, truly a Server Component.
+
 // import { use as utilizeResource } from "react";
 import { notFound } from "next/navigation";
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
-import Core from "./components/core";
+import Core from "./components/server/core";
 
 import {
   StepFromClient,
@@ -76,7 +78,7 @@ export default async function MomentsPage({
   const username = params.username;
 
   const userFound = await findUserIdByUsername(username);
-  // const userFound = utilizeResource(findUserIdByUsername(username)); // "When fetching data in a Server Component, prefer async and await over use. async and await pick up rendering from the point where await was invoked, whereas use re-renders the component after the data is resolved." https://19.react.dev/reference/react/use (More like it just doesn't work in Server Components.)
+  // const userFound = utilizeResource(findUserIdByUsername(username)); // "When fetching data in a Server Component, prefer async and await over use. async and await pick up rendering from the point where await was invoked, whereas use re-renders the component after the data is resolved." https://19.react.dev/reference/react/use (More like it just doesn't work in Server Components with a --legacy-peer-deps React 19 setup.)
   // Here's what I will do. For now I'm gonna use use as it is and within the limitations of what it is: a Hook, since that's how the error sees it. It's once use will really work on the server (which can only happen once React 19 is officially both stable and supported), that I'll go out on a limb and will rename it utilizeResource.
 
   if (!userFound) return notFound();

@@ -1,10 +1,10 @@
-// No directive. Core .tsx is meant to be a strict RSC, what I call and what should be called a Server Component.
+// No directive. core.tsx here is meant to be a strict RSC, what I call and what should be called a Server Component.
 
-// That beings said, core begins as a Client Core before it evolves into a Server Core, so in its first iteration, it will have the "use client" directive.
+// That beings said, core begins as a Client Core before it evolves into a Server Core, so in another first iteration, it will have the "use client" directive, inside the client folder.
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
-import * as AllLocalAgnosticComponents from "./agnostic";
+import * as AllLocalAgnosticComponents from "../agnostic";
 
 import {
   CreateOrUpdateMoment,
