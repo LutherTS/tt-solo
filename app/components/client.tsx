@@ -6,7 +6,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { isValid } from "date-fns";
 
 import * as Icons from "@/app/icons";
-import * as GlocalServerComponents from "./server";
+import * as GlobalAgnosticComponents from "./agnostic";
 import { Option, SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 import {
@@ -110,18 +110,18 @@ export function InputText({
   hidden?: boolean;
 } & ComponentProps<"input">) {
   return (
-    <GlocalServerComponents.FieldFlex
+    <GlobalAgnosticComponents.FieldFlex
       isLabel={!fieldFlexIsNotLabel}
       hidden={hidden}
     >
       {label && (
         <div className="flex justify-between">
-          <GlocalServerComponents.FieldTitle title={label} />
+          <GlobalAgnosticComponents.FieldTitle title={label} />
           {children}
         </div>
       )}
       {description && (
-        <GlocalServerComponents.InputDescriptionOrError
+        <GlobalAgnosticComponents.InputDescriptionOrError
           errors={errors}
           description={description}
           addendum={addendum}
@@ -172,7 +172,7 @@ export function InputText({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -205,14 +205,14 @@ export function InputTextControlled({
   errors?: string[];
 } & ComponentProps<"input">) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <GlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
       {label && (
         <div className="flex justify-between">
-          <GlocalServerComponents.FieldTitle title={label} />
+          <GlobalAgnosticComponents.FieldTitle title={label} />
           {children}
         </div>
       )}
-      <GlocalServerComponents.InputDescriptionOrError
+      <GlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -268,7 +268,7 @@ export function InputTextControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -304,12 +304,12 @@ export function SelectWithOptionsControlled({
   tekTime?: boolean;
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <GlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
       <div className="flex justify-between">
-        <GlocalServerComponents.FieldTitle title={label} />
+        <GlobalAgnosticComponents.FieldTitle title={label} />
         {children}
       </div>
-      <GlocalServerComponents.InputDescriptionOrError
+      <GlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -390,7 +390,7 @@ export function SelectWithOptionsControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -414,9 +414,9 @@ export function Textarea({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <GlobalAgnosticComponents.FieldFlex isLabel>
+      <GlobalAgnosticComponents.FieldTitle title={label} />
+      <GlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -438,7 +438,7 @@ export function Textarea({
           focusVisibleTexts,
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -464,9 +464,9 @@ export function TextareaControlled({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <GlobalAgnosticComponents.FieldFlex isLabel>
+      <GlobalAgnosticComponents.FieldTitle title={label} />
+      <GlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -488,7 +488,7 @@ export function TextareaControlled({
           focusVisibleTexts,
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -516,9 +516,9 @@ export function InputNumber({
   children?: React.ReactNode;
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
+    <GlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <GlocalServerComponents.FieldTitle title={label} />}
+        {label && <GlobalAgnosticComponents.FieldTitle title={label} />}
         {children}
       </div>
       {description && (
@@ -546,7 +546,7 @@ export function InputNumber({
           <p>minutes</p>
         </div>
       </div>
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -580,12 +580,12 @@ export function InputNumberControlled({
   children?: React.ReactNode;
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
+    <GlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <GlocalServerComponents.FieldTitle title={label} />}
+        {label && <GlobalAgnosticComponents.FieldTitle title={label} />}
         {children}
       </div>
-      <GlocalServerComponents.InputDescriptionOrError
+      <GlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -626,7 +626,7 @@ export function InputNumberControlled({
           <p>minutes</p>
         </div>
       </div>
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -650,9 +650,9 @@ export function InputDatetimeLocal({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <GlobalAgnosticComponents.FieldFlex isLabel>
+      <GlobalAgnosticComponents.FieldTitle title={label} />
+      <GlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -674,7 +674,7 @@ export function InputDatetimeLocal({
           "w-full appearance-none",
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -700,9 +700,9 @@ export function InputDatetimeLocalControlled({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <GlobalAgnosticComponents.FieldFlex isLabel>
+      <GlobalAgnosticComponents.FieldTitle title={label} />
+      <GlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -730,7 +730,7 @@ export function InputDatetimeLocalControlled({
           "w-full appearance-none",
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </GlobalAgnosticComponents.FieldFlex>
   );
 }
 

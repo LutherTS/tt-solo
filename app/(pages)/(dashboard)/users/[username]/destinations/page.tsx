@@ -5,7 +5,7 @@ import prisma from "@/prisma/db";
 import { DestinationToCRUD } from "@/app/types/destinations";
 import { dateToInputDatetime } from "@/app/utilities/moments";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import { HeaderSegment, PageSegment } from "../moments/server";
 
 // the time at rendering as a stable foundation for all time operations

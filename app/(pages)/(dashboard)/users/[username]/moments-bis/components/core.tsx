@@ -2,9 +2,9 @@
 
 // That beings said, core begins as a Client Core before it evolves into a Server Core, so in its first iteration, it will have the "use client" directive.
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
-import * as AllLocalServerComponents from "./server";
+import * as AllLocalAgnosticComponents from "./agnostic";
 
 import {
   CreateOrUpdateMoment,
@@ -39,9 +39,9 @@ export default async function Core({
 
   return (
     <>
-      <AllLocalServerComponents.Header view={view} />
-      <GlobalServerComponents.Divider />
-      <AllLocalServerComponents.Main
+      <AllLocalAgnosticComponents.Header view={view} />
+      <GlobalAgnosticComponents.Divider />
+      <AllLocalAgnosticComponents.Main
         now={now}
         view={view}
         moment={moment}

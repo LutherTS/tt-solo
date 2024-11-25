@@ -35,7 +35,7 @@ import useKeypress from "react-use-keypress";
 
 import * as Icons from "@/app/icons";
 import * as LocalServerComponents from "./server";
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
   MomentFormVariant,

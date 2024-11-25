@@ -1,7 +1,7 @@
 // import { use as utilizeResource } from "react";
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
 import Core from "./components/core";
 
@@ -136,7 +136,7 @@ export default async function MomentsPage({
 
   return (
     // SUSPENDED
-    <GlobalServerComponents.ErrorBoundarySuspense>
+    <GlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -149,6 +149,6 @@ export default async function MomentsPage({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
       />
-    </GlobalServerComponents.ErrorBoundarySuspense>
+    </GlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }

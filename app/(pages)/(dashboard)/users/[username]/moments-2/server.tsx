@@ -3,7 +3,7 @@ import { add, format } from "date-fns";
 import clsx from "clsx";
 
 import * as LocalClientComponents from "./client";
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 import { Option, SetState } from "@/app/types/globals";
 import {

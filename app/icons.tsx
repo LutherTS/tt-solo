@@ -1,3 +1,5 @@
+"use agnostic"; // NOT A REAL DIRECTIVE. YET. I HOPE.
+
 export function Cog8ToothOutline({ className }: { className?: string }) {
   return (
     <svg

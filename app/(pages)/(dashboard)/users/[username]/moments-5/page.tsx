@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import Core from "./server";
 import {
   StepFromClient,

@@ -1,11 +1,7 @@
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import * as Switch from "@radix-ui/react-switch";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
-import {
-  ErrorBoundary,
-  ErrorBoundaryProps,
-  ErrorBoundaryPropsWithRender,
-} from "react-error-boundary";
-import { ExoticComponent, Suspense, SuspenseProps } from "react";
 
 import * as Icons from "@/app/icons";
 import * as GlobalClientComponents from "./client";
@@ -578,7 +574,7 @@ export function ErrorBoundarySuspense({
 For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.
 */
 
-const globalServerComponents = {
+const globalAgnosticComponents = {
   PageTitle,
   Divider,
   FormDescriptionOrError: FalseFormDescriptionOrError,
@@ -595,4 +591,5 @@ const globalServerComponents = {
   ErrorBoundarySuspense,
 } as const;
 
-export type GlobalServerComponentsName = keyof typeof globalServerComponents;
+export type GlobalAgnosticComponentsName =
+  keyof typeof globalAgnosticComponents;

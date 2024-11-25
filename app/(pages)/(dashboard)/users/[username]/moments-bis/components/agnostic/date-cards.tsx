@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
 import * as LocalClientComponents from "../client";
 
@@ -135,17 +135,17 @@ function StepInDateCard({ e4 }: { e4: StepAdapted }) {
 export function NoDateCard() {
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm">
-      <GlobalServerComponents.FieldTitle
+      <GlobalAgnosticComponents.FieldTitle
         title={"Pas de moment... pour le moment. 😅"}
       />
     </div>
   );
 }
 
-const dateCardsServerComponents = {
+const dateCardsAgnosticComponents = {
   DateCard,
   NoDateCard,
 } as const;
 
-export type DateCardsServerComponentsName =
-  keyof typeof dateCardsServerComponents;
+export type DateCardsAgnosticComponentsName =
+  keyof typeof dateCardsAgnosticComponents;

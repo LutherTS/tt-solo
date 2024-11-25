@@ -3,7 +3,7 @@
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 
 import * as AllLocalClientComponents from "../client";
@@ -36,7 +36,7 @@ export function Header({ view }: { view: View }) {
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
+          <GlobalAgnosticComponents.PageTitle title={viewsTitles[view]} />
           <AllLocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>
@@ -223,7 +223,7 @@ export function MomentInputs({
           />
         )}
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalAgnosticComponents.SelectWithOptions
         label="Destination"
         description="Choisissez la destination que cherche à atteindre ce moment."
         addendum="Ou définissez-la vous-même via le bouton ci-dessus."
@@ -246,7 +246,7 @@ export function MomentInputs({
           setSelect={setDestinationSelect}
           text={"Définir la destination"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalAgnosticComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Activité"
         description="Définissez le type d'activité qui va correspondre à votre problématique."
@@ -263,7 +263,7 @@ export function MomentInputs({
           text={"Choisir l'activité"}
         />
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalAgnosticComponents.SelectWithOptions
         label="Activité"
         description="Choisissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou définissez-le vous-même via le bouton ci-dessus."
@@ -284,7 +284,7 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Définir l'activité"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalAgnosticComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Objectif"
         name="objectif"
@@ -293,7 +293,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.error?.momentErrors?.momentName}
       />
-      <GlobalServerComponents.InputSwitch
+      <GlobalAgnosticComponents.InputSwitch
         key={inputSwitchKey}
         label="Indispensable ?"
         name="indispensable"
@@ -638,7 +638,7 @@ export function StepContents({
   );
 }
 
-const localServerComponents = {
+const localAgnosticComponents = {
   Header,
   PageSegment,
   SegmentWrapper,
@@ -656,4 +656,4 @@ const localServerComponents = {
   StepContents,
 } as const;
 
-export type LocalServerComponentsName = keyof typeof localServerComponents;
+export type LocalAgnosticComponentsName = keyof typeof localAgnosticComponents;
