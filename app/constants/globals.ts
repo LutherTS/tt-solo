@@ -1,6 +1,11 @@
+import Hashids from "hashids";
 import clsx from "clsx";
 
-import { NavLink } from "../types/globals";
+import { NavLink } from "@/app/types/globals";
+
+// core Hashids instance
+
+export const hashids = new Hashids(process.env.HASHIDS_SALT, 10);
 
 // Grouped style classes
 
@@ -26,21 +31,21 @@ export const focusVisibleTexts = clsx(
 
 export const navLinks: NavLink[] = [
   {
-    id: 0,
+    id: "Paramètres",
     label: "Paramètres",
     href: "/settings",
-    icon: "Cog8ToothOutline",
+    icon: "Cog8ToothOutlineIcon",
   },
   {
-    id: 1,
+    id: "Moments",
     label: "Moments",
     href: "/moments",
-    icon: "CalendarDaysOutline",
+    icon: "CalendarDaysOutlineIcon",
   },
   {
-    id: 2,
+    id: "Destinations",
     label: "Destinations",
     href: "/destinations",
-    icon: "PaperAirplaneOutline",
+    icon: "PaperAirplaneOutlineIcon",
   },
 ];

@@ -5,6 +5,8 @@ import { endDateAndTime } from "@/app/utilities/moments";
 
 // Datas
 
+// Create
+
 export function dataCreateMomentWithoutDestination(
   activity: string,
   name: string,
@@ -30,14 +32,6 @@ export function dataCreateMomentWithoutDestination(
   };
 }
 
-export function dataConnectMomentDestination(
-  destinationId: string,
-): Prisma.DestinationCreateNestedOneWithoutMomentsInput {
-  return {
-    connect: { id: destinationId },
-  };
-}
-
 export function dataCreateMomentDestination(
   destinationName: string,
   userId: string,
@@ -47,5 +41,15 @@ export function dataCreateMomentDestination(
       name: destinationName, // destination
       userId,
     },
+  };
+}
+
+// Connects
+
+export function dataConnectMomentDestination(
+  destinationId: string,
+): Prisma.DestinationCreateNestedOneWithoutMomentsInput {
+  return {
+    connect: { id: destinationId },
   };
 }

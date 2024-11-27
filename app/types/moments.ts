@@ -2,21 +2,25 @@ import { Prisma } from "@prisma/client";
 
 import {
   selectMomentDefault,
-  selectMomentId,
   selectMomentIdNameAndDates,
 } from "@/app/reads/subreads/moments";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
-  MOMENTID,
-  PASTUSERMOMENTSPAGE,
-  SUBVIEW,
-  USERMOMENTSPAGE,
-  VIEW,
-} from "@/app/data/moments";
+  momentsPageSearchParamsKeys,
+  momentsPageSearchParamsKeysOfPages,
+  subViews,
+  views,
+} from "@/app/constants/moments";
+import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments/page";
+import {
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentDataFlow,
+} from "@/app/flows/fetch/moments";
 
-export type StepFromCRUD = {
+// data adapted types
+
+// previously StepFromCRUD, retains the previous id paradigm, left untouched
+export type StepFromClient = {
   id: string;
   intitule: string;
   details: string;
@@ -67,13 +71,68 @@ export type UserMomentsToCRUD = {
   dates: MomentsDateToCRUD[];
 };
 
-export type View = "update-moment" | "read-moments" | "create-moment";
+export type StepAdapted = {
+  key: string; // changed id to key
+  orderId: number;
+  title: string;
+  details: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+};
 
-export type SubView =
-  | "all-moments"
-  | "past-moments"
-  | "current-moments"
-  | "future-moments";
+export type MomentAdapted = {
+  key: string; // changed id to key
+  activity: string;
+  objective: string;
+  isIndispensable: boolean;
+  context: string;
+  startDateAndTime: string;
+  duration: string;
+  endDateAndTime: string;
+  steps: StepAdapted[];
+  destinationIdeal: string;
+};
+
+export type DestinationAdapted = {
+  key: string; // changed id to key
+  destinationIdeal: string;
+  moments: MomentAdapted[];
+};
+
+export type DateAdapted = {
+  date: string;
+  destinations: DestinationAdapted[];
+};
+
+export type PageDetails = {
+  page: number;
+  total: number;
+  maxPage: number;
+  momentsTotal: number;
+  momentsFirstIndex: number;
+  momentsLastIndex: number;
+};
+
+export type MomentsAdapted = {
+  dates: DateAdapted[];
+  pageDetails: PageDetails;
+};
+
+export type UserMomentsAdaptedCombined = {
+  userAllMomentsAdapted: MomentsAdapted;
+  userPastMomentsAdapted: MomentsAdapted;
+  userCurrentMomentsAdapted: MomentsAdapted;
+  userFutureMomentsAdapted: MomentsAdapted;
+};
+
+// constants types
+
+export type View = (typeof views)[keyof typeof views];
+
+export type SubView = (typeof subViews)[keyof typeof subViews];
+
+export type FormSectionTopic = "moment" | "steps";
 
 export type StepVisible = "create" | "creating" | "updating";
 
@@ -83,35 +142,97 @@ export type MomentFormVariant = DefaultFormVariant;
 
 export type StepFormVariant = DefaultFormVariant;
 
+// jointly secures makeMomentFormIds and momentFormIds
+export type MomentFormIds = {
+  momentForm: string;
+  yourMoment: string;
+  itsSteps: string;
+  stepFormCreating: string;
+  stepFormUpdating: string;
+};
+
+// searchParams types
+
+// now currently unused in favor of MomentsPageSearchParamsKeyOfPages
+export type MomentsPageSearchParamsKey =
+  (typeof momentsPageSearchParamsKeys)[keyof typeof momentsPageSearchParamsKeys];
+
+export type MomentsPageSearchParamsKeyOfPages =
+  (typeof momentsPageSearchParamsKeysOfPages)[keyof typeof momentsPageSearchParamsKeysOfPages];
+
+export type MomentsPageSearchParamsRaw = Parameters<
+  typeof MomentsPage
+>[0]["searchParams"];
+
+export type MomentsPageSearchParamsHandled = {
+  [momentsPageSearchParamsKeys.CONTAINS]: string;
+  [momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE]: string;
+  [momentsPageSearchParamsKeys.VIEW]: View;
+  [momentsPageSearchParamsKeys.SUB_VIEW]: SubView;
+  [momentsPageSearchParamsKeys.MOMENT_KEY]: string;
+};
+
+// server action types
+
 // Now the action types will also be kept here, to be manually shared wherever the actions are to be used.
-export type FalseCreateOrUpdateMoment = (
+export type FalserCreateOrUpdateMoment = (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
 ) => Promise<FalseCreateOrUpdateMomentState>;
 
-export type CreateOrUpdateMoment = (
+export type FalseCreateOrUpdateMoment = (
   formData: FormData,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
 ) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
 
-type FormMessages = {
+export type CreateOrUpdateMoment = (
+  formData: FormData,
+  variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromClient[],
+  momentFromCRUD: MomentAdapted | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+
+export type FalserDeleteMoment = (
+  momentFromCRUD?: MomentToCRUD,
+) => Promise<FalseCreateOrUpdateMomentState>;
+
+export type FalseDeleteMoment = (
+  momentFromCRUD?: MomentToCRUD,
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+
+// This can be dynamic. // Actually no, it's about the arguments, not the return type.
+export type DeleteMoment = (
+  momentFromCRUD?: MomentAdapted,
+) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+
+export type RevalidateMoments = () => Promise<void>;
+
+// server action states types
+
+type FormErrorMessages = {
   message?: string;
   subMessage?: string;
 };
 
-type MomentMessages = FormMessages;
+type MomentErrorMessages = FormErrorMessages;
 
-type StepsMessages = FormMessages;
+type StepsErrorMessages = FormErrorMessages;
 
 // The type of the return of createOrUpdateMoment as it is being shared between the server and the client.
 // It is then reused between createOrUpdateMoment on the server and the type CreateOrUpdateMoment made on the client.
@@ -127,7 +248,7 @@ type StepsMessages = FormMessages;
 // ...Looking at my afterflows I don't think I'll actually need errorScrollPriority since it's only the top form that actually does a priority scrolling and I've already established this priority in the afterflow.
 // What I will need however, is a complete revamp of errors that clearly separates between momentErrors and stepsErrors, so that I don't have to always, always modify both when I only one to modify one. Let's go. // Done.
 export type FalseCreateOrUpdateMomentState = {
-  momentMessages?: MomentMessages;
+  momentMessages?: MomentErrorMessages;
   momentErrors?: {
     destinationName?: string[];
     momentActivity?: string[];
@@ -136,7 +257,7 @@ export type FalseCreateOrUpdateMomentState = {
     momentDescription?: string[];
     momentStartDateAndTime?: string[];
   };
-  stepsMessages?: StepsMessages;
+  stepsMessages?: StepsErrorMessages;
   stepsErrors?: {
     stepName?: string[];
     stepDescription?: string[];
@@ -145,15 +266,10 @@ export type FalseCreateOrUpdateMomentState = {
   errorScrollPriority?: "moment" | "steps";
 } | null;
 
-export type CreateOrUpdateMomentState =
-  | CreateOrUpdateMomentError
-  | CreateOrUpdateMomentSuccess
-  | null;
-
 export type CreateOrUpdateMomentError = {
   isSuccess: false;
   error: {
-    momentMessages?: MomentMessages;
+    momentMessages?: MomentErrorMessages;
     momentErrors?: {
       destinationName?: string[];
       momentActivity?: string[];
@@ -162,7 +278,7 @@ export type CreateOrUpdateMomentError = {
       momentDescription?: string[];
       momentStartDateAndTime?: string[];
     };
-    stepsMessages?: StepsMessages;
+    stepsMessages?: StepsErrorMessages;
     stepsErrors?: {
       stepName?: string[];
       stepDescription?: string[];
@@ -183,55 +299,41 @@ export type CreateOrUpdateMomentSuccess = {
   };
 };
 
-export type FalseDeleteMoment = (
-  momentFromCRUD?: MomentToCRUD,
-) => Promise<FalseCreateOrUpdateMomentState>;
+export type CreateOrUpdateMomentState =
+  | CreateOrUpdateMomentError
+  | CreateOrUpdateMomentSuccess
+  | null;
 
-export type DeleteMoment = (
-  momentFromCRUD?: MomentToCRUD,
-) => Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess>;
+// select types
 
-export type RevalidateMoments = () => Promise<void>;
-
-// no longer used
-export type SelectMomentId = Prisma.MomentGetPayload<{
-  select: typeof selectMomentId;
+export type SelectMomentDefault = Prisma.MomentGetPayload<{
+  select: typeof selectMomentDefault;
 }>;
 
 export type SelectMomentIdNameAndDates = Prisma.MomentGetPayload<{
   select: typeof selectMomentIdNameAndDates;
 }>;
 
-export type SelectMomentDefault = Prisma.MomentGetPayload<{
-  select: typeof selectMomentDefault;
-}>;
+// fetch types
 
-export type MomentFormIds = {
-  momentForm: string;
-  yourMoment: string;
-  itsSteps: string;
-  stepFormCreating: string;
-  stepFormUpdating: string;
-};
+export type FetchReadMomentsViewData = ReturnType<
+  typeof fetchReadMomentsViewDataFlow
+>;
 
-export type MomentsSearchParamsKey =
-  | typeof CONTAINS
-  | typeof USERMOMENTSPAGE
-  | typeof PASTUSERMOMENTSPAGE
-  | typeof CURRENTUSERMOMENTSPAGE
-  | typeof FUTUREUSERMOMENTSPAGE
-  | typeof VIEW
-  | typeof MOMENTID;
+export type ReadMomentsViewData = Awaited<
+  ReturnType<typeof fetchReadMomentsViewDataFlow>
+>;
 
-export type MomentsSearchParams = {
-  [CONTAINS]: string;
-  [USERMOMENTSPAGE]: string;
-  [PASTUSERMOMENTSPAGE]: string;
-  [CURRENTUSERMOMENTSPAGE]: string;
-  [FUTUREUSERMOMENTSPAGE]: string;
-  [VIEW]: View;
-  [SUBVIEW]: SubView;
-  [MOMENTID]: string;
-};
+export type FetchMomentFormsData = ReturnType<typeof fetchMomentFormsDataFlow>;
 
-export type FormSectionTopic = "moment" | "steps";
+export type MomentFormsData = Awaited<
+  ReturnType<typeof fetchMomentFormsDataFlow>
+>;
+
+export type FetchViewAndMomentData = ReturnType<
+  typeof fetchViewAndMomentDataFlow
+>;
+
+export type ViewAndMomentData = Awaited<
+  ReturnType<typeof fetchViewAndMomentDataFlow>
+>;

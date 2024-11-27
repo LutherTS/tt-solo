@@ -7,7 +7,6 @@ import { SelectMomentIdNameAndDates } from "@/app/types/moments";
 
 export const selectMomentDefault = {
   id: true,
-  key: true,
   activity: true,
   name: true,
   isIndispensable: true,
@@ -25,10 +24,6 @@ export const selectMomentDefault = {
     orderBy: orderByStepsDefault,
     select: selectStepDefault,
   },
-} satisfies Prisma.MomentSelect;
-
-export const selectMomentId = {
-  id: true,
 } satisfies Prisma.MomentSelect;
 
 export const selectMomentIdNameAndDates = {

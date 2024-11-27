@@ -16,9 +16,9 @@ import {
   Section,
   Textarea,
 } from "@/app/components/__components__";
-import * as Icons from "@/app/icons";
+import * as Icons from "@/app/icons/__icons__";
 import { SetState } from "@/app/types/globals";
-import { NoDateCard } from "../moments/_old-files_/main-first";
+// import { NoDateCard } from "../moments/_old-files_/main-first";
 
 // Main Data
 
@@ -171,7 +171,7 @@ function ReadDestinationsView({
           ></div>
         </button>
       </div>
-      {destinationsToCRUD.length > 0 ? (
+      {/* {destinationsToCRUD.length > 0 ? (
         <>
           {destinationsToCRUD.map((e) => {
             const className =
@@ -257,7 +257,7 @@ function ReadDestinationsView({
             title={"Pas de destination... pour la destination ? 🤔"}
           />
         </NoDateCard>
-      )}
+      )} */}
     </div>
   );
 }

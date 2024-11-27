@@ -1,88 +1,21 @@
 "use client";
 
-import { ComponentProps, MouseEventHandler } from "react";
-import { useFormStatus } from "react-dom";
+import { ComponentProps } from "react";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { isValid } from "date-fns";
+import * as Switch from "@radix-ui/react-switch";
 
-import * as Icons from "@/app/icons";
-import * as GlocalServerComponents from "./server";
+import * as AllGlobalIcons from "@/app/icons";
+import * as AllGlobalAgnosticComponents from "../agnostic";
+
 import { Option, SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "@/app/validations/steps";
-import {
-  FalseCreateOrUpdateMomentState,
-  CreateOrUpdateMomentState,
-} from "@/app/types/moments";
 import {
   baseInputTexts,
   focusVisibleTexts,
   notDatetimeLocalPadding,
   textareaPadding,
-} from "@/app/data/globals";
-
-// Components
-
-export function FormValidationError({
-  error,
-  setCreateOrUpdateMomentState,
-  removeMessagesAndErrorsCallback,
-}: {
-  error: string;
-  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
-  removeMessagesAndErrorsCallback?: (
-    s: FalseCreateOrUpdateMomentState,
-  ) => FalseCreateOrUpdateMomentState; // could be more precise but true
-}) {
-  function handleClick() {
-    if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
-      setCreateOrUpdateMomentState(removeMessagesAndErrorsCallback);
-  }
-
-  return (
-    <p
-      className={clsx(
-        "max-w-prose text-sm text-pink-500",
-        setCreateOrUpdateMomentState &&
-          removeMessagesAndErrorsCallback &&
-          "hover:cursor-pointer",
-      )}
-      onClick={handleClick}
-    >
-      {error}
-    </p>
-  );
-}
-
-export function TrueFormValidationError({
-  error,
-  setCreateOrUpdateMomentState,
-  removeMessagesAndErrorsCallback,
-}: {
-  error: string;
-  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
-  removeMessagesAndErrorsCallback?: (
-    s: CreateOrUpdateMomentState,
-  ) => CreateOrUpdateMomentState; // could be more precise but true
-}) {
-  function handleClick() {
-    if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
-      setCreateOrUpdateMomentState(removeMessagesAndErrorsCallback);
-  }
-
-  return (
-    <p
-      className={clsx(
-        "max-w-prose text-sm text-pink-500",
-        setCreateOrUpdateMomentState &&
-          removeMessagesAndErrorsCallback &&
-          "hover:cursor-pointer",
-      )}
-      onClick={handleClick}
-    >
-      {error}
-    </p>
-  );
-}
+} from "@/app/constants/globals";
 
 // IMPORTANT: inputs and all will have to be upgraded to ComponentProps
 export function InputText({
@@ -110,18 +43,18 @@ export function InputText({
   hidden?: boolean;
 } & ComponentProps<"input">) {
   return (
-    <GlocalServerComponents.FieldFlex
+    <AllGlobalAgnosticComponents.FieldFlex
       isLabel={!fieldFlexIsNotLabel}
       hidden={hidden}
     >
       {label && (
         <div className="flex justify-between">
-          <GlocalServerComponents.FieldTitle title={label} />
+          <AllGlobalAgnosticComponents.FieldTitle title={label} />
           {children}
         </div>
       )}
       {description && (
-        <GlocalServerComponents.InputDescriptionOrError
+        <AllGlobalAgnosticComponents.InputDescriptionOrError
           errors={errors}
           description={description}
           addendum={addendum}
@@ -172,7 +105,7 @@ export function InputText({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -205,14 +138,14 @@ export function InputTextControlled({
   errors?: string[];
 } & ComponentProps<"input">) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
       {label && (
         <div className="flex justify-between">
-          <GlocalServerComponents.FieldTitle title={label} />
+          <AllGlobalAgnosticComponents.FieldTitle title={label} />
           {children}
         </div>
       )}
-      <GlocalServerComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -268,7 +201,126 @@ export function InputTextControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
+  );
+}
+
+export function SelectWithOptions({
+  id,
+  label,
+  description,
+  addendum,
+  name,
+  defaultValue = "",
+  placeholder = "Choose...",
+  options,
+  children,
+  fieldFlexIsNotLabel,
+  required = true,
+  errors,
+  tekTime,
+  hidden,
+}: {
+  id?: string;
+  label: string;
+  description: string;
+  addendum?: string;
+  defaultValue?: string;
+  name: string;
+  placeholder?: string;
+  options: Option[];
+  children?: React.ReactNode;
+  fieldFlexIsNotLabel?: boolean;
+  required?: boolean;
+  errors?: string[];
+  tekTime?: boolean;
+  hidden?: boolean;
+}) {
+  return (
+    <AllGlobalAgnosticComponents.FieldFlex
+      isLabel={!fieldFlexIsNotLabel}
+      hidden={hidden}
+    >
+      <div className="flex justify-between">
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
+        {children}
+      </div>
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
+        errors={errors}
+        description={description}
+        addendum={addendum}
+      />
+      {!tekTime ? (
+        <div className="relative grid">
+          <select
+            className={clsx(
+              "col-start-1 row-start-1 appearance-none",
+              baseInputTexts,
+              notDatetimeLocalPadding,
+              focusVisibleTexts,
+            )}
+            id={id}
+            name={name}
+            defaultValue={defaultValue}
+            required={required}
+          >
+            <option value="" disabled>
+              {placeholder}
+            </option>
+            {options.map((option) => (
+              <option key={option.key} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
+            <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
+          </div>
+        </div>
+      ) : (
+        <div className="relative">
+          <div className="peer relative z-30 grid">
+            <select
+              className={clsx(
+                "col-start-1 row-start-1 appearance-none",
+                // baseInputTexts,
+                notDatetimeLocalPadding,
+                // focusVisibleTexts,
+                "w-full rounded border-2 border-transparent bg-white bg-clip-padding outline-none",
+              )}
+              id={id}
+              name={name}
+              defaultValue={defaultValue}
+              required={required}
+            >
+              <option value="" disabled>
+                {placeholder}
+              </option>
+              {options.map((option) => (
+                <option key={option.key} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
+              <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
+            </div>
+          </div>
+          {/* gradient border */}
+          {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
+          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          {/* background merging foundation */}
+          {/* [calc(100%+4px)] adds the original outline-offset-2 */}
+          {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
+          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          {/* gradient focus-visible */}
+          {/* [calc(100%+8px)] adds the original outline-2 */}
+          {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
+          {/* outline's rounded is more pronounced, lg is the exact fit */}
+          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
+        </div>
+      )}
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -304,12 +356,12 @@ export function SelectWithOptionsControlled({
   tekTime?: boolean;
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
       <div className="flex justify-between">
-        <GlocalServerComponents.FieldTitle title={label} />
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
         {children}
       </div>
-      <GlocalServerComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -341,7 +393,7 @@ export function SelectWithOptionsControlled({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <Icons.ChevronDownMini className="size-5" />
+            <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
           </div>
         </div>
       ) : (
@@ -373,7 +425,7 @@ export function SelectWithOptionsControlled({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <Icons.ChevronDownMini className="size-5" />
+              <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -390,7 +442,97 @@ export function SelectWithOptionsControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
+  );
+}
+
+// Modified from Advanced Radix UI's Animated Switch
+export function InputSwitch({
+  label,
+  name,
+  defaultChecked,
+  description,
+  required = true,
+  errors,
+}: {
+  label: string;
+  name: string;
+  defaultChecked: boolean;
+  description: string;
+  required?: boolean;
+  errors?: string[];
+}) {
+  return (
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <div className="flex select-none items-center gap-4">
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
+        <Switch.Root
+          name={name}
+          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled // later solved with keys
+          // now going for uncontrolled, so using back defaultChecked
+          defaultChecked={defaultChecked}
+          required={required}
+          className={clsx(
+            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
+          )}
+        >
+          <Switch.Thumb
+            className={clsx(
+              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
+              "data-[state=checked]:translate-x-5",
+            )}
+          />
+        </Switch.Root>
+      </div>
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
+        errors={errors}
+        description={description}
+      />
+    </AllGlobalAgnosticComponents.FieldFlex>
+  );
+}
+
+// Modified from Advanced Radix UI's Animated Switch
+export function InputSwitchControlled({
+  label,
+  name,
+  description,
+  definedValue,
+  definedOnValueChange = () => {},
+  errors,
+}: {
+  label: string;
+  name: string;
+  description: string;
+  definedValue?: boolean;
+  definedOnValueChange?: SetState<boolean>;
+  errors?: string[];
+}) {
+  return (
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <div className="flex select-none items-center gap-4">
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
+        <Switch.Root
+          name={name}
+          checked={definedValue}
+          onCheckedChange={definedOnValueChange}
+          className={clsx(
+            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
+          )}
+        >
+          <Switch.Thumb
+            className={clsx(
+              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
+              "data-[state=checked]:translate-x-5",
+            )}
+          />
+        </Switch.Root>
+      </div>
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
+        errors={errors}
+        description={description}
+      />
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -414,9 +556,9 @@ export function Textarea({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -438,7 +580,7 @@ export function Textarea({
           focusVisibleTexts,
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -464,9 +606,9 @@ export function TextareaControlled({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -488,7 +630,7 @@ export function TextareaControlled({
           focusVisibleTexts,
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -516,9 +658,9 @@ export function InputNumber({
   children?: React.ReactNode;
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <GlocalServerComponents.FieldTitle title={label} />}
+        {label && <AllGlobalAgnosticComponents.FieldTitle title={label} />}
         {children}
       </div>
       {description && (
@@ -546,7 +688,7 @@ export function InputNumber({
           <p>minutes</p>
         </div>
       </div>
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -580,12 +722,12 @@ export function InputNumberControlled({
   children?: React.ReactNode;
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <GlocalServerComponents.FieldTitle title={label} />}
+        {label && <AllGlobalAgnosticComponents.FieldTitle title={label} />}
         {children}
       </div>
-      <GlocalServerComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -626,7 +768,7 @@ export function InputNumberControlled({
           <p>minutes</p>
         </div>
       </div>
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -650,9 +792,9 @@ export function InputDatetimeLocal({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -674,7 +816,7 @@ export function InputDatetimeLocal({
           "w-full appearance-none",
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -700,9 +842,9 @@ export function InputDatetimeLocalControlled({
   errors?: string[];
 }) {
   return (
-    <GlocalServerComponents.FieldFlex isLabel>
-      <GlocalServerComponents.FieldTitle title={label} />
-      <GlocalServerComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -730,104 +872,14 @@ export function InputDatetimeLocalControlled({
           "w-full appearance-none",
         )}
       />
-    </GlocalServerComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
-// This is the perfect example of what Sam Selikoff called a bad abstraction, which will have to evolve in the final version.
-// https://www.youtube.com/watch?v=9iJK-Vl6PhE&t=693s&pp=ygUMc2FtIHNlbGlrb2Zm
-export function Button({
-  form,
-  type,
-  variant,
-  disabled,
-  isDedicatedDisabled,
-  formAction,
-  onClick,
-  children,
-}: {
-  form?: string;
-  type?: "button" | "submit" | "reset";
-  variant:
-    | "destroy"
-    | "destroy-step"
-    | "neutral"
-    | "confirm"
-    | "cancel"
-    | "destroy-step"
-    | "confirm-step"
-    | "cancel-step";
-  disabled?: boolean;
-  isDedicatedDisabled?: boolean;
-  formAction?: string | ((formData: FormData) => void);
-  onClick?: MouseEventHandler<HTMLButtonElement>;
-  children: React.ReactNode;
-}) {
-  const showDisabledStyles =
-    isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled);
-
-  // add a disable that does not affect disable styles //
-
-  const destroy =
-    "w-fit px-1 text-sm text-blue-500 hover:text-blue-600 focus-visible:rounded focus-visible:outline-blue-500 active:text-blue-400";
-  const destroyStep = clsx(
-    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded focus-visible:outline-cyan-500 active:text-cyan-400",
-    showDisabledStyles && "disabled:grayscale disabled:hover:text-cyan-500",
-  );
-  const notDestroy = "w-full rounded border py-2";
-  const neutral =
-    "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:!bg-neutral-200 hover:!text-neutral-950 focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
-  // disabled:border-neutral-800 disabled:bg-neutral-800
-  const confirm = clsx(
-    "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400",
-    // ensure disabled styles are only applied if the button is disabled by its own dedicated action, and are not applied if the button is disabled by another action... in fact, more like isDedicatedDisabled, differentiating disabled of function only from disabled of function and style
-    showDisabledStyles &&
-      "disabled:grayscale disabled:hover:border-blue-500 disabled:hover:bg-blue-500",
-  );
-  // no disable styles on cancel for now because deleting a moment is currently fast enough that it's not worth highlighting visually
-  const cancel =
-    "border-blue-500 bg-white px-6 text-blue-500 hover:border-blue-600 hover:text-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:text-blue-400";
-  const confirmStep =
-    "border-cyan-500 bg-cyan-500 px-6 text-white hover:border-cyan-600 hover:bg-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:bg-cyan-400";
-  // disabled:border-neutral-500 disabled:text-neutral-500 bg-current
-  const cancelStep = clsx(
-    "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400",
-    showDisabledStyles &&
-      "disabled:grayscale disabled:hover:border-cyan-500 disabled:hover:text-cyan-500",
-  );
-
-  // mostly superfluous, but serves as an absolute safety, especially now that I'm turning all handlers into startTransition-powered actions
-  const status = useFormStatus();
-
-  return (
-    <button
-      form={form}
-      type={type}
-      disabled={disabled ? status.pending || disabled : status.pending}
-      className={clsx(
-        "font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
-        variant === "destroy" && clsx(destroy),
-        variant === "destroy-step" && clsx(destroyStep),
-        variant === "neutral" && clsx(notDestroy, neutral, "md:w-fit"),
-        variant === "confirm" && clsx(notDestroy, confirm),
-        variant === "cancel" && clsx(notDestroy, cancel),
-        variant === "confirm-step" && clsx(notDestroy, confirmStep),
-        variant === "cancel-step" && clsx(notDestroy, cancelStep),
-      )}
-      // yeah I'm not using that action/formAction prop anymore
-      formAction={formAction}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}
-
-const globalClientComponents = {
-  FormValidationError,
-  TrueFormValidationError,
+const inputsClientComponents = {
   InputText,
   InputTextControlled,
+  SelectWithOptions,
   SelectWithOptionsControlled,
   Textarea,
   TextareaControlled,
@@ -835,10 +887,9 @@ const globalClientComponents = {
   InputNumberControlled,
   InputDatetimeLocal,
   InputDatetimeLocalControlled,
-  Button,
 } as const;
 
-export type GlobalClientComponentsName = keyof typeof globalClientComponents;
+export type InputsClientComponentsName = keyof typeof inputsClientComponents;
 
 /* Notes
 For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.

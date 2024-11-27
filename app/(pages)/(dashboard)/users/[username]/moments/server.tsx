@@ -4,75 +4,70 @@ import { add, format } from "date-fns";
 import clsx from "clsx";
 
 import * as LocalClientComponents from "./client";
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 import { Option, SetState } from "@/app/types/globals";
 import {
-  activityOptions,
-  MOMENT_FORM_IDS,
-  viewTitles,
-} from "@/app/data/moments";
+  ACTIVITY_OPTIONS,
+  momentFormIds,
+  viewsTitles,
+} from "@/app/constants/moments";
 import {
   MomentFormVariant,
-  MomentsDateToCRUD,
-  MomentsDestinationToCRUD,
-  MomentToCRUD,
   RevalidateMoments,
-  StepFromCRUD,
-  StepToCRUD,
+  StepFromClient,
   StepVisible,
-  SubView,
-  CreateOrUpdateMoment,
   CreateOrUpdateMomentState,
-  DeleteMoment,
-  UserMomentsToCRUD,
   View,
+  MomentAdapted,
+  DestinationAdapted,
+  PageDetails,
+  StepAdapted,
+  CreateOrUpdateMoment,
+  DeleteMoment,
+  FetchViewAndMomentData,
+  FetchReadMomentsViewData,
+  FetchMomentFormsData,
 } from "@/app/types/moments";
 import { numStringToTimeString } from "@/app/utilities/moments";
 import { EventStepDurationSchema } from "@/app/validations/steps";
 
-export default function ServerCore({
+export default async function ServerCore({
   // time
   now,
-  // reads
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
+  // reads as promises
+  fetchViewAndMomentData,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
   // writes
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  // states lifted to the URL
-  view,
-  moment,
-  subView,
 }: {
   now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
+  fetchViewAndMomentData: FetchViewAndMomentData;
+  fetchReadMomentsViewData: FetchReadMomentsViewData;
+  fetchMomentFormsData: FetchMomentFormsData;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  view: View;
-  moment: MomentToCRUD | undefined;
-  subView: SubView;
 }) {
+  // There could be some UI above that would be prerended before view and moment are event defined. That's why I have to await searchParams here for now and not on the page.
+  const { view, moment } = await fetchViewAndMomentData; // Can't use (and don't need to use) use in a Server Component.
+
   return (
     <>
       <Header view={view} />
       <GlobalServerComponents.Divider />
       <Main
         now={now}
-        allUserMomentsToCRUD={allUserMomentsToCRUD}
-        maxPages={maxPages}
-        destinationOptions={destinationOptions}
+        view={view}
+        moment={moment}
+        fetchReadMomentsViewData={fetchReadMomentsViewData}
+        fetchMomentFormsData={fetchMomentFormsData}
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
-        view={view}
-        subView={subView}
-        moment={moment}
       />
     </>
   );
@@ -83,7 +78,7 @@ export function Header({ view }: { view: View }) {
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
+          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
           <LocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>
@@ -93,26 +88,22 @@ export function Header({ view }: { view: View }) {
 
 export function Main({
   now,
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
+  view,
+  moment,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
-  view,
-  moment,
-  subView,
 }: {
   now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
+  view: View;
+  moment: MomentAdapted | undefined;
+  fetchReadMomentsViewData: FetchReadMomentsViewData;
+  fetchMomentFormsData: FetchMomentFormsData;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
-  view: View;
-  moment: MomentToCRUD | undefined;
-  subView: SubView;
 }) {
   return (
     <main>
@@ -121,15 +112,13 @@ export function Main({
         {/* where the client boundary currently begins */}
         <LocalClientComponents.ViewsCarouselContainer
           now={now}
-          allUserMomentsToCRUD={allUserMomentsToCRUD}
-          maxPages={maxPages}
-          destinationOptions={destinationOptions}
+          view={view}
+          moment={moment}
+          fetchReadMomentsViewData={fetchReadMomentsViewData}
+          fetchMomentFormsData={fetchMomentFormsData}
           revalidateMoments={revalidateMoments}
           createOrUpdateMoment={createOrUpdateMoment}
           deleteMoment={deleteMoment}
-          view={view}
-          subView={subView}
-          moment={moment}
         />
       </ViewsCarouselWrapper>
     </main>
@@ -230,8 +219,8 @@ export function DestinationInDateCard({
   e2,
   realMoments,
 }: {
-  e2: MomentsDestinationToCRUD;
-  realMoments: MomentToCRUD[];
+  e2: DestinationAdapted;
+  realMoments: MomentAdapted[];
 }) {
   return (
     <div className="flex flex-col gap-y-8">
@@ -247,7 +236,7 @@ export function DestinationInDateCard({
       {e2.moments.map((e3, i3) => (
         // no longer from LocalClientComponents
         <MomentInDateCard
-          key={e3.id + e2.id} // because of userMoments duplicates
+          key={e3.key + e2.key} // because of userMoments duplicates
           e3={e3}
           i3={i3}
           realMoments={realMoments}
@@ -262,9 +251,9 @@ export function MomentInDateCard({
   i3,
   realMoments,
 }: {
-  e3: MomentToCRUD;
+  e3: MomentAdapted;
   i3: number;
-  realMoments: MomentToCRUD[];
+  realMoments: MomentAdapted[];
 }) {
   return (
     <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
@@ -294,14 +283,14 @@ export function MomentInDateCard({
       </p>
       <ol className="">
         {e3.steps.map((e4) => (
-          <StepInDateCard key={e4.id} e4={e4} />
+          <StepInDateCard key={e4.key} e4={e4} />
         ))}
       </ol>
     </div>
   );
 }
 
-export function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
+export function StepInDateCard({ e4 }: { e4: StepAdapted }) {
   return (
     <li className="text-sm font-light leading-loose text-neutral-500">
       <p>
@@ -312,20 +301,25 @@ export function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
   );
 }
 
-export function MomentsPageDetails({ e }: { e: MomentsDateToCRUD }) {
+export function MomentsPageDetails({
+  pageDetails,
+}: {
+  pageDetails: PageDetails;
+}) {
   return (
     <p className="font-extralight text-neutral-800">
-      <span className="font-normal">{e.momentsTotal}</span> moment(s) affiché(s){" "}
+      <span className="font-normal">{pageDetails.momentsTotal}</span> moment(s)
+      affiché(s){" "}
       <span className="font-normal">
         (
-        {e.momentFirstIndex !== e.momentLastIndex
-          ? `${e.momentFirstIndex}-${e.momentLastIndex}`
-          : `${e.momentFirstIndex}`}
+        {pageDetails.momentsFirstIndex !== pageDetails.momentsLastIndex
+          ? `${pageDetails.momentsFirstIndex}-${pageDetails.momentsLastIndex}`
+          : `${pageDetails.momentsFirstIndex}`}
         )
       </span>{" "}
-      sur <span className="font-normal">{e.allMomentsTotal}</span> à la page{" "}
-      <span className="font-normal">{e.currentPage}</span> sur{" "}
-      <span className="font-normal">{e.totalPage}</span>
+      sur <span className="font-normal">{pageDetails.total}</span> à la page{" "}
+      <span className="font-normal">{pageDetails.page}</span> sur{" "}
+      <span className="font-normal">{pageDetails.maxPage}</span>
     </p>
   );
 }
@@ -344,7 +338,7 @@ export function MomentInputs({
   setStartMomentDate,
 }: {
   variant: MomentFormVariant;
-  moment?: MomentToCRUD;
+  moment?: MomentAdapted;
   destinationOptions: Option[];
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   destinationSelect: boolean;
@@ -358,7 +352,7 @@ export function MomentInputs({
   const isVariantUpdatingMoment = variant === "updating" && moment;
 
   const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = activityOptions.map((e) => e.value);
+  const activityValues = ACTIVITY_OPTIONS.map((e) => e.value);
 
   return (
     <>
@@ -385,7 +379,7 @@ export function MomentInputs({
           />
         )}
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalClientComponents.SelectWithOptions
         label="Destination"
         description="Choisissez la destination que cherche à atteindre ce moment."
         addendum="Ou définissez-la vous-même via le bouton ci-dessus."
@@ -408,7 +402,7 @@ export function MomentInputs({
           setSelect={setDestinationSelect}
           text={"Définir la destination"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalClientComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Activité"
         description="Définissez le type d'activité qui va correspondre à votre problématique."
@@ -425,7 +419,7 @@ export function MomentInputs({
           text={"Choisir l'activité"}
         />
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalClientComponents.SelectWithOptions
         label="Activité"
         description="Choisissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou définissez-le vous-même via le bouton ci-dessus."
@@ -436,7 +430,7 @@ export function MomentInputs({
             : ""
         }
         placeholder="Choisissez..."
-        options={activityOptions}
+        options={ACTIVITY_OPTIONS}
         fieldFlexIsNotLabel
         required={false}
         errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
@@ -446,7 +440,7 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Définir l'activité"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalClientComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Objectif"
         name="objectif"
@@ -455,7 +449,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.error?.momentErrors?.momentName}
       />
-      <GlobalServerComponents.InputSwitch
+      <GlobalClientComponents.InputSwitch
         key={inputSwitchKey}
         label="Indispensable ?"
         name="indispensable"
@@ -586,13 +580,13 @@ export function StepVisibleCreating({
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
   cancelStepAction: () => void;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   isCancelStepPending: boolean;
   stepsCompoundDurations: number[];
   startMomentDate: string;
   allButtonsDisabled: boolean;
 }) {
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+  const form = momentFormIds[momentFormVariant].stepFormCreating;
 
   return (
     // was a form, but forms can't be nested
@@ -792,10 +786,10 @@ export function StepInputs({
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
+  step?: StepFromClient;
   startMomentDate: string;
-  stepsCompoundDurations: number[];
-  step?: StepFromCRUD;
   stepAddingTime?: number;
+  stepsCompoundDurations: number[];
 }) {
   return (
     <>
@@ -832,7 +826,7 @@ export function StepInputs({
       >
         <p className="text-sm font-medium text-blue-900">
           commence à{" "}
-          {step // && stepAddingTime (can equal 0 which is falsy)
+          {step // && stepAddingTime (can equal 0 which is falsy) // if something happens, use isNullish
             ? format(
                 add(startMomentDate, {
                   minutes: stepAddingTime,
@@ -923,7 +917,7 @@ export function StepContents({
   startMomentDate,
   stepAddingTime,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   hasAPreviousStepUpdating: boolean;
   startMomentDate: string;

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import * as Icons from "@/app/icons";
+import * as AllGlobalIcons from "@/app/icons";
 import { NavLink } from "@/app/types/globals";
 
 export function SideNavLink({ navLink }: { navLink: NavLink }) {
-  const Icon = Icons[navLink.icon];
+  const Icon = AllGlobalIcons[navLink.icon];
   const pathname = usePathname();
   const path = pathname.split("/").slice(0, 3).join("/");
 

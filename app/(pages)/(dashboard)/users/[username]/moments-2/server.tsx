@@ -3,24 +3,25 @@ import { add, format } from "date-fns";
 import clsx from "clsx";
 
 import * as LocalClientComponents from "./client";
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 import { Option, SetState } from "@/app/types/globals";
 import {
-  activityOptions,
-  MOMENT_FORM_IDS,
-  viewTitles,
-} from "@/app/data/moments";
+  ACTIVITY_OPTIONS,
+  momentFormIds,
+  views,
+  viewsTitles,
+} from "@/app/constants/moments";
 import {
-  FalseCreateOrUpdateMoment,
+  FalserCreateOrUpdateMoment,
   FalseCreateOrUpdateMomentState,
-  FalseDeleteMoment,
+  FalserDeleteMoment,
   MomentFormVariant,
   MomentsDateToCRUD,
   MomentsDestinationToCRUD,
   MomentToCRUD,
   RevalidateMoments,
-  StepFromCRUD,
+  StepFromClient,
   StepToCRUD,
   StepVisible,
   UserMomentsToCRUD,
@@ -47,8 +48,8 @@ export default function ServerCore({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: FalseCreateOrUpdateMoment;
-  deleteMoment: FalseDeleteMoment;
+  createOrUpdateMoment: FalserCreateOrUpdateMoment;
+  deleteMoment: FalserDeleteMoment;
 }) {
   return (
     <LocalClientComponents.default
@@ -76,7 +77,7 @@ export function Header({
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewTitles[view]} />
+          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
           <SetViewButton view={view} setView={setView} setMoment={setMoment} />
         </HeaderSegment>
       </PageSegment>
@@ -100,15 +101,15 @@ export function SetViewButton({
       type="button"
       variant="destroy-step"
       onClick={() => {
-        if (view === "update-moment") setMoment(undefined);
+        if (view === views.UPDATE_MOMENT) setMoment(undefined);
         setScrollToTop(desiredView, setView);
       }}
     >
       {(() => {
         switch (desiredView) {
-          case "read-moments":
+          case views.READ_MOMENTS:
             return <>Vos moments</>;
-          case "create-moment":
+          case views.CREATE_MOMENT:
             return <>Créez un moment</>;
           default:
             return null;
@@ -327,7 +328,7 @@ export function MomentInputs({
   const isVariantUpdatingMoment = variant === "updating" && moment;
 
   const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = activityOptions.map((e) => e.value);
+  const activityValues = ACTIVITY_OPTIONS.map((e) => e.value);
 
   return (
     <>
@@ -354,7 +355,7 @@ export function MomentInputs({
           />
         )}
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalClientComponents.SelectWithOptions
         label="Destination"
         description="Choisissez la destination que cherche à atteindre ce moment."
         addendum="Ou définissez-la vous-même via le bouton ci-dessus."
@@ -377,7 +378,7 @@ export function MomentInputs({
           setSelect={setDestinationSelect}
           text={"Définir la destination"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalClientComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Activité"
         description="Définissez le type d'activité qui va correspondre à votre problématique."
@@ -394,7 +395,7 @@ export function MomentInputs({
           text={"Choisir l'activité"}
         />
       </GlobalClientComponents.InputText>
-      <GlobalServerComponents.SelectWithOptions
+      <GlobalClientComponents.SelectWithOptions
         label="Activité"
         description="Choisissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou définissez-le vous-même via le bouton ci-dessus."
@@ -405,7 +406,7 @@ export function MomentInputs({
             : ""
         }
         placeholder="Choisissez..."
-        options={activityOptions}
+        options={ACTIVITY_OPTIONS}
         fieldFlexIsNotLabel
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
@@ -415,7 +416,7 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Définir l'activité"}
         />
-      </GlobalServerComponents.SelectWithOptions>
+      </GlobalClientComponents.SelectWithOptions>
       <GlobalClientComponents.InputText
         label="Objectif"
         name="objectif"
@@ -424,7 +425,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.momentErrors?.momentName}
       />
-      <GlobalServerComponents.InputSwitch
+      <GlobalClientComponents.InputSwitch
         key={inputSwitchKey}
         label="Indispensable ?"
         name="indispensable"
@@ -548,13 +549,13 @@ export function StepVisibleCreating({
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
   cancelStepAction: () => void;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   isCancelStepPending: boolean;
   stepsCompoundDurations: number[];
   startMomentDate: string;
   allButtonsDisabled: boolean;
 }) {
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+  const form = momentFormIds[momentFormVariant].stepFormCreating;
 
   return (
     <div className="flex flex-col gap-y-8">
@@ -751,7 +752,7 @@ export function StepInputs({
   setStepDuree: SetState<string>;
   startMomentDate: string;
   stepsCompoundDurations: number[];
-  step?: StepFromCRUD;
+  step?: StepFromClient;
   stepAddingTime?: number;
 }) {
   return (
@@ -880,7 +881,7 @@ export function StepContents({
   startMomentDate,
   stepAddingTime,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   hasAPreviousStepUpdating: boolean;
   startMomentDate: string;

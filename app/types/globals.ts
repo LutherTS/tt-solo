@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 
-import * as Icons from "@/app/icons";
+import * as AllGlobalIcons from "@/app/icons";
 
 export type Option = {
   key: string;
@@ -11,10 +11,10 @@ export type Option = {
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 
 export type NavLink = {
-  id: number;
+  id: string;
   label: string;
   href: string;
-  icon: Icons.IconName;
+  icon: AllGlobalIcons.AllGlobalIconName;
 };
 
 export type TypedURLSearchParams<T extends Record<string, string>> = {

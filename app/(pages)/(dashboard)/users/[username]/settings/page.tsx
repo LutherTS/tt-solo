@@ -1,6 +1,6 @@
 import { CRUD } from "./crud";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import { HeaderSegment, PageSegment } from "../moments/server";
 
 export default function SettingsPage({

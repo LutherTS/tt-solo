@@ -4,9 +4,9 @@ import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 import {
-  MomentsSearchParams,
+  MomentsPageSearchParamsHandled,
   FalseCreateOrUpdateMomentState,
-  StepFromCRUD,
+  StepFromClient,
   View,
   MomentToCRUD,
   SubView,
@@ -15,7 +15,14 @@ import {
   CreateOrUpdateMomentState,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
-import { MOMENTID, subViews, TAKE, VIEW } from "@/app/data/moments";
+import {
+  momentsPageSearchParamsKeys,
+  subViews,
+  SUBVIEWS,
+  TAKE,
+  VIEWS,
+  views,
+} from "@/app/constants/moments";
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>
@@ -173,16 +180,18 @@ export const scrollToTopOfDesiredView = (
 ) => {
   const newSearchParams = new URLSearchParams(
     searchParams,
-  ) as TypedURLSearchParams<MomentsSearchParams>;
+  ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
 
-  if (desiredView !== "update-moment") newSearchParams.delete(MOMENTID);
-  else if (momentId) newSearchParams.set(MOMENTID, momentId);
+  if (desiredView !== views.UPDATE_MOMENT)
+    newSearchParams.delete(momentsPageSearchParamsKeys.MOMENT_KEY);
+  else if (momentId)
+    newSearchParams.set(momentsPageSearchParamsKeys.MOMENT_KEY, momentId);
 
-  newSearchParams.set(VIEW, desiredView);
+  newSearchParams.set(momentsPageSearchParamsKeys.VIEW, desiredView);
 
   push(`${pathname}?${newSearchParams.toString()}`);
 
-  // scrollTo({ top: 0 }); // apparently useRouter scroll to top on its own ...and that was the only issue
+  // scrollTo({ top: 0, behavior: "smooth" }); // apparently useRouter scroll to top on its own ...and that was the only issue // this is not fixed, but okay for now
 };
 
 // scrolls back to the desired section (usually yourMoment or itsSteps in the Moment forms)
@@ -192,7 +201,7 @@ export const scrollToSection = (sectionId: string) => {
 };
 
 // makes an array of all the adding times of a step up to that step (step 0 has the compound duration of step 0, step 1 has the compound duration of steps 0 and 1, etc.)
-export const makeStepsCompoundDurationsArray = (steps: StepFromCRUD[]) => {
+export const makeStepsCompoundDurationsArray = (steps: StepFromClient[]) => {
   const stepsCompoundDurationsArray: number[] = [];
   let compoundDuration = 0;
   for (let i = 0; i < steps.length; i++) {
@@ -241,33 +250,29 @@ export const removeMomentMessagesAndErrorsCallback = (
 // defines the desired view to shift to from a view depending on that original view
 export const defineDesiredView = (view: View) => {
   switch (view) {
-    case "update-moment":
-      return "read-moments";
-    case "read-moments":
-      return "create-moment";
-    case "create-moment":
-      return "read-moments";
+    case views.UPDATE_MOMENT:
+      return views.READ_MOMENTS;
+    case views.READ_MOMENTS:
+      return views.CREATE_MOMENT;
+    case views.CREATE_MOMENT:
+      return views.READ_MOMENTS;
     default:
       return view;
   }
 };
 
-// defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
-export const defineView = (rawView: string | undefined): View => {
-  switch (rawView) {
-    case "update-moment":
-      return "update-moment";
-    case "read-moments":
-      return "read-moments";
-    case "create-moment":
-      return "create-moment";
-
-    default:
-      return "create-moment";
-  }
+// type predicate for the subView searchParam
+export const isView = (value: any): value is View => {
+  return VIEWS.includes(value);
 };
 
-// defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page
+// defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
+export const defineView = (rawView: string | undefined): View => {
+  if (isView(rawView)) return rawView;
+  else return views.CREATE_MOMENT;
+};
+
+// defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page // didn't need to be async too
 export const defineMoment = async (
   rawMomentId: string | undefined,
   uniqueShownMoments: MomentToCRUD[],
@@ -276,18 +281,18 @@ export const defineMoment = async (
   else return uniqueShownMoments.find((e) => e.id === rawMomentId);
 };
 
-// defines both the view and moment depending on one another, so that the "update-moment" cannot be shown if there is no moment
+// defines both the view and moment depending on one another, so that the views.UPDATE_MOMENT cannot be shown if there is no moment
 export const defineWithViewAndMoment = (
   view: View,
   moment: MomentToCRUD | undefined,
 ): { view: View; moment: MomentToCRUD | undefined } => {
   switch (view) {
-    case "update-moment":
+    case views.UPDATE_MOMENT:
       if (moment) return { view, moment };
-      else return { view: "read-moments", moment };
-    case "read-moments":
+      else return { view: views.READ_MOMENTS, moment };
+    case views.READ_MOMENTS:
       return { view, moment: undefined };
-    case "create-moment":
+    case views.CREATE_MOMENT:
       return { view, moment: undefined };
 
     default:
@@ -296,8 +301,8 @@ export const defineWithViewAndMoment = (
 };
 
 // type predicate for the subView searchParam
-const isSubView = (value: any): value is SubView => {
-  return subViews.includes(value);
+export const isSubView = (value: any): value is SubView => {
+  return SUBVIEWS.includes(value);
 };
 
 // defines the current read-moments view subView from the subView searchParam whether it is specified (as a string) or not (as undefined)
@@ -316,12 +321,12 @@ export const defineSubView = (
 
     let initialSubView: SubView =
       realCurrentMoments.dates.length > 0
-        ? "current-moments"
+        ? subViews.CURRENT_MOMENTS
         : realFutureMoments.dates.length > 0
-          ? "future-moments"
+          ? subViews.FUTURE_MOMENTS
           : realPastMoments.dates.length > 0
-            ? "past-moments"
-            : "all-moments";
+            ? subViews.PAST_MOMENTS
+            : subViews.ALL_MOMENTS;
 
     return initialSubView;
   }

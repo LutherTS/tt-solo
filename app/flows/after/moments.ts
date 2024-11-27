@@ -2,12 +2,11 @@ import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-
 import { ReadonlyURLSearchParams } from "next/navigation";
 
 import {
-  MOMENT_FORM_IDS,
-  MOMENTID,
-  SUBVIEW,
-  subViewPages,
-  VIEW,
-} from "@/app/data/moments";
+  momentFormIds,
+  momentsPageSearchParamsKeys,
+  subViewsPages,
+  views,
+} from "@/app/constants/moments";
 import {
   FalseCreateOrUpdateMomentState,
   View,
@@ -15,13 +14,9 @@ import {
   CreateOrUpdateMomentState,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
-  MomentsSearchParams,
+  MomentsPageSearchParamsHandled,
 } from "@/app/types/moments";
-import {
-  scrollToSection,
-  scrollToTopOfDesiredView,
-  setScrollToTop,
-} from "@/app/utilities/moments";
+import { scrollToSection, setScrollToTop } from "@/app/utilities/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 
 // scrolls back to the section of the form that possesses new errors
@@ -37,10 +32,10 @@ export const falseCreateOrUpdateMomentAfterFlow = (
   if (createOrUpdateMomentState) {
     switch (createOrUpdateMomentState.errorScrollPriority) {
       case "moment":
-        scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+        scrollToSection(momentFormIds[variant].yourMoment);
         break;
       case "steps":
-        scrollToSection(MOMENT_FORM_IDS[variant].itsSteps);
+        scrollToSection(momentFormIds[variant].itsSteps);
         break;
 
       default:
@@ -55,7 +50,7 @@ export const falseCreateOrUpdateMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    setScrollToTop("read-moments", setView);
+    setScrollToTop(views.READ_MOMENTS, setView);
     // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
   }
 };
@@ -74,10 +69,10 @@ export const createOrUpdateMomentAfterFlow = (
   if (createOrUpdateMomentState?.isSuccess === false) {
     switch (createOrUpdateMomentState.error.errorScrollPriority) {
       case "moment":
-        scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+        scrollToSection(momentFormIds[variant].yourMoment);
         break;
       case "steps":
-        scrollToSection(MOMENT_FORM_IDS[variant].itsSteps);
+        scrollToSection(momentFormIds[variant].itsSteps);
         break;
 
       default:
@@ -92,40 +87,57 @@ export const createOrUpdateMomentAfterFlow = (
   } else {
     setIsCRUDOpSuccessful(true);
 
-    const newSearchParams = new URLSearchParams(
+    isSuccessTrueSubFlow(
       searchParams,
-    ) as TypedURLSearchParams<MomentsSearchParams>;
-
-    newSearchParams.set(VIEW, "read-moments");
-    newSearchParams.delete(MOMENTID);
-
-    if (createOrUpdateMomentState.success.subView)
-      newSearchParams.set(SUBVIEW, createOrUpdateMomentState.success.subView);
-    if (
-      createOrUpdateMomentState.success.subView &&
-      createOrUpdateMomentState.success.countPage
-    )
-      if (createOrUpdateMomentState.success.countPage === 1)
-        newSearchParams.delete(
-          subViewPages[createOrUpdateMomentState.success.subView],
-        );
-      else
-        newSearchParams.set(
-          subViewPages[createOrUpdateMomentState.success.subView],
-          createOrUpdateMomentState.success.countPage.toString(),
-        );
-
-    push(`${pathname}?${newSearchParams.toString()}`);
+      push,
+      pathname,
+      createOrUpdateMomentState,
+    );
   }
+};
+
+const isSuccessTrueSubFlow = (
+  searchParams: ReadonlyURLSearchParams,
+  push: (href: string, options?: NavigateOptions) => void,
+  pathname: string,
+  createOrUpdateMomentState: CreateOrUpdateMomentSuccess,
+) => {
+  const newSearchParams = new URLSearchParams(
+    searchParams,
+  ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
+
+  newSearchParams.set(momentsPageSearchParamsKeys.VIEW, views.READ_MOMENTS);
+  newSearchParams.delete(momentsPageSearchParamsKeys.MOMENT_KEY);
+
+  if (createOrUpdateMomentState.success.subView)
+    newSearchParams.set(
+      momentsPageSearchParamsKeys.SUB_VIEW,
+      createOrUpdateMomentState.success.subView,
+    );
+  if (
+    createOrUpdateMomentState.success.subView &&
+    createOrUpdateMomentState.success.countPage
+  )
+    if (createOrUpdateMomentState.success.countPage === 1)
+      newSearchParams.delete(
+        subViewsPages[createOrUpdateMomentState.success.subView],
+      );
+    else
+      newSearchParams.set(
+        subViewsPages[createOrUpdateMomentState.success.subView],
+        createOrUpdateMomentState.success.countPage.toString(),
+      );
+
+  push(`${pathname}?${newSearchParams.toString()}`);
 };
 
 // scrolls back to yourMoment's section at the top after resetting the form
 // (every time resetMomentFormAction is done)
 export const resetMomentAfterFlow = (variant: MomentFormVariant) => {
-  scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+  scrollToSection(momentFormIds[variant].yourMoment);
 };
 
-// scrolls back to yourMoment's section if there's a mistake, or leads to the top of "read-moments" after the moment is successfully deleted
+// scrolls back to yourMoment's section if there's a mistake, or leads to the top of views.READ_MOMENTS after the moment is successfully deleted
 // (every time deleteMomentAction is done)
 export const falseDeleteMomentAfterFlow = (
   variant: MomentFormVariant,
@@ -134,11 +146,11 @@ export const falseDeleteMomentAfterFlow = (
   setIsCRUDOpSuccessful: SetState<boolean>,
 ) => {
   if (createOrUpdateMomentState) {
-    scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+    scrollToSection(momentFormIds[variant].yourMoment);
   } else {
     setIsCRUDOpSuccessful(true);
 
-    setScrollToTop("read-moments", setView);
+    setScrollToTop(views.READ_MOMENTS, setView);
   }
 };
 
@@ -153,10 +165,15 @@ export const deleteMomentAfterFlow = (
   pathname: string,
 ) => {
   if (createOrUpdateMomentState?.isSuccess === false) {
-    scrollToSection(MOMENT_FORM_IDS[variant].yourMoment);
+    scrollToSection(momentFormIds[variant].yourMoment);
   } else {
     setIsCRUDOpSuccessful(true);
 
-    scrollToTopOfDesiredView("read-moments", searchParams, push, pathname);
+    isSuccessTrueSubFlow(
+      searchParams,
+      push,
+      pathname,
+      createOrUpdateMomentState,
+    );
   }
 };

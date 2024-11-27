@@ -29,6 +29,9 @@ const MomentSchema = z.object({
     .max(DEFAULT_STRING_MAXIMUM, {
       message: `Votre objectif doit faire un maximum de ${DEFAULT_STRING_MAXIMUM} caractères.`,
     }),
+  // .regex(/^[^_]*$/, {
+  //   message: "Votre objectif ne doit pas contenir de tiret bas (_).",
+  // })
   momentIsIndispensable: z.boolean({
     invalid_type_error:
       "Veuillez activer ou désactiver l'interrupteur d'indispensabilité.",

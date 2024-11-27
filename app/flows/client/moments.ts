@@ -4,27 +4,31 @@ import { v4 as uuidv4 } from "uuid";
 import { compareAsc, compareDesc } from "date-fns";
 
 import {
-  DEFAULT_STEP_MESSAGE,
-  DEFAULT_STEP_SUBMESSAGE,
-  MOMENT_FORM_IDS,
+  defaultStepsErrorMessages,
+  momentFormIds,
+  momentsPageSearchParamsKeys,
   STEP_DURATION_ORIGINAL,
-  VIEW,
-} from "@/app/data/moments";
+  subViews,
+  views,
+} from "@/app/constants/moments";
 import {
-  FalseDeleteMoment,
+  FalserDeleteMoment,
   MomentFormVariant,
   MomentToCRUD,
   StepFormVariant,
-  StepFromCRUD,
+  StepFromClient,
   StepVisible,
-  FalseCreateOrUpdateMoment,
+  FalserCreateOrUpdateMoment,
   FalseCreateOrUpdateMomentState,
   SubView,
   CreateOrUpdateMomentState,
-  CreateOrUpdateMoment,
-  DeleteMoment,
+  FalseCreateOrUpdateMoment,
+  FalseDeleteMoment,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
+  MomentAdapted,
+  CreateOrUpdateMoment,
+  DeleteMoment,
 } from "@/app/types/moments";
 import {
   dateToInputDatetime,
@@ -34,12 +38,12 @@ import { CreateOrUpdateStepSchema } from "@/app/validations/steps";
 import { SetState } from "@/app/types/globals";
 
 // best be to prepare the state right here
-export const falseCreateOrUpdateMomentClientFlow = async (
+export const falserCreateOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
-  createOrUpdateMoment: FalseCreateOrUpdateMoment,
+  createOrUpdateMoment: FalserCreateOrUpdateMoment,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -67,16 +71,16 @@ export const falseCreateOrUpdateMomentClientFlow = async (
     const currentNow = dateToInputDatetime(new Date());
 
     if (compareDesc(endMomentDate, currentNow) === 1)
-      setSubView("past-moments");
+      setSubView(subViews.PAST_MOMENTS);
     else if (compareAsc(startMomentDate, currentNow) === 1)
-      setSubView("future-moments");
+      setSubView(subViews.FUTURE_MOMENTS);
     // present by default
-    else setSubView("current-moments");
+    else setSubView(subViews.CURRENT_MOMENTS);
 
     // resetting the whole form manually
     if (variant === "creating") {
       const momentForm = document.getElementById(
-        MOMENT_FORM_IDS[variant].momentForm,
+        momentFormIds[variant].momentForm,
       ) as HTMLFormElement | null;
       momentForm?.reset();
     }
@@ -85,12 +89,12 @@ export const falseCreateOrUpdateMomentClientFlow = async (
   }
 };
 
-export const createOrUpdateMomentClientFlow = async (
+export const falseCreateOrUpdateMomentClientFlow = async (
   event: FormEvent<HTMLFormElement>,
-  createOrUpdateMoment: CreateOrUpdateMoment,
+  createOrUpdateMoment: FalseCreateOrUpdateMoment,
   variant: MomentFormVariant,
   startMomentDate: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   momentFromCRUD: MomentToCRUD | undefined,
   destinationSelect: boolean,
   activitySelect: boolean,
@@ -127,16 +131,59 @@ export const createOrUpdateMomentClientFlow = async (
     // const currentNow = dateToInputDatetime(new Date());
 
     // if (compareDesc(endMomentDate, currentNow) === 1)
-    //   setSubView("past-moments");
+    //   setSubView(subViews.PAST_MOMENTS);
     // else if (compareAsc(startMomentDate, currentNow) === 1)
-    //   setSubView("future-moments");
+    //   setSubView(subViews.FUTURE_MOMENTS);
     // // present by default
-    // else setSubView("current-moments");
+    // else setSubView(subViews.CURRENT_MOMENTS);
 
     // resetting the whole form manually
     if (variant === "creating") {
       const momentForm = document.getElementById(
-        MOMENT_FORM_IDS[variant].momentForm,
+        momentFormIds[variant].momentForm,
+      ) as HTMLFormElement | null;
+      momentForm?.reset();
+    }
+
+    return state;
+  }
+};
+
+export const createOrUpdateMomentClientFlow = async (
+  event: FormEvent<HTMLFormElement>,
+  createOrUpdateMoment: CreateOrUpdateMoment,
+  variant: MomentFormVariant,
+  startMomentDate: string,
+  steps: StepFromClient[],
+  momentFromCRUD: MomentAdapted | undefined,
+  destinationSelect: boolean,
+  activitySelect: boolean,
+  createOrUpdateMomentState: CreateOrUpdateMomentState,
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
+  event.preventDefault();
+
+  const createOrUpdateMomentBound = createOrUpdateMoment.bind(
+    null,
+    new FormData(event.currentTarget),
+    variant,
+    startMomentDate,
+    steps,
+    momentFromCRUD,
+    destinationSelect,
+    activitySelect,
+  );
+  let state = await createOrUpdateMomentBound();
+
+  if (state?.isSuccess === false) {
+    return {
+      isSuccess: false,
+      error: { ...createOrUpdateMomentState?.error, ...state.error },
+    };
+  } else {
+    // resetting the whole form manually
+    if (variant === "creating") {
+      const momentForm = document.getElementById(
+        momentFormIds[variant].momentForm,
       ) as HTMLFormElement | null;
       momentForm?.reset();
     }
@@ -148,7 +195,7 @@ export const createOrUpdateMomentClientFlow = async (
 // reset is only on the creating variant of MomentForms
 export const falseResetMomentClientFlow = (
   setStartMomentDate: SetState<string>,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   variant: MomentFormVariant,
   setInputSwitchKey: SetState<string>,
@@ -172,7 +219,7 @@ export const falseResetMomentClientFlow = (
 
   // resetting the create step form along
   const stepFormCreating = document.getElementById(
-    MOMENT_FORM_IDS[variant].stepFormCreating,
+    momentFormIds[variant].stepFormCreating,
   ) as HTMLFormElement | null;
   stepFormCreating?.reset();
 
@@ -184,7 +231,7 @@ export const falseResetMomentClientFlow = (
 
 export const resetMomentClientFlow = (
   setStartMomentDate: SetState<string>,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   variant: MomentFormVariant,
   setInputSwitchKey: SetState<string>,
@@ -208,7 +255,7 @@ export const resetMomentClientFlow = (
 
   // resetting the create step form along
   const stepFormCreating = document.getElementById(
-    MOMENT_FORM_IDS[variant].stepFormCreating,
+    momentFormIds[variant].stepFormCreating,
   ) as HTMLFormElement | null;
   stepFormCreating?.reset();
 
@@ -219,8 +266,8 @@ export const resetMomentClientFlow = (
 };
 
 // delete is only on the updating variant of MomentForms
-export const falseDeleteMomentClientFlow = async (
-  deleteMoment: FalseDeleteMoment | undefined,
+export const falserDeleteMomentClientFlow = async (
+  deleteMoment: FalserDeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
 ): Promise<FalseCreateOrUpdateMomentState> => {
   if (deleteMoment) {
@@ -242,13 +289,38 @@ export const falseDeleteMomentClientFlow = async (
   }
 };
 
-export const deleteMomentClientFlow = async (
-  deleteMoment: DeleteMoment | undefined,
+export const falseDeleteMomentClientFlow = async (
+  deleteMoment: FalseDeleteMoment | undefined,
   moment: MomentToCRUD | undefined,
 ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
   if (deleteMoment) {
     const deleteMomentBound = deleteMoment.bind(null, moment);
     // spreading from the original state is currently unnecessary
+    const state = await deleteMomentBound();
+    return state;
+  } else {
+    return {
+      isSuccess: false,
+      error: {
+        momentMessages: {
+          message: "Erreur.",
+          subMessage:
+            "La fonction d'effacement du moment n'est pas disponible en interne.",
+        },
+        momentErrors: {},
+        stepsMessages: {},
+        stepsErrors: {},
+      },
+    };
+  }
+};
+
+export const deleteMomentClientFlow = async (
+  deleteMoment: DeleteMoment | undefined,
+  moment: MomentAdapted | undefined,
+): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> => {
+  if (deleteMoment) {
+    const deleteMomentBound = deleteMoment.bind(null, moment);
     const state = await deleteMomentBound();
     return state;
   } else {
@@ -278,16 +350,18 @@ export const revalidateMomentsClientFlow = async (
   await revalidateMoments();
   button.form?.reset(); // Indeed. Better for type safety.
 
-  replace(`${pathname}?${VIEW}=read-moments`); // It could have made more sense to have the redirection in an after flow. But since it doesn't depend on data received from the server (for now?), I can let this slide.
+  replace(
+    `${pathname}?${momentsPageSearchParamsKeys.VIEW}=${views.READ_MOMENTS}`,
+  ); // It could have made more sense to have the redirection in an after flow. But since it doesn't depend on data received from the server (for now?), I can let this slide.
 };
 
 export const falseCreateOrUpdateStepClientFlow = (
   event: FormEvent<HTMLFormElement>,
   duree: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   variant: StepFormVariant,
   currentStepId: string,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
 ): FalseCreateOrUpdateMomentState => {
@@ -330,8 +404,8 @@ export const falseCreateOrUpdateStepClientFlow = (
     return {
       ...createOrUpdateMomentState,
       stepsMessages: {
-        message: DEFAULT_STEP_MESSAGE,
-        subMessage: DEFAULT_STEP_SUBMESSAGE,
+        message: defaultStepsErrorMessages.MESSAGE,
+        subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
       },
       stepsErrors: validatedFields.error.flatten().fieldErrors,
     };
@@ -346,8 +420,8 @@ export const falseCreateOrUpdateStepClientFlow = (
     return {
       ...createOrUpdateMomentState,
       stepsMessages: {
-        message: DEFAULT_STEP_MESSAGE,
-        subMessage: DEFAULT_STEP_SUBMESSAGE,
+        message: defaultStepsErrorMessages.MESSAGE,
+        subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
       },
       stepsErrors: {
         stepName: [
@@ -361,8 +435,8 @@ export const falseCreateOrUpdateStepClientFlow = (
     return {
       ...createOrUpdateMomentState,
       stepsMessages: {
-        message: DEFAULT_STEP_MESSAGE,
-        subMessage: DEFAULT_STEP_SUBMESSAGE,
+        message: defaultStepsErrorMessages.MESSAGE,
+        subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
       },
       stepsErrors: {
         stepDescription: [
@@ -387,7 +461,7 @@ export const falseCreateOrUpdateStepClientFlow = (
     duree,
   };
 
-  let newSteps: StepFromCRUD[] = [];
+  let newSteps: StepFromClient[] = [];
   if (variant === "creating") newSteps = [...steps, step];
   if (variant === "updating")
     newSteps = steps.map((e) => {
@@ -404,10 +478,10 @@ export const falseCreateOrUpdateStepClientFlow = (
 export const createOrUpdateStepClientFlow = (
   event: FormEvent<HTMLFormElement>,
   duree: string,
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   variant: StepFormVariant,
   currentStepId: string,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   createOrUpdateMomentState: CreateOrUpdateMomentState,
   setIsAnimationDelayed?: SetState<boolean>,
@@ -456,8 +530,8 @@ export const createOrUpdateStepClientFlow = (
       error: {
         ...createOrUpdateMomentState?.error,
         stepsMessages: {
-          message: DEFAULT_STEP_MESSAGE,
-          subMessage: DEFAULT_STEP_SUBMESSAGE,
+          message: defaultStepsErrorMessages.MESSAGE,
+          subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
         },
         stepsErrors: validatedFields.error.flatten().fieldErrors,
       },
@@ -475,8 +549,8 @@ export const createOrUpdateStepClientFlow = (
       error: {
         ...createOrUpdateMomentState?.error,
         stepsMessages: {
-          message: DEFAULT_STEP_MESSAGE,
-          subMessage: DEFAULT_STEP_SUBMESSAGE,
+          message: defaultStepsErrorMessages.MESSAGE,
+          subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
         },
         stepsErrors: {
           stepName: [
@@ -493,8 +567,8 @@ export const createOrUpdateStepClientFlow = (
       error: {
         ...createOrUpdateMomentState?.error,
         stepsMessages: {
-          message: DEFAULT_STEP_MESSAGE,
-          subMessage: DEFAULT_STEP_SUBMESSAGE,
+          message: defaultStepsErrorMessages.MESSAGE,
+          subMessage: defaultStepsErrorMessages.SUB_MESSAGE,
         },
         stepsErrors: {
           stepDescription: [
@@ -520,7 +594,7 @@ export const createOrUpdateStepClientFlow = (
     duree,
   };
 
-  let newSteps: StepFromCRUD[] = [];
+  let newSteps: StepFromClient[] = [];
   if (variant === "creating") newSteps = [...steps, step];
   if (variant === "updating")
     newSteps = steps.map((e) => {
@@ -569,9 +643,9 @@ export const resetStepClientFlow = (
 };
 
 export const deleteStepClientFlow = (
-  steps: StepFromCRUD[],
+  steps: StepFromClient[],
   currentStepId: string,
-  setSteps: SetState<StepFromCRUD[]>,
+  setSteps: SetState<StepFromClient[]>,
   setStepVisible: SetState<StepVisible>,
   setStepDureeCreate: SetState<string>,
 ): void => {

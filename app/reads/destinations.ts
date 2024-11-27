@@ -3,7 +3,7 @@ import prisma from "@/prisma/db";
 import {
   destinationsOrderByDefault,
   selectDestinationId,
-  selectDestinationKeyAndName,
+  selectDestinationIdAndName,
   whereByNameAndUserId,
   whereByUserId,
 } from "./subreads/destinations";
@@ -11,7 +11,7 @@ import {
 // FindManys
 
 export async function findDestinationsByUserId(userId: string) {
-  const select = selectDestinationKeyAndName;
+  const select = selectDestinationIdAndName;
   const where = whereByUserId(userId);
   const orderBy = destinationsOrderByDefault;
 

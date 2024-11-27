@@ -1,13 +1,11 @@
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import Core from "./server";
 import { Option } from "@/app/types/globals";
 import {
   UserMomentsToCRUD,
-  StepFromCRUD,
+  StepFromClient,
   MomentToCRUD,
   MomentFormVariant,
   CreateOrUpdateMomentError,
@@ -23,35 +21,32 @@ import {
   defineWithViewAndMoment,
 } from "@/app/utilities/moments";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
+  momentsPageSearchParamsKeys,
   INITIAL_PAGE,
-  MOMENTID,
-  PASTUSERMOMENTSPAGE,
-  SUBVIEW,
   TAKE,
-  USERMOMENTSPAGE,
-  VIEW,
-} from "@/app/data/moments";
+  MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
+} from "@/app/constants/moments";
 import { findUserIdByUsername } from "@/app/reads/users";
 import {
-  countCurrentUserMomentsWithContains,
-  countFutureUserMomentsWithContains,
-  countPastUserMomentsWithContains,
-  countUserMomentsWithContains,
-  findCurrentUserMomentsWithContains,
-  findFutureUserMomentsWithContains,
-  findPastUserMomentsWithContains,
-  findUserMomentsWithContains,
+  countUserCurrentMomentsWithContains,
+  countUserFutureMomentsWithContains,
+  countUserPastMomentsWithContains,
+  falseCountUserAllMomentsWithContains,
+  findUserCurrentMomentsWithContains,
+  findUserFutureMomentsWithContains,
+  findUserPastMomentsWithContains,
+  falseFindUserAllMomentsWithContains,
 } from "@/app/reads/moments";
 import { findDestinationsByUserId } from "@/app/reads/destinations";
 import {
   revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
+  falseCreateOrUpdateMomentServerFlow,
+  falseDeleteMomentServerFlow,
 } from "@/app/flows/server/moments";
-import { adaptDestinationsForMoment, adaptMoments } from "@/app/adapts/moments";
+import {
+  adaptDestinationsForMoment,
+  falseAdaptMoments,
+} from "@/app/adapts/moments";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -64,15 +59,15 @@ export default async function MomentsPage({
     username: string;
   };
   searchParams?: {
-    [CONTAINS]?: string;
-    [USERMOMENTSPAGE]?: string;
-    [PASTUSERMOMENTSPAGE]?: string;
-    [CURRENTUSERMOMENTSPAGE]?: string;
-    [FUTUREUSERMOMENTSPAGE]?: string;
+    [momentsPageSearchParamsKeys.CONTAINS]?: string;
+    [momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE]?: string;
+    [momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE]?: string;
     // now lifted to the URL
-    [VIEW]?: string;
-    [SUBVIEW]?: string;
-    [MOMENTID]?: string;
+    [momentsPageSearchParamsKeys.VIEW]?: string;
+    [momentsPageSearchParamsKeys.SUB_VIEW]?: string;
+    [momentsPageSearchParamsKeys.MOMENT_KEY]?: string;
   };
 }) {
   let now = dateToInputDatetime(new Date());
@@ -95,7 +90,7 @@ export default async function MomentsPage({
 
   const userId = user.id;
 
-  const contains = searchParams?.[CONTAINS] || "";
+  const contains = searchParams?.[momentsPageSearchParamsKeys.CONTAINS] || "";
   // console.log({ contains });
 
   const [
@@ -104,10 +99,10 @@ export default async function MomentsPage({
     currentUserMomentsTotal,
     futureUserMomentsTotal,
   ] = await Promise.all([
-    countUserMomentsWithContains(userId, contains),
-    countPastUserMomentsWithContains(userId, contains, now),
-    countCurrentUserMomentsWithContains(userId, contains, now),
-    countFutureUserMomentsWithContains(userId, contains, now),
+    falseCountUserAllMomentsWithContains(userId, contains),
+    countUserPastMomentsWithContains(userId, contains, now),
+    countUserCurrentMomentsWithContains(userId, contains, now),
+    countUserFutureMomentsWithContains(userId, contains, now),
   ]);
   // console.log({
   //   userMomentsTotal,
@@ -127,14 +122,7 @@ export default async function MomentsPage({
   const maxPages = totals.map((e) => Math.ceil(e / TAKE));
   // console.log({ maxPages });
 
-  const searchParamsPageKeys = [
-    USERMOMENTSPAGE,
-    PASTUSERMOMENTSPAGE,
-    CURRENTUSERMOMENTSPAGE,
-    FUTUREUSERMOMENTSPAGE,
-  ] as const;
-
-  const pages = searchParamsPageKeys.map((e, i) =>
+  const pages = MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES.map((e, i) =>
     defineCurrentPage(INITIAL_PAGE, Number(searchParams?.[e]), maxPages[i]),
   );
   // console.log({ pages });
@@ -148,20 +136,20 @@ export default async function MomentsPage({
 
   const [userMoments, pastUserMoments, currentUserMoments, futureUserMoments] =
     await Promise.all([
-      findUserMomentsWithContains(userId, contains, userMomentsPage),
-      findPastUserMomentsWithContains(
+      falseFindUserAllMomentsWithContains(userId, contains, userMomentsPage),
+      findUserPastMomentsWithContains(
         userId,
         contains,
         now,
         pastUserMomentsPage,
       ),
-      findCurrentUserMomentsWithContains(
+      findUserCurrentMomentsWithContains(
         userId,
         contains,
         now,
         currentUserMomentsPage,
       ),
-      findFutureUserMomentsWithContains(
+      findUserFutureMomentsWithContains(
         userId,
         contains,
         now,
@@ -188,7 +176,7 @@ export default async function MomentsPage({
   ];
   // console.log({ allUserMoments });
 
-  const allUserMomentsToCRUD: UserMomentsToCRUD[] = adaptMoments(
+  const allUserMomentsToCRUD: UserMomentsToCRUD[] = falseAdaptMoments(
     allUserMoments,
     pages,
     totals,
@@ -219,11 +207,13 @@ export default async function MomentsPage({
   ) as MomentToCRUD[];
   // console.log({ uniqueShownMoments });
 
-  let definedView = defineView(searchParams?.[VIEW]);
+  let definedView = defineView(
+    searchParams?.[momentsPageSearchParamsKeys.VIEW],
+  );
   // console.log({ definedView });
 
   let definedMoment = await defineMoment(
-    searchParams?.[MOMENTID],
+    searchParams?.[momentsPageSearchParamsKeys.MOMENT_KEY],
     uniqueShownMoments,
   );
   // console.log({ definedMoment });
@@ -231,7 +221,10 @@ export default async function MomentsPage({
   const { view, moment } = defineWithViewAndMoment(definedView, definedMoment);
   // console.log({ view, moment });
 
-  const subView = defineSubView(searchParams?.[SUBVIEW], allUserMomentsToCRUD);
+  const subView = defineSubView(
+    searchParams?.[momentsPageSearchParamsKeys.SUB_VIEW],
+    allUserMomentsToCRUD,
+  );
   // console.log({ subView });
 
   // PART WRITE (a.k.a. server actions)
@@ -240,14 +233,14 @@ export default async function MomentsPage({
     formData: FormData,
     variant: MomentFormVariant,
     startMomentDate: string,
-    steps: StepFromCRUD[],
+    steps: StepFromClient[],
     momentFromCRUD: MomentToCRUD | undefined,
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await createOrUpdateMomentServerFlow(
+    return await falseCreateOrUpdateMomentServerFlow(
       formData,
       variant,
       startMomentDate,
@@ -264,7 +257,7 @@ export default async function MomentsPage({
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
     "use server";
 
-    return await deleteMomentServerFlow(momentFromCRUD, user);
+    return await falseDeleteMomentServerFlow(momentFromCRUD, user);
   }
 
   async function revalidateMoments(): Promise<void> {
@@ -274,37 +267,23 @@ export default async function MomentsPage({
   }
 
   return (
-    <ErrorBoundary
-      fallback={
-        <GlobalServerComponents.FallbackFlex>
-          <p>Une erreur est survenue.</p>
-        </GlobalServerComponents.FallbackFlex>
-      }
-    >
-      <Suspense
-        fallback={
-          <GlobalServerComponents.FallbackFlex>
-            <p>Loading...</p>
-          </GlobalServerComponents.FallbackFlex>
-        }
-      >
-        <Core
-          // time (aligned across server and client for hydration cases)
-          now={now}
-          // reads
-          allUserMomentsToCRUD={allUserMomentsToCRUD}
-          maxPages={maxPages}
-          destinationOptions={destinationOptions}
-          // writes
-          revalidateMoments={revalidateMoments}
-          createOrUpdateMoment={createOrUpdateMoment}
-          deleteMoment={deleteMoment}
-          // states lifted to the URL
-          view={view}
-          subView={subView}
-          moment={moment}
-        />
-      </Suspense>
-    </ErrorBoundary>
+    <GlobalServerComponents.ErrorBoundarySuspense>
+      <Core
+        // time (aligned across server and client for hydration cases)
+        now={now}
+        // reads
+        allUserMomentsToCRUD={allUserMomentsToCRUD}
+        maxPages={maxPages}
+        destinationOptions={destinationOptions}
+        // writes
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+        // states lifted to the URL
+        view={view}
+        subView={subView}
+        moment={moment}
+      />
+    </GlobalServerComponents.ErrorBoundarySuspense>
   );
 }

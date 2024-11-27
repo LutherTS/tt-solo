@@ -11,7 +11,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Switch from "@radix-ui/react-switch";
 import { isValid } from "date-fns";
 
-import * as Icons from "@/app/icons";
+import * as Icons from "@/app/icons/__icons__";
 import { Option, SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "@/app//validations/steps";
 import { FalseCreateOrUpdateMomentState } from "@/app//types/moments";

@@ -1,8 +1,8 @@
-import Image from "next/image";
 import clsx from "clsx";
+// import Image from "next/image";
 
 import * as LocalClientComponents from "./client";
-import { navLinks } from "@/app/data/globals";
+import { navLinks } from "@/app/constants/globals";
 
 export function SideNav({ isFixed }: { isFixed?: boolean }) {
   return (
@@ -78,7 +78,7 @@ export function SideNavContents() {
           );
         })}
       </div>
-      <div
+      {/* <div
         className={clsx(
           "relative size-16 flex-shrink-0",
           "mb-0, mr-4",
@@ -93,7 +93,7 @@ export function SideNavContents() {
           fill // https://nextjs.org/docs/pages/api-reference/components/image#fill
           priority // https://nextjs.org/docs/pages/api-reference/components/image#priority
         />
-      </div>
+      </div> */}
     </div>
   );
 }

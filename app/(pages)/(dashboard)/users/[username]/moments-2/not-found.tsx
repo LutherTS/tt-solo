@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 
 export default function NotFound() {

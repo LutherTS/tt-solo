@@ -18,13 +18,13 @@ import {
   whereUserMoments,
 } from "./subreads/moments";
 import { SelectMomentIdNameAndDates } from "../types/moments";
-import { TAKE } from "../data/moments";
+import { TAKE } from "../constants/moments";
 
 const select = selectMomentDefault;
 
 // Counts
 
-export async function countUserMomentsWithContains(
+export async function falseCountUserAllMomentsWithContains(
   userId: string,
   contains: string,
 ) {
@@ -36,7 +36,20 @@ export async function countUserMomentsWithContains(
   return await prisma.moment.count({ where });
 }
 
-export async function countPastUserMomentsWithContains(
+export async function countUserAllMomentsWithContains(
+  userId: string,
+  contains: string,
+  _nowString: string,
+) {
+  const where = Object.assign(
+    whereUserMoments(userId),
+    whereContains(contains),
+  );
+
+  return await prisma.moment.count({ where });
+}
+
+export async function countUserPastMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
@@ -50,7 +63,7 @@ export async function countPastUserMomentsWithContains(
   return await prisma.moment.count({ where });
 }
 
-export async function countPastUserMomentsShownBeforeMoment(
+export async function countUserPastMomentsShownBeforeMoment(
   userId: string,
   nowString: string,
   moment: SelectMomentIdNameAndDates,
@@ -72,7 +85,7 @@ export async function countPastUserMomentsShownBeforeMoment(
   });
 }
 
-export async function countCurrentUserMomentsWithContains(
+export async function countUserCurrentMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
@@ -86,7 +99,7 @@ export async function countCurrentUserMomentsWithContains(
   return await prisma.moment.count({ where });
 }
 
-export async function countCurrentUserMomentsShownBeforeMoment(
+export async function countUserCurrentMomentsShownBeforeMoment(
   userId: string,
   nowString: string,
   moment: SelectMomentIdNameAndDates,
@@ -108,7 +121,7 @@ export async function countCurrentUserMomentsShownBeforeMoment(
   });
 }
 
-export async function countFutureUserMomentsWithContains(
+export async function countUserFutureMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
@@ -122,7 +135,7 @@ export async function countFutureUserMomentsWithContains(
   return await prisma.moment.count({ where });
 }
 
-export async function countFutureUserMomentsShownBeforeMoment(
+export async function countUserFutureMomentsShownBeforeMoment(
   userId: string,
   nowString: string,
   moment: SelectMomentIdNameAndDates,
@@ -146,7 +159,8 @@ export async function countFutureUserMomentsShownBeforeMoment(
 
 // FindManys
 
-export async function findUserMomentsWithContains(
+// preemptive renaming to address collision
+export async function falseFindUserAllMomentsWithContains(
   userId: string,
   contains: string,
   userMomentsPage: number,
@@ -168,7 +182,30 @@ export async function findUserMomentsWithContains(
   });
 }
 
-export async function findPastUserMomentsWithContains(
+export async function findUserAllMomentsWithContains(
+  userId: string,
+  contains: string,
+  _nowString: string,
+  userMomentsPage: number,
+) {
+  const where = Object.assign(
+    whereUserMoments(userId),
+    whereContains(contains),
+  );
+  const orderBy = [orderByMomentsStartDesc, orderByMomentsNameAsc];
+  const take = TAKE;
+  const skip = Math.max(0, userMomentsPage - 1) * TAKE;
+
+  return await prisma.moment.findMany({
+    select,
+    where,
+    orderBy,
+    take,
+    skip,
+  });
+}
+
+export async function findUserPastMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
@@ -192,7 +229,7 @@ export async function findPastUserMomentsWithContains(
   });
 }
 
-export async function findCurrentUserMomentsWithContains(
+export async function findUserCurrentMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
@@ -216,7 +253,7 @@ export async function findCurrentUserMomentsWithContains(
   });
 }
 
-export async function findFutureUserMomentsWithContains(
+export async function findUserFutureMomentsWithContains(
   userId: string,
   contains: string,
   nowString: string,
@@ -254,6 +291,7 @@ export async function findMomentByIdAndUserId(id: string, userId: string) {
   const where = whereMomentIdAndUserId(id, userId);
 
   return await prisma.moment.findUnique({
+    select,
     where,
   });
 }

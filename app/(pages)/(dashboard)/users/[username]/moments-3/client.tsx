@@ -33,42 +33,39 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
-import * as Icons from "@/app/icons";
+import * as Icons from "@/app/icons/__icons__";
 import * as LocalServerComponents from "./server";
-import * as GlobalServerComponents from "@/app/components/server";
+import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
   MomentFormVariant,
   MomentToCRUD,
   RevalidateMoments,
-  MomentsSearchParamsKey,
   StepFormVariant,
-  StepFromCRUD,
+  StepFromClient,
   StepVisible,
   SubView,
   UserMomentsToCRUD,
   View,
-  MomentsSearchParams,
+  MomentsPageSearchParamsHandled,
   CreateOrUpdateMomentState,
-  CreateOrUpdateMoment,
-  DeleteMoment,
+  FalseCreateOrUpdateMoment,
+  FalseDeleteMoment,
 } from "@/app/types/moments";
 import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
-  CONTAINS,
-  CURRENTUSERMOMENTSPAGE,
-  FUTUREUSERMOMENTSPAGE,
+  momentsPageSearchParamsKeys,
   INITIAL_PAGE,
-  MOMENT_FORM_IDS,
-  PASTUSERMOMENTSPAGE,
+  momentFormIds,
   SEARCH_FORM_ID,
   STEP_DURATION_ORIGINAL,
-  SUBVIEW,
   subViews,
-  subViewTitles,
-  USERMOMENTSPAGE,
+  SUBVIEWS,
+  subViewsTitles,
   views,
-} from "@/app/data/moments";
+  VIEWS,
+  subViewsMomentsPageSearchParamsKeys,
+} from "@/app/constants/moments";
 import {
   defineCurrentPage,
   defineDesiredView,
@@ -82,9 +79,9 @@ import {
 import {
   deleteStepClientFlow,
   revalidateMomentsClientFlow,
-  createOrUpdateMomentClientFlow,
+  falseCreateOrUpdateMomentClientFlow,
   createOrUpdateStepClientFlow,
-  deleteMomentClientFlow,
+  falseDeleteMomentClientFlow,
   resetMomentClientFlow,
   resetStepClientFlow,
 } from "@/app/flows/client/moments";
@@ -116,8 +113,8 @@ export function ViewsCarouselContainer({
   maxPages: number[];
   destinationOptions: Option[];
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment: FalseDeleteMoment;
   moment: MomentToCRUD | undefined;
   subView: SubView;
 }) {
@@ -128,7 +125,7 @@ export function ViewsCarouselContainer({
     <motion.div
       className="flex"
       animate={{
-        x: `-${views.indexOf(view) * 100}%`,
+        x: `-${VIEWS.indexOf(view) * 100}%`,
       }}
       initial={false}
       transition={{
@@ -142,10 +139,10 @@ export function ViewsCarouselContainer({
       }}
     >
       <LocalServerComponents.PageSegment
-        isSegmentContainerInvisible={view !== "update-moment"}
+        isSegmentContainerInvisible={view !== views.UPDATE_MOMENT}
       >
         <ViewSegment
-          id="update-moment"
+          id={views.UPDATE_MOMENT}
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
@@ -159,15 +156,15 @@ export function ViewsCarouselContainer({
             deleteMoment={deleteMoment}
             now={now}
             setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            allButtonsDisabled={view !== "update-moment"}
+            allButtonsDisabled={view !== views.UPDATE_MOMENT}
           />
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
-        isSegmentContainerInvisible={view !== "read-moments"}
+        isSegmentContainerInvisible={view !== views.READ_MOMENTS}
       >
         <ViewSegment
-          id="read-moments"
+          id={views.READ_MOMENTS}
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
@@ -177,15 +174,15 @@ export function ViewsCarouselContainer({
             view={view}
             subView={subView}
             revalidateMoments={revalidateMoments}
-            allButtonsDisabled={view !== "read-moments"}
+            allButtonsDisabled={view !== views.READ_MOMENTS}
           />
         </ViewSegment>
       </LocalServerComponents.PageSegment>
       <LocalServerComponents.PageSegment
-        isSegmentContainerInvisible={view !== "create-moment"}
+        isSegmentContainerInvisible={view !== views.CREATE_MOMENT}
       >
         <ViewSegment
-          id="create-moment"
+          id={views.CREATE_MOMENT}
           currentView={view}
           currentViewHeight={currentViewHeight}
         >
@@ -196,7 +193,7 @@ export function ViewsCarouselContainer({
             createOrUpdateMoment={createOrUpdateMoment}
             now={now}
             setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-            allButtonsDisabled={view !== "create-moment"}
+            allButtonsDisabled={view !== views.CREATE_MOMENT}
           />
         </ViewSegment>
       </LocalServerComponents.PageSegment>
@@ -253,14 +250,14 @@ export function ReadMomentsView({
   ] = allUserMomentsToCRUD;
 
   const realShowcaseMoments: { [K in SubView]: UserMomentsToCRUD } = {
-    "all-moments": realAllMoments,
-    "past-moments": realPastMoments,
-    "current-moments": realCurrentMoments,
-    "future-moments": realFutureMoments,
+    [subViews.ALL_MOMENTS]: realAllMoments,
+    [subViews.PAST_MOMENTS]: realPastMoments,
+    [subViews.CURRENT_MOMENTS]: realCurrentMoments,
+    [subViews.FUTURE_MOMENTS]: realFutureMoments,
   };
 
   let realDisplayedMoments = realAllMoments.dates;
-  if (subView !== undefined && subViews.includes(subView))
+  if (subView !== undefined && SUBVIEWS.includes(subView))
     realDisplayedMoments = realShowcaseMoments[subView].dates;
 
   let realMoments: MomentToCRUD[] = [];
@@ -277,27 +274,24 @@ export function ReadMomentsView({
   function handleSearch(term: string) {
     const newSearchParams = new URLSearchParams(
       searchParams,
-    ) as TypedURLSearchParams<MomentsSearchParams>;
+    ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
 
-    if (term) newSearchParams.set(CONTAINS, term);
-    else newSearchParams.delete(CONTAINS);
+    if (term) newSearchParams.set(momentsPageSearchParamsKeys.CONTAINS, term);
+    else newSearchParams.delete(momentsPageSearchParamsKeys.CONTAINS);
 
-    newSearchParams.delete(USERMOMENTSPAGE);
-    newSearchParams.delete(PASTUSERMOMENTSPAGE);
-    newSearchParams.delete(CURRENTUSERMOMENTSPAGE);
-    newSearchParams.delete(FUTUREUSERMOMENTSPAGE);
+    newSearchParams.delete(momentsPageSearchParamsKeys.USER_ALL_MOMENTS_PAGE);
+    newSearchParams.delete(momentsPageSearchParamsKeys.USER_PAST_MOMENTS_PAGE);
+    newSearchParams.delete(
+      momentsPageSearchParamsKeys.USER_CURRENT_MOMENTS_PAGE,
+    );
+    newSearchParams.delete(
+      momentsPageSearchParamsKeys.USER_FUTURE_MOMENTS_PAGE,
+    );
 
     replace(`${pathname}?${newSearchParams.toString()}`);
   } // https://nextjs.org/learn/dashboard-app/adding-search-and-pagination
 
   const debouncedHandleSearch = debounce(handleSearch, 500);
-
-  const subViewSearchParams: { [K in SubView]: MomentsSearchParamsKey } = {
-    "all-moments": USERMOMENTSPAGE,
-    "past-moments": PASTUSERMOMENTSPAGE,
-    "current-moments": CURRENTUSERMOMENTSPAGE,
-    "future-moments": FUTUREUSERMOMENTSPAGE,
-  };
 
   const [
     maxPageAllMoments,
@@ -307,39 +301,39 @@ export function ReadMomentsView({
   ] = maxPages;
 
   let subViewMaxPages: { [K in SubView]: number } = {
-    "all-moments": maxPageAllMoments,
-    "past-moments": maxPagePastMoments,
-    "current-moments": maxPageCurrentMoments,
-    "future-moments": maxPageFutureMoments,
+    [subViews.ALL_MOMENTS]: maxPageAllMoments,
+    [subViews.PAST_MOMENTS]: maxPagePastMoments,
+    [subViews.CURRENT_MOMENTS]: maxPageCurrentMoments,
+    [subViews.FUTURE_MOMENTS]: maxPageFutureMoments,
   };
 
   const currentPage = defineCurrentPage(
     INITIAL_PAGE,
-    Number(searchParams.get(subViewSearchParams[subView])),
+    Number(searchParams.get(subViewsMomentsPageSearchParamsKeys[subView])),
     subViewMaxPages[subView],
   );
 
   function handlePagination(direction: "left" | "right", subView: SubView) {
     const newSearchParams = new URLSearchParams(
       searchParams,
-    ) as TypedURLSearchParams<MomentsSearchParams>;
+    ) as TypedURLSearchParams<MomentsPageSearchParamsHandled>;
 
     if (direction === "left")
       newSearchParams.set(
-        subViewSearchParams[subView],
+        subViewsMomentsPageSearchParamsKeys[subView],
         Math.max(INITIAL_PAGE, currentPage - 1).toString(),
       );
     else
       newSearchParams.set(
-        subViewSearchParams[subView],
+        subViewsMomentsPageSearchParamsKeys[subView],
         Math.min(subViewMaxPages[subView], currentPage + 1).toString(),
       );
 
     if (
-      newSearchParams.get(subViewSearchParams[subView]) ===
+      newSearchParams.get(subViewsMomentsPageSearchParamsKeys[subView]) ===
       INITIAL_PAGE.toString()
     )
-      newSearchParams.delete(subViewSearchParams[subView]);
+      newSearchParams.delete(subViewsMomentsPageSearchParamsKeys[subView]);
 
     replace(`${pathname}?${newSearchParams.toString()}`);
   }
@@ -347,8 +341,8 @@ export function ReadMomentsView({
   const rotateSubView = (direction: "left" | "right") =>
     rotateSearchParams(
       direction,
-      SUBVIEW,
-      subViews,
+      momentsPageSearchParamsKeys.SUB_VIEW,
+      SUBVIEWS,
       subView,
       searchParams,
       pathname,
@@ -356,7 +350,7 @@ export function ReadMomentsView({
     );
 
   useKeypress("ArrowLeft", (event: KeyboardEvent) => {
-    if (view === "read-moments") {
+    if (view === views.READ_MOMENTS) {
       event.preventDefault();
 
       if (event.altKey) {
@@ -368,7 +362,7 @@ export function ReadMomentsView({
   });
 
   useKeypress("ArrowRight", (event: KeyboardEvent) => {
-    if (view === "read-moments") {
+    if (view === views.READ_MOMENTS) {
       event.preventDefault();
 
       if (event.altKey) {
@@ -389,7 +383,7 @@ export function ReadMomentsView({
   const debouncedSettingScrollPosition = debounce(settingScrollPosition, 100);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if (view === "read-moments") debouncedSettingScrollPosition(latest);
+    if (view === views.READ_MOMENTS) debouncedSettingScrollPosition(latest);
     else debouncedSettingScrollPosition(0);
   });
 
@@ -421,7 +415,7 @@ export function ReadMomentsView({
       {/* spacer for divider (through space-y-8 though) */}
       <div></div>
       <div className={clsx("flex flex-wrap gap-4")}>
-        {subViews.map((e) => (
+        {SUBVIEWS.map((e) => (
           <SetSubViewButton key={e} e={e} subView={subView} />
         ))}
         <RevalidateMomentsButton
@@ -508,7 +502,7 @@ export function SetSubViewButton({
 
   function handleSubView() {
     const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set(SUBVIEW, e);
+    newSearchParams.set(momentsPageSearchParamsKeys.SUB_VIEW, e);
     replace(`${pathname}?${newSearchParams.toString()}`);
   }
 
@@ -523,7 +517,7 @@ export function SetSubViewButton({
       )}
     >
       {/* real occupied space */}
-      <span className="invisible static">{subViewTitles[e]}</span>
+      <span className="invisible static">{subViewsTitles[e]}</span>
       {/* gradient text */}
       <span
         className={clsx(
@@ -531,7 +525,7 @@ export function SetSubViewButton({
           "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
         )}
       >
-        {subViewTitles[e]}
+        {subViewsTitles[e]}
       </span>
       {/* white background */}
       <div
@@ -608,10 +602,12 @@ export function SearchForm({
   return (
     <form id={SEARCH_FORM_ID} noValidate>
       <GlobalClientComponents.InputText
-        id={CONTAINS}
-        name={CONTAINS}
+        id={momentsPageSearchParamsKeys.CONTAINS}
+        name={momentsPageSearchParamsKeys.CONTAINS}
         placeholder="Cherchez parmi vos moments..."
-        defaultValue={searchParams.get(CONTAINS)?.toString()}
+        defaultValue={searchParams
+          .get(momentsPageSearchParamsKeys.CONTAINS)
+          ?.toString()}
         onChange={(e) => {
           debouncedHandleSearch(e.currentTarget.value);
         }}
@@ -635,7 +631,7 @@ export function UpdateMomentViewButton({
     const moment = realMoments.find((e0) => e0.id === e3.id);
 
     scrollToTopOfDesiredView(
-      "update-moment",
+      views.UPDATE_MOMENT,
       searchParams,
       push,
       pathname,
@@ -704,8 +700,8 @@ export function MomentForms({
   variant: MomentFormVariant;
   moment?: MomentToCRUD;
   destinationOptions: Option[];
-  createOrUpdateMoment: CreateOrUpdateMoment;
-  deleteMoment?: DeleteMoment;
+  createOrUpdateMoment: FalseCreateOrUpdateMoment;
+  deleteMoment?: FalseDeleteMoment;
   now: string;
   setIsCRUDOpSuccessful: SetState<boolean>;
   allButtonsDisabled: boolean;
@@ -719,7 +715,7 @@ export function MomentForms({
     isVariantUpdatingMoment ? moment.startDateAndTime : nowRoundedUpTenMinutes,
   );
 
-  const momentSteps: StepFromCRUD[] | undefined = moment?.steps.map((e) => {
+  const momentSteps: StepFromClient[] | undefined = moment?.steps.map((e) => {
     return {
       id: e.id,
       intitule: e.title,
@@ -728,7 +724,7 @@ export function MomentForms({
     };
   });
 
-  let [steps, setSteps] = useState<StepFromCRUD[]>(
+  let [steps, setSteps] = useState<StepFromClient[]>(
     isVariantUpdatingMoment && momentSteps ? momentSteps : [],
   );
 
@@ -788,7 +784,7 @@ export function MomentForms({
   ) => {
     startCreateOrUpdateMomentTransition(async () => {
       // an "action flow" is a bridge between a server action and the immediate impacts it is expected to have on the client
-      const state = await createOrUpdateMomentClientFlow(
+      const state = await falseCreateOrUpdateMomentClientFlow(
         event,
         createOrUpdateMoment,
         variant,
@@ -871,7 +867,7 @@ export function MomentForms({
   const deleteMomentAction = async () => {
     startDeleteMomentTransition(async () => {
       if (confirm("Êtes-vous sûr de vouloir effacer ce moment ?")) {
-        const state = await deleteMomentClientFlow(deleteMoment, moment);
+        const state = await falseDeleteMomentClientFlow(deleteMoment, moment);
 
         setCreateOrUpdateMomentState(state);
         setIsDeleteMomentDone(true);
@@ -972,14 +968,14 @@ export function MomentForms({
       <form
         onSubmit={createOrUpdateMomentAction}
         onReset={resetMomentAction}
-        id={MOMENT_FORM_IDS[variant].momentForm}
+        id={momentFormIds[variant].momentForm}
         noValidate
       >
         <GlobalServerComponents.FormSection
           topic="moment"
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
-          id={MOMENT_FORM_IDS[variant].yourMoment}
+          id={momentFormIds[variant].yourMoment}
           error={createOrUpdateMomentState?.error?.momentMessages?.message}
           subError={
             createOrUpdateMomentState?.error?.momentMessages?.subMessage
@@ -1005,7 +1001,7 @@ export function MomentForms({
           topic="steps"
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
-          id={MOMENT_FORM_IDS[variant].itsSteps}
+          id={momentFormIds[variant].itsSteps}
           error={createOrUpdateMomentState?.error?.stepsMessages?.message}
           subError={createOrUpdateMomentState?.error?.stepsMessages?.subMessage}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
@@ -1163,18 +1159,18 @@ export function ReorderItem({
   isAnimationDelayed,
   setIsAnimationDelayed,
 }: {
-  step: StepFromCRUD;
+  step: StepFromClient;
   index: number;
   isAfterCurrentStep: boolean;
   momentFormVariant: MomentFormVariant;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   stepVisible: StepVisible;
   currentStepId: string;
   setCurrentStepId: SetState<string>;
   setStepVisible: SetState<StepVisible>;
   startMomentDate: string;
   stepAddingTime: number;
-  setSteps: SetState<StepFromCRUD[]>;
+  setSteps: SetState<StepFromClient[]>;
   isUpdateStepPending: boolean;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
@@ -1196,7 +1192,7 @@ export function ReorderItem({
   const hasAPreviousStepUpdating =
     isAfterCurrentStep && stepVisible === "updating";
 
-  const form = MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating;
+  const form = momentFormIds[momentFormVariant].stepFormUpdating;
 
   // deleteStepAction
 
@@ -1351,7 +1347,7 @@ function MotionIsCurrentStepUpdating({
   createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDureeUpdate: string;
   setStepDureeUpdate: SetState<string>;
-  step: StepFromCRUD;
+  step: StepFromClient;
   startMomentDate: string;
   stepAddingTime: number;
   stepsCompoundDurations: number[];
@@ -1478,7 +1474,7 @@ function MotionAddStepVisible({
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
   cancelStepAction: () => void;
-  steps: StepFromCRUD[];
+  steps: StepFromClient[];
   isCancelStepPending: boolean;
   stepsCompoundDurations: number[];
   startMomentDate: string;
@@ -1576,8 +1572,8 @@ export function StepForm({
   variant: StepFormVariant;
   momentFormVariant: MomentFormVariant;
   currentStepId: string;
-  steps: StepFromCRUD[];
-  setSteps: SetState<StepFromCRUD[]>;
+  steps: StepFromClient[];
+  setSteps: SetState<StepFromClient[]>;
   setStepVisible: SetState<StepVisible>;
   stepDuree: string;
   setStepDuree: SetState<string>;
@@ -1589,8 +1585,8 @@ export function StepForm({
 }) {
   const stepFormId =
     variant === "updating"
-      ? MOMENT_FORM_IDS[momentFormVariant].stepFormUpdating
-      : MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+      ? momentFormIds[momentFormVariant].stepFormUpdating
+      : momentFormIds[momentFormVariant].stepFormCreating;
 
   // createOrUpdateStepAction
 
@@ -1619,7 +1615,7 @@ export function StepForm({
       const noConfirm =
         // @ts-ignore Typescript unaware of explicitOriginalTarget (but is correct in some capacity because mobile did not understand)
         event.nativeEvent.explicitOriginalTarget?.form?.id !==
-        MOMENT_FORM_IDS[momentFormVariant].stepFormCreating;
+        momentFormIds[momentFormVariant].stepFormCreating;
 
       if (
         noConfirm ||
@@ -1662,10 +1658,10 @@ export function SetViewButton({ view }: { view: View }) {
     >
       {(() => {
         switch (desiredView) {
-          // no case "update-moment", since moment-specific
-          case "read-moments":
+          // no case views.UPDATE_MOMENT, since moment-specific
+          case views.READ_MOMENTS:
             return <>Vos moments</>;
-          case "create-moment":
+          case views.CREATE_MOMENT:
             return <>Créez un moment</>;
           default:
             return null;
