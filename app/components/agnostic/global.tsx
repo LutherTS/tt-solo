@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-import * as GlobalClientComponents from "../client";
+import * as AllGlobalClientComponents from "../client";
 
 import * as ValidationErrors from "./validation-errors";
 
@@ -73,7 +73,7 @@ export function Section({
                 />
               )}
               {subError ? (
-                <GlobalClientComponents.FalseFormValidationError
+                <AllGlobalClientComponents.FalseFormValidationError
                   error={subError}
                 />
               ) : (
@@ -160,7 +160,7 @@ export function FormSection({
                 />
               )}
               {subError ? (
-                <GlobalClientComponents.FalseFormValidationError
+                <AllGlobalClientComponents.FalseFormValidationError
                   error={subError}
                 />
               ) : (

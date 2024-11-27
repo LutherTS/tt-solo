@@ -74,7 +74,7 @@ import {
   SelectWithOptions,
   Textarea,
 } from "@/app/components/__components__";
-import * as Icons from "@/app/icons";
+import * as Icons from "@/app/icons/__icons__";
 import {
   falseCreateOrUpdateStepClientFlow,
   falseResetStepClientFlow,

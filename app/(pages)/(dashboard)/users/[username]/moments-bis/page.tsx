@@ -1,9 +1,10 @@
-// No directive. page.tsx here is meant to be a strict RSC, truly a Server Component.
+// No directive. Meaning this is a Server Component by default.
+// Expectedly as a in a strictly server React Server Component.
 
 // import { use as utilizeResource } from "react";
 import { notFound } from "next/navigation";
 
-import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 
 import Core from "./components/server/core";
 
@@ -138,7 +139,7 @@ export default async function MomentsPage({
 
   return (
     // SUSPENDED
-    <GlobalAgnosticComponents.ErrorBoundarySuspense>
+    <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -151,6 +152,6 @@ export default async function MomentsPage({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
       />
-    </GlobalAgnosticComponents.ErrorBoundarySuspense>
+    </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }

@@ -1,6 +1,6 @@
 "use agnostic"; // NOT A REAL DIRECTIVE. YET. I HOPE.
 
-import * as GlobalClientComponents from "../client/global";
+import * as AllGlobalClientComponents from "../client/global";
 
 import { SetState } from "@/app/types/globals";
 import {
@@ -26,7 +26,7 @@ export function FalseFormDescriptionOrError({
       {error &&
       setCreateOrUpdateMomentState &&
       removeMessagesAndErrorsCallback ? (
-        <GlobalClientComponents.FalseFormValidationError
+        <AllGlobalClientComponents.FalseFormValidationError
           error={error}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
           removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
@@ -56,7 +56,7 @@ export function FormDescriptionOrError({
       {error &&
       setCreateOrUpdateMomentState &&
       removeMessagesAndErrorsCallback ? (
-        <GlobalClientComponents.FormValidationError
+        <AllGlobalClientComponents.FormValidationError
           error={error}
           setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
           removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}

@@ -3,8 +3,8 @@
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
-import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
+import * as AllGlobalClientComponents from "@/app/components/client";
 
 import * as AllLocalClientComponents from "../client";
 
@@ -36,7 +36,7 @@ export function Header({ view }: { view: View }) {
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalAgnosticComponents.PageTitle title={viewsTitles[view]} />
+          <AllGlobalAgnosticComponents.PageTitle title={viewsTitles[view]} />
           <AllLocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>
@@ -200,7 +200,7 @@ export function MomentInputs({
 
   return (
     <>
-      <GlobalClientComponents.InputText
+      <AllGlobalClientComponents.InputText
         label="Destination"
         name="destination"
         defaultValue={isVariantUpdatingMoment ? moment.destinationIdeal : ""}
@@ -222,8 +222,8 @@ export function MomentInputs({
             text={"Choisir la destination"}
           />
         )}
-      </GlobalClientComponents.InputText>
-      <GlobalClientComponents.SelectWithOptions
+      </AllGlobalClientComponents.InputText>
+      <AllGlobalClientComponents.SelectWithOptions
         label="Destination"
         description="Choisissez la destination que cherche à atteindre ce moment."
         addendum="Ou définissez-la vous-même via le bouton ci-dessus."
@@ -246,8 +246,8 @@ export function MomentInputs({
           setSelect={setDestinationSelect}
           text={"Définir la destination"}
         />
-      </GlobalClientComponents.SelectWithOptions>
-      <GlobalClientComponents.InputText
+      </AllGlobalClientComponents.SelectWithOptions>
+      <AllGlobalClientComponents.InputText
         label="Activité"
         description="Définissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
@@ -262,8 +262,8 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Choisir l'activité"}
         />
-      </GlobalClientComponents.InputText>
-      <GlobalClientComponents.SelectWithOptions
+      </AllGlobalClientComponents.InputText>
+      <AllGlobalClientComponents.SelectWithOptions
         label="Activité"
         description="Choisissez le type d'activité qui va correspondre à votre problématique."
         addendum="Ou définissez-le vous-même via le bouton ci-dessus."
@@ -284,8 +284,8 @@ export function MomentInputs({
           setSelect={setActivitySelect}
           text={"Définir l'activité"}
         />
-      </GlobalClientComponents.SelectWithOptions>
-      <GlobalClientComponents.InputText
+      </AllGlobalClientComponents.SelectWithOptions>
+      <AllGlobalClientComponents.InputText
         label="Objectif"
         name="objectif"
         defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
@@ -293,7 +293,7 @@ export function MomentInputs({
         required={false}
         errors={createOrUpdateMomentState?.error?.momentErrors?.momentName}
       />
-      <GlobalClientComponents.InputSwitch
+      <AllGlobalClientComponents.InputSwitch
         key={inputSwitchKey}
         label="Indispensable ?"
         name="indispensable"
@@ -306,7 +306,7 @@ export function MomentInputs({
           createOrUpdateMomentState?.error?.momentErrors?.momentIsIndispensable
         }
       />
-      <GlobalClientComponents.Textarea
+      <AllGlobalClientComponents.Textarea
         label="Contexte"
         name="contexte"
         defaultValue={isVariantUpdatingMoment ? moment.context : ""}
@@ -317,7 +317,7 @@ export function MomentInputs({
           createOrUpdateMomentState?.error?.momentErrors?.momentDescription
         }
       />
-      <GlobalClientComponents.InputDatetimeLocalControlled
+      <AllGlobalClientComponents.InputDatetimeLocalControlled
         label="Date et heure"
         name="dateetheure"
         description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
@@ -419,7 +419,7 @@ export function StepVisibleCreating({
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Ajouter une étape
         </p>{" "}
-        <GlobalClientComponents.Button
+        <AllGlobalClientComponents.Button
           form={form}
           variant="destroy-step"
           type="button"
@@ -429,7 +429,7 @@ export function StepVisibleCreating({
           }
         >
           Annuler l&apos;étape
-        </GlobalClientComponents.Button>
+        </AllGlobalClientComponents.Button>
       </div>
       <StepInputs
         form={form}
@@ -442,41 +442,41 @@ export function StepVisibleCreating({
       <div className="flex">
         {/* Mobile */}
         <StepFormControlsMobileWrapper>
-          <GlobalClientComponents.Button
+          <AllGlobalClientComponents.Button
             variant="confirm-step"
             form={form}
             type="submit"
             disabled={allButtonsDisabled || isCreateStepPending}
           >
             Confirmer l&apos;étape
-          </GlobalClientComponents.Button>
-          <GlobalClientComponents.Button
+          </AllGlobalClientComponents.Button>
+          <AllGlobalClientComponents.Button
             variant="cancel-step"
             form={form}
             type="reset"
             disabled={allButtonsDisabled || isResetStepPending}
           >
             Réinitialiser l&apos;étape
-          </GlobalClientComponents.Button>
+          </AllGlobalClientComponents.Button>
         </StepFormControlsMobileWrapper>
         {/* Desktop */}
         <StepFormControlsDesktopWrapper>
-          <GlobalClientComponents.Button
+          <AllGlobalClientComponents.Button
             variant="cancel-step"
             form={form}
             type="reset"
             disabled={allButtonsDisabled || isResetStepPending}
           >
             Réinitialiser l&apos;étape
-          </GlobalClientComponents.Button>
-          <GlobalClientComponents.Button
+          </AllGlobalClientComponents.Button>
+          <AllGlobalClientComponents.Button
             variant="confirm-step"
             form={form}
             type="submit"
             disabled={allButtonsDisabled || isCreateStepPending}
           >
             Confirmer l&apos;étape
-          </GlobalClientComponents.Button>
+          </AllGlobalClientComponents.Button>
         </StepFormControlsDesktopWrapper>
       </div>
     </div>
@@ -494,14 +494,14 @@ export function StepVisibleCreate({
 }) {
   return (
     <div>
-      <GlobalClientComponents.Button
+      <AllGlobalClientComponents.Button
         type="button"
         variant="neutral"
         onClick={addStepAction}
         disabled={allButtonsDisabled || isAddStepPending}
       >
         Ajouter une étape
-      </GlobalClientComponents.Button>
+      </AllGlobalClientComponents.Button>
     </div>
   );
 }
@@ -527,7 +527,7 @@ export function StepInputs({
 }) {
   return (
     <>
-      <GlobalClientComponents.InputText
+      <AllGlobalClientComponents.InputText
         form={form}
         label="Intitulé de l'étape"
         name="intituledeleetape"
@@ -536,7 +536,7 @@ export function StepInputs({
         required={false}
         errors={createOrUpdateMomentState?.error?.stepsErrors?.stepName}
       />
-      <GlobalClientComponents.Textarea
+      <AllGlobalClientComponents.Textarea
         form={form}
         label="Détails de l'étape"
         name="detailsdeleetape"
@@ -546,7 +546,7 @@ export function StepInputs({
         required={false}
         errors={createOrUpdateMomentState?.error?.stepsErrors?.stepDescription}
       />
-      <GlobalClientComponents.InputNumberControlled
+      <AllGlobalClientComponents.InputNumberControlled
         form={form}
         label="Durée de l'étape"
         name="dureedeletape"
@@ -574,7 +574,7 @@ export function StepInputs({
                 "HH:mm",
               )}
         </p>
-      </GlobalClientComponents.InputNumberControlled>
+      </AllGlobalClientComponents.InputNumberControlled>
     </>
   );
 }

@@ -5,9 +5,9 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { isValid } from "date-fns";
 import * as Switch from "@radix-ui/react-switch";
 
-import * as Icons from "@/app/icons";
+import * as AllGlobalIcons from "@/app/icons";
 
-import * as GlobalAgnosticComponents from "../agnostic";
+import * as AllGlobalAgnosticComponents from "../agnostic";
 
 import { Option, SetState } from "@/app/types/globals";
 import { EventStepDurationSchema } from "@/app/validations/steps";
@@ -44,18 +44,18 @@ export function InputText({
   hidden?: boolean;
 } & ComponentProps<"input">) {
   return (
-    <GlobalAgnosticComponents.FieldFlex
+    <AllGlobalAgnosticComponents.FieldFlex
       isLabel={!fieldFlexIsNotLabel}
       hidden={hidden}
     >
       {label && (
         <div className="flex justify-between">
-          <GlobalAgnosticComponents.FieldTitle title={label} />
+          <AllGlobalAgnosticComponents.FieldTitle title={label} />
           {children}
         </div>
       )}
       {description && (
-        <GlobalAgnosticComponents.InputDescriptionOrError
+        <AllGlobalAgnosticComponents.InputDescriptionOrError
           errors={errors}
           description={description}
           addendum={addendum}
@@ -106,7 +106,7 @@ export function InputText({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -139,14 +139,14 @@ export function InputTextControlled({
   errors?: string[];
 } & ComponentProps<"input">) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
       {label && (
         <div className="flex justify-between">
-          <GlobalAgnosticComponents.FieldTitle title={label} />
+          <AllGlobalAgnosticComponents.FieldTitle title={label} />
           {children}
         </div>
       )}
-      <GlobalAgnosticComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -202,7 +202,7 @@ export function InputTextControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -238,15 +238,15 @@ export function SelectWithOptions({
   hidden?: boolean;
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex
+    <AllGlobalAgnosticComponents.FieldFlex
       isLabel={!fieldFlexIsNotLabel}
       hidden={hidden}
     >
       <div className="flex justify-between">
-        <GlobalAgnosticComponents.FieldTitle title={label} />
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
         {children}
       </div>
-      <GlobalAgnosticComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -275,7 +275,7 @@ export function SelectWithOptions({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <Icons.ChevronDownMini className="size-5" />
+            <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
           </div>
         </div>
       ) : (
@@ -304,7 +304,7 @@ export function SelectWithOptions({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <Icons.ChevronDownMini className="size-5" />
+              <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -321,7 +321,7 @@ export function SelectWithOptions({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -357,12 +357,12 @@ export function SelectWithOptionsControlled({
   tekTime?: boolean;
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
       <div className="flex justify-between">
-        <GlobalAgnosticComponents.FieldTitle title={label} />
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
         {children}
       </div>
-      <GlobalAgnosticComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -394,7 +394,7 @@ export function SelectWithOptionsControlled({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <Icons.ChevronDownMini className="size-5" />
+            <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
           </div>
         </div>
       ) : (
@@ -426,7 +426,7 @@ export function SelectWithOptionsControlled({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <Icons.ChevronDownMini className="size-5" />
+              <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -443,7 +443,7 @@ export function SelectWithOptionsControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -464,9 +464,9 @@ export function InputSwitch({
   errors?: string[];
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex select-none items-center gap-4">
-        <GlobalAgnosticComponents.FieldTitle title={label} />
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
         <Switch.Root
           name={name}
           // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled // later solved with keys
@@ -485,11 +485,11 @@ export function InputSwitch({
           />
         </Switch.Root>
       </div>
-      <GlobalAgnosticComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -510,9 +510,9 @@ export function InputSwitchControlled({
   errors?: string[];
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex select-none items-center gap-4">
-        <GlobalAgnosticComponents.FieldTitle title={label} />
+        <AllGlobalAgnosticComponents.FieldTitle title={label} />
         <Switch.Root
           name={name}
           checked={definedValue}
@@ -529,11 +529,11 @@ export function InputSwitchControlled({
           />
         </Switch.Root>
       </div>
-      <GlobalAgnosticComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -557,9 +557,9 @@ export function Textarea({
   errors?: string[];
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
-      <GlobalAgnosticComponents.FieldTitle title={label} />
-      <GlobalAgnosticComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -581,7 +581,7 @@ export function Textarea({
           focusVisibleTexts,
         )}
       />
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -607,9 +607,9 @@ export function TextareaControlled({
   errors?: string[];
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
-      <GlobalAgnosticComponents.FieldTitle title={label} />
-      <GlobalAgnosticComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -631,7 +631,7 @@ export function TextareaControlled({
           focusVisibleTexts,
         )}
       />
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -659,9 +659,9 @@ export function InputNumber({
   children?: React.ReactNode;
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <GlobalAgnosticComponents.FieldTitle title={label} />}
+        {label && <AllGlobalAgnosticComponents.FieldTitle title={label} />}
         {children}
       </div>
       {description && (
@@ -689,7 +689,7 @@ export function InputNumber({
           <p>minutes</p>
         </div>
       </div>
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -723,12 +723,12 @@ export function InputNumberControlled({
   children?: React.ReactNode;
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <GlobalAgnosticComponents.FieldTitle title={label} />}
+        {label && <AllGlobalAgnosticComponents.FieldTitle title={label} />}
         {children}
       </div>
-      <GlobalAgnosticComponents.InputDescriptionOrError
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -769,7 +769,7 @@ export function InputNumberControlled({
           <p>minutes</p>
         </div>
       </div>
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -793,9 +793,9 @@ export function InputDatetimeLocal({
   errors?: string[];
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
-      <GlobalAgnosticComponents.FieldTitle title={label} />
-      <GlobalAgnosticComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -817,7 +817,7 @@ export function InputDatetimeLocal({
           "w-full appearance-none",
         )}
       />
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 
@@ -843,9 +843,9 @@ export function InputDatetimeLocalControlled({
   errors?: string[];
 }) {
   return (
-    <GlobalAgnosticComponents.FieldFlex isLabel>
-      <GlobalAgnosticComponents.FieldTitle title={label} />
-      <GlobalAgnosticComponents.InputDescriptionOrError
+    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+      <AllGlobalAgnosticComponents.FieldTitle title={label} />
+      <AllGlobalAgnosticComponents.InputDescriptionOrError
         errors={errors}
         description={description}
       />
@@ -873,7 +873,7 @@ export function InputDatetimeLocalControlled({
           "w-full appearance-none",
         )}
       />
-    </GlobalAgnosticComponents.FieldFlex>
+    </AllGlobalAgnosticComponents.FieldFlex>
   );
 }
 

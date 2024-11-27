@@ -32,7 +32,7 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
-import * as Icons from "@/app/icons";
+import * as Icons from "@/app/icons/__icons__";
 import * as LocalServerComponents from "./server";
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";

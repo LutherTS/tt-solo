@@ -34,8 +34,8 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
-import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
+import * as AllGlobalClientComponents from "@/app/components/client";
 
 import * as AllLocalAgnosticComponents from "../agnostic"; // if prefixed by "All-", it means the import is from a folder
 
@@ -143,7 +143,7 @@ export function ViewsCarouselContainer({
         >
           {/* UpdateMomentView */}
           {/* SUSPENDED */}
-          <GlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
             <MomentForms
               key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
               variant="updating"
@@ -155,7 +155,7 @@ export function ViewsCarouselContainer({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
               allButtonsDisabled={view !== views.UPDATE_MOMENT}
             />
-          </GlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
       <AllLocalAgnosticComponents.PageSegment
@@ -167,14 +167,14 @@ export function ViewsCarouselContainer({
           currentViewHeight={currentViewHeight}
         >
           {/* SUSPENDED */}
-          <GlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
             <ReadMomentsView
               view={view}
               fetchReadMomentsViewData={fetchReadMomentsViewData}
               revalidateMoments={revalidateMoments}
               allButtonsDisabled={view !== views.READ_MOMENTS}
             />
-          </GlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
       <AllLocalAgnosticComponents.PageSegment
@@ -187,7 +187,7 @@ export function ViewsCarouselContainer({
         >
           {/* CreateMomentView */}
           {/* SUSPENDED */}
-          <GlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
             <MomentForms
               variant="creating"
               fetchMomentFormsData={fetchMomentFormsData}
@@ -196,7 +196,7 @@ export function ViewsCarouselContainer({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
               allButtonsDisabled={view !== views.CREATE_MOMENT}
             />
-          </GlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
     </motion.div>
@@ -461,7 +461,7 @@ export function ReadMomentsView({
               direction="left"
               subView={subView}
               disabled={allButtonsDisabled || currentPage === 1}
-              icon="ArrowLeftSolid"
+              icon="ArrowLeftSolidIcon"
               allButtonsDisabled={allButtonsDisabled}
             />
             <Buttons.PaginationButton
@@ -471,7 +471,7 @@ export function ReadMomentsView({
               disabled={
                 allButtonsDisabled || currentPage === subViewsMaxPages[subView]
               }
-              icon="ArrowRightSolid"
+              icon="ArrowRightSolidIcon"
               allButtonsDisabled={allButtonsDisabled}
             />
           </div>
@@ -492,7 +492,7 @@ export function SearchForm({
 }) {
   return (
     <form id={SEARCH_FORM_ID} noValidate>
-      <GlobalClientComponents.InputText
+      <AllGlobalClientComponents.InputText
         id={momentsPageSearchParamsKeys.CONTAINS}
         name={momentsPageSearchParamsKeys.CONTAINS}
         placeholder="Cherchez parmi vos moments..."
@@ -798,7 +798,7 @@ export function MomentForms({
         id={momentFormIds[variant].momentForm}
         noValidate
       >
-        <GlobalAgnosticComponents.FormSection
+        <AllGlobalAgnosticComponents.FormSection
           topic="moment"
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
@@ -822,9 +822,9 @@ export function MomentForms({
             startMomentDate={startMomentDate}
             setStartMomentDate={setStartMomentDate}
           />
-        </GlobalAgnosticComponents.FormSection>
-        <GlobalAgnosticComponents.Divider />
-        <GlobalAgnosticComponents.FormSection
+        </AllGlobalAgnosticComponents.FormSection>
+        <AllGlobalAgnosticComponents.Divider />
+        <AllGlobalAgnosticComponents.FormSection
           topic="steps"
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
@@ -914,9 +914,9 @@ export function MomentForms({
             endMomentDate={endMomentDate}
             momentAddingTime={momentAddingTime}
           />
-        </GlobalAgnosticComponents.FormSection>
-        <GlobalAgnosticComponents.Divider />
-        <GlobalAgnosticComponents.Section>
+        </AllGlobalAgnosticComponents.FormSection>
+        <AllGlobalAgnosticComponents.Divider />
+        <AllGlobalAgnosticComponents.Section>
           {/* Doubling up instead of reverse for accessibility */}
           <div className="flex">
             {/* Mobile */}
@@ -954,7 +954,7 @@ export function MomentForms({
               />
             </div>
           </div>
-        </GlobalAgnosticComponents.Section>
+        </AllGlobalAgnosticComponents.Section>
       </form>
     </>
   );
@@ -1110,23 +1110,23 @@ export function ReorderItem({
               Étape <span>{toWordsing(index + 1)}</span>
             </p>{" "}
             {isCurrentStepUpdating ? (
-              <GlobalClientComponents.Button
+              <AllGlobalClientComponents.Button
                 type="button"
                 variant="destroy-step"
                 onClick={restoreStepAction}
                 disabled={allButtonsDisabled || isRestoreStepPending}
               >
                 Restaurer l&apos;étape
-              </GlobalClientComponents.Button>
+              </AllGlobalClientComponents.Button>
             ) : (
-              <GlobalClientComponents.Button
+              <AllGlobalClientComponents.Button
                 variant="destroy-step"
                 type="button"
                 onClick={modifyStepAction}
                 disabled={allButtonsDisabled || isModifyStepPending}
               >
                 Modifier cette étape
-              </GlobalClientComponents.Button>
+              </AllGlobalClientComponents.Button>
             )}
           </div>
           <MotionIsCurrentStepUpdating

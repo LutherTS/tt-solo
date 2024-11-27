@@ -4,9 +4,9 @@ import { MouseEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 
-import * as GlobalIcons from "@/app/icons";
+import * as AllGlobalIcons from "@/app/icons";
 
-import * as GlobalClientComponents from "@/app/components/client";
+import * as AllGlobalClientComponents from "@/app/components/client";
 
 import { MomentAdapted, SubView, View } from "@/app/types/moments";
 import {
@@ -29,13 +29,13 @@ export function SetSelectButton({
   text: string;
 }) {
   return (
-    <GlobalClientComponents.Button
+    <AllGlobalClientComponents.Button
       type="button"
       variant="destroy"
       onClick={() => setSelect((s) => !s)}
     >
       {text}
-    </GlobalClientComponents.Button>
+    </AllGlobalClientComponents.Button>
   );
 }
 
@@ -51,7 +51,7 @@ export function ConfirmMomentButton({
   allButtonsDisabled: boolean;
 }) {
   return (
-    <GlobalClientComponents.Button
+    <AllGlobalClientComponents.Button
       type="submit"
       variant="confirm"
       disabled={
@@ -63,7 +63,7 @@ export function ConfirmMomentButton({
       isDedicatedDisabled={isCreateOrUpdateMomentPending}
     >
       Confirmer le moment
-    </GlobalClientComponents.Button>
+    </AllGlobalClientComponents.Button>
   );
 }
 
@@ -88,7 +88,7 @@ export function ResetOrEraseMomentButton({
         switch (variant) {
           case "creating":
             return (
-              <GlobalClientComponents.Button
+              <AllGlobalClientComponents.Button
                 type="reset"
                 variant="cancel"
                 disabled={
@@ -99,11 +99,11 @@ export function ResetOrEraseMomentButton({
                 isDedicatedDisabled={isResetMomentPending}
               >
                 Réinitialiser le moment
-              </GlobalClientComponents.Button>
+              </AllGlobalClientComponents.Button>
             );
           case "updating":
             return (
-              <GlobalClientComponents.Button
+              <AllGlobalClientComponents.Button
                 type="button"
                 onClick={deleteMomentAction}
                 variant="cancel"
@@ -115,7 +115,7 @@ export function ResetOrEraseMomentButton({
                 isDedicatedDisabled={isDeleteMomentPending}
               >
                 Effacer le moment
-              </GlobalClientComponents.Button>
+              </AllGlobalClientComponents.Button>
             );
           default:
             return null;
@@ -135,14 +135,14 @@ export function UpdateStepButton({
   allButtonsDisabled: boolean;
 }) {
   return (
-    <GlobalClientComponents.Button
+    <AllGlobalClientComponents.Button
       form={form}
       type="submit"
       variant="confirm-step"
       disabled={allButtonsDisabled || isUpdateStepPending}
     >
       Actualiser l&apos;étape
-    </GlobalClientComponents.Button>
+    </AllGlobalClientComponents.Button>
   );
 }
 
@@ -158,7 +158,7 @@ export function EraseStepButton({
   allButtonsDisabled: boolean;
 }) {
   return (
-    <GlobalClientComponents.Button
+    <AllGlobalClientComponents.Button
       form={form}
       type="button"
       onClick={deleteStepAction}
@@ -166,7 +166,7 @@ export function EraseStepButton({
       disabled={allButtonsDisabled || isDeleteStepPending}
     >
       Effacer l&apos;étape
-    </GlobalClientComponents.Button>
+    </AllGlobalClientComponents.Button>
   );
 }
 
@@ -252,7 +252,7 @@ export function RevalidateMomentsButton({
     >
       {/* real occupied space */}
       <span className="invisible static">
-        <GlobalIcons.ArrowPathSolid />
+        <AllGlobalIcons.ArrowPathSolidIcon />
       </span>
       {/* gradient text */}
       <span
@@ -261,7 +261,7 @@ export function RevalidateMomentsButton({
           "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
         )}
       >
-        <GlobalIcons.ArrowPathSolid className="size-6 text-blue-950" />
+        <AllGlobalIcons.ArrowPathSolidIcon className="size-6 text-blue-950" />
       </span>
       {/* white background */}
       <div
@@ -299,13 +299,13 @@ export function UpdateMomentViewButton({
   }
 
   return (
-    <GlobalClientComponents.Button
+    <AllGlobalClientComponents.Button
       type="button"
       variant="destroy-step"
       onClick={handleUpdateMomentView}
     >
-      <GlobalIcons.PencilSquareSolid className="size-5" />
-    </GlobalClientComponents.Button>
+      <AllGlobalIcons.PencilSquareSolidIcon className="size-5" />
+    </AllGlobalClientComponents.Button>
   );
 }
 
@@ -322,11 +322,11 @@ export function PaginationButton({
   direction: "left" | "right";
   subView: SubView;
   disabled: boolean;
-  icon: GlobalIcons.IconName;
+  icon: AllGlobalIcons.AllGlobalIconName;
   iconClassName?: string;
   allButtonsDisabled: boolean;
 }) {
-  const Icon = GlobalIcons[icon];
+  const Icon = AllGlobalIcons[icon];
 
   return (
     <button
@@ -349,7 +349,7 @@ export function SetViewButton({ view }: { view: View }) {
   const pathname = usePathname();
 
   return (
-    <GlobalClientComponents.Button
+    <AllGlobalClientComponents.Button
       type="button"
       variant="destroy-step"
       onClick={() =>
@@ -367,7 +367,7 @@ export function SetViewButton({ view }: { view: View }) {
             return null;
         }
       })()}
-    </GlobalClientComponents.Button>
+    </AllGlobalClientComponents.Button>
   );
 }
 

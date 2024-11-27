@@ -34,18 +34,18 @@ export const navLinks: NavLink[] = [
     id: "Paramètres",
     label: "Paramètres",
     href: "/settings",
-    icon: "Cog8ToothOutline",
+    icon: "Cog8ToothOutlineIcon",
   },
   {
     id: "Moments",
     label: "Moments",
     href: "/moments",
-    icon: "CalendarDaysOutline",
+    icon: "CalendarDaysOutlineIcon",
   },
   {
     id: "Destinations",
     label: "Destinations",
     href: "/destinations",
-    icon: "PaperAirplaneOutline",
+    icon: "PaperAirplaneOutlineIcon",
   },
 ];

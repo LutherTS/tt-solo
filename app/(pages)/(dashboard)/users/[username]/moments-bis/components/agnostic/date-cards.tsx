@@ -2,9 +2,9 @@
 
 import clsx from "clsx";
 
-import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 
-import * as LocalClientComponents from "../client";
+import * as AllLocalClientComponents from "../client";
 
 import { numStringToTimeString } from "@/app/utilities/moments";
 import {
@@ -91,7 +91,7 @@ function MomentInDateCard({
       <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
         <p className="font-medium text-blue-950">{e3.objective}</p>
         <div className="invisible flex justify-end group-hover:visible">
-          <LocalClientComponents.UpdateMomentViewButton
+          <AllLocalClientComponents.UpdateMomentViewButton
             e3={e3}
             realMoments={realMoments}
           />
@@ -135,7 +135,7 @@ function StepInDateCard({ e4 }: { e4: StepAdapted }) {
 export function NoDateCard() {
   return (
     <div className="rounded-xl bg-white p-5 shadow-sm">
-      <GlobalAgnosticComponents.FieldTitle
+      <AllGlobalAgnosticComponents.FieldTitle
         title={"Pas de moment... pour le moment. 😅"}
       />
     </div>
