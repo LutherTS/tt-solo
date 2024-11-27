@@ -5,7 +5,6 @@ import clsx from "clsx";
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 import * as AllGlobalClientComponents from "@/app/components/client";
-
 import * as AllLocalClientComponents from "../client";
 
 import { Option, SetState } from "@/app/types/globals";

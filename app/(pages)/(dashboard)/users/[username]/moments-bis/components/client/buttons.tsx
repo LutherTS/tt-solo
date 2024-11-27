@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 
 import * as AllGlobalIcons from "@/app/icons";
-
 import * as AllGlobalClientComponents from "@/app/components/client";
 
 import { MomentAdapted, SubView, View } from "@/app/types/moments";
