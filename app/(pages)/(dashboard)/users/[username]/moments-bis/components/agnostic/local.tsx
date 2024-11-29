@@ -1,4 +1,4 @@
-"use agnostic"; // THIS IS A PERSONAL PROPOSAL. CURRENTLY NOT A REAL DIRECTIVE.
+// "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
 import { add, format } from "date-fns";
