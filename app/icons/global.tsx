@@ -1,4 +1,5 @@
-"use agnostic"; // NOT A REAL DIRECTIVE. YET. I HOPE.
+"use agnostic"; // THIS IS A PERSONAL PROPOSAL. CURRENTLY NOT A REAL DIRECTIVE.
+// Proposes "use agnostic" to enforce an Agnostic Module.
 
 export function ArrowPathSolidIcon({ className }: { className?: string }) {
   return (

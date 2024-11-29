@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import { MouseEventHandler } from "react";
 import { useFormStatus } from "react-dom";

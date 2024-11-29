@@ -1,5 +1,5 @@
-// No directive. Meaning this is a Server Component by default.
-// Expectedly as a in a strictly server React Server Component.
+// "use server"
+// Proposes "use server" to enforce a Server Module.
 
 // import { use as utilizeResource } from "react";
 import { notFound } from "next/navigation";
@@ -109,7 +109,9 @@ export default async function MomentsPage({
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
+    // On top of modules, "use server functions" would enforce a Server Functions Module.
 
     return await createOrUpdateMomentServerFlow(
       formData,
@@ -126,19 +128,20 @@ export default async function MomentsPage({
   async function deleteMoment(
     momentAdapted: MomentAdapted | undefined,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     return await deleteMomentServerFlow(momentAdapted, user);
   }
 
   async function revalidateMoments(): Promise<void> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     return await revalidateMomentsServerFlow(user);
   }
 
   return (
-    // SUSPENDED
     <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
@@ -147,7 +150,7 @@ export default async function MomentsPage({
         fetchViewAndMomentData={fetchViewAndMomentData}
         fetchReadMomentsViewData={fetchReadMomentsViewData}
         fetchMomentFormsData={fetchMomentFormsData}
-        // writes
+        // writes as Server Functions
         revalidateMoments={revalidateMoments}
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}

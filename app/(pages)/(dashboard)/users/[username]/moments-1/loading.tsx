@@ -1,3 +1,5 @@
+"use agnostic";
+
 import { FallbackFlex } from "@/app/components/__components__";
 
 export default function Loading() {

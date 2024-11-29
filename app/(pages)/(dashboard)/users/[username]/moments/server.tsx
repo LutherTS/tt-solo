@@ -1,4 +1,7 @@
+"use agnostic";
+
 // "use server" at the top implies for React 19 that the file is made of Server Actions, NOT Server Components. It's only for "use client" that it means the file is made exclusively of strictly Client Components.
+// This is why I'm retroactively marking this as "use agnostic".
 
 import { add, format } from "date-fns";
 import clsx from "clsx";

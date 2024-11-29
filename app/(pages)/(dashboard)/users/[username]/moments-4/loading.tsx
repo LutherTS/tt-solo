@@ -1,9 +1,11 @@
-import * as GlobalServerComponents from "@/app/components/agnostic";
+"use agnostic";
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
 export default function Loading() {
   return (
-    <GlobalServerComponents.FallbackFlex>
+    <GlobalAgnosticComponents.FallbackFlex>
       <p>Loading...</p>
-    </GlobalServerComponents.FallbackFlex>
+    </GlobalAgnosticComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/loading

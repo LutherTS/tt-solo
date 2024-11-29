@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import { GlobalClientComponentsName } from "./global";
 import { InputsClientComponentsName } from "./inputs";

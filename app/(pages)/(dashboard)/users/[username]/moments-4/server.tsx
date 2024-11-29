@@ -1,3 +1,5 @@
+"use agnostic";
+
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
