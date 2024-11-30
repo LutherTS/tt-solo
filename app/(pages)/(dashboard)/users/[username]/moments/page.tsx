@@ -1,3 +1,6 @@
+// "use server"
+// Proposes "use server" to enforce a Server Module.
+
 import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/agnostic";
@@ -113,7 +116,9 @@ export default async function MomentsPage({
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
+    // On top of modules, "use server functions" would enforce a Server Functions Module.
 
     // This is it. The action itself, its barebones, all is created with the component and has its existence entirely connected to the existence of the component. Meanwhile, the action's flow can be used by any other action. The executes that are meant for the server are sharable to any action, instead of having actions shared and dormant at all times inside the live code. (Next.js 15 sort of solves this, but it remains more logical that the actions use on a page should be coming from the page itself, even if the code they use are shared across different pages, and therefore in this case across different actions.)
     return await createOrUpdateMomentServerFlow(
@@ -136,7 +141,8 @@ export default async function MomentsPage({
   async function deleteMoment(
     momentAdapted: MomentAdapted | undefined,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     return await deleteMomentServerFlow(
       momentAdapted, // DECODE NEEDED // Done.
@@ -146,7 +152,8 @@ export default async function MomentsPage({
 
   // insisting on : Promise<void> to keep in sync with the flow
   async function revalidateMoments(): Promise<void> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     return await revalidateMomentsServerFlow(user);
   }

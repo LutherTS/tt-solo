@@ -1,4 +1,7 @@
-"use client"; // Error boundaries must be Client Components
+"use client";
+// Enforces a Client Module.
+
+// Error boundaries must be Client Components
 
 import { useEffect } from "react";
 

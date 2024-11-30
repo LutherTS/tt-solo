@@ -1,3 +1,6 @@
+// "use server"
+// Proposes "use server" to enforce a Server Module.
+
 import { redirect } from "next/navigation";
 import { LeftClientButton, RightClientButton } from "./client-buttons";
 import Form from "next/form";
@@ -52,7 +55,10 @@ const PreviousIndexFormAndButton = ({
   currentIndex: number;
 }) => {
   async function previousIndex() {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
+    // On top of modules, "use server functions" would enforce a Server Functions Module.
+
     console.log("Previous.", currentIndex);
     redirect("/carousel-musings");
   }

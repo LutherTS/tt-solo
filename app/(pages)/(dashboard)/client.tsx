@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";

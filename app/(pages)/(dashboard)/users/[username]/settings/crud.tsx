@@ -1,3 +1,6 @@
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
 import { PageTitle } from "@/app/components/__components__";
 
 export function CRUD() {

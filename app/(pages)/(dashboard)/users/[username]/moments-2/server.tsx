@@ -1,4 +1,5 @@
-"use agnostic";
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
 
 import { MotionValue } from "motion/react";
 import { add, format } from "date-fns";

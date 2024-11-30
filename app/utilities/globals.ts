@@ -19,3 +19,6 @@ export const delay = <T>(ms: number, fn: () => T): Promise<T> =>
 
 // Because there is no nullish-safe && operator
 export const isNullish = (value: any) => value === null || value === undefined;
+
+// To establish whether a module is currently imported on the client or the server
+export const isServer = () => typeof window === "undefined";

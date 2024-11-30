@@ -1,4 +1,5 @@
-"use agnostic";
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
 
 import { FallbackFlex } from "@/app/components/__components__";
 

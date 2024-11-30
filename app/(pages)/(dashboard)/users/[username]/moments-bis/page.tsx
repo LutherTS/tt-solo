@@ -1,7 +1,7 @@
 // "use server"
 // Proposes "use server" to enforce a Server Module.
 
-import { use as utilizeResource } from "react";
+// import { use as utilizeResource } from "react";
 import { notFound } from "next/navigation";
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
