@@ -26,7 +26,7 @@ import {
   useMotionValue,
   useMotionValueEvent,
   useScroll,
-} from "framer-motion";
+} from "motion/react";
 import { useMeasure } from "react-use";
 import debounce from "debounce";
 import clsx from "clsx";
