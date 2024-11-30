@@ -1,6 +1,6 @@
 "use agnostic";
 
-import { MotionValue } from "framer-motion";
+import { MotionValue } from "motion/react";
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
