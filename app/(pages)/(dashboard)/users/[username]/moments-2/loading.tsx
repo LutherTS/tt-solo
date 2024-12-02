@@ -1,9 +1,12 @@
-import * as GlobalServerComponents from "@/app/components/agnostic";
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
 export default function Loading() {
   return (
-    <GlobalServerComponents.FallbackFlex>
+    <GlobalAgnosticComponents.FallbackFlex>
       <p>Loading...</p>
-    </GlobalServerComponents.FallbackFlex>
+    </GlobalAgnosticComponents.FallbackFlex>
   );
 }

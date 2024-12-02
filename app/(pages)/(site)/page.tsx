@@ -1,4 +1,7 @@
 "use client";
+// Enforces a Client Module.
+
+// I had made it Client Module for some reason.
 
 export default function Home() {
   // throw new Error("Test error");

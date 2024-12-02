@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import {
   useEffect,
@@ -26,7 +27,7 @@ import {
   useMotionValue,
   useMotionValueEvent,
   useScroll,
-} from "framer-motion";
+} from "motion/react";
 import debounce from "debounce";
 import { useMeasure } from "react-use";
 // @ts-ignore // no type declaration file on npm

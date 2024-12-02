@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import {
   FormEvent,
@@ -25,7 +26,7 @@ import {
   useMotionValue,
   useMotionValueEvent,
   useScroll,
-} from "framer-motion";
+} from "motion/react";
 import { useMeasure } from "react-use";
 import debounce from "debounce";
 import clsx from "clsx";
@@ -35,7 +36,7 @@ import { fr } from "date-fns/locale";
 import useKeypress from "react-use-keypress";
 
 import * as Icons from "@/app/icons/__icons__";
-import * as LocalServerComponents from "./server";
+import ServerCore, * as LocalServerComponents from "./server";
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
 import {
@@ -54,6 +55,7 @@ import {
   DeleteMoment,
   FetchReadMomentsViewData,
   FetchMomentFormsData,
+  FetchViewAndMomentData,
 } from "@/app/types/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/globals";
 import {
@@ -93,6 +95,46 @@ import {
   createOrUpdateMomentAfterFlow,
   deleteMomentAfterFlow,
 } from "@/app/flows/after/moments";
+
+// If it's just ClientCore children it's not an issue because it is not passing dynamic props.
+export function ClientCore({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}
+
+export function ClientCore2({
+  // time
+  now,
+  // reads as promises
+  fetchViewAndMomentData,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
+  // writes
+  revalidateMoments,
+  createOrUpdateMoment,
+  deleteMoment,
+}: {
+  now: string;
+  fetchViewAndMomentData: FetchViewAndMomentData;
+  fetchReadMomentsViewData: FetchReadMomentsViewData;
+  fetchMomentFormsData: FetchMomentFormsData;
+  revalidateMoments: RevalidateMoments;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
+}) {
+  return (
+    <ServerCore
+      now={now}
+      // reads as promises
+      fetchViewAndMomentData={fetchViewAndMomentData}
+      fetchReadMomentsViewData={fetchReadMomentsViewData}
+      fetchMomentFormsData={fetchMomentFormsData}
+      // writes
+      revalidateMoments={revalidateMoments}
+      createOrUpdateMoment={createOrUpdateMoment}
+      deleteMoment={deleteMoment}
+    />
+  );
+}
 
 export function ViewsCarouselContainer({
   now,

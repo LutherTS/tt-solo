@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";

@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 /* IMPORTANT
 I need to specify however, that the idea of going through every single component to decide whether it should explicitely be a Server Component or a Client Component should be done on the project is already getting shipped.

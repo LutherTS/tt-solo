@@ -1,4 +1,7 @@
-import { MotionValue } from "framer-motion";
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
+import { MotionValue } from "motion/react";
 import { add, format } from "date-fns";
 import clsx from "clsx";
 

@@ -1,3 +1,6 @@
+// "use server"
+// Proposes "use server" to enforce a Server Module.
+
 import { revalidatePath } from "next/cache";
 
 import prisma from "@/prisma/db";
@@ -170,7 +173,9 @@ export default async function DestinationsPage({
     destinationToCRUD: DestinationToCRUD | undefined,
     formData: FormData,
   ) {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
+    // On top of modules, "use server functions" would enforce a Server Functions Module.
 
     let ideal = formData.get("ideal");
     let aspiration = formData.get("aspiration");
@@ -210,7 +215,8 @@ export default async function DestinationsPage({
   }
 
   async function deleteDestination(destinationToCRUD: DestinationToCRUD) {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     await prisma.destination.delete({
       where: {
@@ -222,7 +228,8 @@ export default async function DestinationsPage({
   }
 
   async function revalidateDestinations() {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     revalidatePath(`/users/${username}/destinations`);
   }

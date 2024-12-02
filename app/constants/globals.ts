@@ -1,3 +1,8 @@
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
+// Wait. There's process.env.HASHIDS_SALT in there which is exclusively server. export const hashids = new Hashids(process.env.HASHIDS_SALT, 10); should be in a Server Module. Therefore, the constants file should have distinct subfolders at least for Server Modules and Agnostic Modules.
+
 import Hashids from "hashids";
 import clsx from "clsx";
 

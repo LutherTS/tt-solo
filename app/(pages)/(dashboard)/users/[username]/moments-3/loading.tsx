@@ -1,10 +1,13 @@
-import * as GlobalServerComponents from "@/app/components/agnostic";
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 
 export default function Loading() {
   // Or a custom loading skeleton component
   return (
-    <GlobalServerComponents.FallbackFlex>
+    <GlobalAgnosticComponents.FallbackFlex>
       <p>Loading...</p>
-    </GlobalServerComponents.FallbackFlex>
+    </GlobalAgnosticComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/loading

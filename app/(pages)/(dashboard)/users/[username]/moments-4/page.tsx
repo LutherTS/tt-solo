@@ -1,3 +1,6 @@
+// "use server"
+// Proposes "use server" to enforce a Server Module.
+
 import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/agnostic";
@@ -104,7 +107,9 @@ export default async function MomentsPage({
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
+    // On top of modules, "use server functions" would enforce a Server Functions Module.
 
     return await createOrUpdateMomentServerFlow(
       formData,
@@ -121,13 +126,15 @@ export default async function MomentsPage({
   async function deleteMoment(
     momentAdapted: MomentAdapted | undefined,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     return await deleteMomentServerFlow(momentAdapted, user);
   }
 
   async function revalidateMoments(): Promise<void> {
-    "use server";
+    "use server"; // "use server functions"
+    // Proposes "use server functions" to enforce a Server Fonction.
 
     return await revalidateMomentsServerFlow(user);
   }

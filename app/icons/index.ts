@@ -1,4 +1,5 @@
-"use agnostic"; // NOT A REAL DIRECTIVE. YET. I HOPE.
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
 
 // ALL ICONS ARE MEANT TO BE AGNOSTIC.
 // Which explains why the icons folder does not have child agnostic, client or server folders.

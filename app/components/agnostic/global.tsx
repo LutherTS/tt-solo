@@ -1,4 +1,5 @@
-"use agnostic"; // NOT A REAL DIRECTIVE. YET. I HOPE.
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
 
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";

@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import { MouseEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";

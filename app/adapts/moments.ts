@@ -1,3 +1,8 @@
+// "use server"
+// Proposes "use server" to enforce a Server Module.
+
+// Adapts are not only clearly meant to be used exclusively on the server, it is dangerous for them to be used on the client as they adapt raw data.
+
 import { subViews, TAKE, views } from "@/app/constants/moments";
 import { Option } from "@/app/types/globals";
 import { SelectDestinationForMoment } from "@/app/types/destinations";

@@ -1,4 +1,5 @@
 "use client";
+// Enforces a Client Module.
 
 import { ComponentProps } from "react";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]

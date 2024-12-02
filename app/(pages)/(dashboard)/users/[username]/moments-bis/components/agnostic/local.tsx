@@ -1,4 +1,5 @@
-"use agnostic"; // NOT A REAL DIRECTIVE. YET. I HOPE.
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
 
 import { add, format } from "date-fns";
 import clsx from "clsx";

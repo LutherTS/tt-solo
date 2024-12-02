@@ -1,3 +1,6 @@
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
 import clsx from "clsx";
 // import Image from "next/image";
 
