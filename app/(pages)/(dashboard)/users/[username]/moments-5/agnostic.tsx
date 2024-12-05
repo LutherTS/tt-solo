@@ -1,125 +1,129 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
-import { MotionValue } from "motion/react";
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
 import * as LocalClientComponents from "./client";
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import * as GlobalClientComponents from "@/app/components/client/components";
 import { Option } from "@/app/types/agnostic/globals";
 import { SetState } from "@/app/types/client/globals";
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
-  views,
   viewsTitles,
 } from "@/app/constants/agnostic/moments";
 import {
-  FalserCreateOrUpdateMoment,
-  FalseCreateOrUpdateMomentState,
-  FalserDeleteMoment,
   MomentFormVariant,
-  MomentsDateToCRUD,
-  MomentsDestinationToCRUD,
-  MomentToCRUD,
   RevalidateMoments,
   StepFromClient,
-  StepToCRUD,
   StepVisible,
-  UserMomentsToCRUD,
+  CreateOrUpdateMomentState,
   View,
+  MomentAdapted,
+  DestinationAdapted,
+  PageDetails,
+  StepAdapted,
+  CreateOrUpdateMoment,
+  DeleteMoment,
+  ViewAndMomentData,
+  ReadMomentsViewData,
+  MomentFormsData,
 } from "@/app/types/agnostic/moments";
-import {
-  defineDesiredView,
-  numStringToTimeString,
-} from "@/app/utilities/agnostic/moments";
-import { setScrollToTop } from "@/app/utilities/client/moments";
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
 import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
-export default function ServerCore({
+// THAT'S AN ERROR IF THIS FILE IS MARKED AS AGNOSTIC. AS AN ASYNC FUNCTION, SERVERCORE SHOULD BE IN AN EXCLUSIVELY SERVER MODULE. REACT DOESN'T REALIZE THIS YET IN MY OPINION, BUT SERVERCORE IS A STRICTLY SERVER COMPONENT SINCE IT IS ASYNC AND AWAITS A PROMISE. IF SOMEHOW I WERE TO IMPORT SERVERCORE INSIDE A CLIENT COMPONENT IT WOULD BREAK, BUT IT APPEARS REACT FALSELY ASSUMES THIS WHOLE MODULE AS AGNOSTIC, AND HASN'T SURFACED THE ERROR YET BECAUSE I AM ONLY IMPORTING SERVERCORE INSIDE OF A SERVER COMPONENT.
+export default async function ServerCore({
+  // time
   now,
-  allUserMomentsToCRUD,
-  maxPages,
-  destinationOptions,
+  // reads as promises
+  fetchViewAndMomentData,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
+  // writes
   revalidateMoments,
   createOrUpdateMoment,
   deleteMoment,
 }: {
   now: string;
-  allUserMomentsToCRUD: UserMomentsToCRUD[];
-  maxPages: number[];
-  destinationOptions: Option[];
+  fetchViewAndMomentData: Promise<ViewAndMomentData>;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   revalidateMoments: RevalidateMoments;
-  createOrUpdateMoment: FalserCreateOrUpdateMoment;
-  deleteMoment: FalserDeleteMoment;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
 }) {
+  const { view, moment } = await fetchViewAndMomentData;
+
   return (
-    <LocalClientComponents.default
-      now={now}
-      allUserMomentsToCRUD={allUserMomentsToCRUD}
-      maxPages={maxPages}
-      destinationOptions={destinationOptions}
-      revalidateMoments={revalidateMoments}
-      createOrUpdateMoment={createOrUpdateMoment}
-      deleteMoment={deleteMoment}
-    />
+    <>
+      <Header view={view} />
+      <GlobalAgnosticComponents.Divider />
+      <Main
+        now={now}
+        view={view}
+        moment={moment}
+        fetchReadMomentsViewData={fetchReadMomentsViewData}
+        fetchMomentFormsData={fetchMomentFormsData}
+        revalidateMoments={revalidateMoments}
+        createOrUpdateMoment={createOrUpdateMoment}
+        deleteMoment={deleteMoment}
+      />
+    </>
   );
 }
 
-export function Header({
-  view,
-  setView,
-  setMoment,
-}: {
-  view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
-}) {
+export function Header({ view }: { view: View }) {
   return (
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
-          <SetViewButton view={view} setView={setView} setMoment={setMoment} />
+          <GlobalAgnosticComponents.PageTitle title={viewsTitles[view]} />
+          <LocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>
     </header>
   );
 }
 
-export function SetViewButton({
+export function Main({
+  now,
   view,
-  setView,
-  setMoment,
+  moment,
+  fetchReadMomentsViewData,
+  fetchMomentFormsData,
+  revalidateMoments,
+  createOrUpdateMoment,
+  deleteMoment,
 }: {
+  now: string;
   view: View;
-  setView: SetState<View>;
-  setMoment: SetState<MomentToCRUD | undefined>;
+  moment: MomentAdapted | undefined;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
+  revalidateMoments: RevalidateMoments;
+  createOrUpdateMoment: CreateOrUpdateMoment;
+  deleteMoment: DeleteMoment;
 }) {
-  const desiredView = defineDesiredView(view);
-
   return (
-    <GlobalClientComponents.Button
-      type="button"
-      variant="destroy-step"
-      onClick={() => {
-        if (view === views.UPDATE_MOMENT) setMoment(undefined);
-        setScrollToTop(desiredView, setView);
-      }}
-    >
-      {(() => {
-        switch (desiredView) {
-          case views.READ_MOMENTS:
-            return <>Vos moments</>;
-          case views.CREATE_MOMENT:
-            return <>Créez un moment</>;
-          default:
-            return null;
-        }
-      })()}
-    </GlobalClientComponents.Button>
+    <main>
+      {/* ViewsCarousel */}
+      <ViewsCarouselWrapper>
+        {/* where the client boundary currently begins */}
+        <LocalClientComponents.ViewsCarouselContainer
+          now={now}
+          view={view}
+          moment={moment}
+          fetchReadMomentsViewData={fetchReadMomentsViewData}
+          fetchMomentFormsData={fetchMomentFormsData}
+          revalidateMoments={revalidateMoments}
+          createOrUpdateMoment={createOrUpdateMoment}
+          deleteMoment={deleteMoment}
+        />
+      </ViewsCarouselWrapper>
+    </main>
   );
 }
 
@@ -172,39 +176,13 @@ export function HeaderSegment({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function ViewsCarousel({
-  view,
-  isCRUDOpSuccessful,
-  setIsCRUDOpSuccessful,
-  currentViewHeight,
-  children,
-}: {
-  view: View;
-  isCRUDOpSuccessful: boolean;
-  setIsCRUDOpSuccessful: SetState<boolean>;
-  currentViewHeight: MotionValue<number>;
-  children: React.ReactNode;
-}) {
-  return (
-    <ViewsCarouselWrapper>
-      <LocalClientComponents.ViewsCarouselContainer
-        view={view}
-        isCRUDOpSuccessful={isCRUDOpSuccessful}
-        setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
-        currentViewHeight={currentViewHeight}
-      >
-        {children}
-      </LocalClientComponents.ViewsCarouselContainer>
-    </ViewsCarouselWrapper>
-  );
-}
-
 export function ViewsCarouselWrapper({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
+    // the overflow-hidden just doesn't work without relative
     <div className="relative w-screen overflow-hidden md:w-[calc(100vw_-_9rem)]">
       {children}
     </div>
@@ -241,14 +219,10 @@ export function NoDateCard({ children }: { children: React.ReactNode }) {
 
 export function DestinationInDateCard({
   e2,
-  setMoment,
   realMoments,
-  setView,
 }: {
-  e2: MomentsDestinationToCRUD;
-  setMoment: SetState<MomentToCRUD | undefined>;
-  realMoments: MomentToCRUD[];
-  setView: SetState<View>;
+  e2: DestinationAdapted;
+  realMoments: MomentAdapted[];
 }) {
   return (
     <div className="flex flex-col gap-y-8">
@@ -262,20 +236,62 @@ export function DestinationInDateCard({
         </p>
       </div>
       {e2.moments.map((e3, i3) => (
-        <LocalClientComponents.MomentInDateCard
-          key={e3.id + e2.id}
+        <MomentInDateCard
+          key={e3.key + e2.key}
           e3={e3}
           i3={i3}
-          setMoment={setMoment}
           realMoments={realMoments}
-          setView={setView}
         />
       ))}
     </div>
   );
 }
 
-export function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
+export function MomentInDateCard({
+  e3,
+  i3,
+  realMoments,
+}: {
+  e3: MomentAdapted;
+  i3: number;
+  realMoments: MomentAdapted[];
+}) {
+  return (
+    <div className={clsx("group space-y-2", i3 === 0 && "-mt-5")}>
+      <div className="grid grid-cols-[4fr_1fr] items-center gap-4">
+        <p className="font-medium text-blue-950">{e3.objective}</p>
+        <div className="invisible flex justify-end group-hover:visible">
+          <LocalClientComponents.UpdateMomentViewButton
+            e3={e3}
+            realMoments={realMoments}
+          />
+        </div>
+      </div>
+      <p>
+        <span className={"font-semibold text-neutral-800"}>
+          {e3.startDateAndTime.split("T")[1]}
+        </span>{" "}
+        • {numStringToTimeString(e3.duration)}
+        {e3.isIndispensable && (
+          <>
+            {" "}
+            •{" "}
+            <span className="text-sm font-semibold uppercase">
+              indispensable
+            </span>
+          </>
+        )}
+      </p>
+      <ol className="">
+        {e3.steps.map((e4) => (
+          <StepInDateCard key={e4.key} e4={e4} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+export function StepInDateCard({ e4 }: { e4: StepAdapted }) {
   return (
     <li className="text-sm font-light leading-loose text-neutral-500">
       <p>
@@ -286,20 +302,25 @@ export function StepInDateCard({ e4 }: { e4: StepToCRUD }) {
   );
 }
 
-export function MomentsPageDetails({ e }: { e: MomentsDateToCRUD }) {
+export function MomentsPageDetails({
+  pageDetails,
+}: {
+  pageDetails: PageDetails;
+}) {
   return (
     <p className="font-extralight text-neutral-800">
-      <span className="font-normal">{e.momentsTotal}</span> moment(s) affiché(s){" "}
+      <span className="font-normal">{pageDetails.momentsTotal}</span> moment(s)
+      affiché(s){" "}
       <span className="font-normal">
         (
-        {e.momentFirstIndex !== e.momentLastIndex
-          ? `${e.momentFirstIndex}-${e.momentLastIndex}`
-          : `${e.momentFirstIndex}`}
+        {pageDetails.momentsFirstIndex !== pageDetails.momentsLastIndex
+          ? `${pageDetails.momentsFirstIndex}-${pageDetails.momentsLastIndex}`
+          : `${pageDetails.momentsFirstIndex}`}
         )
       </span>{" "}
-      sur <span className="font-normal">{e.allMomentsTotal}</span> à la page{" "}
-      <span className="font-normal">{e.currentPage}</span> sur{" "}
-      <span className="font-normal">{e.totalPage}</span>
+      sur <span className="font-normal">{pageDetails.total}</span> à la page{" "}
+      <span className="font-normal">{pageDetails.page}</span> sur{" "}
+      <span className="font-normal">{pageDetails.maxPage}</span>
     </p>
   );
 }
@@ -318,9 +339,9 @@ export function MomentInputs({
   setStartMomentDate,
 }: {
   variant: MomentFormVariant;
-  moment?: MomentToCRUD;
+  moment?: MomentAdapted;
   destinationOptions: Option[];
-  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   destinationSelect: boolean;
   setDestinationSelect: SetState<boolean>;
   activitySelect: boolean;
@@ -349,7 +370,7 @@ export function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.destinationName}
         hidden={destinationSelect}
       >
         {destinationOptions.length > 0 && (
@@ -375,7 +396,7 @@ export function MomentInputs({
         fieldFlexIsNotLabel
         tekTime
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.destinationName}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.destinationName}
         hidden={!destinationSelect}
       >
         <SetSelectButton
@@ -391,7 +412,7 @@ export function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
         hidden={activitySelect}
       >
         <SetSelectButton
@@ -413,7 +434,7 @@ export function MomentInputs({
         options={ACTIVITY_OPTIONS}
         fieldFlexIsNotLabel
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentActivity}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
         hidden={!activitySelect}
       >
         <SetSelectButton
@@ -427,7 +448,7 @@ export function MomentInputs({
         defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
         description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentName}
+        errors={createOrUpdateMomentState?.error?.momentErrors?.momentName}
       />
       <GlobalClientComponents.InputSwitch
         key={inputSwitchKey}
@@ -438,7 +459,9 @@ export function MomentInputs({
         }
         description="Activez l'interrupteur si ce moment est d'une importance incontournable."
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentIsIndispensable}
+        errors={
+          createOrUpdateMomentState?.error?.momentErrors?.momentIsIndispensable
+        }
       />
       <GlobalClientComponents.Textarea
         label="Contexte"
@@ -447,7 +470,9 @@ export function MomentInputs({
         description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
         rows={6}
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentDescription}
+        errors={
+          createOrUpdateMomentState?.error?.momentErrors?.momentDescription
+        }
       />
       <GlobalClientComponents.InputDatetimeLocalControlled
         label="Date et heure"
@@ -456,7 +481,9 @@ export function MomentInputs({
         definedValue={startMomentDate}
         definedOnValueChange={setStartMomentDate}
         required={false}
-        errors={createOrUpdateMomentState?.momentErrors?.momentStartDateAndTime}
+        errors={
+          createOrUpdateMomentState?.error?.momentErrors?.momentStartDateAndTime
+        }
       />
     </>
   );
@@ -490,7 +517,7 @@ export function StepsSummaries({
   momentAddingTime: number;
 }) {
   return (
-    <>
+    <div className="space-y-8">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Récapitulatifs
@@ -528,7 +555,7 @@ export function StepsSummaries({
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -548,7 +575,7 @@ export function StepVisibleCreating({
 }: {
   momentFormVariant: MomentFormVariant;
   isResetStepPending: boolean;
-  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDureeCreate: string;
   setStepDureeCreate: SetState<string>;
   isCreateStepPending: boolean;
@@ -751,13 +778,13 @@ export function StepInputs({
   stepsCompoundDurations,
 }: {
   form: string;
-  createOrUpdateMomentState: FalseCreateOrUpdateMomentState;
+  createOrUpdateMomentState: CreateOrUpdateMomentState;
   stepDuree: string;
   setStepDuree: SetState<string>;
-  startMomentDate: string;
-  stepsCompoundDurations: number[];
   step?: StepFromClient;
+  startMomentDate: string;
   stepAddingTime?: number;
+  stepsCompoundDurations: number[];
 }) {
   return (
     <>
@@ -768,7 +795,7 @@ export function StepInputs({
         defaultValue={step?.intitule}
         description="Définissez simplement le sujet de l'étape."
         required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.stepName}
+        errors={createOrUpdateMomentState?.error?.stepsErrors?.stepName}
       />
       <GlobalClientComponents.Textarea
         form={form}
@@ -778,7 +805,7 @@ export function StepInputs({
         description="Expliquez en détails le déroulé de l'étape."
         rows={4}
         required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.stepDescription}
+        errors={createOrUpdateMomentState?.error?.stepsErrors?.stepDescription}
       />
       <GlobalClientComponents.InputNumberControlled
         form={form}
@@ -789,12 +816,12 @@ export function StepInputs({
         description="Renseignez en minutes la longueur de l'étape."
         min="5"
         required={false}
-        errors={createOrUpdateMomentState?.stepsErrors?.realStepDuration}
+        errors={createOrUpdateMomentState?.error?.stepsErrors?.realStepDuration}
         schema={EventStepDurationSchema}
       >
         <p className="text-sm font-medium text-blue-900">
           commence à{" "}
-          {step
+          {step // && stepAddingTime (can equal 0 which is falsy)
             ? format(
                 add(startMomentDate, {
                   minutes: stepAddingTime,
@@ -917,19 +944,18 @@ export function StepContents({
   );
 }
 
-const localServerComponents = {
+const localAgnosticComponents = {
   ServerCore,
   Header,
-  SetViewButton,
   PageSegment,
   SegmentWrapper,
   SegmentContainer,
   HeaderSegment,
-  ViewsCarousel,
   ViewsCarouselWrapper,
   DateCard,
   NoDateCard,
   DestinationInDateCard,
+  MomentInDateCard,
   StepInDateCard,
   MomentsPageDetails,
   MomentInputs,
@@ -947,4 +973,4 @@ const localServerComponents = {
   StepContents,
 } as const;
 
-export type LocalServerComponentsName = keyof typeof localServerComponents;
+export type LocalAgnosticComponentsName = keyof typeof localAgnosticComponents;

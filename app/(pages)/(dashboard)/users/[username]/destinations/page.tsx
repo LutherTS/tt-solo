@@ -8,8 +8,8 @@ import prisma from "@/prisma/db";
 import { DestinationToCRUD } from "@/app/types/agnostic/destinations";
 import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import { HeaderSegment, PageSegment } from "../moments/server";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import { HeaderSegment, PageSegment } from "../moments/agnostic";
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -244,10 +244,10 @@ export default async function DestinationsPage({
     <>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title="Mes destinations" />
+          <GlobalAgnosticComponents.PageTitle title="Mes destinations" />
         </HeaderSegment>
       </PageSegment>
-      <GlobalServerComponents.Divider />
+      <GlobalAgnosticComponents.Divider />
     </>
   );
 }

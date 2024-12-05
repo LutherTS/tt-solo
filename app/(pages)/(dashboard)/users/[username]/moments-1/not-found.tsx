@@ -3,7 +3,10 @@
 
 import { useRouter } from "next/navigation";
 
-import { Button, FallbackFlex } from "@/app/components/__components__";
+import {
+  Button,
+  FallbackFlex,
+} from "@/app/components/client/components/__components__";
 
 export default function NotFound() {
   const { back } = useRouter();

@@ -5,8 +5,8 @@ import { add, format } from "date-fns";
 import clsx from "clsx";
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client";
-import * as AllLocalClientComponents from "../client";
+import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllLocalClientComponents from "../client/components";
 
 import { Option } from "@/app/types/agnostic/globals";
 import { SetState } from "@/app/types/client/globals";

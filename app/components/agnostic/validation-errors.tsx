@@ -3,7 +3,7 @@
 
 // You can import from a Client Module inside an Agnostic Module, but not from a Server Module.
 
-import * as AllGlobalClientComponents from "../client/global";
+import * as AllGlobalClientComponents from "../client/components/global";
 
 import type { SetState } from "@/app/types/client/globals";
 import {

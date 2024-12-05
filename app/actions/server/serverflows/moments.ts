@@ -1,4 +1,4 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
 
 import { revalidatePath } from "next/cache";

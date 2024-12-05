@@ -1,23 +1,231 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import { ComponentProps } from "react";
+/* IMPORTANT
+I need to specify however, that the idea of going through every single component to decide whether it should explicitely be a Server Component or a Client Component should be done on the project is already getting shipped.
+But honestly, what ought to be the best is if React 19 ships with a way to do it automatically. React 19 would scan you code, find if a component (or better even, an HTML node but that would be magic at this point) utilizes any interactivity to decide whether it should be considered by React 19 as a Server Component or Client Component, without even needing to specify "use server" or "use client" anymore. 
+*/
+
+import { ComponentProps, MouseEventHandler } from "react";
+import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
-import { isValid } from "date-fns";
 import * as Switch from "@radix-ui/react-switch";
+import { isValid } from "date-fns";
 
-import * as AllGlobalIcons from "@/app/icons/agnostic";
-import * as AllGlobalAgnosticComponents from "../agnostic";
-
+import * as Icons from "@/app/icons/agnostic/__icons__";
 import { Option } from "@/app/types/agnostic/globals";
 import { SetState } from "@/app/types/client/globals";
 import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
-import {
-  baseInputTexts,
-  focusVisibleTexts,
-  notDatetimeLocalPadding,
-  textareaPadding,
-} from "@/app/constants/agnostic/globals";
+import { FalseCreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
+
+// Variables
+
+// temporarily change variable name to className for Intellisense
+// (or add it to "tailwindCSS.classAttributes" in VSCode settings)
+// wrap variable string with clsx() for Prettier sorting
+// or in a tw template literal // .prettierrc – "tailwindFunctions": ["tw"]
+
+// border-[#e5e7eb] is the browser's default for border color if needed
+const baseInputTexts = clsx(
+  "rounded border-2 border-[#e5e7eb] bg-white transition-colors duration-0 hover:border-neutral-100 hover:duration-150",
+);
+
+const notDatetimeLocalPadding = clsx("px-3 py-2");
+
+const textareaPadding = clsx("px-3 py-3");
+
+const focusVisibleTexts = clsx(
+  "focus-visible:border-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500",
+);
+
+// Components
+
+export function PageTitle({ title }: { title: string }) {
+  return (
+    <h1 className="text-xl font-bold leading-none text-blue-950">{title}</h1>
+  );
+}
+
+export function Divider() {
+  return (
+    <div className="h-px w-full origin-center scale-x-150 bg-neutral-200 md:scale-100"></div>
+  );
+}
+
+function FormValidationError({
+  error,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
+}: {
+  error: string;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState; // could be more precise but true
+}) {
+  function handleClick() {
+    if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
+      setCreateOrUpdateMomentState(removeMessagesAndErrorsCallback);
+  }
+
+  return (
+    <p
+      className={clsx(
+        "max-w-prose text-sm text-pink-500",
+        setCreateOrUpdateMomentState &&
+          removeMessagesAndErrorsCallback &&
+          "hover:cursor-pointer",
+      )}
+      onClick={handleClick}
+    >
+      {error}
+    </p>
+  );
+}
+
+function FormDescriptionOrError({
+  error,
+  description,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
+}: {
+  error?: string;
+  description: string;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState;
+}) {
+  return (
+    <>
+      {error &&
+      setCreateOrUpdateMomentState &&
+      removeMessagesAndErrorsCallback ? (
+        <FormValidationError
+          error={error}
+          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+          removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
+        />
+      ) : (
+        <p className="max-w-prose text-sm text-neutral-500">{description}</p>
+      )}
+    </>
+  );
+}
+
+export function Section({
+  title,
+  description,
+  showDescription = true,
+  addendum,
+  showAddendum = true,
+  id,
+  error,
+  subError,
+  setCreateOrUpdateMomentState,
+  removeMessagesAndErrorsCallback,
+  children,
+}: {
+  title?: string;
+  description?: string;
+  showDescription?: boolean;
+  addendum?: string;
+  showAddendum?: boolean;
+  id?: string;
+  error?: string;
+  subError?: string;
+  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
+  removeMessagesAndErrorsCallback?: (
+    s: FalseCreateOrUpdateMomentState,
+  ) => FalseCreateOrUpdateMomentState;
+  children: React.ReactNode;
+}) {
+  return (
+    // pb-1 (or +1) making up for input padding inconsistencies
+    <section
+      className="grid items-baseline gap-8 pb-9 pt-8 md:grid-cols-[1fr_2fr]"
+      id={id}
+    >
+      <div
+        className={clsx(
+          !title && "hidden md:block",
+          description && showDescription && "flex flex-col gap-y-4",
+        )}
+      >
+        {title && (
+          <>
+            <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
+            <div className="flex flex-col gap-y-2">
+              {description && showDescription && (
+                <FormDescriptionOrError
+                  error={error}
+                  description={description}
+                  setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
+                  removeMessagesAndErrorsCallback={
+                    removeMessagesAndErrorsCallback
+                  }
+                />
+              )}
+              {subError ? (
+                <FormValidationError error={subError} />
+              ) : (
+                <>
+                  {addendum && showAddendum && (
+                    <p className="max-w-prose text-sm text-neutral-500">
+                      {addendum}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      <div className="flex flex-col gap-y-8">{children}</div>
+    </section>
+  );
+}
+
+function InputValidationError({ errors }: { errors: string[] }) {
+  return (
+    <>
+      {errors.map((error, i) => {
+        if (i === 0)
+          return (
+            <p key={i} className="select-none text-sm text-pink-500">
+              {error}
+              {errors.length > 1 && (
+                <span className="text-pink-300"> (+{errors.length - 1})</span>
+              )}
+            </p>
+          );
+      })}
+    </>
+  );
+}
+
+function InputDescriptionOrError({
+  errors,
+  description,
+  addendum,
+}: {
+  errors?: string[];
+  description: string;
+  addendum?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      {errors ? (
+        <InputValidationError errors={errors} />
+      ) : (
+        <p className="select-none text-sm text-neutral-500">{description}</p>
+      )}
+      {addendum && (
+        <p className="select-none text-sm text-neutral-500">({addendum})</p>
+      )}
+    </div>
+  );
+}
 
 // IMPORTANT: inputs and all will have to be upgraded to ComponentProps
 export function InputText({
@@ -45,18 +253,15 @@ export function InputText({
   hidden?: boolean;
 } & ComponentProps<"input">) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex
-      isLabel={!fieldFlexIsNotLabel}
-      hidden={hidden}
-    >
+    <FieldFlex isLabel={!fieldFlexIsNotLabel} hidden={hidden}>
       {label && (
         <div className="flex justify-between">
-          <AllGlobalAgnosticComponents.FieldTitle title={label} />
+          <FieldTitle title={label} />
           {children}
         </div>
       )}
       {description && (
-        <AllGlobalAgnosticComponents.InputDescriptionOrError
+        <InputDescriptionOrError
           errors={errors}
           description={description}
           addendum={addendum}
@@ -107,7 +312,7 @@ export function InputText({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -140,14 +345,14 @@ export function InputTextControlled({
   errors?: string[];
 } & ComponentProps<"input">) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <FieldFlex isLabel={!fieldFlexIsNotLabel}>
       {label && (
         <div className="flex justify-between">
-          <AllGlobalAgnosticComponents.FieldTitle title={label} />
+          <FieldTitle title={label} />
           {children}
         </div>
       )}
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
+      <InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -203,7 +408,7 @@ export function InputTextControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -239,15 +444,12 @@ export function SelectWithOptions({
   hidden?: boolean;
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex
-      isLabel={!fieldFlexIsNotLabel}
-      hidden={hidden}
-    >
+    <FieldFlex isLabel={!fieldFlexIsNotLabel} hidden={hidden}>
       <div className="flex justify-between">
-        <AllGlobalAgnosticComponents.FieldTitle title={label} />
+        <FieldTitle title={label} />
         {children}
       </div>
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
+      <InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -276,7 +478,7 @@ export function SelectWithOptions({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
+            <Icons.ChevronDownMini className="size-5" />
           </div>
         </div>
       ) : (
@@ -305,7 +507,7 @@ export function SelectWithOptions({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
+              <Icons.ChevronDownMini className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -322,7 +524,7 @@ export function SelectWithOptions({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -358,12 +560,12 @@ export function SelectWithOptionsControlled({
   tekTime?: boolean;
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel={!fieldFlexIsNotLabel}>
+    <FieldFlex isLabel={!fieldFlexIsNotLabel}>
       <div className="flex justify-between">
-        <AllGlobalAgnosticComponents.FieldTitle title={label} />
+        <FieldTitle title={label} />
         {children}
       </div>
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
+      <InputDescriptionOrError
         errors={errors}
         description={description}
         addendum={addendum}
@@ -395,7 +597,7 @@ export function SelectWithOptionsControlled({
             ))}
           </select>
           <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-            <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
+            <Icons.ChevronDownMini className="size-5" />
           </div>
         </div>
       ) : (
@@ -427,7 +629,7 @@ export function SelectWithOptionsControlled({
               ))}
             </select>
             <div className="pointer-events-none absolute inset-y-0.5 right-2.5 col-start-1 row-start-1 flex w-7 flex-col items-end justify-center bg-white">
-              <AllGlobalIcons.ChevronDownMiniIcon className="size-5" />
+              <Icons.ChevronDownMini className="size-5" />
             </div>
           </div>
           {/* gradient border */}
@@ -444,97 +646,7 @@ export function SelectWithOptionsControlled({
           <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
         </div>
       )}
-    </AllGlobalAgnosticComponents.FieldFlex>
-  );
-}
-
-// Modified from Advanced Radix UI's Animated Switch
-export function InputSwitch({
-  label,
-  name,
-  defaultChecked,
-  description,
-  required = true,
-  errors,
-}: {
-  label: string;
-  name: string;
-  defaultChecked: boolean;
-  description: string;
-  required?: boolean;
-  errors?: string[];
-}) {
-  return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <div className="flex select-none items-center gap-4">
-        <AllGlobalAgnosticComponents.FieldTitle title={label} />
-        <Switch.Root
-          name={name}
-          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled // later solved with keys
-          // now going for uncontrolled, so using back defaultChecked
-          defaultChecked={defaultChecked}
-          required={required}
-          className={clsx(
-            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
-          )}
-        >
-          <Switch.Thumb
-            className={clsx(
-              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
-              "data-[state=checked]:translate-x-5",
-            )}
-          />
-        </Switch.Root>
-      </div>
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
-        errors={errors}
-        description={description}
-      />
-    </AllGlobalAgnosticComponents.FieldFlex>
-  );
-}
-
-// Modified from Advanced Radix UI's Animated Switch
-export function InputSwitchControlled({
-  label,
-  name,
-  description,
-  definedValue,
-  definedOnValueChange = () => {},
-  errors,
-}: {
-  label: string;
-  name: string;
-  description: string;
-  definedValue?: boolean;
-  definedOnValueChange?: SetState<boolean>;
-  errors?: string[];
-}) {
-  return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <div className="flex select-none items-center gap-4">
-        <AllGlobalAgnosticComponents.FieldTitle title={label} />
-        <Switch.Root
-          name={name}
-          checked={definedValue}
-          onCheckedChange={definedOnValueChange}
-          className={clsx(
-            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
-          )}
-        >
-          <Switch.Thumb
-            className={clsx(
-              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
-              "data-[state=checked]:translate-x-5",
-            )}
-          />
-        </Switch.Root>
-      </div>
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
-        errors={errors}
-        description={description}
-      />
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -558,12 +670,9 @@ export function Textarea({
   errors?: string[];
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <AllGlobalAgnosticComponents.FieldTitle title={label} />
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
-        errors={errors}
-        description={description}
-      />
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      <InputDescriptionOrError errors={errors} description={description} />
       <textarea
         form={form}
         name={name}
@@ -582,7 +691,7 @@ export function Textarea({
           focusVisibleTexts,
         )}
       />
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -608,12 +717,9 @@ export function TextareaControlled({
   errors?: string[];
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <AllGlobalAgnosticComponents.FieldTitle title={label} />
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
-        errors={errors}
-        description={description}
-      />
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      <InputDescriptionOrError errors={errors} description={description} />
       <textarea
         form={form}
         name={name}
@@ -632,7 +738,91 @@ export function TextareaControlled({
           focusVisibleTexts,
         )}
       />
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
+  );
+}
+
+// Modified from Advanced Radix UI's Animated Switch
+export function InputSwitch({
+  label,
+  name,
+  defaultChecked,
+  description,
+  required = true,
+  errors,
+}: {
+  label: string;
+  name: string;
+  defaultChecked: boolean;
+  description: string;
+  required?: boolean;
+  errors?: string[];
+}) {
+  return (
+    <FieldFlex isLabel>
+      <div className="flex select-none items-center gap-4">
+        <FieldTitle title={label} />
+        <Switch.Root
+          name={name}
+          // reset and submit are not correctly resetting this input with defaultChecked, so it has to be controlled // later solved with keys
+          // now going for uncontrolled, so using back defaultChecked
+          defaultChecked={defaultChecked}
+          required={required}
+          className={clsx(
+            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
+          )}
+        >
+          <Switch.Thumb
+            className={clsx(
+              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
+              "data-[state=checked]:translate-x-5",
+            )}
+          />
+        </Switch.Root>
+      </div>
+      <InputDescriptionOrError errors={errors} description={description} />
+    </FieldFlex>
+  );
+}
+
+// Modified from Advanced Radix UI's Animated Switch
+export function InputSwitchControlled({
+  label,
+  name,
+  description,
+  definedValue,
+  definedOnValueChange = () => {},
+  errors,
+}: {
+  label: string;
+  name: string;
+  description: string;
+  definedValue?: boolean;
+  definedOnValueChange?: SetState<boolean>;
+  errors?: string[];
+}) {
+  return (
+    <FieldFlex isLabel>
+      <div className="flex select-none items-center gap-4">
+        <FieldTitle title={label} />
+        <Switch.Root
+          name={name}
+          checked={definedValue}
+          onCheckedChange={definedOnValueChange}
+          className={clsx(
+            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
+          )}
+        >
+          <Switch.Thumb
+            className={clsx(
+              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
+              "data-[state=checked]:translate-x-5",
+            )}
+          />
+        </Switch.Root>
+      </div>
+      <InputDescriptionOrError errors={errors} description={description} />
+    </FieldFlex>
   );
 }
 
@@ -660,9 +850,9 @@ export function InputNumber({
   children?: React.ReactNode;
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+    <FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <AllGlobalAgnosticComponents.FieldTitle title={label} />}
+        {label && <FieldTitle title={label} />}
         {children}
       </div>
       {description && (
@@ -690,7 +880,7 @@ export function InputNumber({
           <p>minutes</p>
         </div>
       </div>
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -724,15 +914,12 @@ export function InputNumberControlled({
   children?: React.ReactNode;
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
+    <FieldFlex isLabel>
       <div className="flex items-baseline justify-between">
-        {label && <AllGlobalAgnosticComponents.FieldTitle title={label} />}
+        {label && <FieldTitle title={label} />}
         {children}
       </div>
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
-        errors={errors}
-        description={description}
-      />
+      <InputDescriptionOrError errors={errors} description={description} />
       <div className="grid grid-cols-2 gap-4">
         <input
           form={form}
@@ -770,7 +957,7 @@ export function InputNumberControlled({
           <p>minutes</p>
         </div>
       </div>
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -794,12 +981,9 @@ export function InputDatetimeLocal({
   errors?: string[];
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <AllGlobalAgnosticComponents.FieldTitle title={label} />
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
-        errors={errors}
-        description={description}
-      />
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      <InputDescriptionOrError errors={errors} description={description} />
       <input
         // because it is so impossible to deeply modify the input datetime-local defaults, I'm forced to adapt all of my other inputs to some of its defaults (like their padding)
         type="datetime-local"
@@ -818,7 +1002,7 @@ export function InputDatetimeLocal({
           "w-full appearance-none",
         )}
       />
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
@@ -844,12 +1028,9 @@ export function InputDatetimeLocalControlled({
   errors?: string[];
 }) {
   return (
-    <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <AllGlobalAgnosticComponents.FieldTitle title={label} />
-      <AllGlobalAgnosticComponents.InputDescriptionOrError
-        errors={errors}
-        description={description}
-      />
+    <FieldFlex isLabel>
+      <FieldTitle title={label} />
+      <InputDescriptionOrError errors={errors} description={description} />
       <input
         // because it is so impossible to deeply modify the input datetime-local defaults, I'm forced to adapt all of my other inputs to some of its defaults (like their padding)
         type="datetime-local"
@@ -874,24 +1055,134 @@ export function InputDatetimeLocalControlled({
           "w-full appearance-none",
         )}
       />
-    </AllGlobalAgnosticComponents.FieldFlex>
+    </FieldFlex>
   );
 }
 
-const inputsClientComponents = {
-  InputText,
-  InputTextControlled,
-  SelectWithOptions,
-  SelectWithOptionsControlled,
-  Textarea,
-  TextareaControlled,
-  InputNumber,
-  InputNumberControlled,
-  InputDatetimeLocal,
-  InputDatetimeLocalControlled,
-} as const;
+export function FieldFlex({
+  isLabel,
+  hidden,
+  children,
+}: {
+  isLabel?: boolean;
+  hidden?: boolean;
+  children: React.ReactNode;
+}) {
+  const className = "flex flex-col gap-2";
 
-export type InputsClientComponentsName = keyof typeof inputsClientComponents;
+  return (
+    <div className={clsx(hidden && "hidden")}>
+      {isLabel ? (
+        <label className={className}>{children}</label>
+      ) : (
+        <div className={clsx(className && className, "group/field")}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function FieldTitle({ title }: { title: string }) {
+  return <p className="font-medium text-blue-950">{title}</p>;
+}
+
+// This is the perfect example of what Sam Selikoff called a bad abstraction, which will have to evolve in the final version.
+// https://www.youtube.com/watch?v=9iJK-Vl6PhE&t=693s&pp=ygUMc2FtIHNlbGlrb2Zm
+export function Button({
+  form,
+  type,
+  variant,
+  disabled,
+  isDedicatedDisabled,
+  formAction,
+  onClick,
+  children,
+}: {
+  form?: string;
+  type?: "button" | "submit" | "reset";
+  variant:
+    | "destroy"
+    | "destroy-step"
+    | "neutral"
+    | "confirm"
+    | "cancel"
+    | "destroy-step"
+    | "confirm-step"
+    | "cancel-step";
+  disabled?: boolean;
+  isDedicatedDisabled?: boolean;
+  formAction?: string | ((formData: FormData) => void);
+  onClick?: MouseEventHandler<HTMLButtonElement>;
+  children: React.ReactNode;
+}) {
+  const showDisabledStyles =
+    isDedicatedDisabled || (isDedicatedDisabled === undefined && disabled);
+
+  // add a disable that does not affect disable styles //
+
+  const destroy =
+    "w-fit px-1 text-sm text-blue-500 hover:text-blue-600 focus-visible:rounded focus-visible:outline-blue-500 active:text-blue-400";
+  const destroyStep = clsx(
+    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded focus-visible:outline-cyan-500 active:text-cyan-400",
+    showDisabledStyles && "disabled:grayscale disabled:hover:text-cyan-500",
+  );
+  const notDestroy = "w-full rounded border py-2";
+  const neutral =
+    "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:!bg-neutral-200 hover:!text-neutral-950 focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
+  // disabled:border-neutral-800 disabled:bg-neutral-800
+  const confirm = clsx(
+    "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400",
+    // ensure disabled styles are only applied if the button is disabled by its own dedicated action, and are not applied if the button is disabled by another action... in fact, more like isDedicatedDisabled, differentiating disabled of function only from disabled of function and style
+    showDisabledStyles &&
+      "disabled:grayscale disabled:hover:border-blue-500 disabled:hover:bg-blue-500",
+  );
+  // no disable styles on cancel for now because deleting a moment is currently fast enough that it's not worth highlighting visually
+  const cancel =
+    "border-blue-500 bg-white px-6 text-blue-500 hover:border-blue-600 hover:text-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:text-blue-400";
+  const confirmStep =
+    "border-cyan-500 bg-cyan-500 px-6 text-white hover:border-cyan-600 hover:bg-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:bg-cyan-400";
+  // disabled:border-neutral-500 disabled:text-neutral-500 bg-current
+  const cancelStep = clsx(
+    "border-cyan-500 bg-white px-6 text-cyan-500 hover:border-cyan-600 hover:text-cyan-600 focus-visible:outline-cyan-500 active:border-cyan-400 active:text-cyan-400",
+    showDisabledStyles &&
+      "disabled:grayscale disabled:hover:border-cyan-500 disabled:hover:text-cyan-500",
+  );
+
+  // mostly superfluous, but serves as an absolute safety, especially now that I'm turning all handlers into startTransition-powered actions
+  const status = useFormStatus();
+
+  return (
+    <button
+      form={form}
+      type={type}
+      disabled={disabled ? status.pending || disabled : status.pending}
+      className={clsx(
+        "font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
+        variant === "destroy" && clsx(destroy),
+        variant === "destroy-step" && clsx(destroyStep),
+        variant === "neutral" && clsx(notDestroy, neutral, "md:w-fit"),
+        variant === "confirm" && clsx(notDestroy, confirm),
+        variant === "cancel" && clsx(notDestroy, cancel),
+        variant === "confirm-step" && clsx(notDestroy, confirmStep),
+        variant === "cancel-step" && clsx(notDestroy, cancelStep),
+      )}
+      // yeah I'm not using that action/formAction prop anymore
+      formAction={formAction}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function FallbackFlex({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex h-[calc(100vh_-_5rem)] flex-col items-center justify-center text-center">
+      <div className="space-y-4">{children}</div>
+    </div>
+  );
+}
 
 /* Notes
 For now I just want all of my components to be Client Components. It's once the projet gets running that I'll want to optimize between Client Components and Server Components.

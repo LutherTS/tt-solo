@@ -42,7 +42,7 @@ import {
   revalidateMomentsServerFlow,
   falserCreateOrUpdateMomentServerFlow,
 } from "@/app/actions/server/serverflows/moments";
-import { FallbackFlex } from "@/app/components/__components__";
+import { FallbackFlex } from "@/app/components/client/components/__components__";
 import {
   adaptDestinationsForMoment,
   falseAdaptMoments,

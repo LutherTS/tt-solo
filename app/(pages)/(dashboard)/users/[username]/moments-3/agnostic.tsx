@@ -6,7 +6,7 @@ import clsx from "clsx";
 
 import * as LocalClientComponents from "./client";
 import * as GlobalServerComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+import * as GlobalClientComponents from "@/app/components/client/components";
 import { Option } from "@/app/types/agnostic/globals";
 import { SetState } from "@/app/types/client/globals";
 import {

@@ -36,8 +36,8 @@ import { fr } from "date-fns/locale";
 import useKeypress from "react-use-keypress";
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client";
-import * as AllLocalAgnosticComponents from "../agnostic"; // if prefixed by "All-", it means the import is from a folder
+import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllLocalAgnosticComponents from "../../agnostic"; // if prefixed by "All-", it means the import is from a folder
 
 import * as Buttons from "./buttons";
 

@@ -6,7 +6,7 @@
 import { useEffect } from "react";
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+import * as GlobalClientComponents from "@/app/components/client/components";
 
 export default function MomentsError({
   error,

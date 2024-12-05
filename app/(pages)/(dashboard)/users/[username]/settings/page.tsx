@@ -3,8 +3,8 @@
 
 // import { CRUD } from "./crud";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import { HeaderSegment, PageSegment } from "../moments/server";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import { HeaderSegment, PageSegment } from "../moments/agnostic";
 
 export default function SettingsPage(
   {
@@ -19,10 +19,10 @@ export default function SettingsPage(
     <>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title="Mes paramètres" />
+          <GlobalAgnosticComponents.PageTitle title="Mes paramètres" />
         </HeaderSegment>
       </PageSegment>
-      <GlobalServerComponents.Divider />
+      <GlobalAgnosticComponents.Divider />
     </>
   );
 }

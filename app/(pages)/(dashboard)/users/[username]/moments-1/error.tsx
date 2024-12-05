@@ -3,7 +3,10 @@
 
 import { useEffect } from "react";
 
-import { Button, FallbackFlex } from "@/app/components/__components__";
+import {
+  Button,
+  FallbackFlex,
+} from "@/app/components/client/components/__components__";
 
 export default function MomentsError({
   error,

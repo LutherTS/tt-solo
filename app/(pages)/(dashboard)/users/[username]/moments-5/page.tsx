@@ -3,9 +3,9 @@
 
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import { ClientCore2 } from "./client";
-import Core from "./server";
+import Core from "./agnostic";
 import {
   StepFromClient,
   MomentFormVariant,
@@ -139,7 +139,7 @@ export default async function MomentsPage({
 
   return (
     // SUSPENDED
-    <GlobalServerComponents.ErrorBoundarySuspense>
+    <GlobalAgnosticComponents.ErrorBoundarySuspense>
       <ClientCore2
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -152,6 +152,6 @@ export default async function MomentsPage({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
       />
-    </GlobalServerComponents.ErrorBoundarySuspense>
+    </GlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }

@@ -3,8 +3,8 @@
 
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import Core from "./server";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import Core from "./agnostic";
 import { Option } from "@/app/types/agnostic/globals";
 import { SelectMomentDefault } from "@/app/types/server/moments";
 import {
@@ -274,7 +274,7 @@ export default async function MomentsPage({
   }
 
   return (
-    <GlobalServerComponents.ErrorBoundarySuspense>
+    <GlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -291,6 +291,6 @@ export default async function MomentsPage({
         subView={subView}
         moment={moment}
       />
-    </GlobalServerComponents.ErrorBoundarySuspense>
+    </GlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }

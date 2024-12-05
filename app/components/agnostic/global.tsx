@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-import * as AllGlobalClientComponents from "../client";
+import * as AllGlobalClientComponents from "../client/components";
 import * as ValidationErrors from "./validation-errors";
 
 import { SetState } from "@/app/types/client/globals";

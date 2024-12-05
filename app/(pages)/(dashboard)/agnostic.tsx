@@ -121,7 +121,7 @@ export function Page({
   );
 }
 
-const localServerComponents = {
+const localAgnosticComponents = {
   SideNav,
   SideNavRecursive,
   SideNavContainer,
@@ -129,4 +129,4 @@ const localServerComponents = {
   Page,
 } as const;
 
-export type LocalServerComponentsName = keyof typeof localServerComponents;
+export type LocalAgnosticComponentsName = keyof typeof localAgnosticComponents;
