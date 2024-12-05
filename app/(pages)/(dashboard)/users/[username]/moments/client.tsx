@@ -1,5 +1,5 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
 
 // It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll through the whole file, find that component, and manually export it.
 

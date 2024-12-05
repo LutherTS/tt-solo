@@ -1,5 +1,5 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
 
 import { useRouter } from "next/navigation";
 

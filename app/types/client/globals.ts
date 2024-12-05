@@ -1,7 +1,7 @@
 "use client";
-// Enforces a Client Module.
+// Proposes "use client" to enforce a Client Module.
 
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 

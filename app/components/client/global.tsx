@@ -1,5 +1,5 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
 
 import { MouseEventHandler } from "react";
 import { useFormStatus } from "react-dom";
