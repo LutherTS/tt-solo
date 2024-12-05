@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-import { DestinationToCRUD } from "@/app/types/destinations";
+import { DestinationToCRUD } from "@/app/types/agnostic/destinations";
 
 import {
   Button,
@@ -18,7 +18,7 @@ import {
   Textarea,
 } from "@/app/components/__components__";
 import * as Icons from "@/app/icons/__icons__";
-import { SetState } from "@/app/types/globals";
+import { SetState } from "@/app/types/client/globals";
 // import { NoDateCard } from "../moments/_old-files_/main-first";
 
 // Main Data

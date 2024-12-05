@@ -1,13 +1,15 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+// You can import from a Client Module inside an Agnostic Module, but not from a Server Module.
+
 import * as AllGlobalClientComponents from "../client/global";
 
-import { SetState } from "@/app/types/globals";
+import type { SetState } from "@/app/types/client/globals";
 import {
   FalseCreateOrUpdateMomentState,
   CreateOrUpdateMomentState,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
 
 export function FalseFormDescriptionOrError({
   error,

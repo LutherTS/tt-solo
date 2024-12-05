@@ -1,5 +1,5 @@
 "use client";
-// Enforces a Client Module."use client";
+// Enforces a Client Module.
 
 import { useRouter } from "next/navigation";
 

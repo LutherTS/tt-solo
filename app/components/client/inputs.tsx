@@ -6,17 +6,18 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { isValid } from "date-fns";
 import * as Switch from "@radix-ui/react-switch";
 
-import * as AllGlobalIcons from "@/app/icons";
+import * as AllGlobalIcons from "@/app/icons/agnostic";
 import * as AllGlobalAgnosticComponents from "../agnostic";
 
-import { Option, SetState } from "@/app/types/globals";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 import {
   baseInputTexts,
   focusVisibleTexts,
   notDatetimeLocalPadding,
   textareaPadding,
-} from "@/app/constants/globals";
+} from "@/app/constants/agnostic/globals";
 
 // IMPORTANT: inputs and all will have to be upgraded to ComponentProps
 export function InputText({

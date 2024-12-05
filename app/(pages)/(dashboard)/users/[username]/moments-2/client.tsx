@@ -50,8 +50,9 @@ import {
   SubView,
   UserMomentsToCRUD,
   View,
-} from "@/app/types/moments";
-import { Option, SetState } from "@/app/types/globals";
+} from "@/app/types/agnostic/moments";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -64,18 +65,17 @@ import {
   views,
   VIEWS,
   subViewsMomentsPageSearchParamsKeys,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
   falseRemoveMomentMessagesAndErrorsCallback,
   falseRemoveStepsMessagesAndErrorsCallback,
-  rotateStates,
   roundTimeUpTenMinutes,
-  setScrollToTop,
   toWordsing,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
+import { rotateStates, setScrollToTop } from "@/app/utilities/client/moments";
 import {
   falserCreateOrUpdateMomentClientFlow,
   falseCreateOrUpdateStepClientFlow,
@@ -84,12 +84,12 @@ import {
   falseResetMomentClientFlow,
   falseResetStepClientFlow,
   revalidateMomentsClientFlow,
-} from "@/app/flows/client/moments";
+} from "@/app/actions/client/clientflows/moments";
 import {
   falseCreateOrUpdateMomentAfterFlow,
   falseDeleteMomentAfterFlow,
   resetMomentAfterFlow,
-} from "@/app/flows/after/moments";
+} from "@/app/actions/client/afterflows/moments";
 
 export default function ClientCore({
   now,

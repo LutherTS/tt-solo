@@ -52,8 +52,9 @@ import {
   CreateOrUpdateMomentState,
   FalseCreateOrUpdateMoment,
   FalseDeleteMoment,
-} from "@/app/types/moments";
-import { Option, SetState, TypedURLSearchParams } from "@/app/types/globals";
+} from "@/app/types/agnostic/moments";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -66,17 +67,19 @@ import {
   views,
   VIEWS,
   subViewsMomentsPageSearchParamsKeys,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   defineCurrentPage,
   defineDesiredView,
   makeStepsCompoundDurationsArray,
-  rotateSearchParams,
   roundTimeUpTenMinutes,
-  scrollToTopOfDesiredView,
   toWordsing,
   removeStepsMessagesAndErrorsCallback,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
+import {
+  rotateSearchParams,
+  scrollToTopOfDesiredView,
+} from "@/app/utilities/client/moments";
 import {
   deleteStepClientFlow,
   revalidateMomentsClientFlow,
@@ -85,12 +88,12 @@ import {
   falseDeleteMomentClientFlow,
   resetMomentClientFlow,
   resetStepClientFlow,
-} from "@/app/flows/client/moments";
+} from "@/app/actions/client/clientflows/moments";
 import {
   resetMomentAfterFlow,
   createOrUpdateMomentAfterFlow,
   deleteMomentAfterFlow,
-} from "@/app/flows/after/moments";
+} from "@/app/actions/client/afterflows/moments";
 
 // this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
 

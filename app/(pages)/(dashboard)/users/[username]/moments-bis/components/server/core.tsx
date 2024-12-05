@@ -9,11 +9,11 @@ import * as AllLocalAgnosticComponents from "../agnostic";
 import {
   CreateOrUpdateMoment,
   DeleteMoment,
-  FetchMomentFormsData,
-  FetchReadMomentsViewData,
-  FetchViewAndMomentData,
+  MomentFormsData,
+  ReadMomentsViewData,
+  ViewAndMomentData,
   RevalidateMoments,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
 
 export default async function Core({
   // time
@@ -28,9 +28,9 @@ export default async function Core({
   deleteMoment,
 }: {
   now: string;
-  fetchViewAndMomentData: FetchViewAndMomentData;
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
-  fetchMomentFormsData: FetchMomentFormsData;
+  fetchViewAndMomentData: Promise<ViewAndMomentData>;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;

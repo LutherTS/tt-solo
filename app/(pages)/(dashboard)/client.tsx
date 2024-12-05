@@ -4,8 +4,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import * as AllGlobalIcons from "@/app/icons";
-import { NavLink } from "@/app/types/globals";
+import * as AllGlobalIcons from "@/app/icons/agnostic";
+import { NavLink } from "@/app/types/agnostic/globals";
 
 export function SideNavLink({ navLink }: { navLink: NavLink }) {
   const Icon = AllGlobalIcons[navLink.icon];

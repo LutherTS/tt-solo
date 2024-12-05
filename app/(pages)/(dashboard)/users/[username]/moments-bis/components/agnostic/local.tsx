@@ -8,12 +8,13 @@ import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 import * as AllGlobalClientComponents from "@/app/components/client";
 import * as AllLocalClientComponents from "../client";
 
-import { Option, SetState } from "@/app/types/globals";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   MomentFormVariant,
   RevalidateMoments,
@@ -25,11 +26,11 @@ import {
   PageDetails,
   CreateOrUpdateMoment,
   DeleteMoment,
-  FetchReadMomentsViewData,
-  FetchMomentFormsData,
-} from "@/app/types/moments";
-import { numStringToTimeString } from "@/app/utilities/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+  ReadMomentsViewData,
+  MomentFormsData,
+} from "@/app/types/agnostic/moments";
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
 export function Header({ view }: { view: View }) {
   return (
@@ -57,8 +58,8 @@ export function Main({
   now: string;
   view: View;
   moment: MomentAdapted | undefined;
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
-  fetchMomentFormsData: FetchMomentFormsData;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;

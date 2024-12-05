@@ -33,7 +33,8 @@ import { useMeasure } from "react-use";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
-import { Option, SetState } from "@/app/types/globals";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   UserMomentsToCRUD,
   MomentToCRUD,
@@ -50,18 +51,17 @@ import {
   MomentsDestinationToCRUD,
   StepToCRUD,
   MomentsDateToCRUD,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
 import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
   falseRemoveMomentMessagesAndErrorsCallback,
   falseRemoveStepsMessagesAndErrorsCallback,
-  rotateStates,
   roundTimeUpTenMinutes,
-  setScrollToTop,
   toWordsing,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
+import { rotateStates, setScrollToTop } from "@/app/utilities/client/moments";
 import {
   Button,
   Divider,
@@ -84,7 +84,7 @@ import {
   falserCreateOrUpdateMomentClientFlow,
   falseResetMomentClientFlow,
   falserDeleteMomentClientFlow,
-} from "@/app/flows/client/moments";
+} from "@/app/actions/client/clientflows/moments";
 import {
   momentsPageSearchParamsKeys,
   SEARCH_FORM_ID,
@@ -99,13 +99,13 @@ import {
   views,
   subViews,
   subViewsMomentsPageSearchParamsKeys,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   falseCreateOrUpdateMomentAfterFlow,
   falseDeleteMomentAfterFlow,
   resetMomentAfterFlow,
-} from "@/app/flows/after/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+} from "@/app/actions/client/afterflows/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
 // Main Component
 

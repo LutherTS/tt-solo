@@ -8,13 +8,14 @@ import clsx from "clsx";
 import * as LocalClientComponents from "./client";
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
-import { Option, SetState } from "@/app/types/globals";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   views,
   viewsTitles,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   FalserCreateOrUpdateMoment,
   FalseCreateOrUpdateMomentState,
@@ -29,13 +30,13 @@ import {
   StepVisible,
   UserMomentsToCRUD,
   View,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
 import {
   defineDesiredView,
   numStringToTimeString,
-  setScrollToTop,
-} from "@/app/utilities/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+} from "@/app/utilities/agnostic/moments";
+import { setScrollToTop } from "@/app/utilities/client/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
 export default function ServerCore({
   now,

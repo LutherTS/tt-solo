@@ -1,4 +1,4 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
 
 import { notFound } from "next/navigation";
@@ -11,20 +11,20 @@ import {
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
   MomentAdapted,
-} from "@/app/types/moments";
-import { dateToInputDatetime } from "@/app/utilities/moments";
-import { momentsPageSearchParamsKeys } from "@/app/constants/moments";
-import { findUserIdByUsername } from "@/app/reads/users";
+} from "@/app/types/agnostic/moments";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
   revalidateMomentsServerFlow,
   createOrUpdateMomentServerFlow,
   deleteMomentServerFlow,
-} from "@/app/flows/server/moments";
+} from "@/app/actions/server/serverflows/moments";
 import {
   fetchMomentFormsDataFlow,
   fetchReadMomentsViewDataFlow,
   fetchViewAndMomentDataFlow,
-} from "@/app/flows/fetch/moments";
+} from "@/app/fetches/server/moments";
 
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 

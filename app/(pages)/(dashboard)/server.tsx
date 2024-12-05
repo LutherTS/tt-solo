@@ -1,11 +1,13 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+// Indeed I do not have a folder yet for layout Components.
+
 import clsx from "clsx";
 // import Image from "next/image";
 
 import * as LocalClientComponents from "./client";
-import { navLinks } from "@/app/constants/globals";
+import { navLinks } from "@/app/constants/agnostic/globals";
 
 export function SideNav({ isFixed }: { isFixed?: boolean }) {
   return (

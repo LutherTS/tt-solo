@@ -8,16 +8,16 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as AllGlobalClientComponents from "../client";
 import * as ValidationErrors from "./validation-errors";
 
-import { SetState } from "@/app/types/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   FalseCreateOrUpdateMomentState,
   FormSectionTopic,
   CreateOrUpdateMomentState,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
 import {
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
 
 export function Section({
   title,

@@ -1,12 +1,12 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
 
 import { revalidatePath } from "next/cache";
 
 import prisma from "@/prisma/db";
 
-import { DestinationToCRUD } from "@/app/types/destinations";
-import { dateToInputDatetime } from "@/app/utilities/moments";
+import { DestinationToCRUD } from "@/app/types/agnostic/destinations";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
 
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import { HeaderSegment, PageSegment } from "../moments/server";

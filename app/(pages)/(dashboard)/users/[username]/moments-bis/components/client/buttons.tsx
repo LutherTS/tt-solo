@@ -5,21 +5,19 @@ import { MouseEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 
-import * as AllGlobalIcons from "@/app/icons";
+import * as AllGlobalIcons from "@/app/icons/agnostic";
 import * as AllGlobalClientComponents from "@/app/components/client";
 
-import { MomentAdapted, SubView, View } from "@/app/types/moments";
+import { MomentAdapted, SubView, View } from "@/app/types/agnostic/moments";
 import {
   momentsPageSearchParamsKeys,
   SEARCH_FORM_ID,
   subViewsTitles,
   views,
-} from "@/app/constants/moments";
-import {
-  defineDesiredView,
-  scrollToTopOfDesiredView,
-} from "@/app/utilities/moments";
-import { SetState } from "@/app/types/globals";
+} from "@/app/constants/agnostic/moments";
+import { defineDesiredView } from "@/app/utilities/agnostic/moments";
+import { scrollToTopOfDesiredView } from "@/app/utilities/client/moments";
+import { SetState } from "@/app/types/client/globals";
 
 export function SetSelectButton({
   setSelect,

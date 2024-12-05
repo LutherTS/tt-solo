@@ -5,11 +5,11 @@ import { MouseEventHandler } from "react";
 import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-import { SetState } from "@/app/types/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   FalseCreateOrUpdateMomentState,
   CreateOrUpdateMomentState,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
 
 // This is the perfect example of what Sam Selikoff called a bad abstraction, which will have to evolve in the final version.
 // https://www.youtube.com/watch?v=9iJK-Vl6PhE&t=693s&pp=ygUMc2FtIHNlbGlrb2Zm

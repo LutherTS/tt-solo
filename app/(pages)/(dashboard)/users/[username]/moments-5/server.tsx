@@ -7,12 +7,13 @@ import clsx from "clsx";
 import * as LocalClientComponents from "./client";
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
-import { Option, SetState } from "@/app/types/globals";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   MomentFormVariant,
   RevalidateMoments,
@@ -26,12 +27,12 @@ import {
   StepAdapted,
   CreateOrUpdateMoment,
   DeleteMoment,
-  FetchViewAndMomentData,
-  FetchReadMomentsViewData,
-  FetchMomentFormsData,
-} from "@/app/types/moments";
-import { numStringToTimeString } from "@/app/utilities/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+  ViewAndMomentData,
+  ReadMomentsViewData,
+  MomentFormsData,
+} from "@/app/types/agnostic/moments";
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
 // THAT'S AN ERROR IF THIS FILE IS MARKED AS AGNOSTIC. AS AN ASYNC FUNCTION, SERVERCORE SHOULD BE IN AN EXCLUSIVELY SERVER MODULE. REACT DOESN'T REALIZE THIS YET IN MY OPINION, BUT SERVERCORE IS A STRICTLY SERVER COMPONENT SINCE IT IS ASYNC AND AWAITS A PROMISE. IF SOMEHOW I WERE TO IMPORT SERVERCORE INSIDE A CLIENT COMPONENT IT WOULD BREAK, BUT IT APPEARS REACT FALSELY ASSUMES THIS WHOLE MODULE AS AGNOSTIC, AND HASN'T SURFACED THE ERROR YET BECAUSE I AM ONLY IMPORTING SERVERCORE INSIDE OF A SERVER COMPONENT.
 export default async function ServerCore({
@@ -47,9 +48,9 @@ export default async function ServerCore({
   deleteMoment,
 }: {
   now: string;
-  fetchViewAndMomentData: FetchViewAndMomentData;
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
-  fetchMomentFormsData: FetchMomentFormsData;
+  fetchViewAndMomentData: Promise<ViewAndMomentData>;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
@@ -100,8 +101,8 @@ export function Main({
   now: string;
   view: View;
   moment: MomentAdapted | undefined;
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
-  fetchMomentFormsData: FetchMomentFormsData;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;

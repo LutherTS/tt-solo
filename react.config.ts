@@ -12,7 +12,7 @@ const reactConfig: ReactConfig = {
   externalDefaultDirective: "agnostic", // or "server" or "client"
 
   // gives react/framework agency over JavaScript folders and files such as utility modules beyond the react folder
-  // Arrays or regexes could be used identify to folders and files, like "all folders named 'agnostic' should be considered as housing exclusively Agnostic Modules when it comes to their JavaScript and TypeScript files"
+  // Arrays or regexes could be used identify to folders and files, like "all folders named 'agnostic' should be considered as housing exclusively Agnostic Modules when it comes to their JavaScript and TypeScript files," or aliases or glob patterns (e.g., **/*.server.ts)
   javaScriptModules: {
     serverModules: {
       folders: [], // array of Server Module folders or regex
@@ -22,13 +22,21 @@ const reactConfig: ReactConfig = {
         files: [], // array of Server Functions Module files or regex
       },
     },
-    clientModules: {
-      folders: [], // array of Client Module folders or regex
-      files: [], // array of Client Module files or regex
-    },
     agnosticModules: {
       folders: [], // array of Agnostic Module folders or regex
       files: [], // array of Agnostic Module files or regex
+      agnosticAdaptiveModules: {
+        folders: [], // array of Agnostic Adaptive Module folders or regex
+        files: [], // array of Agnostic Adaptive Module files or regex
+      },
+    },
+    clientModules: {
+      folders: [], // array of Client Module folders or regex
+      files: [], // array of Client Module files or regex
+      clientComponentsModules: {
+        folders: [], // array of Client Components Module folders or regex
+        files: [], // array of Client Components Module files or regex
+      },
     },
   },
 
@@ -37,18 +45,27 @@ const reactConfig: ReactConfig = {
     serverModules: {
       folders: [], // array of Server Module folders or regex
       files: [], // array of Server Module files or regex
+      // serverFunctionsModules feels overkill here but we never know
       serverFunctionsModules: {
         folders: [], // array of Server Functions Module folders or regex
         files: [], // array of Server Functions Module files or regex
       },
     },
-    clientModules: {
-      folders: [], // array of Client Module folders or regex
-      files: [], // array of Client Module files or regex
-    },
     agnosticModules: {
       folders: [], // array of Agnostic Module folders or regex
       files: [], // array of Agnostic Module files or regex
+      agnosticAdaptiveModules: {
+        folders: [], // array of Agnostic Adaptive Module folders or regex
+        files: [], // array of Agnostic Adaptive Module files or regex
+      },
+    },
+    clientModules: {
+      folders: [], // array of Client Module folders or regex
+      files: [], // array of Client Module files or regex
+      clientComponentsModules: {
+        folders: [], // array of Client Components Module folders or regex
+        files: [], // array of Client Components Module files or regex
+      },
     },
   },
 };
@@ -59,12 +76,11 @@ export default reactConfig;
 react/framework could/should implement defaults such that: 
 
 - all files within folders inside the react folder named "server" are Server Modules by defaults
-- all files within folders inside the react folder named "client" are Client Modules by defaults
+- all files within folders inside "server"-named folders named "functions" are Server Functions Modules by defaults
 - all files within folders inside the react folder named "agnostic" are Agnostic Modules by defaults
-
-- all files within the react folder ending in .server.js/.server.jsx/.server.ts/.server.tsx are Server Modules by defaults
-- all files within the react folder ending in .client.js/.client.jsx/.client.ts/.client.tsx are Client Modules by defaults
-- all files within the react folder ending in .agnostic.js/.agnostic.jsx/.agnostic.ts/.agnostic.tsx are Agnostic Modules by defaults
+- all files within folders inside "agnostic"-named folders named "adaptive" are Agnostic Adaptive Modules by defaults
+- all files within folders inside the react folder named "client" are Client Modules by defaults
+- all files within folders inside "client"-named folders named "components" are Client Components Modules by defaults
 
 These defaults could obviously be overridden by the ReactConfig (though I haven't implemented this feature above yet), but explicitly written directives within modules ALWAYS SUPERCEDE CONFIG.
 

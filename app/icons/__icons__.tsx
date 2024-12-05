@@ -1,4 +1,5 @@
-"use agnostic"; // NOT A REAL DIRECTIVE. YET. I HOPE.
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
 
 export function Cog8ToothOutline({ className }: { className?: string }) {
   return (

@@ -7,12 +7,13 @@ import clsx from "clsx";
 import * as LocalClientComponents from "./client";
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client";
-import { Option, SetState } from "@/app/types/globals";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   MomentFormVariant,
   RevalidateMoments,
@@ -29,9 +30,9 @@ import {
   CreateOrUpdateMoment,
   DeleteMoment,
   ViewAndMomentData,
-} from "@/app/types/moments";
-import { numStringToTimeString } from "@/app/utilities/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+} from "@/app/types/agnostic/moments";
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
 export default function ServerCore({
   // time

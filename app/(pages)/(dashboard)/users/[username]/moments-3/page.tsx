@@ -5,7 +5,8 @@ import { notFound } from "next/navigation";
 
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import Core from "./server";
-import { Option } from "@/app/types/globals";
+import { Option } from "@/app/types/agnostic/globals";
+import { SelectMomentDefault } from "@/app/types/server/moments";
 import {
   UserMomentsToCRUD,
   StepFromClient,
@@ -13,8 +14,7 @@ import {
   MomentFormVariant,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
-  SelectMomentDefault,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
 import {
   dateToInputDatetime,
   defineCurrentPage,
@@ -22,14 +22,14 @@ import {
   defineSubView,
   defineView,
   defineWithViewAndMoment,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   TAKE,
   MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
-} from "@/app/constants/moments";
-import { findUserIdByUsername } from "@/app/reads/users";
+} from "@/app/constants/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
   countUserCurrentMomentsWithContains,
   countUserFutureMomentsWithContains,
@@ -39,17 +39,17 @@ import {
   findUserFutureMomentsWithContains,
   findUserPastMomentsWithContains,
   falseFindUserAllMomentsWithContains,
-} from "@/app/reads/moments";
-import { findDestinationsByUserId } from "@/app/reads/destinations";
+} from "@/app/readings/server/reads/moments";
+import { findDestinationsByUserId } from "@/app/readings/server/reads/destinations";
 import {
   revalidateMomentsServerFlow,
   falseCreateOrUpdateMomentServerFlow,
   falseDeleteMomentServerFlow,
-} from "@/app/flows/server/moments";
+} from "@/app/actions/server/serverflows/moments";
 import {
   adaptDestinationsForMoment,
   falseAdaptMoments,
-} from "@/app/adapts/moments";
+} from "@/app/adapts/server/moments";
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic

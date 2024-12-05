@@ -13,9 +13,10 @@ import * as Switch from "@radix-ui/react-switch";
 import { isValid } from "date-fns";
 
 import * as Icons from "@/app/icons/__icons__";
-import { Option, SetState } from "@/app/types/globals";
-import { EventStepDurationSchema } from "@/app//validations/steps";
-import { FalseCreateOrUpdateMomentState } from "@/app//types/moments";
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+import { FalseCreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
 
 // Variables
 

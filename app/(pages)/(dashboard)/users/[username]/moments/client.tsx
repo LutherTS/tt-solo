@@ -57,10 +57,10 @@ import {
   MomentAdapted,
   CreateOrUpdateMoment,
   DeleteMoment,
-  FetchReadMomentsViewData,
-  FetchMomentFormsData,
-} from "@/app/types/moments";
-import { SetState, TypedURLSearchParams } from "@/app/types/globals";
+  ReadMomentsViewData,
+  MomentFormsData,
+} from "@/app/types/agnostic/moments";
+import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -73,17 +73,19 @@ import {
   views,
   VIEWS,
   subViewsMomentsPageSearchParamsKeys,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   defineCurrentPage,
   defineDesiredView,
   makeStepsCompoundDurationsArray,
-  rotateSearchParams,
   roundTimeUpTenMinutes,
-  scrollToTopOfDesiredView,
   toWordsing,
   removeStepsMessagesAndErrorsCallback,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
+import {
+  rotateSearchParams,
+  scrollToTopOfDesiredView,
+} from "@/app/utilities/client/moments";
 import {
   deleteStepClientFlow,
   revalidateMomentsClientFlow,
@@ -92,12 +94,12 @@ import {
   resetStepClientFlow,
   createOrUpdateMomentClientFlow,
   deleteMomentClientFlow,
-} from "@/app/flows/client/moments";
+} from "@/app/actions/client/clientflows/moments";
 import {
   resetMomentAfterFlow,
   createOrUpdateMomentAfterFlow,
   deleteMomentAfterFlow,
-} from "@/app/flows/after/moments";
+} from "@/app/actions/client/afterflows/moments";
 
 // this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
 
@@ -116,8 +118,8 @@ export function ViewsCarouselContainer({
   now: string;
   view: View;
   moment: MomentAdapted | undefined; // moment now only drops in MomentForms, so eventually (today) it could be included in momntFormsData // but no
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
-  fetchMomentFormsData: FetchMomentFormsData;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;
@@ -276,7 +278,7 @@ export function ReadMomentsView({
   allButtonsDisabled,
 }: {
   view: View;
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
   revalidateMoments: RevalidateMoments;
   allButtonsDisabled: boolean;
 }) {
@@ -758,7 +760,7 @@ export function MomentForms({
 }: {
   variant: MomentFormVariant;
   moment?: MomentAdapted;
-  fetchMomentFormsData: FetchMomentFormsData;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment?: DeleteMoment;
   now: string;
