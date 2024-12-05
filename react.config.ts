@@ -3,10 +3,10 @@ type ReactConfig = any; // import { ReactConfig } from "react";
 
 const reactConfig: ReactConfig = {
   // gives agency to project teams over where the react folder is positioned in the project and what its name is. By default, the react folder is positioned at the root of the project and named "react"
-  reactDirectory: "/react",
+  reactDirectory: "/app", // Here I define the Next.js App Router as my project's react folder too.
 
-  // gives react/framework a default understanding of modules under its agency that aren't (yet) marked with any directive, enforcing said modules to adhere to this default directive. undefined by default, meaning that files without directives within the agency of react/framework will throw an error.
-  defaultDirective: undefined, // or "server" or "client" or "agnostic"
+  // gives react/framework a default understanding of modules under its agency that aren't (yet) marked with any directive, enforcing said modules to adhere to this default directive. undefined by default, meaning that files without directives within the agency of react/framework will throw an error. Defaults to undefined
+  defaultDirective: "agnostic", // or "server" or "client" or undefined
 
   // gives react/framework a default explicit direction over how it should perceive non-JavaScript folders and files as relevant JavaScript modules during imports in JavaScript modules react/framework has agency over, without strictly enforcing said files to be so (since such a feature is unexpected in non-JavaScript files). "agnostic" by default, meaning that since 'agnosticism' will not be enforced, react/framework will allow by default all external files to be imported in any environment at the discretion of the project itself. Cannot be undefined.
   externalDefaultDirective: "agnostic", // or "server" or "client"
@@ -15,7 +15,7 @@ const reactConfig: ReactConfig = {
   // Arrays or regexes could be used identify to folders and files, like "all folders named 'agnostic' should be considered as housing exclusively Agnostic Modules when it comes to their JavaScript and TypeScript files," or aliases or glob patterns (e.g., **/*.server.ts)
   javaScriptModules: {
     serverModules: {
-      folders: [], // array of Server Module folders or regex
+      folders: ["/app/prisma"], // array of Server Module folders or regex
       files: [], // array of Server Module files or regex
       serverFunctionsModules: {
         folders: [], // array of Server Functions Module folders or regex
@@ -23,7 +23,7 @@ const reactConfig: ReactConfig = {
       },
     },
     agnosticModules: {
-      folders: [], // array of Agnostic Module folders or regex
+      folders: ["/app/public"], // array of Agnostic Module folders or regex
       files: [], // array of Agnostic Module files or regex
       agnosticAdaptiveModules: {
         folders: [], // array of Agnostic Adaptive Module folders or regex
@@ -43,7 +43,7 @@ const reactConfig: ReactConfig = {
   // gives react/framework explicit direction over how it should perceive non-JavaScript folders and files as relevant JavaScript modules during imports in JavaScript modules react/framework has agency over
   nonJavaScriptModules: {
     serverModules: {
-      folders: [], // array of Server Module folders or regex
+      folders: ["/app/prisma"], // array of Server Module folders or regex
       files: [], // array of Server Module files or regex
       // serverFunctionsModules feels overkill here but we never know
       serverFunctionsModules: {
@@ -52,7 +52,7 @@ const reactConfig: ReactConfig = {
       },
     },
     agnosticModules: {
-      folders: [], // array of Agnostic Module folders or regex
+      folders: ["/app/public"], // array of Agnostic Module folders or regex
       files: [], // array of Agnostic Module files or regex
       agnosticAdaptiveModules: {
         folders: [], // array of Agnostic Adaptive Module folders or regex

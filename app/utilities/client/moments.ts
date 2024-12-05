@@ -1,3 +1,6 @@
+"use client";
+// Proposes "use client" to enforce a Client Module.
+
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
 

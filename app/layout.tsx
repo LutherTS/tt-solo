@@ -1,3 +1,6 @@
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
 import type { Metadata } from "next";
 import "./globals.css";
 
