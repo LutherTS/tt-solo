@@ -26,3 +26,4 @@ export default function RootLayout({
 
 // Next.js 15, here I am. // And readying for Next.js 16.
 // pnpm are I go.
+// About to update this bad boy to React 19.

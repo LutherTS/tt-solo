@@ -1,26 +1,20 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
+/* IMPORTS */
+
+// External imports
+
 import {
-  FormEvent,
-  MouseEvent,
-  Ref,
-  TransitionStartFunction,
   // useCallback,
   useEffect,
   useState,
   useTransition,
 } from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AnimatePresence,
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -36,10 +30,66 @@ import { fr } from "date-fns/locale";
 import useKeypress from "react-use-keypress";
 // import { useTimer } from "react-use-precision-timer";
 
+// Components imports
+
 import * as Icons from "@/app/icons/agnostic/__icons__";
-import * as LocalAgnosticComponents from "./agnostic";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
+import * as LocalAgnosticComponents from "./agnostic";
+
+// Internal imports
+
+import {
+  momentsPageSearchParamsKeys,
+  INITIAL_PAGE,
+  momentFormIds,
+  SEARCH_FORM_ID,
+  STEP_DURATION_ORIGINAL,
+  subViews,
+  SUBVIEWS,
+  subViewsTitles,
+  views,
+  VIEWS,
+  subViewsMomentsPageSearchParamsKeys,
+} from "@/app/constants/agnostic/moments";
+import {
+  defineCurrentPage,
+  defineDesiredView,
+  makeStepsCompoundDurationsArray,
+  roundTimeUpTenMinutes,
+  toWordsing,
+  removeStepsMessagesAndErrorsCallback,
+} from "@/app/utilities/agnostic/moments";
+import {
+  rotateSearchParams,
+  scrollToTopOfDesiredView,
+} from "@/app/utilities/client/moments";
+import {
+  deleteStepClientFlow,
+  revalidateMomentsClientFlow,
+  createOrUpdateStepClientFlow,
+  resetMomentClientFlow,
+  resetStepClientFlow,
+  createOrUpdateMomentClientFlow,
+  deleteMomentClientFlow,
+} from "@/app/actions/client/clientflows/moments";
+import {
+  resetMomentAfterFlow,
+  createOrUpdateMomentAfterFlow,
+  deleteMomentAfterFlow,
+} from "@/app/actions/client/afterflows/moments";
+
+// Types imports
+
+import type {
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
+import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
 import {
   MomentFormVariant,
   RevalidateMoments,
@@ -57,46 +107,8 @@ import {
   CreateOrUpdateMoment,
   DeleteMoment,
 } from "@/app/types/agnostic/moments";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
-import {
-  momentsPageSearchParamsKeys,
-  INITIAL_PAGE,
-  momentFormIds,
-  SEARCH_FORM_ID,
-  STEP_DURATION_ORIGINAL,
-  subViews,
-  SUBVIEWS,
-  subViewsTitles,
-  views,
-  VIEWS,
-  subViewsMomentsPageSearchParamsKeys,
-} from "@/app/constants/agnostic/moments";
-import {
-  rotateSearchParams,
-  scrollToTopOfDesiredView,
-} from "@/app/utilities/client/moments";
-import {
-  defineCurrentPage,
-  defineDesiredView,
-  makeStepsCompoundDurationsArray,
-  roundTimeUpTenMinutes,
-  toWordsing,
-  removeStepsMessagesAndErrorsCallback,
-} from "@/app/utilities/agnostic/moments";
-import {
-  deleteStepClientFlow,
-  revalidateMomentsClientFlow,
-  createOrUpdateStepClientFlow,
-  resetMomentClientFlow,
-  resetStepClientFlow,
-  createOrUpdateMomentClientFlow,
-  deleteMomentClientFlow,
-} from "@/app/actions/client/clientflows/moments";
-import {
-  resetMomentAfterFlow,
-  createOrUpdateMomentAfterFlow,
-  deleteMomentAfterFlow,
-} from "@/app/actions/client/afterflows/moments";
+
+/* LOGIC */
 
 // this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
 export function ViewsCarouselContainer({

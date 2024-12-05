@@ -1,9 +1,17 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import clsx from "clsx";
 
+// Components imports
+
 import * as LocalAgnosticComponents from "./agnostic";
+
+/* LOGIC */
 
 export default function DashboardLayout({
   children,

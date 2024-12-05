@@ -1,26 +1,15 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import {
-  FormEvent,
-  MouseEvent,
-  Ref,
-  TransitionStartFunction,
-  use,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+/* IMPORTS */
+
+// External imports
+
+import { use, useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AnimatePresence,
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -35,29 +24,15 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
+// Components imports
+
 import * as Icons from "@/app/icons/agnostic/__icons__";
-import ServerCore, * as LocalAgnosticComponents from "./agnostic";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
-import {
-  MomentFormVariant,
-  RevalidateMoments,
-  StepFormVariant,
-  StepFromClient,
-  StepVisible,
-  SubView,
-  View,
-  MomentsPageSearchParamsHandled,
-  CreateOrUpdateMomentState,
-  MomentsAdapted,
-  MomentAdapted,
-  CreateOrUpdateMoment,
-  DeleteMoment,
-  ReadMomentsViewData,
-  MomentFormsData,
-  ViewAndMomentData,
-} from "@/app/types/agnostic/moments";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+import ServerCore, * as LocalAgnosticComponents from "./agnostic";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -98,12 +73,44 @@ import {
   deleteMomentAfterFlow,
 } from "@/app/actions/client/afterflows/moments";
 
+// Types imports
+
+import type {
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
+import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+import {
+  MomentFormVariant,
+  RevalidateMoments,
+  StepFormVariant,
+  StepFromClient,
+  StepVisible,
+  SubView,
+  View,
+  MomentsPageSearchParamsHandled,
+  CreateOrUpdateMomentState,
+  MomentsAdapted,
+  MomentAdapted,
+  CreateOrUpdateMoment,
+  DeleteMoment,
+  ReadMomentsViewData,
+  MomentFormsData,
+  ViewAndMomentData,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
+
 // If it's just ClientCore children it's not an issue because it is not passing dynamic props.
-export function ClientCore({ children }: { children: React.ReactNode }) {
+export function FalseClientCore({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export function ClientCore2({
+export function FalserClientCore({
   // time
   now,
   // reads as promises

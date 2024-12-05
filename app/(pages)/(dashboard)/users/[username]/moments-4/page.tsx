@@ -1,10 +1,35 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { notFound } from "next/navigation";
 
-import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+// Components imports
+
 import Core from "./agnostic";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+
+// Internal imports
+
+import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
+import {
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentDataFlow,
+} from "@/app/fetches/server/moments";
+import {
+  revalidateMomentsServerFlow,
+  createOrUpdateMomentServerFlow,
+  deleteMomentServerFlow,
+} from "@/app/actions/server/serverflows/moments";
+
+// Types imports
+
 import {
   StepFromClient,
   MomentFormVariant,
@@ -12,19 +37,8 @@ import {
   CreateOrUpdateMomentSuccess,
   MomentAdapted,
 } from "@/app/types/agnostic/moments";
-import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
-import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
-import { findUserIdByUsername } from "@/app/readings/server/reads/users";
-import {
-  revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
-} from "@/app/actions/server/serverflows/moments";
-import {
-  fetchMomentFormsDataFlow,
-  fetchReadMomentsViewDataFlow,
-  fetchViewAndMomentDataFlow,
-} from "@/app/fetches/server/moments";
+
+/* LOGIC */
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still sometimes it says static route...

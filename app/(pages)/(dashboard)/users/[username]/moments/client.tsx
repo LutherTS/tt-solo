@@ -3,23 +3,18 @@
 
 // It is decided that every component should be exported even if it isn't being used elsewhere, so that when it happens to become needed elsewhere it doesn't become necessary to scroll through the whole file, find that component, and manually export it.
 
+/* IMPORTS */
+
+// External imports
+
 import {
-  FormEvent,
-  MouseEvent,
-  Ref,
-  TransitionStartFunction,
   use,
   // useCallback,
   useEffect,
   useState,
   useTransition,
 } from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AnimatePresence,
   motion,
@@ -39,28 +34,15 @@ import { fr } from "date-fns/locale";
 import useKeypress from "react-use-keypress";
 // import { useTimer } from "react-use-precision-timer";
 
+// Components imports
+
 import * as Icons from "@/app/icons/agnostic/__icons__";
-import * as LocalAgnosticComponents from "./agnostic";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
-import {
-  MomentFormVariant,
-  RevalidateMoments,
-  StepFormVariant,
-  StepFromClient,
-  StepVisible,
-  SubView,
-  View,
-  MomentsPageSearchParamsHandled,
-  CreateOrUpdateMomentState,
-  MomentsAdapted,
-  MomentAdapted,
-  CreateOrUpdateMoment,
-  DeleteMoment,
-  ReadMomentsViewData,
-  MomentFormsData,
-} from "@/app/types/agnostic/moments";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+import * as LocalAgnosticComponents from "./agnostic";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -100,6 +82,39 @@ import {
   createOrUpdateMomentAfterFlow,
   deleteMomentAfterFlow,
 } from "@/app/actions/client/afterflows/moments";
+
+// Types imports
+
+import type {
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type {
+  SetState,
+  TypedURLSearchParams,
+} from "@/app/types/client/globals";
+import type {
+  MomentFormVariant,
+  RevalidateMoments,
+  StepFormVariant,
+  StepFromClient,
+  StepVisible,
+  SubView,
+  View,
+  MomentsPageSearchParamsHandled,
+  CreateOrUpdateMomentState,
+  MomentsAdapted,
+  MomentAdapted,
+  CreateOrUpdateMoment,
+  DeleteMoment,
+  ReadMomentsViewData,
+  MomentFormsData,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 // this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
 

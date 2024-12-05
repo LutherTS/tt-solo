@@ -1,25 +1,15 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import {
-  FormEvent,
-  MouseEvent,
-  Ref,
-  TransitionStartFunction,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+/* IMPORTS */
+
+// External imports
+
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AnimatePresence,
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -34,27 +24,15 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
+// Components imports
+
 import * as Icons from "@/app/icons/agnostic/__icons__";
-import * as LocalAgnosticComponents from "./agnostic";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
-import {
-  MomentFormVariant,
-  MomentToCRUD,
-  RevalidateMoments,
-  StepFormVariant,
-  StepFromClient,
-  StepVisible,
-  SubView,
-  UserMomentsToCRUD,
-  View,
-  MomentsPageSearchParamsHandled,
-  CreateOrUpdateMomentState,
-  FalseCreateOrUpdateMoment,
-  FalseDeleteMoment,
-} from "@/app/types/agnostic/moments";
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+import * as LocalAgnosticComponents from "./agnostic";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -94,6 +72,37 @@ import {
   createOrUpdateMomentAfterFlow,
   deleteMomentAfterFlow,
 } from "@/app/actions/client/afterflows/moments";
+
+import type {
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
+import type { Option } from "@/app/types/agnostic/globals";
+import type {
+  SetState,
+  TypedURLSearchParams,
+} from "@/app/types/client/globals";
+import type {
+  MomentFormVariant,
+  MomentToCRUD,
+  RevalidateMoments,
+  StepFormVariant,
+  StepFromClient,
+  StepVisible,
+  SubView,
+  UserMomentsToCRUD,
+  View,
+  MomentsPageSearchParamsHandled,
+  CreateOrUpdateMomentState,
+  FalseCreateOrUpdateMoment,
+  FalseDeleteMoment,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 // this is now where the client-side begins, from the original Main page, to ClientCore, the lower Main component and now to container of the carousel
 

@@ -4,20 +4,34 @@
 // "use server" at the top implies for React 19 that the file is made of Server Actions, NOT Server Components. It's only for "use client" that it means the file is made exclusively of strictly Client Components.
 // This is why I'm retroactively marking this as "use agnostic".
 
+/* IMPORTS */
+
+// External imports
+
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
-import * as LocalClientComponents from "./client";
-import * as GlobalServerComponents from "@/app/components/agnostic";
+// Components imports
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState } from "@/app/types/client/globals";
+import * as LocalClientComponents from "./client";
+
+// Internal imports
+
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
 } from "@/app/constants/agnostic/moments";
-import {
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+import type {
   MomentFormVariant,
   RevalidateMoments,
   StepFromClient,
@@ -34,8 +48,8 @@ import {
   ReadMomentsViewData,
   MomentFormsData,
 } from "@/app/types/agnostic/moments";
-import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
-import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+/* LOGIC */
 
 export default async function ServerCore({
   // time
@@ -63,7 +77,7 @@ export default async function ServerCore({
   return (
     <>
       <Header view={view} />
-      <GlobalServerComponents.Divider />
+      <GlobalAgnosticComponents.Divider />
       <Main
         now={now}
         view={view}
@@ -83,7 +97,7 @@ export function Header({ view }: { view: View }) {
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
+          <GlobalAgnosticComponents.PageTitle title={viewsTitles[view]} />
           <LocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>

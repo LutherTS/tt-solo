@@ -1,11 +1,36 @@
 // "use server"
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { notFound } from "next/navigation";
 
+// Components imports
+
+import { FalserClientCore } from "./client";
+// import Core from "./agnostic";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import { ClientCore2 } from "./client";
-import Core from "./agnostic";
+
+// Internal imports
+
+import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
+import {
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentDataFlow,
+} from "@/app/fetches/server/moments";
+import {
+  revalidateMomentsServerFlow,
+  createOrUpdateMomentServerFlow,
+  deleteMomentServerFlow,
+} from "@/app/actions/server/serverflows/moments";
+
+// Types imports
+
 import {
   StepFromClient,
   MomentFormVariant,
@@ -13,19 +38,8 @@ import {
   CreateOrUpdateMomentSuccess,
   MomentAdapted,
 } from "@/app/types/agnostic/moments";
-import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
-import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
-import { findUserIdByUsername } from "@/app/readings/server/reads/users";
-import {
-  revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
-} from "@/app/actions/server/serverflows/moments";
-import {
-  fetchMomentFormsDataFlow,
-  fetchReadMomentsViewDataFlow,
-  fetchViewAndMomentDataFlow,
-} from "@/app/fetches/server/moments";
+
+/* LOGIC */
 
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 
@@ -140,7 +154,7 @@ export default async function MomentsPage({
   return (
     // SUSPENDED
     <GlobalAgnosticComponents.ErrorBoundarySuspense>
-      <ClientCore2
+      <FalserClientCore
         // time (aligned across server and client for hydration cases)
         now={now}
         // reads as promises

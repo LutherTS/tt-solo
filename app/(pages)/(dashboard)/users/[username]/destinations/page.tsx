@@ -1,15 +1,27 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { revalidatePath } from "next/cache";
 
-import prisma from "@/prisma/db";
-
-import { DestinationToCRUD } from "@/app/types/agnostic/destinations";
-import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+// Components imports
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import { HeaderSegment, PageSegment } from "../moments/agnostic";
+
+// Internal imports
+
+import prisma from "@/prisma/db";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+
+// Types imports
+
+import type { DestinationToCRUD } from "@/app/types/agnostic/destinations";
+
+/* LOGIC */
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();

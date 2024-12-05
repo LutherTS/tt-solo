@@ -1,7 +1,13 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { usePathname, useRouter } from "next/navigation";
+
+/* LOGIC */
 
 export function LeftClientButton({ currentIndex }: { currentIndex: number }) {
   const { push } = useRouter();

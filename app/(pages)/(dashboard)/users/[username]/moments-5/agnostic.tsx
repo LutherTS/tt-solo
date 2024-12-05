@@ -1,19 +1,33 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
-import * as LocalClientComponents from "./client";
+// Components imports
+
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState } from "@/app/types/client/globals";
+import * as LocalClientComponents from "./client";
+
+// Internal imports
+
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
 } from "@/app/constants/agnostic/moments";
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+// Types imports
+
+import { Option } from "@/app/types/agnostic/globals";
+import { SetState } from "@/app/types/client/globals";
 import {
   MomentFormVariant,
   RevalidateMoments,
@@ -31,8 +45,8 @@ import {
   ReadMomentsViewData,
   MomentFormsData,
 } from "@/app/types/agnostic/moments";
-import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
-import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+/* LOGIC */
 
 // THAT'S AN ERROR IF THIS FILE IS MARKED AS AGNOSTIC. AS AN ASYNC FUNCTION, SERVERCORE SHOULD BE IN AN EXCLUSIVELY SERVER MODULE. REACT DOESN'T REALIZE THIS YET IN MY OPINION, BUT SERVERCORE IS A STRICTLY SERVER COMPONENT SINCE IT IS ASYNC AND AWAITS A PROMISE. IF SOMEHOW I WERE TO IMPORT SERVERCORE INSIDE A CLIENT COMPONENT IT WOULD BREAK, BUT IT APPEARS REACT FALSELY ASSUMES THIS WHOLE MODULE AS AGNOSTIC, AND HASN'T SURFACED THE ERROR YET BECAUSE I AM ONLY IMPORTING SERVERCORE INSIDE OF A SERVER COMPONENT.
 export default async function ServerCore({

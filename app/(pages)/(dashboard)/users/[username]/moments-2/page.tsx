@@ -1,29 +1,29 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { notFound } from "next/navigation";
 
-import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+// Components imports
+
 import Core from "./agnostic";
-import { Option } from "@/app/types/agnostic/globals";
-import { SelectMomentDefault } from "@/app/types/server/moments";
-import {
-  UserMomentsToCRUD,
-  StepFromClient,
-  MomentToCRUD,
-  MomentFormVariant,
-  FalseCreateOrUpdateMomentState,
-} from "@/app/types/agnostic/moments";
-import {
-  dateToInputDatetime,
-  defineCurrentPage,
-} from "@/app/utilities/agnostic/moments";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   TAKE,
   MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
 } from "@/app/constants/agnostic/moments";
+import {
+  dateToInputDatetime,
+  defineCurrentPage,
+} from "@/app/utilities/agnostic/moments";
 import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
   countUserCurrentMomentsWithContains,
@@ -37,14 +37,28 @@ import {
 } from "@/app/readings/server/reads/moments";
 import { findDestinationsByUserId } from "@/app/readings/server/reads/destinations";
 import {
+  adaptDestinationsForMoment,
+  falseAdaptMoments,
+} from "@/app/adapts/server/moments";
+import {
   falserDeleteMomentServerFlow,
   revalidateMomentsServerFlow,
   falserCreateOrUpdateMomentServerFlow,
 } from "@/app/actions/server/serverflows/moments";
-import {
-  adaptDestinationsForMoment,
-  falseAdaptMoments,
-} from "@/app/adapts/server/moments";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SelectMomentDefault } from "@/app/types/server/moments";
+import type {
+  UserMomentsToCRUD,
+  StepFromClient,
+  MomentToCRUD,
+  MomentFormVariant,
+  FalseCreateOrUpdateMomentState,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export const dynamic = "force-dynamic";
 

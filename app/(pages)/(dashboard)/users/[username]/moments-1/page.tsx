@@ -1,30 +1,31 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { ErrorBoundary } from "react-error-boundary";
 
+// Components imports
+
 import Main from "./main";
-import { Option } from "@/app/types/agnostic/globals";
-import { SelectMomentDefault } from "@/app/types/server/moments";
-import {
-  UserMomentsToCRUD,
-  StepFromClient,
-  MomentToCRUD,
-  MomentFormVariant,
-  FalseCreateOrUpdateMomentState,
-} from "@/app/types/agnostic/moments";
-import {
-  dateToInputDatetime,
-  defineCurrentPage,
-} from "@/app/utilities/agnostic/moments";
+import { FallbackFlex } from "@/app/components/client/components/__components__";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   TAKE,
   MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
 } from "@/app/constants/agnostic/moments";
+import {
+  dateToInputDatetime,
+  defineCurrentPage,
+} from "@/app/utilities/agnostic/moments";
 import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
   countUserCurrentMomentsWithContains,
@@ -42,11 +43,24 @@ import {
   revalidateMomentsServerFlow,
   falserCreateOrUpdateMomentServerFlow,
 } from "@/app/actions/server/serverflows/moments";
-import { FallbackFlex } from "@/app/components/client/components/__components__";
 import {
   adaptDestinationsForMoment,
   falseAdaptMoments,
 } from "@/app/adapts/server/moments";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SelectMomentDefault } from "@/app/types/server/moments";
+import type {
+  UserMomentsToCRUD,
+  StepFromClient,
+  MomentToCRUD,
+  MomentFormVariant,
+  FalseCreateOrUpdateMomentState,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export const dynamic = "force-dynamic";
 

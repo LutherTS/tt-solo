@@ -1,7 +1,9 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-// I had made it Client Module for some reason.
+// I had made it Client Components Module for some reason.
+
+/* LOGIC */
 
 export default function Home() {
   // throw new Error("Test error");

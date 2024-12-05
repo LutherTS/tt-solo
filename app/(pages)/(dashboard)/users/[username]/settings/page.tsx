@@ -1,10 +1,15 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
 
-// import { CRUD } from "./crud";
+/* IMPORTS */
 
+// Components imports
+
+// import { CRUD } from "./crud";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import { HeaderSegment, PageSegment } from "../moments/agnostic";
+
+/* LOGIC */
 
 export default function SettingsPage(
   {

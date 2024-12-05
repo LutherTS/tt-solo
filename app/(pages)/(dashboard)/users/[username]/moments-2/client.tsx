@@ -1,24 +1,14 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import {
-  FormEvent,
-  MouseEvent,
-  Ref,
-  TransitionStartFunction,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+/* IMPORTS */
+
+// External imports
+
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -33,26 +23,15 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
+// Components imports
+
 import * as Icons from "@/app/icons/agnostic/__icons__";
-import * as LocalAgnosticComponents from "./agnostic";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
-import {
-  FalserCreateOrUpdateMoment,
-  FalseCreateOrUpdateMomentState,
-  FalserDeleteMoment,
-  MomentFormVariant,
-  MomentToCRUD,
-  RevalidateMoments,
-  StepFormVariant,
-  StepFromClient,
-  StepVisible,
-  SubView,
-  UserMomentsToCRUD,
-  View,
-} from "@/app/types/agnostic/moments";
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState } from "@/app/types/client/globals";
+import * as LocalAgnosticComponents from "./agnostic";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -90,6 +69,35 @@ import {
   falseDeleteMomentAfterFlow,
   resetMomentAfterFlow,
 } from "@/app/actions/client/afterflows/moments";
+
+// Types imports
+
+import type {
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+import type {
+  FalserCreateOrUpdateMoment,
+  FalseCreateOrUpdateMomentState,
+  FalserDeleteMoment,
+  MomentFormVariant,
+  MomentToCRUD,
+  RevalidateMoments,
+  StepFormVariant,
+  StepFromClient,
+  StepVisible,
+  SubView,
+  UserMomentsToCRUD,
+  View,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export default function ClientCore({
   now,

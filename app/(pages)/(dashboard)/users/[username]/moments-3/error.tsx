@@ -3,10 +3,18 @@
 
 // Error boundaries must be Client Components
 
+/* IMPORTS */
+
+// External imports
+
 import { useEffect } from "react";
+
+// Components imports
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
+
+/* LOGIC */
 
 export default function MomentsError({
   error,

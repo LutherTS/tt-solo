@@ -1,15 +1,21 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
-import { MotionValue } from "motion/react";
+/* IMPORTS */
+
+// External imports
+
 import { add, format } from "date-fns";
 import clsx from "clsx";
+
+// Components imports
 
 import * as LocalClientComponents from "./client";
 import * as GlobalServerComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState } from "@/app/types/client/globals";
+
+// Internal imports
+
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
@@ -17,6 +23,20 @@ import {
   viewsTitles,
 } from "@/app/constants/agnostic/moments";
 import {
+  defineDesiredView,
+  numStringToTimeString,
+} from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+// THIS IS A MISTAKE BECAUSE CLIENT-SIDE UTILITIES CANNOT BE IMPORTED INSIDE AGNOSTIC MODULES IN THE DIRECTIVE-FIRST ARCHITECTURE.
+import { setScrollToTop } from "@/app/utilities/client/moments";
+
+// Types imports
+
+import type { MotionValue } from "motion/react";
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+import type {
   FalserCreateOrUpdateMoment,
   FalseCreateOrUpdateMomentState,
   FalserDeleteMoment,
@@ -31,12 +51,8 @@ import {
   UserMomentsToCRUD,
   View,
 } from "@/app/types/agnostic/moments";
-import {
-  defineDesiredView,
-  numStringToTimeString,
-} from "@/app/utilities/agnostic/moments";
-import { setScrollToTop } from "@/app/utilities/client/moments";
-import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+/* LOGIC */
 
 export default function ServerCore({
   now,
@@ -89,6 +105,7 @@ export function Header({
   );
 }
 
+// THIS IS A MISTAKE. CLIENT-SIDE CODE SHOULD NOT BE IMPORTED INSIDE AGNOSTIC MODULE. IF I HAVE TO USE MY setScrollToTop CLIENT UTILITY, I SHOULD DO SO INSIDE A CLIENT COMPONENTS MODULE.
 export function SetViewButton({
   view,
   setView,
