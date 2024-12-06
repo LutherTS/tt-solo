@@ -1,8 +1,17 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
-import type { Metadata } from "next";
+/* IMPORTS */
+
+// Internal imports
+
 import "./globals.css";
+
+// Types imports
+
+import type { Metadata } from "next";
+
+/* LOGIC */
 
 export const metadata: Metadata = {
   // title: "TekTIME solo",

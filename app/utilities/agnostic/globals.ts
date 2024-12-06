@@ -1,6 +1,8 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* LOGIC */
+
 // Delays a function for testing
 export const delay = <T>(ms: number, fn: () => T): Promise<T> =>
   new Promise((resolve) => setTimeout(() => resolve(fn()), ms));

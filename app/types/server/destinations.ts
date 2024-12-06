@@ -1,9 +1,17 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import { Prisma } from "@prisma/client";
+/* IMPORTS */
+
+// Internal imports
 
 import { selectDestinationIdAndName } from "@/app/readings/server/subreads/destinations";
+
+// Types imports
+
+import { Prisma } from "@prisma/client";
+
+/* LOGIC */
 
 export type SelectDestinationForMoment = Prisma.DestinationGetPayload<{
   select: typeof selectDestinationIdAndName;

@@ -1,9 +1,14 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import prisma from "@/prisma/db";
+/* IMPORTS */
 
+// Internal imports
+
+import prisma from "@/prisma/db";
 import { selectUserIdAndUsername, whereByUsername } from "../subreads/users";
+
+/* LOGIC */
 
 // FindUniques
 

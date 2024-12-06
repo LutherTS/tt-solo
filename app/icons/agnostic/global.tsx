@@ -1,6 +1,8 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* LOGIC */
+
 export function ArrowPathSolidIcon({ className }: { className?: string }) {
   return (
     <svg

@@ -1,7 +1,13 @@
 "use client";
 // Proposes "use client" to enforce a Client Module.
 
+/* IMPORTS */
+
+// types imports
+
 import type { Dispatch, SetStateAction } from "react";
+
+/* LOGIC */
 
 export type SetState<T> = Dispatch<SetStateAction<T>>;
 

@@ -1,6 +1,11 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// Internal imports
+
+import { findDestinationsByUserId } from "@/app/readings/server/reads/destinations";
 import {
   adaptDestinationsForMoment,
   adaptedViewAndMomentCombined,
@@ -11,25 +16,28 @@ import {
   adaptView,
 } from "@/app/adapts/server/moments";
 import {
+  subViewsCountUserMomentsWithContains,
+  subViewsFindUserMomentsWithContains,
+} from "@/app/constants/server/moments";
+import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   subViews,
   subViewsPages,
   TAKE,
 } from "@/app/constants/agnostic/moments";
-import {
-  subViewsCountUserMomentsWithContains,
-  subViewsFindUserMomentsWithContains,
-} from "@/app/constants/server/moments";
-import { findDestinationsByUserId } from "@/app/readings/server/reads/destinations";
-import { MomentsPageSearchParamsRaw } from "@/app/types/server/moments";
-import { SubView } from "@/app/types/agnostic/moments";
-import { SelectUserIdAndUsername } from "@/app/types/server/users";
+// import { delay } from "@/app/utilities/agnostic/globals";
 import { defineCurrentPage } from "@/app/utilities/agnostic/moments";
 
-// import { delay } from "@/app/utilities/agnostic/globals";
+// Types imports
 
-// ...Okay. There's a serious issue of consistency here.
+import type { SelectUserIdAndUsername } from "@/app/types/server/users";
+import type { MomentsPageSearchParamsRaw } from "@/app/types/server/moments";
+import type { SubView } from "@/app/types/agnostic/moments";
+
+/* LOGIC */
+
+// ...Okay. There's (or was?) a serious issue of consistency here.
 
 export async function fetchViewAndMomentDataFlow(
   searchParams: MomentsPageSearchParamsRaw,

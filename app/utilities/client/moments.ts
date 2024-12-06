@@ -1,18 +1,26 @@
 "use client";
 // Proposes "use client" to enforce a Client Module.
 
+/* IMPORTS */
+
+// Internal imports
+
+import {
+  momentsPageSearchParamsKeys,
+  views,
+} from "@/app/constants/agnostic/moments";
+
+// Types imports
+
 import { ReadonlyURLSearchParams } from "next/navigation";
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-
 import {
   MomentsPageSearchParamsHandled,
   View,
 } from "@/app/types/agnostic/moments";
 import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
-import {
-  momentsPageSearchParamsKeys,
-  views,
-} from "@/app/constants/agnostic/moments";
+
+/* LOGIC */
 
 // rotates states by setting any state array enum to the right or to the left
 export const rotateStates = <T>(

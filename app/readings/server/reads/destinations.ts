@@ -1,8 +1,11 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import prisma from "@/prisma/db";
+/* IMPORTS */
 
+// Internal imports
+
+import prisma from "@/prisma/db";
 import {
   destinationsOrderByDefault,
   selectDestinationId,
@@ -10,6 +13,8 @@ import {
   whereByNameAndUserId,
   whereByUserId,
 } from "../subreads/destinations";
+
+/* LOGIC */
 
 // FindManys
 

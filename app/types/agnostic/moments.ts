@@ -1,13 +1,22 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
-import { Option } from "@/app/types/agnostic/globals";
+/* IMPORTS */
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   momentsPageSearchParamsKeysOfPages,
   subViews,
   views,
 } from "@/app/constants/agnostic/moments";
+
+// Types imports
+
+import { Option } from "@/app/types/agnostic/globals";
+
+/* LOGIC */
 
 // data adapted types
 

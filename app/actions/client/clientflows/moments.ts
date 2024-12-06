@@ -1,10 +1,14 @@
 "use client";
 // Proposes "use client" to enforce a Client Module.
 
-import { FormEvent, MouseEvent } from "react";
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+/* IMPORTS */
+
+// External imports
+
 import { v4 as uuidv4 } from "uuid";
 import { compareAsc, compareDesc } from "date-fns";
+
+// Internal imports
 
 import {
   defaultStepsErrorMessages,
@@ -14,6 +18,17 @@ import {
   subViews,
   views,
 } from "@/app/constants/agnostic/moments";
+import {
+  dateToInputDatetime,
+  roundTimeUpTenMinutes,
+} from "@/app/utilities/agnostic/moments";
+import { CreateOrUpdateStepSchema } from "@/app/validations/agnostic/steps";
+
+// Types imports
+
+import { FormEvent, MouseEvent } from "react";
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { SetState } from "@/app/types/client/globals";
 import {
   FalserDeleteMoment,
   MomentFormVariant,
@@ -33,12 +48,8 @@ import {
   CreateOrUpdateMoment,
   DeleteMoment,
 } from "@/app/types/agnostic/moments";
-import {
-  dateToInputDatetime,
-  roundTimeUpTenMinutes,
-} from "@/app/utilities/agnostic/moments";
-import { CreateOrUpdateStepSchema } from "@/app/validations/agnostic/steps";
-import { SetState } from "@/app/types/client/globals";
+
+/* LOGIC */
 
 // best be to prepare the state right here
 export const falserCreateOrUpdateMomentClientFlow = async (

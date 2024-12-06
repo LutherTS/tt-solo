@@ -3,10 +3,24 @@
 
 // Adapts are not only clearly meant to be used exclusively on the server, it is dangerous for them to be used on the client as they adapt raw data.
 
+/* IMPORTS */
+
+// Internal imports
+
+import { findMomentByIdAndUserId } from "@/app/readings/server/reads/moments";
 import { subViews, TAKE, views } from "@/app/constants/agnostic/moments";
-import { Option } from "@/app/types/agnostic/globals";
-import { SelectDestinationForMoment } from "@/app/types/server/destinations";
+import {
+  decodeHashidToUUID,
+  encodeUUIDWithHashids,
+} from "@/app/utilities/server/globals";
+import { isSubView, isView } from "@/app/utilities/agnostic/moments";
+
+// Types imports
+
+import { SelectUserIdAndUsername } from "@/app/types/server/users";
 import { SelectMomentDefault } from "@/app/types/server/moments";
+import { SelectDestinationForMoment } from "@/app/types/server/destinations";
+import { Option } from "@/app/types/agnostic/globals";
 import {
   MomentsAdapted,
   UserMomentsToCRUD,
@@ -17,13 +31,8 @@ import {
   PageDetails,
   DateAdapted,
 } from "@/app/types/agnostic/moments";
-import {
-  decodeHashidToUUID,
-  encodeUUIDWithHashids,
-} from "@/app/utilities/server/globals";
-import { SelectUserIdAndUsername } from "@/app/types/server/users";
-import { findMomentByIdAndUserId } from "@/app/readings/server/reads/moments";
-import { isSubView, isView } from "@/app/utilities/agnostic/moments";
+
+/* LOGIC */
 
 export const adaptView = (rawView: string | undefined): View => {
   if (isView(rawView)) return rawView;

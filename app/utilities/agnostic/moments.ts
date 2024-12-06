@@ -1,8 +1,23 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { add, format, roundToNearestMinutes } from "date-fns";
 import { ToWords } from "to-words";
+
+// Internal imports
+
+import {
+  subViews,
+  SUBVIEWS,
+  VIEWS,
+  views,
+} from "@/app/constants/agnostic/moments";
+
+// Types imports
 
 import {
   FalseCreateOrUpdateMomentState,
@@ -13,12 +28,8 @@ import {
   UserMomentsToCRUD,
   CreateOrUpdateMomentState,
 } from "@/app/types/agnostic/moments";
-import {
-  subViews,
-  SUBVIEWS,
-  VIEWS,
-  views,
-} from "@/app/constants/agnostic/moments";
+
+/* LOGIC */
 
 // changes a Date object into a input datetime-local string
 export const dateToInputDatetime = (date: Date) =>

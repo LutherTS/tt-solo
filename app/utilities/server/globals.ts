@@ -1,7 +1,13 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// Internal imports
+
 import { hashids } from "@/app/constants/server/globals";
+
+/* LOGIC */
 
 // Encode UUID
 export const encodeUUIDWithHashids = (uuid: string) => {

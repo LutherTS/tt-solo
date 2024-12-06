@@ -6,8 +6,19 @@ The should be NO IMPORTS OTHER TYPES in the data file. Any variable, or object o
 ...So far so good though...
 */
 
-import { Option } from "@/app/types/agnostic/globals";
-import {
+/* IMPORTS */
+
+// Internal imports
+
+// import {
+//   removeMomentMessagesAndErrorsCallback,
+//   removeStepsMessagesAndErrorsCallback,
+// } from "@/app/utilities/agnostic/moments";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type {
   MomentFormIds,
   MomentFormVariant,
   MomentsPageSearchParamsKeyOfPages,
@@ -16,10 +27,8 @@ import {
   // FormSectionTopic,
   // CreateOrUpdateMomentState,
 } from "@/app/types/agnostic/moments";
-// import {
-//   removeMomentMessagesAndErrorsCallback,
-//   removeStepsMessagesAndErrorsCallback,
-// } from "@/app/utilities/moments";
+
+/* LOGIC */
 
 // searchParams keys
 

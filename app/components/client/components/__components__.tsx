@@ -6,17 +6,31 @@ I need to specify however, that the idea of going through every single component
 But honestly, what ought to be the best is if React 19 ships with a way to do it automatically. React 19 would scan you code, find if a component (or better even, an HTML node but that would be magic at this point) utilizes any interactivity to decide whether it should be considered by React 19 as a Server Component or Client Component, without even needing to specify "use server" or "use client" anymore. 
 */
 
-import { ComponentProps, MouseEventHandler } from "react";
+/* IMPORTS */
+
+// External imports
+
 import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import * as Switch from "@radix-ui/react-switch";
 import { isValid } from "date-fns";
 
+// Components imports
+
 import * as Icons from "@/app/icons/agnostic/__icons__";
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState } from "@/app/types/client/globals";
+
+// Internal imports
+
 import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
-import { FalseCreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
+
+// Types imports
+
+import type { ComponentProps, MouseEventHandler } from "react";
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+import type { FalseCreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 // Variables
 

@@ -1,14 +1,20 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import { MouseEvent } from "react";
+/* IMPORTS */
+
+// External imports
+
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
+
+// Components imports
 
 import * as AllGlobalIcons from "@/app/icons/agnostic";
 import * as AllGlobalClientComponents from "@/app/components/client/components";
 
-import { MomentAdapted, SubView, View } from "@/app/types/agnostic/moments";
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   SEARCH_FORM_ID,
@@ -17,7 +23,14 @@ import {
 } from "@/app/constants/agnostic/moments";
 import { defineDesiredView } from "@/app/utilities/agnostic/moments";
 import { scrollToTopOfDesiredView } from "@/app/utilities/client/moments";
+
+// Types imports
+
+import { MouseEvent } from "react";
 import { SetState } from "@/app/types/client/globals";
+import { MomentAdapted, SubView, View } from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export function SetSelectButton({
   setSelect,

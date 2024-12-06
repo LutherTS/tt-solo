@@ -1,26 +1,15 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import {
-  FormEvent,
-  MouseEvent,
-  Ref,
-  TransitionStartFunction,
-  use,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+/* IMPORTS */
+
+// External imports
+
+import { use, useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AnimatePresence,
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -35,30 +24,15 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
+// Components imports
+
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 import * as AllGlobalClientComponents from "@/app/components/client/components";
 import * as AllLocalAgnosticComponents from "../../agnostic"; // if prefixed by "All-", it means the import is from a folder
-
 import * as Buttons from "./buttons";
 
-import {
-  MomentFormVariant,
-  RevalidateMoments,
-  StepFormVariant,
-  StepFromClient,
-  StepVisible,
-  SubView,
-  View,
-  MomentsPageSearchParamsHandled,
-  CreateOrUpdateMomentState,
-  MomentsAdapted,
-  MomentAdapted,
-  CreateOrUpdateMoment,
-  DeleteMoment,
-  ReadMomentsViewData,
-  MomentFormsData,
-} from "@/app/types/agnostic/moments";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -93,6 +67,32 @@ import {
   createOrUpdateMomentAfterFlow,
   deleteMomentAfterFlow,
 } from "@/app/actions/client/afterflows/moments";
+
+// Types imports
+
+import { FormEvent, MouseEvent, Ref, TransitionStartFunction } from "react";
+import { ReadonlyURLSearchParams } from "next/navigation";
+import { MotionValue } from "motion/react";
+import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+import {
+  MomentFormVariant,
+  RevalidateMoments,
+  StepFormVariant,
+  StepFromClient,
+  StepVisible,
+  SubView,
+  View,
+  MomentsPageSearchParamsHandled,
+  CreateOrUpdateMomentState,
+  MomentsAdapted,
+  MomentAdapted,
+  CreateOrUpdateMoment,
+  DeleteMoment,
+  ReadMomentsViewData,
+  MomentFormsData,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export function ViewsCarouselContainer({
   now,

@@ -1,23 +1,36 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import { ComponentProps } from "react";
+/* IMPORTS */
+
+// External imports
+
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { isValid } from "date-fns";
 import * as Switch from "@radix-ui/react-switch";
 
+// Components imports
+
 import * as AllGlobalIcons from "@/app/icons/agnostic";
 import * as AllGlobalAgnosticComponents from "../../agnostic";
 
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState } from "@/app/types/client/globals";
-import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+// Internal imports
+
 import {
   baseInputTexts,
   focusVisibleTexts,
   notDatetimeLocalPadding,
   textareaPadding,
 } from "@/app/constants/agnostic/globals";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+// Types imports
+
+import type { ComponentProps } from "react";
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+
+/* LOGIC */
 
 // IMPORTANT: inputs and all will have to be upgraded to ComponentProps
 export function InputText({

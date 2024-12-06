@@ -1,10 +1,18 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import { Prisma } from "@prisma/client";
+/* IMPORTS */
+
+// Internal imports
 
 // in the end I decided this compute should indeed be done the closest from the call as possible
 import { endDateAndTime } from "@/app/utilities/agnostic/moments";
+
+// Types imports
+
+import { Prisma } from "@prisma/client";
+
+/* LOGIC */
 
 // Datas
 

@@ -1,20 +1,33 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { add, format } from "date-fns";
 import clsx from "clsx";
+
+// Components imports
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 import * as AllGlobalClientComponents from "@/app/components/client/components";
 import * as AllLocalClientComponents from "../client/components";
 
-import { Option } from "@/app/types/agnostic/globals";
-import { SetState } from "@/app/types/client/globals";
+// Internal imports
+
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
 } from "@/app/constants/agnostic/moments";
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
 import {
   MomentFormVariant,
   RevalidateMoments,
@@ -29,8 +42,8 @@ import {
   ReadMomentsViewData,
   MomentFormsData,
 } from "@/app/types/agnostic/moments";
-import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
-import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+/* LOGIC */
 
 export function Header({ view }: { view: View }) {
   return (

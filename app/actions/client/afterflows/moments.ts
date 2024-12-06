@@ -1,8 +1,9 @@
 "use client";
 // Proposes "use client" to enforce a Client Module.
 
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { ReadonlyURLSearchParams } from "next/navigation";
+/* IMPORTS */
+
+// Internal imports
 
 import {
   momentFormIds,
@@ -10,6 +11,16 @@ import {
   subViewsPages,
   views,
 } from "@/app/constants/agnostic/moments";
+import {
+  scrollToSection,
+  setScrollToTop,
+} from "@/app/utilities/client/moments";
+
+// Types imports
+
+import { ReadonlyURLSearchParams } from "next/navigation";
+import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
 import {
   FalseCreateOrUpdateMomentState,
   View,
@@ -19,11 +30,8 @@ import {
   CreateOrUpdateMomentSuccess,
   MomentsPageSearchParamsHandled,
 } from "@/app/types/agnostic/moments";
-import {
-  scrollToSection,
-  setScrollToTop,
-} from "@/app/utilities/client/moments";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+
+/* LOGIC */
 
 // scrolls back to the section of the form that possesses new errors
 // or to the correct subView when successfully submitted

@@ -1,7 +1,13 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { z } from "zod";
+
+/* LOGIC */
 
 // IMPORTANT
 // ZOD SHOULD NEVER INCLUDED SERVER-SIDE VALIDATIONS, SINCE I'M USING ZOD VALIDATIONS ACROSS THE SERVER AND THE CLIENT.

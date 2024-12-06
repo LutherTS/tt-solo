@@ -1,15 +1,23 @@
 "use client"; // "use client components"
 // Proposes "use client components" to enforce a Client Components Module.
 
-import { MouseEventHandler } from "react";
+/* IMPORTS */
+
+// External imports
+
 import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-import { SetState } from "@/app/types/client/globals";
-import {
+// Typings imports
+
+import type { MouseEventHandler } from "react";
+import type { SetState } from "@/app/types/client/globals";
+import type {
   FalseCreateOrUpdateMomentState,
   CreateOrUpdateMomentState,
 } from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 // This is the perfect example of what Sam Selikoff called a bad abstraction, which will have to evolve in the final version.
 // https://www.youtube.com/watch?v=9iJK-Vl6PhE&t=693s&pp=ygUMc2FtIHNlbGlrb2Zm

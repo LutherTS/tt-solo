@@ -1,7 +1,13 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import { Prisma } from "@prisma/client";
+/* IMPORTS */
+
+// Types imports
+
+import type { Prisma } from "@prisma/client";
+
+/* LOGIC */
 
 // There could be a conflict with whereByMomentId, but at this time I'll keep it as is, and if there are conflicts in imports, then I'll rename whereByMomentId as stepsWereByMomentId in the import statement.
 

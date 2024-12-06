@@ -1,12 +1,35 @@
 // "use server"
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 // import { use as utilizeResource } from "react";
 import { notFound } from "next/navigation";
 
-import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
+// Components imports
 
 import Core from "./components/server/core";
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
+
+// Internal imports
+
+import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
+import {
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentDataFlow,
+} from "@/app/fetches/server/moments";
+import {
+  revalidateMomentsServerFlow,
+  createOrUpdateMomentServerFlow,
+  deleteMomentServerFlow,
+} from "@/app/actions/server/serverflows/moments";
+
+// Types imports
 
 import {
   StepFromClient,
@@ -15,19 +38,8 @@ import {
   CreateOrUpdateMomentSuccess,
   MomentAdapted,
 } from "@/app/types/agnostic/moments";
-import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
-import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
-import { findUserIdByUsername } from "@/app/readings/server/reads/users";
-import {
-  revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
-} from "@/app/actions/server/serverflows/moments";
-import {
-  fetchMomentFormsDataFlow,
-  fetchReadMomentsViewDataFlow,
-  fetchViewAndMomentDataFlow,
-} from "@/app/fetches/server/moments";
+
+/* LOGIC */
 
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 

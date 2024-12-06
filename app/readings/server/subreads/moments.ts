@@ -1,10 +1,18 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import { Prisma } from "@prisma/client";
+/* IMPORTS */
+
+// Internal imports
 
 import { selectStepDefault, orderByStepsDefault } from "./steps";
-import { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
+
+// Types imports
+
+import type { Prisma } from "@prisma/client";
+import type { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
+
+/* LOGIC */
 
 // Selects
 

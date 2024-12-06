@@ -1,8 +1,11 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import prisma from "@/prisma/db";
+/* IMPORTS */
 
+// Internal imports
+
+import prisma from "@/prisma/db";
 import {
   orderByMomentsNameAsc,
   orderByMomentsStartAsc,
@@ -20,8 +23,13 @@ import {
   whereShownBeforePastMoments,
   whereUserMoments,
 } from "../subreads/moments";
-import { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
 import { TAKE } from "@/app/constants/agnostic/moments";
+
+// Types imports
+
+import type { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
+
+/* LOGIC */
 
 const select = selectMomentDefault;
 

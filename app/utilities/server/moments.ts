@@ -1,8 +1,17 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
-import { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
+/* IMPORTS */
+
+// Internal imports
+
 import { TAKE } from "@/app/constants/agnostic/moments";
+
+// Typings imports
+
+import { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
+
+/* LOGIC */
 
 export const makeConditionalSuccessStateProperties = async (
   userId: string,

@@ -1,7 +1,13 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { z } from "zod";
+
+/* LOGIC */
 
 // expected to be always plural
 const DEFAULT_STRING_MININUM = 3;

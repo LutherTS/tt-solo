@@ -1,9 +1,17 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import clsx from "clsx";
 
-import { NavLink } from "@/app/types/agnostic/globals";
+// Types imports
+
+import type { NavLink } from "@/app/types/agnostic/globals";
+
+/* LOGIC */
 
 // Grouped style classes
 

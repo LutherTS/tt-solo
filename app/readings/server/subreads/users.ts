@@ -1,7 +1,13 @@
 // "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// Types imports
+
 import { Prisma } from "@prisma/client";
+
+/* LOGIC */
 
 // Selects
 
