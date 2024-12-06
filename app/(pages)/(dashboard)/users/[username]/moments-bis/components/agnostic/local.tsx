@@ -1,20 +1,34 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { add, format } from "date-fns";
 import clsx from "clsx";
 
-import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client";
-import * as AllLocalClientComponents from "../client";
+// Components imports
 
-import { Option, SetState } from "@/app/types/globals";
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
+import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllLocalClientComponents from "../client/components";
+
+// Internal imports
+
 import {
   ACTIVITY_OPTIONS,
   momentFormIds,
   viewsTitles,
-} from "@/app/constants/moments";
-import {
+} from "@/app/constants/agnostic/moments";
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+import type {
   MomentFormVariant,
   RevalidateMoments,
   StepFromClient,
@@ -25,11 +39,11 @@ import {
   PageDetails,
   CreateOrUpdateMoment,
   DeleteMoment,
-  FetchReadMomentsViewData,
-  FetchMomentFormsData,
-} from "@/app/types/moments";
-import { numStringToTimeString } from "@/app/utilities/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+  ReadMomentsViewData,
+  MomentFormsData,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export function Header({ view }: { view: View }) {
   return (
@@ -57,8 +71,8 @@ export function Main({
   now: string;
   view: View;
   moment: MomentAdapted | undefined;
-  fetchReadMomentsViewData: FetchReadMomentsViewData;
-  fetchMomentFormsData: FetchMomentFormsData;
+  fetchReadMomentsViewData: Promise<ReadMomentsViewData>;
+  fetchMomentFormsData: Promise<MomentFormsData>;
   revalidateMoments: RevalidateMoments;
   createOrUpdateMoment: CreateOrUpdateMoment;
   deleteMoment: DeleteMoment;

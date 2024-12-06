@@ -1,30 +1,44 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import Core from "./server";
+// Components imports
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import Core from "./agnostic";
+
+// Internal imports
+
+import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentDataFlow,
+} from "@/app/fetches/server/moments";
+import {
+  revalidateMomentsServerFlow,
+  createOrUpdateMomentServerFlow,
+  deleteMomentServerFlow,
+} from "@/app/actions/server/serverflows/moments";
+
+// Types imports
+
+import type {
   StepFromClient,
   MomentFormVariant,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
   MomentAdapted,
-} from "@/app/types/moments";
-import { dateToInputDatetime } from "@/app/utilities/moments";
-import { momentsPageSearchParamsKeys } from "@/app/constants/moments";
-import { findUserIdByUsername } from "@/app/reads/users";
-import {
-  revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
-} from "@/app/flows/server/moments";
-import {
-  fetchMomentFormsDataFlow,
-  fetchReadMomentsViewDataFlow,
-  fetchViewAndMomentDataFlow,
-} from "@/app/flows/fetch/moments";
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 /* Dummy Form Presenting Data 
 Présenter le projet à React Paris Meetup. 
@@ -165,7 +179,7 @@ export default async function MomentsPage({
     // Placeholder fallback for now. It's worth nothing the fallback for main and this route's loading.tsx are not the same. loading.tsx is for MomentsPage, while this fallback is for the Main component. The fallback obviously does not show since Main is a client component and renders fast enough, but it can be seen in the React Developer Tools.
 
     // SUSPENDED
-    <GlobalServerComponents.ErrorBoundarySuspense>
+    <GlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -178,7 +192,7 @@ export default async function MomentsPage({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
       />
-    </GlobalServerComponents.ErrorBoundarySuspense>
+    </GlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }
 

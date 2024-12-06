@@ -1,11 +1,22 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
+
+/* IMPORTS */
+
+// External imports
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import * as AllGlobalIcons from "@/app/icons";
-import { NavLink } from "@/app/types/globals";
+// Components imports
+
+import * as AllGlobalIcons from "@/app/icons/agnostic";
+
+// Internal imports
+
+import { NavLink } from "@/app/types/agnostic/globals";
+
+/* LOGIC */
 
 export function SideNavLink({ navLink }: { navLink: NavLink }) {
   const Icon = AllGlobalIcons[navLink.icon];

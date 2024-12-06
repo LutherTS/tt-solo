@@ -1,9 +1,21 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { redirect } from "next/navigation";
-import { LeftClientButton, RightClientButton } from "./client-buttons";
 import Form from "next/form";
+
+// Components imports
+
+import {
+  // LeftClientButton,
+  RightClientButton,
+} from "./client-buttons";
+
+/* LOGIC */
 
 export default async function Page({
   searchParams,

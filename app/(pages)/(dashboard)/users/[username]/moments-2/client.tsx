@@ -1,24 +1,14 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
 
-import {
-  FormEvent,
-  MouseEvent,
-  Ref,
-  TransitionStartFunction,
-  useEffect,
-  useState,
-  useTransition,
-} from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+/* IMPORTS */
+
+// External imports
+
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -33,25 +23,15 @@ import { fr } from "date-fns/locale";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
-import * as Icons from "@/app/icons/__icons__";
-import * as LocalServerComponents from "./server";
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
-import {
-  FalserCreateOrUpdateMoment,
-  FalseCreateOrUpdateMomentState,
-  FalserDeleteMoment,
-  MomentFormVariant,
-  MomentToCRUD,
-  RevalidateMoments,
-  StepFormVariant,
-  StepFromClient,
-  StepVisible,
-  SubView,
-  UserMomentsToCRUD,
-  View,
-} from "@/app/types/moments";
-import { Option, SetState } from "@/app/types/globals";
+// Components imports
+
+import * as Icons from "@/app/icons/agnostic/__icons__";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import * as GlobalClientComponents from "@/app/components/client/components";
+import * as LocalAgnosticComponents from "./agnostic";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
@@ -64,18 +44,17 @@ import {
   views,
   VIEWS,
   subViewsMomentsPageSearchParamsKeys,
-} from "@/app/constants/moments";
+} from "@/app/constants/agnostic/moments";
 import {
   defineCurrentPage,
   makeStepsCompoundDurationsArray,
   numStringToTimeString,
   falseRemoveMomentMessagesAndErrorsCallback,
   falseRemoveStepsMessagesAndErrorsCallback,
-  rotateStates,
   roundTimeUpTenMinutes,
-  setScrollToTop,
   toWordsing,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
+import { rotateStates, setScrollToTop } from "@/app/utilities/client/moments";
 import {
   falserCreateOrUpdateMomentClientFlow,
   falseCreateOrUpdateStepClientFlow,
@@ -84,12 +63,41 @@ import {
   falseResetMomentClientFlow,
   falseResetStepClientFlow,
   revalidateMomentsClientFlow,
-} from "@/app/flows/client/moments";
+} from "@/app/actions/client/clientflows/moments";
 import {
   falseCreateOrUpdateMomentAfterFlow,
   falseDeleteMomentAfterFlow,
   resetMomentAfterFlow,
-} from "@/app/flows/after/moments";
+} from "@/app/actions/client/afterflows/moments";
+
+// Types imports
+
+import type {
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+import type {
+  FalserCreateOrUpdateMoment,
+  FalseCreateOrUpdateMomentState,
+  FalserDeleteMoment,
+  MomentFormVariant,
+  MomentToCRUD,
+  RevalidateMoments,
+  StepFormVariant,
+  StepFromClient,
+  StepVisible,
+  SubView,
+  UserMomentsToCRUD,
+  View,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export default function ClientCore({
   now,
@@ -116,12 +124,12 @@ export default function ClientCore({
 
   return (
     <>
-      <LocalServerComponents.Header
+      <LocalAgnosticComponents.Header
         view={view}
         setView={setView}
         setMoment={setMoment}
       />
-      <GlobalServerComponents.Divider />
+      <GlobalAgnosticComponents.Divider />
       <Main
         now={now}
         allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -188,13 +196,13 @@ export function Main({
 
   return (
     <main>
-      <LocalServerComponents.ViewsCarousel
+      <LocalAgnosticComponents.ViewsCarousel
         view={view}
         isCRUDOpSuccessful={isCRUDOpSuccessful}
         setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
         currentViewHeight={currentViewHeight}
       >
-        <LocalServerComponents.PageSegment
+        <LocalAgnosticComponents.PageSegment
           isSegmentContainerInvisible={view !== views.UPDATE_MOMENT}
         >
           <ViewSegment
@@ -217,8 +225,8 @@ export function Main({
               allButtonsDisabled={view !== views.UPDATE_MOMENT}
             />
           </ViewSegment>
-        </LocalServerComponents.PageSegment>
-        <LocalServerComponents.PageSegment
+        </LocalAgnosticComponents.PageSegment>
+        <LocalAgnosticComponents.PageSegment
           isSegmentContainerInvisible={view !== views.READ_MOMENTS}
         >
           <ViewSegment
@@ -238,8 +246,8 @@ export function Main({
               allButtonsDisabled={view !== views.READ_MOMENTS}
             />
           </ViewSegment>
-        </LocalServerComponents.PageSegment>
-        <LocalServerComponents.PageSegment
+        </LocalAgnosticComponents.PageSegment>
+        <LocalAgnosticComponents.PageSegment
           isSegmentContainerInvisible={view !== views.CREATE_MOMENT}
         >
           <ViewSegment
@@ -259,8 +267,8 @@ export function Main({
               allButtonsDisabled={view !== views.CREATE_MOMENT}
             />
           </ViewSegment>
-        </LocalServerComponents.PageSegment>
-      </LocalServerComponents.ViewsCarousel>
+        </LocalAgnosticComponents.PageSegment>
+      </LocalAgnosticComponents.ViewsCarousel>
     </main>
   );
 }
@@ -526,14 +534,14 @@ export function ReadMomentsView({
           {realDisplayedMoments.map((e, i, a) => (
             <div className="space-y-8" key={e.date}>
               <div className="space-y-8">
-                <LocalServerComponents.DateCard
+                <LocalAgnosticComponents.DateCard
                   title={format(new Date(e.date), "eeee d MMMM", {
                     locale: fr,
                   })}
                 >
                   {e.destinations.map((e2) => {
                     return (
-                      <LocalServerComponents.DestinationInDateCard
+                      <LocalAgnosticComponents.DestinationInDateCard
                         key={e2.id + i.toString()}
                         e2={e2}
                         setMoment={setMoment}
@@ -542,10 +550,10 @@ export function ReadMomentsView({
                       />
                     );
                   })}
-                </LocalServerComponents.DateCard>
+                </LocalAgnosticComponents.DateCard>
               </div>
               {i === a.length - 1 && (
-                <LocalServerComponents.MomentsPageDetails e={e} />
+                <LocalAgnosticComponents.MomentsPageDetails e={e} />
               )}
             </div>
           ))}
@@ -571,11 +579,11 @@ export function ReadMomentsView({
           </div>
         </>
       ) : (
-        <LocalServerComponents.NoDateCard>
-          <GlobalServerComponents.FieldTitle
+        <LocalAgnosticComponents.NoDateCard>
+          <GlobalAgnosticComponents.FieldTitle
             title={"Pas de moment... pour le moment. 😅"}
           />
-        </LocalServerComponents.NoDateCard>
+        </LocalAgnosticComponents.NoDateCard>
       )}
     </div>
   );
@@ -853,7 +861,7 @@ export function MomentForms({
         id={momentFormIds[variant].momentForm}
         noValidate
       >
-        <GlobalServerComponents.Section
+        <GlobalAgnosticComponents.Section
           title="Votre moment"
           description="Définissez votre moment de collaboration dans ses moindres détails, de la manière la plus précise que vous pouvez."
           id={momentFormIds[variant].yourMoment}
@@ -864,7 +872,7 @@ export function MomentForms({
             falseRemoveMomentMessagesAndErrorsCallback
           }
         >
-          <LocalServerComponents.MomentInputs
+          <LocalAgnosticComponents.MomentInputs
             variant={variant}
             moment={moment}
             destinationOptions={destinationOptions}
@@ -877,9 +885,9 @@ export function MomentForms({
             startMomentDate={startMomentDate}
             setStartMomentDate={setStartMomentDate}
           />
-        </GlobalServerComponents.Section>
-        <GlobalServerComponents.Divider />
-        <GlobalServerComponents.Section
+        </GlobalAgnosticComponents.Section>
+        <GlobalAgnosticComponents.Divider />
+        <GlobalAgnosticComponents.Section
           title="Ses étapes"
           description="Établissez une par une les étapes du déroulé de votre moment, de la manière la plus segmentée que vous désirez."
           id={momentFormIds[variant].itsSteps}
@@ -947,7 +955,7 @@ export function MomentForms({
                   );
                 })}
               </Reorder.Group>
-              <LocalServerComponents.StepsSummaries
+              <LocalAgnosticComponents.StepsSummaries
                 stepVisible={stepVisible}
                 endMomentDate={endMomentDate}
                 momentAddingTime={momentAddingTime}
@@ -958,7 +966,7 @@ export function MomentForms({
             switch (stepVisible) {
               case "creating":
                 return (
-                  <LocalServerComponents.StepVisibleCreating
+                  <LocalAgnosticComponents.StepVisibleCreating
                     key={stepVisible}
                     momentFormVariant={variant}
                     isResetStepPending={isResetStepPending}
@@ -976,7 +984,7 @@ export function MomentForms({
                 );
               case "create":
                 return (
-                  <LocalServerComponents.StepVisibleCreate
+                  <LocalAgnosticComponents.StepVisibleCreate
                     key={stepVisible}
                     addStepAction={addStepAction}
                     isAddStepPending={isAddStepPending}
@@ -987,20 +995,20 @@ export function MomentForms({
                 return null;
             }
           })()}
-        </GlobalServerComponents.Section>
-        <GlobalServerComponents.Divider />
-        <GlobalServerComponents.Section>
+        </GlobalAgnosticComponents.Section>
+        <GlobalAgnosticComponents.Divider />
+        <GlobalAgnosticComponents.Section>
           {/* Doubling up instead of reverse for accessibility */}
           <div className="flex">
             {/* Mobile */}
             <div className="flex w-full flex-col gap-4 md:hidden">
-              <LocalServerComponents.ConfirmMomentButton
+              <LocalAgnosticComponents.ConfirmMomentButton
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
                 allButtonsDisabled={allButtonsDisabled}
               />
-              <LocalServerComponents.ResetOrEraseMomentButton
+              <LocalAgnosticComponents.ResetOrEraseMomentButton
                 variant={variant}
                 deleteMomentAction={deleteMomentAction}
                 isResetMomentPending={isResetMomentPending}
@@ -1011,7 +1019,7 @@ export function MomentForms({
             </div>
             {/* Desktop */}
             <div className="hidden pt-1.5 md:ml-auto md:grid md:w-fit md:grow md:grid-cols-2 md:gap-4">
-              <LocalServerComponents.ResetOrEraseMomentButton
+              <LocalAgnosticComponents.ResetOrEraseMomentButton
                 variant={variant}
                 deleteMomentAction={deleteMomentAction}
                 isResetMomentPending={isResetMomentPending}
@@ -1019,7 +1027,7 @@ export function MomentForms({
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 allButtonsDisabled={allButtonsDisabled}
               />
-              <LocalServerComponents.ConfirmMomentButton
+              <LocalAgnosticComponents.ConfirmMomentButton
                 isCreateOrUpdateMomentPending={isCreateOrUpdateMomentPending}
                 isResetMomentPending={isResetMomentPending}
                 isDeleteMomentPending={isDeleteMomentPending}
@@ -1027,7 +1035,7 @@ export function MomentForms({
               />
             </div>
           </div>
-        </GlobalServerComponents.Section>
+        </GlobalAgnosticComponents.Section>
       </form>
     </>
   );
@@ -1203,7 +1211,7 @@ export function MomentInDateCard({
       </p>
       <ol className="">
         {e3.steps.map((e4) => (
-          <LocalServerComponents.StepInDateCard key={e4.id} e4={e4} />
+          <LocalAgnosticComponents.StepInDateCard key={e4.id} e4={e4} />
         ))}
       </ol>
     </div>
@@ -1478,7 +1486,7 @@ export function ReorderItem({
         </div>
         {isCurrentStepUpdating ? (
           <div className="flex flex-col gap-y-8">
-            <LocalServerComponents.StepInputs
+            <LocalAgnosticComponents.StepInputs
               form={form}
               createOrUpdateMomentState={createOrUpdateMomentState}
               stepDuree={stepDureeUpdate}
@@ -1490,37 +1498,37 @@ export function ReorderItem({
             />
             <div>
               {/* Mobile */}
-              <LocalServerComponents.StepFormControlsMobileWrapper>
-                <LocalServerComponents.UpdateStepButton
+              <LocalAgnosticComponents.StepFormControlsMobileWrapper>
+                <LocalAgnosticComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
                   allButtonsDisabled={allButtonsDisabled}
                 />
-                <LocalServerComponents.EraseStepButton
+                <LocalAgnosticComponents.EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                   allButtonsDisabled={allButtonsDisabled}
                 />
-              </LocalServerComponents.StepFormControlsMobileWrapper>
+              </LocalAgnosticComponents.StepFormControlsMobileWrapper>
               {/* Desktop */}
-              <LocalServerComponents.StepFormControlsDesktopWrapper>
-                <LocalServerComponents.EraseStepButton
+              <LocalAgnosticComponents.StepFormControlsDesktopWrapper>
+                <LocalAgnosticComponents.EraseStepButton
                   form={form}
                   deleteStepAction={deleteStepAction}
                   isDeleteStepPending={isDeleteStepPending}
                   allButtonsDisabled={allButtonsDisabled}
                 />
-                <LocalServerComponents.UpdateStepButton
+                <LocalAgnosticComponents.UpdateStepButton
                   form={form}
                   isUpdateStepPending={isUpdateStepPending}
                   allButtonsDisabled={allButtonsDisabled}
                 />
-              </LocalServerComponents.StepFormControlsDesktopWrapper>
+              </LocalAgnosticComponents.StepFormControlsDesktopWrapper>
             </div>
           </div>
         ) : (
-          <LocalServerComponents.StepContents
+          <LocalAgnosticComponents.StepContents
             step={step}
             index={index}
             hasAPreviousStepUpdating={hasAPreviousStepUpdating}

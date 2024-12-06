@@ -1,27 +1,17 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
 
-import {
-  useEffect,
-  useState,
-  useTransition,
-  MouseEvent,
-  FormEvent,
-  TransitionStartFunction,
-  Ref,
-} from "react";
-import {
-  ReadonlyURLSearchParams,
-  usePathname,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+/* IMPORTS */
+
+// External imports
+
+import { useEffect, useState, useTransition } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -33,8 +23,79 @@ import { useMeasure } from "react-use";
 // @ts-ignore // no type declaration file on npm
 import useKeypress from "react-use-keypress";
 
-import { Option, SetState } from "@/app/types/globals";
+// Components imports
+
+import * as Icons from "@/app/icons/agnostic/__icons__";
 import {
+  Button,
+  Divider,
+  FieldTitle,
+  InputDatetimeLocalControlled,
+  InputNumberControlled,
+  InputText,
+  PageTitle,
+  Section,
+  InputSwitch,
+  SelectWithOptions,
+  Textarea,
+} from "@/app/components/client/components/__components__";
+
+// Internal imports
+
+import {
+  momentsPageSearchParamsKeys,
+  SEARCH_FORM_ID,
+  ACTIVITY_OPTIONS,
+  subViewsTitles,
+  viewsTitles,
+  SUBVIEWS,
+  momentFormIds,
+  STEP_DURATION_ORIGINAL,
+  INITIAL_PAGE,
+  VIEWS,
+  views,
+  subViews,
+  subViewsMomentsPageSearchParamsKeys,
+} from "@/app/constants/agnostic/moments";
+import {
+  defineCurrentPage,
+  makeStepsCompoundDurationsArray,
+  numStringToTimeString,
+  falseRemoveMomentMessagesAndErrorsCallback,
+  falseRemoveStepsMessagesAndErrorsCallback,
+  roundTimeUpTenMinutes,
+  toWordsing,
+} from "@/app/utilities/agnostic/moments";
+import { rotateStates, setScrollToTop } from "@/app/utilities/client/moments";
+import {
+  falseCreateOrUpdateStepClientFlow,
+  falseResetStepClientFlow,
+  deleteStepClientFlow,
+  revalidateMomentsClientFlow,
+  falserCreateOrUpdateMomentClientFlow,
+  falseResetMomentClientFlow,
+  falserDeleteMomentClientFlow,
+} from "@/app/actions/client/clientflows/moments";
+import {
+  falseCreateOrUpdateMomentAfterFlow,
+  falseDeleteMomentAfterFlow,
+  resetMomentAfterFlow,
+} from "@/app/actions/client/afterflows/moments";
+import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+
+// Types imports
+
+import type {
+  MouseEvent,
+  FormEvent,
+  TransitionStartFunction,
+  Ref,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SetState } from "@/app/types/client/globals";
+import type {
   UserMomentsToCRUD,
   MomentToCRUD,
   StepFromClient,
@@ -50,62 +111,7 @@ import {
   MomentsDestinationToCRUD,
   StepToCRUD,
   MomentsDateToCRUD,
-} from "@/app/types/moments";
-import {
-  defineCurrentPage,
-  makeStepsCompoundDurationsArray,
-  numStringToTimeString,
-  falseRemoveMomentMessagesAndErrorsCallback,
-  falseRemoveStepsMessagesAndErrorsCallback,
-  rotateStates,
-  roundTimeUpTenMinutes,
-  setScrollToTop,
-  toWordsing,
-} from "@/app/utilities/moments";
-import {
-  Button,
-  Divider,
-  FieldTitle,
-  InputDatetimeLocalControlled,
-  InputNumberControlled,
-  InputText,
-  PageTitle,
-  Section,
-  InputSwitch,
-  SelectWithOptions,
-  Textarea,
-} from "@/app/components/__components__";
-import * as Icons from "@/app/icons/__icons__";
-import {
-  falseCreateOrUpdateStepClientFlow,
-  falseResetStepClientFlow,
-  deleteStepClientFlow,
-  revalidateMomentsClientFlow,
-  falserCreateOrUpdateMomentClientFlow,
-  falseResetMomentClientFlow,
-  falserDeleteMomentClientFlow,
-} from "@/app/flows/client/moments";
-import {
-  momentsPageSearchParamsKeys,
-  SEARCH_FORM_ID,
-  ACTIVITY_OPTIONS,
-  subViewsTitles,
-  viewsTitles,
-  SUBVIEWS,
-  momentFormIds,
-  STEP_DURATION_ORIGINAL,
-  INITIAL_PAGE,
-  VIEWS,
-  views,
-  subViews,
-  subViewsMomentsPageSearchParamsKeys,
-} from "@/app/constants/moments";
-import {
-  falseCreateOrUpdateMomentAfterFlow,
-  falseDeleteMomentAfterFlow,
-  resetMomentAfterFlow,
-} from "@/app/flows/after/moments";
-import { EventStepDurationSchema } from "@/app/validations/steps";
+} from "@/app/types/agnostic/moments";
 
 // Main Component
 

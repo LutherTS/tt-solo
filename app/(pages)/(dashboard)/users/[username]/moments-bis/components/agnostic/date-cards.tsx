@@ -1,18 +1,31 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import clsx from "clsx";
 
-import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllLocalClientComponents from "../client";
+// Components imports
 
-import { numStringToTimeString } from "@/app/utilities/moments";
-import {
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
+import * as AllLocalClientComponents from "../client/components";
+
+// Internal imports
+
+import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
+
+// Types imports
+
+import type {
   DateAdapted,
   DestinationAdapted,
   MomentAdapted,
   StepAdapted,
-} from "@/app/types/moments";
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export function DateCard({
   title,

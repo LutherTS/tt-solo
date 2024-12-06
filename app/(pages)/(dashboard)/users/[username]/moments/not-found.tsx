@@ -1,17 +1,25 @@
-"use client";
-// Enforces a Client Module."use client";
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { useRouter } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+// Components imports
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import * as GlobalClientComponents from "@/app/components/client/components";
+
+/* LOGIC */
 
 export default function NotFound() {
   const { back } = useRouter();
 
   return (
     // no look at the styles, this is really just a placeholder
-    <GlobalServerComponents.FallbackFlex>
+    <GlobalAgnosticComponents.FallbackFlex>
       <p>Mince. Il n'y a personne.</p>
       <p>L'utilisateur demandé n'a pas été trouvé en base de données.</p>
       <GlobalClientComponents.Button
@@ -21,7 +29,7 @@ export default function NotFound() {
       >
         Revenir en arrière
       </GlobalClientComponents.Button>
-    </GlobalServerComponents.FallbackFlex>
+    </GlobalAgnosticComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/not-found
 

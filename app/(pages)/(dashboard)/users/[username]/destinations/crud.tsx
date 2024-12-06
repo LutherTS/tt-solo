@@ -1,25 +1,34 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-import { DestinationToCRUD } from "@/app/types/destinations";
+// Components imports
 
+import * as Icons from "@/app/icons/agnostic/__icons__";
 import {
   Button,
   Divider,
-  FieldTitle,
+  // FieldTitle,
   InputText,
   PageTitle,
   Section,
   Textarea,
-} from "@/app/components/__components__";
-import * as Icons from "@/app/icons/__icons__";
-import { SetState } from "@/app/types/globals";
+} from "@/app/components/client/components/__components__";
 // import { NoDateCard } from "../moments/_old-files_/main-first";
+
+// Types imports
+
+import type { SetState } from "@/app/types/client/globals";
+import type { DestinationToCRUD } from "@/app/types/agnostic/destinations";
+
+/* LOGIC */
 
 // Main Data
 

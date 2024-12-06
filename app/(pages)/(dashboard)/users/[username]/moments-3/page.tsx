@@ -1,20 +1,25 @@
 // "use server"
 // Proposes "use server" to enforce a Server Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import Core from "./server";
-import { Option } from "@/app/types/globals";
+// Components imports
+
+import Core from "./agnostic";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+
+// Internal imports
+
 import {
-  UserMomentsToCRUD,
-  StepFromClient,
-  MomentToCRUD,
-  MomentFormVariant,
-  CreateOrUpdateMomentError,
-  CreateOrUpdateMomentSuccess,
-  SelectMomentDefault,
-} from "@/app/types/moments";
+  momentsPageSearchParamsKeys,
+  INITIAL_PAGE,
+  TAKE,
+  MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
+} from "@/app/constants/agnostic/moments";
 import {
   dateToInputDatetime,
   defineCurrentPage,
@@ -22,14 +27,8 @@ import {
   defineSubView,
   defineView,
   defineWithViewAndMoment,
-} from "@/app/utilities/moments";
-import {
-  momentsPageSearchParamsKeys,
-  INITIAL_PAGE,
-  TAKE,
-  MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
-} from "@/app/constants/moments";
-import { findUserIdByUsername } from "@/app/reads/users";
+} from "@/app/utilities/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
   countUserCurrentMomentsWithContains,
   countUserFutureMomentsWithContains,
@@ -39,17 +38,32 @@ import {
   findUserFutureMomentsWithContains,
   findUserPastMomentsWithContains,
   falseFindUserAllMomentsWithContains,
-} from "@/app/reads/moments";
-import { findDestinationsByUserId } from "@/app/reads/destinations";
+} from "@/app/readings/server/reads/moments";
+import { findDestinationsByUserId } from "@/app/readings/server/reads/destinations";
+import {
+  adaptDestinationsForMoment,
+  falseAdaptMoments,
+} from "@/app/adapts/server/moments";
 import {
   revalidateMomentsServerFlow,
   falseCreateOrUpdateMomentServerFlow,
   falseDeleteMomentServerFlow,
-} from "@/app/flows/server/moments";
-import {
-  adaptDestinationsForMoment,
-  falseAdaptMoments,
-} from "@/app/adapts/moments";
+} from "@/app/actions/server/serverflows/moments";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SelectMomentDefault } from "@/app/types/server/moments";
+import type {
+  UserMomentsToCRUD,
+  StepFromClient,
+  MomentToCRUD,
+  MomentFormVariant,
+  CreateOrUpdateMomentError,
+  CreateOrUpdateMomentSuccess,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
@@ -274,7 +288,7 @@ export default async function MomentsPage({
   }
 
   return (
-    <GlobalServerComponents.ErrorBoundarySuspense>
+    <GlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -291,6 +305,6 @@ export default async function MomentsPage({
         subView={subView}
         moment={moment}
       />
-    </GlobalServerComponents.ErrorBoundarySuspense>
+    </GlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }

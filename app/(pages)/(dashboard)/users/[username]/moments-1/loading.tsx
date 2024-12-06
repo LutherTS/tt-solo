@@ -1,7 +1,13 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
-import { FallbackFlex } from "@/app/components/__components__";
+/* IMPORTS */
+
+// Components imports
+
+import { FallbackFlex } from "@/app/components/client/components/__components__";
+
+/* LOGIC */
 
 export default function Loading() {
   return (

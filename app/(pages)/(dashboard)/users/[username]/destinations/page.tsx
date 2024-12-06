@@ -1,15 +1,27 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { revalidatePath } from "next/cache";
 
+// Components imports
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import { HeaderSegment, PageSegment } from "../moments/agnostic";
+
+// Internal imports
+
 import prisma from "@/prisma/db";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
 
-import { DestinationToCRUD } from "@/app/types/destinations";
-import { dateToInputDatetime } from "@/app/utilities/moments";
+// Types imports
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import { HeaderSegment, PageSegment } from "../moments/server";
+import type { DestinationToCRUD } from "@/app/types/agnostic/destinations";
+
+/* LOGIC */
 
 // the time at rendering as a stable foundation for all time operations
 let now = new Date();
@@ -244,10 +256,10 @@ export default async function DestinationsPage({
     <>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title="Mes destinations" />
+          <GlobalAgnosticComponents.PageTitle title="Mes destinations" />
         </HeaderSegment>
       </PageSegment>
-      <GlobalServerComponents.Divider />
+      <GlobalAgnosticComponents.Divider />
     </>
   );
 }

@@ -1,9 +1,20 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { useEffect } from "react";
 
-import { Button, FallbackFlex } from "@/app/components/__components__";
+// Components imports
+
+import {
+  Button,
+  FallbackFlex,
+} from "@/app/components/client/components/__components__";
+
+/* LOGIC */
 
 export default function MomentsError({
   error,

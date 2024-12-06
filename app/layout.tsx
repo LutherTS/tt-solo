@@ -1,9 +1,19 @@
-import type { Metadata } from "next";
+// "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+
+/* IMPORTS */
+
+// Internal imports
+
 import "./globals.css";
 
+// Types imports
+
+import type { Metadata } from "next";
+
+/* LOGIC */
+
 export const metadata: Metadata = {
-  // title: "TekTIME solo",
-  // description: "My TekTIME demo, now with a database",
   title: "React Paris Meetup demo",
   description: "Incrementally adopting React 19 (via Next.js 15)",
 };
@@ -23,3 +33,4 @@ export default function RootLayout({
 
 // Next.js 15, here I am. // And readying for Next.js 16.
 // pnpm are I go.
+// Updated this bad boy to React 19. // And readying it for React 20.

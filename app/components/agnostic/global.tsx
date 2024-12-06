@@ -1,23 +1,36 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-import * as AllGlobalClientComponents from "../client";
+// Components imports
+
+import * as AllGlobalClientComponents from "../client/components";
 import * as ValidationErrors from "./validation-errors";
 
-import { SetState } from "@/app/types/globals";
-import {
-  FalseCreateOrUpdateMomentState,
-  FormSectionTopic,
-  CreateOrUpdateMomentState,
-} from "@/app/types/moments";
+// Internal imports
+
 import {
   removeMomentMessagesAndErrorsCallback,
   removeStepsMessagesAndErrorsCallback,
-} from "@/app/utilities/moments";
+} from "@/app/utilities/agnostic/moments";
+
+// Types imports
+
+import type { SetState } from "@/app/types/client/globals";
+import type {
+  FalseCreateOrUpdateMomentState,
+  FormSectionTopic,
+  CreateOrUpdateMomentState,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export function Section({
   title,

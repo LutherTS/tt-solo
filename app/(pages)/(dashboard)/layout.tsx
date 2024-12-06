@@ -1,9 +1,17 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// External imports
+
 import clsx from "clsx";
 
-import * as LocalServerComponents from "./server";
+// Components imports
+
+import * as LocalAgnosticComponents from "./agnostic";
+
+/* LOGIC */
 
 export default function DashboardLayout({
   children,
@@ -14,8 +22,8 @@ export default function DashboardLayout({
     <div
       className={clsx("flex min-h-screen", "flex-col-reverse", "md:flex-row")}
     >
-      <LocalServerComponents.SideNav isFixed />
-      <LocalServerComponents.Page>{children}</LocalServerComponents.Page>
+      <LocalAgnosticComponents.SideNav isFixed />
+      <LocalAgnosticComponents.Page>{children}</LocalAgnosticComponents.Page>
     </div>
   );
 }

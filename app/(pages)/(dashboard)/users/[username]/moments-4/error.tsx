@@ -1,10 +1,18 @@
-"use client";
-// Enforces a Client Module.
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { useEffect } from "react";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+// Components imports
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import * as GlobalClientComponents from "@/app/components/client/components";
+
+/* LOGIC */
 
 export default function MomentsError({
   error,
@@ -18,7 +26,7 @@ export default function MomentsError({
   }, [error]);
 
   return (
-    <GlobalServerComponents.FallbackFlex>
+    <GlobalAgnosticComponents.FallbackFlex>
       <p>Oups. Ça ne devait pas se passer comme ça.</p>
       <GlobalClientComponents.Button
         type="button"
@@ -28,6 +36,6 @@ export default function MomentsError({
         Essayer encore
       </GlobalClientComponents.Button>
       <p>Ou essayez simplement de rafraîchir la page.</p>
-    </GlobalServerComponents.FallbackFlex>
+    </GlobalAgnosticComponents.FallbackFlex>
   );
 } // https://nextjs.org/docs/canary/app/api-reference/file-conventions/error

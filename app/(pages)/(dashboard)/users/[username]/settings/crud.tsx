@@ -1,7 +1,13 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
-import { PageTitle } from "@/app/components/__components__";
+/* IMPORTS */
+
+// Components imports
+
+import { PageTitle } from "@/app/components/client/components/__components__";
+
+/* LOGIC */
 
 export function CRUD() {
   return (

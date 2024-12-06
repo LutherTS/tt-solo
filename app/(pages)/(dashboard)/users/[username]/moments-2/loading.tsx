@@ -1,7 +1,13 @@
 // "use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
+/* IMPORTS */
+
+// Components imports
+
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+
+/* LOGIC */
 
 export default function Loading() {
   return (

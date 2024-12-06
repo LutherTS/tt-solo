@@ -1,30 +1,44 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import Core from "./server";
+// Components imports
+
+import Core from "./agnostic";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+
+// Internal imports
+
+import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
+import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
+  fetchMomentFormsDataFlow,
+  fetchReadMomentsViewDataFlow,
+  fetchViewAndMomentDataFlow,
+} from "@/app/fetches/server/moments";
+import {
+  revalidateMomentsServerFlow,
+  createOrUpdateMomentServerFlow,
+  deleteMomentServerFlow,
+} from "@/app/actions/server/serverflows/moments";
+
+// Types imports
+
+import type {
   StepFromClient,
   MomentFormVariant,
   CreateOrUpdateMomentError,
   CreateOrUpdateMomentSuccess,
   MomentAdapted,
-} from "@/app/types/moments";
-import { dateToInputDatetime } from "@/app/utilities/moments";
-import { momentsPageSearchParamsKeys } from "@/app/constants/moments";
-import { findUserIdByUsername } from "@/app/reads/users";
-import {
-  revalidateMomentsServerFlow,
-  createOrUpdateMomentServerFlow,
-  deleteMomentServerFlow,
-} from "@/app/flows/server/moments";
-import {
-  fetchMomentFormsDataFlow,
-  fetchReadMomentsViewDataFlow,
-  fetchViewAndMomentDataFlow,
-} from "@/app/flows/fetch/moments";
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export const dynamic = "force-dynamic";
 // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic // still sometimes it says static route...
@@ -140,7 +154,7 @@ export default async function MomentsPage({
   }
 
   return (
-    <GlobalServerComponents.ErrorBoundarySuspense>
+    <GlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -153,6 +167,6 @@ export default async function MomentsPage({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
       />
-    </GlobalServerComponents.ErrorBoundarySuspense>
+    </GlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }

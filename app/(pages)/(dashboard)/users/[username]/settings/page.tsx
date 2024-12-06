@@ -1,10 +1,15 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
 
-// import { CRUD } from "./crud";
+/* IMPORTS */
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import { HeaderSegment, PageSegment } from "../moments/server";
+// Components imports
+
+// import { CRUD } from "./crud";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import { HeaderSegment, PageSegment } from "../moments/agnostic";
+
+/* LOGIC */
 
 export default function SettingsPage(
   {
@@ -19,10 +24,10 @@ export default function SettingsPage(
     <>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title="Mes paramètres" />
+          <GlobalAgnosticComponents.PageTitle title="Mes paramètres" />
         </HeaderSegment>
       </PageSegment>
-      <GlobalServerComponents.Divider />
+      <GlobalAgnosticComponents.Divider />
     </>
   );
 }

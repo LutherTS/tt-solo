@@ -1,9 +1,20 @@
-"use client"; // Error boundaries must be Client Components
+"use client"; // "use client components"
+// Proposes "use client components" to enforce a Client Components Module.
+
+// Error boundaries must be Client Components
+
+/* IMPORTS */
+
+// External imports
 
 import { useEffect } from "react";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client";
+// Internal imports
+
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+import * as GlobalClientComponents from "@/app/components/client/components";
+
+/* LOGIC */
 
 export default function MomentsError({
   error,
@@ -20,7 +31,7 @@ export default function MomentsError({
   return (
     <html>
       <body>
-        <GlobalServerComponents.FallbackFlex>
+        <GlobalAgnosticComponents.FallbackFlex>
           <p>Oups. Ça ne devait pas DU TOUT se passer comme ça.</p>
           <GlobalClientComponents.Button
             type="button"
@@ -34,7 +45,7 @@ export default function MomentsError({
           </GlobalClientComponents.Button>
           <p>Ou essayez simplement de rafraîchir la page.</p>
           <p>Mais à ce niveau c'est sûrement un TRÈS gros problème interne.</p>
-        </GlobalServerComponents.FallbackFlex>
+        </GlobalAgnosticComponents.FallbackFlex>
       </body>
     </html>
   );

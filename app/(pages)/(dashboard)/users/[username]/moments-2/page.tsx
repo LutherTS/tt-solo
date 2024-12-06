@@ -1,30 +1,30 @@
-// "use server"
+// "use server";
 // Proposes "use server" to enforce a Server Module.
+
+/* IMPORTS */
+
+// External imports
 
 import { notFound } from "next/navigation";
 
-import * as GlobalServerComponents from "@/app/components/agnostic";
-import Core from "./server";
-import { Option } from "@/app/types/globals";
-import {
-  UserMomentsToCRUD,
-  StepFromClient,
-  MomentToCRUD,
-  MomentFormVariant,
-  FalseCreateOrUpdateMomentState,
-  SelectMomentDefault,
-} from "@/app/types/moments";
-import {
-  dateToInputDatetime,
-  defineCurrentPage,
-} from "@/app/utilities/moments";
+// Components imports
+
+import Core from "./agnostic";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
+
+// Internal imports
+
 import {
   momentsPageSearchParamsKeys,
   INITIAL_PAGE,
   TAKE,
   MOMENTS_PAGE_SEARCH_PARAMS_KEYS_OF_PAGES,
-} from "@/app/constants/moments";
-import { findUserIdByUsername } from "@/app/reads/users";
+} from "@/app/constants/agnostic/moments";
+import {
+  dateToInputDatetime,
+  defineCurrentPage,
+} from "@/app/utilities/agnostic/moments";
+import { findUserIdByUsername } from "@/app/readings/server/reads/users";
 import {
   countUserCurrentMomentsWithContains,
   countUserFutureMomentsWithContains,
@@ -34,17 +34,31 @@ import {
   findUserFutureMomentsWithContains,
   findUserPastMomentsWithContains,
   falseFindUserAllMomentsWithContains,
-} from "@/app/reads/moments";
-import { findDestinationsByUserId } from "@/app/reads/destinations";
+} from "@/app/readings/server/reads/moments";
+import { findDestinationsByUserId } from "@/app/readings/server/reads/destinations";
+import {
+  adaptDestinationsForMoment,
+  falseAdaptMoments,
+} from "@/app/adapts/server/moments";
 import {
   falserDeleteMomentServerFlow,
   revalidateMomentsServerFlow,
   falserCreateOrUpdateMomentServerFlow,
-} from "@/app/flows/server/moments";
-import {
-  adaptDestinationsForMoment,
-  falseAdaptMoments,
-} from "@/app/adapts/moments";
+} from "@/app/actions/server/serverflows/moments";
+
+// Types imports
+
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SelectMomentDefault } from "@/app/types/server/moments";
+import type {
+  UserMomentsToCRUD,
+  StepFromClient,
+  MomentToCRUD,
+  MomentFormVariant,
+  FalseCreateOrUpdateMomentState,
+} from "@/app/types/agnostic/moments";
+
+/* LOGIC */
 
 export const dynamic = "force-dynamic";
 
@@ -227,7 +241,7 @@ export default async function MomentsPage({
   }
 
   return (
-    <GlobalServerComponents.ErrorBoundarySuspense>
+    <GlobalAgnosticComponents.ErrorBoundarySuspense>
       <Core
         now={now}
         allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -237,6 +251,6 @@ export default async function MomentsPage({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
       />
-    </GlobalServerComponents.ErrorBoundarySuspense>
+    </GlobalAgnosticComponents.ErrorBoundarySuspense>
   );
 }
