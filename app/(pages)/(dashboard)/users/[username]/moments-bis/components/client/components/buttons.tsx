@@ -26,9 +26,13 @@ import { scrollToTopOfDesiredView } from "@/app/utilities/client/moments";
 
 // Types imports
 
-import { MouseEvent } from "react";
-import { SetState } from "@/app/types/client/globals";
-import { MomentAdapted, SubView, View } from "@/app/types/agnostic/moments";
+import type { MouseEvent } from "react";
+import type { SetState } from "@/app/types/client/globals";
+import type {
+  MomentAdapted,
+  SubView,
+  View,
+} from "@/app/types/agnostic/moments";
 
 /* LOGIC */
 

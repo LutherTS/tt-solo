@@ -7,9 +7,9 @@
 
 import { TAKE } from "@/app/constants/agnostic/moments";
 
-// Typings imports
+// Types imports
 
-import { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
+import type { SelectMomentIdNameAndDates } from "@/app/types/server/moments";
 
 /* LOGIC */
 

@@ -12,7 +12,7 @@ import * as AllLocalAgnosticComponents from "../agnostic";
 
 // Types imports
 
-import {
+import type {
   CreateOrUpdateMoment,
   DeleteMoment,
   MomentFormsData,

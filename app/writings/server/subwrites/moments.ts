@@ -10,7 +10,7 @@ import { endDateAndTime } from "@/app/utilities/agnostic/moments";
 
 // Types imports
 
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 /* LOGIC */
 

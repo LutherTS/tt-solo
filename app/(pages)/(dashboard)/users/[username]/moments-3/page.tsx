@@ -52,9 +52,9 @@ import {
 
 // Types imports
 
-import { Option } from "@/app/types/agnostic/globals";
-import { SelectMomentDefault } from "@/app/types/server/moments";
-import {
+import type { Option } from "@/app/types/agnostic/globals";
+import type { SelectMomentDefault } from "@/app/types/server/moments";
+import type {
   UserMomentsToCRUD,
   StepFromClient,
   MomentToCRUD,

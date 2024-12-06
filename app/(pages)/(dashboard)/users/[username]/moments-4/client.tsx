@@ -89,8 +89,11 @@ import type {
 } from "react";
 import type { ReadonlyURLSearchParams } from "next/navigation";
 import type { MotionValue } from "motion/react";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
-import {
+import type {
+  SetState,
+  TypedURLSearchParams,
+} from "@/app/types/client/globals";
+import type {
   MomentFormVariant,
   RevalidateMoments,
   StepFormVariant,

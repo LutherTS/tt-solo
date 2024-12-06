@@ -30,7 +30,7 @@ import {
 
 // Types imports
 
-import {
+import type {
   StepFromClient,
   MomentFormVariant,
   CreateOrUpdateMomentError,

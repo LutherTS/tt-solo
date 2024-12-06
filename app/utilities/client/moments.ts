@@ -12,13 +12,16 @@ import {
 
 // Types imports
 
-import { ReadonlyURLSearchParams } from "next/navigation";
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import {
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import type {
   MomentsPageSearchParamsHandled,
   View,
 } from "@/app/types/agnostic/moments";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
+import type {
+  SetState,
+  TypedURLSearchParams,
+} from "@/app/types/client/globals";
 
 /* LOGIC */
 

@@ -51,12 +51,12 @@ import { CreateOrUpdateMomentSchema } from "@/app/validations/agnostic/moments";
 
 // Types imports
 
-import { SelectUserIdAndUsername } from "@/app/types/server/users";
-import {
+import type { SelectUserIdAndUsername } from "@/app/types/server/users";
+import type {
   SelectMomentIdNameAndDates,
   SelectMomentDefault,
 } from "@/app/types/server/moments";
-import {
+import type {
   CreateOrUpdateMomentError,
   FalseCreateOrUpdateMomentState,
   CreateOrUpdateMomentSuccess,

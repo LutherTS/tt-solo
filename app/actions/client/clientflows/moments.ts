@@ -26,10 +26,10 @@ import { CreateOrUpdateStepSchema } from "@/app/validations/agnostic/steps";
 
 // Types imports
 
-import { FormEvent, MouseEvent } from "react";
-import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { SetState } from "@/app/types/client/globals";
-import {
+import type { FormEvent, MouseEvent } from "react";
+import type { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import type { SetState } from "@/app/types/client/globals";
+import type {
   FalserDeleteMoment,
   MomentFormVariant,
   MomentToCRUD,

@@ -9,7 +9,7 @@ import { selectDestinationIdAndName } from "@/app/readings/server/subreads/desti
 
 // Types imports
 
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 /* LOGIC */
 

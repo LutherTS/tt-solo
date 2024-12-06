@@ -23,8 +23,8 @@ import {
 
 // Types imports
 
-import { SetState } from "@/app/types/client/globals";
-import {
+import type { SetState } from "@/app/types/client/globals";
+import type {
   FalseCreateOrUpdateMomentState,
   FormSectionTopic,
   CreateOrUpdateMomentState,

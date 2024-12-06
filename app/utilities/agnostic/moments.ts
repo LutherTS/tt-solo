@@ -19,7 +19,7 @@ import {
 
 // Types imports
 
-import {
+import type {
   FalseCreateOrUpdateMomentState,
   StepFromClient,
   View,

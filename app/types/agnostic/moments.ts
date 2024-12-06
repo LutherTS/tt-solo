@@ -14,7 +14,7 @@ import {
 
 // Types imports
 
-import { Option } from "@/app/types/agnostic/globals";
+import type { Option } from "@/app/types/agnostic/globals";
 
 /* LOGIC */
 

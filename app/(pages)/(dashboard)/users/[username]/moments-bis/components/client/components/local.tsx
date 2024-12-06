@@ -70,11 +70,19 @@ import {
 
 // Types imports
 
-import { FormEvent, MouseEvent, Ref, TransitionStartFunction } from "react";
-import { ReadonlyURLSearchParams } from "next/navigation";
-import { MotionValue } from "motion/react";
-import { SetState, TypedURLSearchParams } from "@/app/types/client/globals";
-import {
+import type {
+  FormEvent,
+  MouseEvent,
+  Ref,
+  TransitionStartFunction,
+} from "react";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
+import type {
+  SetState,
+  TypedURLSearchParams,
+} from "@/app/types/client/globals";
+import type {
   MomentFormVariant,
   RevalidateMoments,
   StepFormVariant,

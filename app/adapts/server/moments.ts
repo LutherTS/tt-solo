@@ -17,11 +17,11 @@ import { isSubView, isView } from "@/app/utilities/agnostic/moments";
 
 // Types imports
 
-import { SelectUserIdAndUsername } from "@/app/types/server/users";
-import { SelectMomentDefault } from "@/app/types/server/moments";
-import { SelectDestinationForMoment } from "@/app/types/server/destinations";
-import { Option } from "@/app/types/agnostic/globals";
-import {
+import type { SelectUserIdAndUsername } from "@/app/types/server/users";
+import type { SelectMomentDefault } from "@/app/types/server/moments";
+import type { SelectDestinationForMoment } from "@/app/types/server/destinations";
+import type { Option } from "@/app/types/agnostic/globals";
+import type {
   MomentsAdapted,
   UserMomentsToCRUD,
   View,

@@ -28,7 +28,7 @@ import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
 import type { Option } from "@/app/types/agnostic/globals";
 import type { SetState } from "@/app/types/client/globals";
-import {
+import type {
   MomentFormVariant,
   RevalidateMoments,
   StepFromClient,
