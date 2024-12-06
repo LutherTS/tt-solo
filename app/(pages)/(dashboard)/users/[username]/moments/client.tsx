@@ -18,7 +18,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   AnimatePresence,
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -92,6 +91,7 @@ import type {
   TransitionStartFunction,
 } from "react";
 import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
 import type {
   SetState,
   TypedURLSearchParams,

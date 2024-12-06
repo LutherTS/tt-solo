@@ -11,7 +11,7 @@ import clsx from "clsx";
 // Components imports
 
 import * as LocalClientComponents from "./client";
-import * as GlobalServerComponents from "@/app/components/agnostic";
+import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import * as GlobalClientComponents from "@/app/components/client/components";
 
 // Internal imports
@@ -77,7 +77,7 @@ export default function ServerCore({
   return (
     <>
       <Header view={view} />
-      <GlobalServerComponents.Divider />
+      <GlobalAgnosticComponents.Divider />
       <Main
         now={now}
         allUserMomentsToCRUD={allUserMomentsToCRUD}
@@ -99,7 +99,7 @@ export function Header({ view }: { view: View }) {
     <header>
       <PageSegment>
         <HeaderSegment>
-          <GlobalServerComponents.PageTitle title={viewsTitles[view]} />
+          <GlobalAgnosticComponents.PageTitle title={viewsTitles[view]} />
           <LocalClientComponents.SetViewButton view={view} />
         </HeaderSegment>
       </PageSegment>
@@ -966,7 +966,7 @@ export function StepContents({
   );
 }
 
-const localServerComponents = {
+const localAgnosticComponents = {
   ServerCore,
   Header,
   PageSegment,
@@ -995,4 +995,4 @@ const localServerComponents = {
   StepContents,
 } as const;
 
-export type LocalServerComponentsName = keyof typeof localServerComponents;
+export type LocalAgnosticComponentsName = keyof typeof localAgnosticComponents;

@@ -12,7 +12,6 @@ import { add, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
   motion,
-  MotionValue,
   Reorder,
   useDragControls,
   useMotionValue,
@@ -93,6 +92,7 @@ import type {
   Ref,
 } from "react";
 import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { MotionValue } from "motion/react";
 import type { Option } from "@/app/types/agnostic/globals";
 import type { SetState } from "@/app/types/client/globals";
 import type {

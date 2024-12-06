@@ -968,7 +968,7 @@ export function StepContents({
   );
 }
 
-const localServerComponents = {
+const localAgnosticComponents = {
   ServerCore,
   Header,
   PageSegment,
@@ -997,4 +997,4 @@ const localServerComponents = {
   StepContents,
 } as const;
 
-export type LocalServerComponentsName = keyof typeof localServerComponents;
+export type LocalAgnosticComponentsName = keyof typeof localAgnosticComponents;

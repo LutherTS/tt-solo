@@ -8,7 +8,7 @@
 import { useFormStatus } from "react-dom";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
-// Typings imports
+// Types imports
 
 import type { MouseEventHandler } from "react";
 import type { SetState } from "@/app/types/client/globals";

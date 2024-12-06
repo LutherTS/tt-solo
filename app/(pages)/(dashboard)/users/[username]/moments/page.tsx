@@ -12,7 +12,7 @@ import { notFound } from "next/navigation";
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
 import Core from "./agnostic";
 
-// Internal components
+// Internal imports
 
 import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
 import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
