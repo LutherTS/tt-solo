@@ -9,7 +9,7 @@ import clsx from "clsx";
 // Components imports
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllLocalClientComponents from "../client/components";
+import * as AllLocalClientComponents from "../client";
 
 // Internal imports
 
