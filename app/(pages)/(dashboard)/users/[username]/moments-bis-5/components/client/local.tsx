@@ -1,4 +1,4 @@
-"use agnostic";
+// (directive enforced via index.ts)
 
 /* IMPORTS */
 
@@ -27,7 +27,7 @@ import useKeypress from "react-use-keypress";
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 import * as AllGlobalClientComponents from "@/app/components/client/components";
-import * as AllLocalAgnosticComponents from "../agnostic-none-client"; // if prefixed by "All-", it means the import is from a folder
+import * as AllLocalAgnosticComponents from "../agnostic"; // if prefixed by "All-", it means the import is from a folder
 import * as Buttons from "./buttons";
 
 // Internal imports

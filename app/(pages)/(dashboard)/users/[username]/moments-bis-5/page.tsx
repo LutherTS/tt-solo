@@ -39,26 +39,6 @@ import type {
 
 /* LOGIC */
 
-/* Dummy Form Presenting Data 
-Présenter le projet à React Paris Meetup. 
-Développement de feature
-Faire un formulaire indéniable pour le projet. (nouveau)
-
-De mon point de vue, ce projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.
-
-Réaliser la div d'une étape
-S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.
-10 minutes
-
-Implémenter le système de coulissement des étapes
-Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.
-20 minutes
-
-Finir de vérifier le formulaire
-S'assurer que toutes les fonctionnalités marchent sans problème, avant une future phase de nettoyage de code et de mises en composants.
-30 minutes
-*/
-
 export const dynamic = "force-dynamic"; // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 
 export default async function MomentsPage({
@@ -82,9 +62,14 @@ export default async function MomentsPage({
   let now = dateToInputDatetime(new Date());
   console.log({ now });
 
-  // PART READ (a.k.a database calls)
+  // PART READ
+
+  // params and searchParams awaited on page due to critical
 
   params = await params;
+  searchParams = await searchParams;
+
+  // critical
 
   const username = params.username;
 
@@ -92,11 +77,11 @@ export default async function MomentsPage({
 
   if (!userFound) return notFound();
 
-  const user = userFound;
+  const user = userFound; // objectively, once the user is authenticated and authorized it should be passed down the core, but for now that is beyond the scope of this demo
+
+  const { view, moment } = await fetchViewAndMomentDataFlow(searchParams, user);
 
   // fetches
-
-  const fetchViewAndMomentData = fetchViewAndMomentDataFlow(searchParams, user);
 
   const fetchReadMomentsViewData = fetchReadMomentsViewDataFlow(
     now,
@@ -106,7 +91,9 @@ export default async function MomentsPage({
 
   const fetchMomentFormsData = fetchMomentFormsDataFlow(user);
 
-  // PART WRITE (a.k.a. server actions)
+  // PART WRITE
+
+  // server functions
 
   async function createOrUpdateMoment(
     formData: FormData,
@@ -154,8 +141,10 @@ export default async function MomentsPage({
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
-        // reads as promises
-        fetchViewAndMomentData={fetchViewAndMomentData}
+        // critical (user not included due to scope)
+        view={view}
+        moment={moment}
+        // fetches as promises
         fetchReadMomentsViewData={fetchReadMomentsViewData}
         fetchMomentFormsData={fetchMomentFormsData}
         // writes as Server Functions
