@@ -45,7 +45,7 @@ export const navLinks: NavLink[] = [
   {
     id: "Moments",
     label: "Moments",
-    href: "/moments-bis",
+    href: "/moments-bis-5",
     icon: "CalendarDaysOutlineIcon",
   },
   {

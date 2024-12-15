@@ -23,7 +23,9 @@ export default function DashboardLayout({
       className={clsx("flex min-h-screen", "flex-col-reverse", "md:flex-row")}
     >
       <LocalAgnosticComponents.SideNav isFixed />
-      <LocalAgnosticComponents.Page>{children}</LocalAgnosticComponents.Page>
+      <LocalAgnosticComponents.PageWrapper>
+        {children}
+      </LocalAgnosticComponents.PageWrapper>
     </div>
   );
 }

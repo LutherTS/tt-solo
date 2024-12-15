@@ -4,7 +4,7 @@
 
 // Components imports
 
-import Core from "./components/server/core";
+import Core from "./core";
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 
 // Internal imports

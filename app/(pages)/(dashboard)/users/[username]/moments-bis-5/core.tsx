@@ -5,7 +5,7 @@
 // Components imports
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllLocalAgnosticComponents from "../agnostic";
+import * as AllLocalAgnosticComponents from "./components/agnostic";
 
 // Types imports
 
