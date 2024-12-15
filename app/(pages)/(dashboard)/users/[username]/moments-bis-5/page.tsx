@@ -2,10 +2,6 @@
 
 /* IMPORTS */
 
-// External imports
-
-import { notFound } from "next/navigation";
-
 // Components imports
 
 import Core from "./components/server/core";
@@ -15,7 +11,7 @@ import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 
 import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
 import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
-import { findUserIdByUsername } from "@/app/readings/server/reads/users";
+import { fetchUserDataFlow } from "@/app/fetches/server/users";
 import {
   fetchMomentFormsDataFlow,
   fetchReadMomentsViewDataFlow,
@@ -64,20 +60,9 @@ export default async function MomentsPage({
 
   // PART READ
 
-  // params and searchParams awaited on page due to critical
-
-  params = await params;
-  searchParams = await searchParams;
-
   // critical
 
-  const username = params.username;
-
-  const userFound = await findUserIdByUsername(username);
-
-  if (!userFound) return notFound();
-
-  const user = userFound; // objectively, once the user is authenticated and authorized it should be passed down the core, but for now that is beyond the scope of this demo
+  const { user } = await fetchUserDataFlow(params);
 
   const { view, moment } = await fetchViewAndMomentDataFlow(searchParams, user);
 
@@ -104,9 +89,7 @@ export default async function MomentsPage({
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
-    // On top of modules, "use server functions" would enforce a Server Functions Module.
+    "use server";
 
     return await createOrUpdateMomentServerFlow(
       formData,
@@ -123,15 +106,13 @@ export default async function MomentsPage({
   async function deleteMoment(
     momentAdapted: MomentAdapted | undefined,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
+    "use server";
 
     return await deleteMomentServerFlow(momentAdapted, user);
   }
 
   async function revalidateMoments(): Promise<void> {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
+    "use server";
 
     return await revalidateMomentsServerFlow(user);
   }

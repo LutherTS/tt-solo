@@ -17,11 +17,15 @@ import type { Prisma } from "@prisma/client";
 
 /* LOGIC */
 
+// params types
+
+export type MomentsPageParamsRaw = Parameters<typeof MomentsPage>[0]["params"];
+
 // searchParams types
 
 export type MomentsPageSearchParamsRaw = Parameters<
   typeof MomentsPage
->[0]["searchParams"]; //
+>[0]["searchParams"];
 
 // select types
 
