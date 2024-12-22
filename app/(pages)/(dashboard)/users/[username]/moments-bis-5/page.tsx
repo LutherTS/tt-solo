@@ -1,12 +1,6 @@
-// "use server"
-// Proposes "use server" to enforce a Server Module.
+// no directive
 
 /* IMPORTS */
-
-// External imports
-
-// import { use as utilizeResource } from "react";
-import { notFound } from "next/navigation";
 
 // Components imports
 
@@ -17,7 +11,7 @@ import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 
 import { momentsPageSearchParamsKeys } from "@/app/constants/agnostic/moments";
 import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
-import { findUserIdByUsername } from "@/app/readings/server/reads/users";
+import { fetchUserDataFlow } from "@/app/fetches/server/users";
 import {
   fetchMomentFormsDataFlow,
   fetchReadMomentsViewDataFlow,
@@ -40,26 +34,6 @@ import type {
 } from "@/app/types/agnostic/moments";
 
 /* LOGIC */
-
-/* Dummy Form Presenting Data 
-Présenter le projet à React Paris Meetup. 
-Développement de feature
-Faire un formulaire indéniable pour le projet. (nouveau)
-
-De mon point de vue, ce projet a besoin de profiter de son statut de nouveau projet pour partir sur une stack des plus actuelles afin d'avoir non seulement une longueur d'avance sur la compétition, mais aussi d'être préparé pour l'avenir. C'est donc ce que je tiens à démontrer avec cet exercice.
-
-Réaliser la div d'une étape
-S'assurer que chaque étape ait un format qui lui correspond, en l'occurrence en rapport avec le style de la création d'étape.
-10 minutes
-
-Implémenter le système de coulissement des étapes
-Alors, ça c'est plus pour la fin mais, il s'agit d'utiliser Framer Motion et son composant Reorder pour pouvoir réorganiser les étapes, et même visiblement en changer l'ordre.
-20 minutes
-
-Finir de vérifier le formulaire
-S'assurer que toutes les fonctionnalités marchent sans problème, avant une future phase de nettoyage de code et de mises en composants.
-30 minutes
-*/
 
 export const dynamic = "force-dynamic"; // https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config#dynamic
 
@@ -84,23 +58,15 @@ export default async function MomentsPage({
   let now = dateToInputDatetime(new Date());
   console.log({ now });
 
-  // PART READ (a.k.a database calls)
+  // PART READ
 
-  params = await params;
+  // critical
 
-  const username = params.username;
+  const { user } = await fetchUserDataFlow(params);
 
-  const userFound = await findUserIdByUsername(username);
-  // const userFound = utilizeResource(findUserIdByUsername(username)); // "When fetching data in a Server Component, prefer async and await over use. async and await pick up rendering from the point where await was invoked, whereas use re-renders the component after the data is resolved." https://19.react.dev/reference/react/use (More like it just doesn't work in Server Components with a --legacy-peer-deps React 19 setup.)
-  // Here's what I will do. For now I'm gonna use use as it is and within the limitations of what it is: a Hook, since that's how the error sees it. It's once use will really work on the server (which can only happen once React 19 is officially both stable and supported), that I'll go out on a limb and will rename it utilizeResource.
-
-  if (!userFound) return notFound();
-
-  const user = userFound;
+  const { view, moment } = await fetchViewAndMomentDataFlow(searchParams, user);
 
   // fetches
-
-  const fetchViewAndMomentData = fetchViewAndMomentDataFlow(searchParams, user);
 
   const fetchReadMomentsViewData = fetchReadMomentsViewDataFlow(
     now,
@@ -110,7 +76,9 @@ export default async function MomentsPage({
 
   const fetchMomentFormsData = fetchMomentFormsDataFlow(user);
 
-  // PART WRITE (a.k.a. server actions)
+  // PART WRITE
+
+  // server functions
 
   async function createOrUpdateMoment(
     formData: FormData,
@@ -121,9 +89,7 @@ export default async function MomentsPage({
     destinationSelect: boolean,
     activitySelect: boolean,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
-    // On top of modules, "use server functions" would enforce a Server Functions Module.
+    "use server";
 
     return await createOrUpdateMomentServerFlow(
       formData,
@@ -140,15 +106,13 @@ export default async function MomentsPage({
   async function deleteMoment(
     momentAdapted: MomentAdapted | undefined,
   ): Promise<CreateOrUpdateMomentError | CreateOrUpdateMomentSuccess> {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
+    "use server";
 
     return await deleteMomentServerFlow(momentAdapted, user);
   }
 
   async function revalidateMoments(): Promise<void> {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
+    "use server";
 
     return await revalidateMomentsServerFlow(user);
   }
@@ -158,8 +122,10 @@ export default async function MomentsPage({
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
-        // reads as promises
-        fetchViewAndMomentData={fetchViewAndMomentData}
+        // critical (user not included due to scope)
+        view={view}
+        moment={moment}
+        // fetches as promises
         fetchReadMomentsViewData={fetchReadMomentsViewData}
         fetchMomentFormsData={fetchMomentFormsData}
         // writes as Server Functions

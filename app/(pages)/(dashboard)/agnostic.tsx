@@ -115,7 +115,7 @@ export function SideNavContents() {
   );
 }
 
-export function Page({
+export function PageWrapper({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -138,7 +138,7 @@ const localAgnosticComponents = {
   SideNavRecursive,
   SideNavContainer,
   SideNavContents,
-  Page,
+  PageWrapper,
 } as const;
 
 export type LocalAgnosticComponentsName = keyof typeof localAgnosticComponents;
