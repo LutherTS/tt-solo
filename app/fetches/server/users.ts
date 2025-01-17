@@ -17,7 +17,7 @@ import type { MomentsPageParamsRaw } from "@/app/types/server/moments";
 
 /* LOGIC */
 
-export async function fetchUserDataFlow(params: MomentsPageParamsRaw) {
+export const fetchUserDataFlow = async (params: MomentsPageParamsRaw) => {
   params = await params;
 
   const username = params.username;
@@ -27,4 +27,4 @@ export async function fetchUserDataFlow(params: MomentsPageParamsRaw) {
   if (!user) return notFound();
 
   return { user };
-}
+};

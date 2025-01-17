@@ -35,13 +35,13 @@ export default async function Page({
   );
 }
 
-const Carousel = ({
+function Carousel({
   items,
   currentIndex,
 }: {
   items: string[];
   currentIndex: number;
-}) => {
+}) {
   return (
     <div>
       <div
@@ -59,13 +59,13 @@ const Carousel = ({
       <RightClientButton currentIndex={currentIndex} />
     </div>
   );
-};
+}
 
-const PreviousIndexFormAndButton = ({
+function PreviousIndexFormAndButton({
   currentIndex,
 }: {
   currentIndex: number;
-}) => {
+}) {
   async function previousIndex() {
     "use server"; // "use server functions"
     // Proposes "use server functions" to enforce a Server Fonction.
@@ -80,7 +80,7 @@ const PreviousIndexFormAndButton = ({
       <button type="submit">Previous</button>
     </Form>
   );
-};
+}
 
 /* Notes
 Switching pages with redirect provokes a full refresh. (Which is weird because I don't remember it being like this on my moments page?) So that's why a client component as usual would be required for navigation.

@@ -39,10 +39,10 @@ import type { SubView } from "@/app/types/agnostic/moments";
 
 // ...Okay. There's (or was?) a serious issue of consistency here.
 
-export async function fetchViewAndMomentDataFlow(
+export const fetchViewAndMomentDataFlow = async (
   searchParams: MomentsPageSearchParamsRaw,
   user: SelectUserIdAndUsername,
-) {
+) => {
   // await delay(5000, () => console.log("After 5 seconds")); // The reason why the whole UI blocks with this is because I need the view-moment combo to properly show the text. (I could load everything but the text if I wanted though, but I think other components currently depend on that centrality.)
 
   searchParams = await searchParams;
@@ -54,13 +54,13 @@ export async function fetchViewAndMomentDataFlow(
   );
 
   return adaptedViewAndMomentCombined(adaptedView, adaptedMoment);
-}
+};
 
-export async function fetchReadMomentsViewDataFlow(
+export const fetchReadMomentsViewDataFlow = async (
   now: string,
   user: SelectUserIdAndUsername,
   searchParams: MomentsPageSearchParamsRaw,
-) {
+) => {
   // await delay(20000, () => console.log("After 20 seconds")); // with this and the use hook, since I delay the ReadMomentsView, I can already see and use the CreateMomentView in the meantime
 
   const userId = user.id;
@@ -104,7 +104,7 @@ export async function fetchReadMomentsViewDataFlow(
     userMomentsAdaptedCombined,
     subView,
   };
-}
+};
 
 const fetchSubViewDataSubFlow = async (
   now: string,
@@ -154,7 +154,9 @@ const fetchSubViewDataSubFlow = async (
   return { dates, pageDetails };
 };
 
-export async function fetchMomentFormsDataFlow(user: SelectUserIdAndUsername) {
+export const fetchMomentFormsDataFlow = async (
+  user: SelectUserIdAndUsername,
+) => {
   // read
   const userDestinations = await findDestinationsByUserId(user.id);
 
@@ -162,4 +164,4 @@ export async function fetchMomentFormsDataFlow(user: SelectUserIdAndUsername) {
   const destinationOptions = adaptDestinationsForMoment(userDestinations);
 
   return { destinationOptions };
-}
+};
