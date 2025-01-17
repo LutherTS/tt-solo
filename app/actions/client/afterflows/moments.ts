@@ -11,10 +11,7 @@ import {
   subViewsPages,
   views,
 } from "@/app/constants/agnostic/moments";
-import {
-  scrollToSection,
-  setScrollToTop,
-} from "@/app/utilities/client/moments";
+import { scrollToSection } from "@/app/utilities/client/moments";
 
 // Types imports
 
@@ -25,8 +22,6 @@ import type {
   TypedURLSearchParams,
 } from "@/app/types/client/globals";
 import type {
-  FalseCreateOrUpdateMomentState,
-  View,
   MomentFormVariant,
   CreateOrUpdateMomentState,
   CreateOrUpdateMomentError,
@@ -123,21 +118,6 @@ export const resetMomentAfterFlow = (variant: MomentFormVariant) => {
 
 // scrolls back to yourMoment's section if there's a mistake, or leads to the top of views.READ_MOMENTS after the moment is successfully deleted
 // (every time deleteMomentAction is done)
-export const falseDeleteMomentAfterFlow = (
-  variant: MomentFormVariant,
-  createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
-  setView: SetState<View>,
-  setIsCRUDOpSuccessful: SetState<boolean>,
-) => {
-  if (createOrUpdateMomentState) {
-    scrollToSection(momentFormIds[variant].yourMoment);
-  } else {
-    setIsCRUDOpSuccessful(true);
-
-    setScrollToTop(views.READ_MOMENTS, setView);
-  }
-};
-
 export const deleteMomentAfterFlow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState:

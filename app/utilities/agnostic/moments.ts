@@ -10,22 +10,14 @@ import { ToWords } from "to-words";
 
 // Internal imports
 
-import {
-  subViews,
-  SUBVIEWS,
-  VIEWS,
-  views,
-} from "@/app/constants/agnostic/moments";
+import { SUBVIEWS, VIEWS, views } from "@/app/constants/agnostic/moments";
 
 // Types imports
 
 import type {
-  FalseCreateOrUpdateMomentState,
   StepFromClient,
   View,
-  MomentToCRUD,
   SubView,
-  UserMomentsToCRUD,
   CreateOrUpdateMomentState,
 } from "@/app/types/agnostic/moments";
 
@@ -126,12 +118,6 @@ export const makeStepsCompoundDurationsArray = (steps: StepFromClient[]) => {
 };
 
 // cleanse createOrUpdateMomentState from its steps-related properties only, leaving moment-related properties untouched
-export const falseRemoveStepsMessagesAndErrorsCallback = (
-  s: FalseCreateOrUpdateMomentState,
-): FalseCreateOrUpdateMomentState => {
-  return { ...s, stepsMessages: {}, stepsErrors: {} };
-};
-
 // I NEED TO BE VERY CAREFUL HOW I IMPORT THIS (circular dependency)
 export const removeStepsMessagesAndErrorsCallback = (
   s: CreateOrUpdateMomentState,
@@ -142,12 +128,6 @@ export const removeStepsMessagesAndErrorsCallback = (
 };
 
 // same as above but for the moment part of the form
-export const falseRemoveMomentMessagesAndErrorsCallback = (
-  s: FalseCreateOrUpdateMomentState,
-) => {
-  return { ...s, momentMessages: {}, momentErrors: {} };
-};
-
 // I NEED TO BE VERY CAREFUL HOW I IMPORT THIS (circular dependency)
 export const removeMomentMessagesAndErrorsCallback = (
   s: CreateOrUpdateMomentState,
@@ -179,70 +159,9 @@ export const isView = (value: any): value is View => {
   return VIEWS.includes(value);
 };
 
-// defines the current view from the view searchParam whether it is specified (as a string) or not (as undefined)
-export const defineView = (rawView: string | undefined): View => {
-  if (isView(rawView)) return rawView;
-  else return views.CREATE_MOMENT;
-};
-
-// defines the current moment from the momentId searchParam whether it is specified (as a string) or not (as undefined), based on the moments currently shown on the page // didn't need to be async too
-export const defineMoment = async (
-  rawMomentId: string | undefined,
-  uniqueShownMoments: MomentToCRUD[],
-): Promise<MomentToCRUD | undefined> => {
-  if (!rawMomentId) return undefined;
-  else return uniqueShownMoments.find((e) => e.id === rawMomentId);
-};
-
-// defines both the view and moment depending on one another, so that the views.UPDATE_MOMENT cannot be shown if there is no moment
-export const defineWithViewAndMoment = (
-  view: View,
-  moment: MomentToCRUD | undefined,
-): { view: View; moment: MomentToCRUD | undefined } => {
-  switch (view) {
-    case views.UPDATE_MOMENT:
-      if (moment) return { view, moment };
-      else return { view: views.READ_MOMENTS, moment };
-    case views.READ_MOMENTS:
-      return { view, moment: undefined };
-    case views.CREATE_MOMENT:
-      return { view, moment: undefined };
-
-    default:
-      return { view, moment };
-  }
-};
-
 // type predicate for the subView searchParam
 export const isSubView = (value: any): value is SubView => {
   return SUBVIEWS.includes(value);
-};
-
-// defines the current read-moments view subView from the subView searchParam whether it is specified (as a string) or not (as undefined)
-export const defineSubView = (
-  rawSubView: string | undefined,
-  allUserMomentsToCRUD: UserMomentsToCRUD[],
-): SubView => {
-  if (isSubView(rawSubView)) return rawSubView;
-  else {
-    const [
-      _realUserMoments,
-      realPastMoments,
-      realCurrentMoments,
-      realFutureMoments,
-    ] = allUserMomentsToCRUD;
-
-    let initialSubView: SubView =
-      realCurrentMoments.dates.length > 0
-        ? subViews.CURRENT_MOMENTS
-        : realFutureMoments.dates.length > 0
-          ? subViews.FUTURE_MOMENTS
-          : realPastMoments.dates.length > 0
-            ? subViews.PAST_MOMENTS
-            : subViews.ALL_MOMENTS;
-
-    return initialSubView;
-  }
 };
 
 /* Notes

@@ -24,10 +24,8 @@ import {
 // Types imports
 
 import type { SetState } from "@/app/types/client/globals";
-import type {
-  FormSectionTopic,
-  CreateOrUpdateMomentState,
-} from "@/app/types/agnostic/moments";
+import type { FormSectionTopic } from "@/app/types/agnostic/globals";
+import type { CreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
 
 /* LOGIC */
 
@@ -172,7 +170,7 @@ export function FormSection({
                 />
               )}
               {subError ? (
-                <AllGlobalClientComponents.FalseFormValidationError
+                <AllGlobalClientComponents.FormValidationError
                   error={subError}
                 />
               ) : (

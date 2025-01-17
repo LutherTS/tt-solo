@@ -12,10 +12,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
 import type { MouseEventHandler } from "react";
 import type { SetState } from "@/app/types/client/globals";
-import type {
-  FalseCreateOrUpdateMomentState,
-  CreateOrUpdateMomentState,
-} from "@/app/types/agnostic/moments";
+import type { CreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
 
 /* LOGIC */
 
@@ -108,37 +105,6 @@ export function Button({
   );
 }
 
-export function FalseFormValidationError({
-  error,
-  setCreateOrUpdateMomentState,
-  removeMessagesAndErrorsCallback,
-}: {
-  error: string;
-  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
-  removeMessagesAndErrorsCallback?: (
-    s: FalseCreateOrUpdateMomentState,
-  ) => FalseCreateOrUpdateMomentState; // could be more precise but true
-}) {
-  function handleClick() {
-    if (setCreateOrUpdateMomentState && removeMessagesAndErrorsCallback)
-      setCreateOrUpdateMomentState(removeMessagesAndErrorsCallback);
-  }
-
-  return (
-    <p
-      className={clsx(
-        "max-w-prose text-sm text-pink-500",
-        setCreateOrUpdateMomentState &&
-          removeMessagesAndErrorsCallback &&
-          "hover:cursor-pointer",
-      )}
-      onClick={handleClick}
-    >
-      {error}
-    </p>
-  );
-}
-
 export function FormValidationError({
   error,
   setCreateOrUpdateMomentState,
@@ -172,7 +138,6 @@ export function FormValidationError({
 
 const globalClientComponents = {
   Button,
-  FalseFormValidationError,
   FormValidationError,
 } as const;
 

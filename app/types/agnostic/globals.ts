@@ -21,3 +21,5 @@ export type NavLink = {
   href: string;
   icon: AllGlobalIcons.AllGlobalIconName;
 };
+
+export type FormSectionTopic = "moment" | "steps";
