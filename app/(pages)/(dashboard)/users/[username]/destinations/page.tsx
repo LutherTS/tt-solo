@@ -10,7 +10,10 @@ import { revalidatePath } from "next/cache";
 // Components imports
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import { HeaderSegment, PageSegment } from "../moments/agnostic";
+import {
+  HeaderSegment,
+  PageSegment,
+} from "../moments-agnostic/components/agnostic";
 
 // Internal imports
 

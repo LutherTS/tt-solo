@@ -39,39 +39,6 @@ import type {
 // scrolls back to the section of the form that possesses new errors
 // or to the correct subView when successfully submitted
 // (every time createOrUpdateMomentAction is done)
-export const falseCreateOrUpdateMomentAfterFlow = (
-  variant: MomentFormVariant,
-  createOrUpdateMomentState: FalseCreateOrUpdateMomentState,
-  setCreateOrUpdateMomentState: SetState<FalseCreateOrUpdateMomentState>,
-  setView: SetState<View>,
-  setIsCRUDOpSuccessful: SetState<boolean>,
-) => {
-  if (createOrUpdateMomentState) {
-    switch (createOrUpdateMomentState.errorScrollPriority) {
-      case "moment":
-        scrollToSection(momentFormIds[variant].yourMoment);
-        break;
-      case "steps":
-        scrollToSection(momentFormIds[variant].itsSteps);
-        break;
-
-      default:
-        break;
-    }
-
-    setCreateOrUpdateMomentState((s) => {
-      delete s?.errorScrollPriority;
-      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete
-      return s;
-    });
-  } else {
-    setIsCRUDOpSuccessful(true);
-
-    setScrollToTop(views.READ_MOMENTS, setView);
-    // https://stackoverflow.com/questions/76543082/how-could-i-change-state-on-server-actions-in-nextjs-13
-  }
-};
-
 export const createOrUpdateMomentAfterFlow = (
   variant: MomentFormVariant,
   createOrUpdateMomentState:
