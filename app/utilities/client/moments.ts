@@ -19,31 +19,32 @@ import type {
   View,
 } from "@/app/types/agnostic/moments";
 import type {
-  SetState,
+  // SetState,
   TypedURLSearchParams,
 } from "@/app/types/client/globals";
 
 /* LOGIC */
 
 // rotates states by setting any state array enum to the right or to the left
-export const rotateStates = <T>(
-  // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
-  direction: "left" | "right",
-  setState: SetState<T>,
-  statesArray: readonly T[],
-  state: T,
-) => {
-  if (direction === "right") {
-    setState(
-      statesArray.at(
-        statesArray.indexOf(state) + 1 > statesArray.length - 1
-          ? 0
-          : statesArray.indexOf(state) + 1,
-      )!,
-    );
-  } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
-};
+// export const rotateStates = <T>(
+//   // https://stackoverflow.com/questions/32308370/what-is-the-syntax-for-typescript-arrow-functions-with-generics
+//   direction: "left" | "right",
+//   setState: SetState<T>,
+//   statesArray: readonly T[],
+//   state: T,
+// ) => {
+//   if (direction === "right") {
+//     setState(
+//       statesArray.at(
+//         statesArray.indexOf(state) + 1 > statesArray.length - 1
+//           ? 0
+//           : statesArray.indexOf(state) + 1,
+//       )!,
+//     );
+//   } else setState(statesArray.at(statesArray.indexOf(state) - 1)!);
+// };
 
+// I no longer use rotateStates since states are now handled on the URL, but I do instead rotate searchParams.
 export const rotateSearchParams = (
   direction: "left" | "right",
   paramsKey: string,
@@ -73,18 +74,19 @@ export const rotateSearchParams = (
 };
 
 // scroll back to top when changing a view
-export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
-  // https://www.bajorunas.tech/blog/typescript-generics-inheritance
-  desiredView: DesiredView,
-  setDesiredView: SetState<DesiredViews>,
-) => {
-  // setDesiredView will need to be replace by something replacing the URL.
-  // But since the arguments are going to different it's also going to be different function altogether.
-  setDesiredView(desiredView);
-  scrollTo({ top: 0 });
+// currently unused because rendered ineffective, but needs to be fixed eventually
+// export const setScrollToTop = <DesiredView extends DesiredViews, DesiredViews>(
+//   // https://www.bajorunas.tech/blog/typescript-generics-inheritance
+//   desiredView: DesiredView,
+//   setDesiredView: SetState<DesiredViews>,
+// ) => {
+//   // setDesiredView will need to be replace by something replacing the URL.
+//   // But since the arguments are going to different it's also going to be different function altogether.
+//   setDesiredView(desiredView);
+//   scrollTo({ top: 0 });
 
-  // Since subView is going to be below motion.div and will have no other choice than to be the child of a Client Component, I don't see a point in having it in the URL just yet. But so far, on the client SetViewButton, I'm reading the view from the URL.
-};
+//   // Since subView is going to be below motion.div and will have no other choice than to be the child of a Client Component, I don't see a point in having it in the URL just yet. But so far, on the client SetViewButton, I'm reading the view from the URL.
+// };
 
 // incoming to navigate from the URL
 // ...

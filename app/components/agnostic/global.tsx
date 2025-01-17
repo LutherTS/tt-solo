@@ -24,11 +24,8 @@ import {
 // Types imports
 
 import type { SetState } from "@/app/types/client/globals";
-import type {
-  FalseCreateOrUpdateMomentState,
-  FormSectionTopic,
-  CreateOrUpdateMomentState,
-} from "@/app/types/agnostic/moments";
+import type { FormSectionTopic } from "@/app/types/agnostic/globals";
+import type { CreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
 
 /* LOGIC */
 
@@ -53,10 +50,10 @@ export function Section({
   id?: string;
   error?: string;
   subError?: string;
-  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
+  setCreateOrUpdateMomentState?: SetState<CreateOrUpdateMomentState>;
   removeMessagesAndErrorsCallback?: (
-    s: FalseCreateOrUpdateMomentState,
-  ) => FalseCreateOrUpdateMomentState;
+    s: CreateOrUpdateMomentState,
+  ) => CreateOrUpdateMomentState;
   children: React.ReactNode;
 }) {
   return (
@@ -76,7 +73,7 @@ export function Section({
             <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
             <div className="flex flex-col gap-y-2">
               {description && showDescription && (
-                <ValidationErrors.FalseFormDescriptionOrError
+                <ValidationErrors.FormDescriptionOrError
                   error={error}
                   description={description}
                   setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
@@ -86,7 +83,7 @@ export function Section({
                 />
               )}
               {subError ? (
-                <AllGlobalClientComponents.FalseFormValidationError
+                <AllGlobalClientComponents.FormValidationError
                   error={subError}
                 />
               ) : (
@@ -173,7 +170,7 @@ export function FormSection({
                 />
               )}
               {subError ? (
-                <AllGlobalClientComponents.FalseFormValidationError
+                <AllGlobalClientComponents.FormValidationError
                   error={subError}
                 />
               ) : (

@@ -5,7 +5,7 @@
 
 // Components imports
 
-import { PageTitle } from "@/app/components/client/components/__components__";
+import { PageTitle } from "@/app/components/agnostic";
 
 /* LOGIC */
 

@@ -11,17 +11,13 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
 // Components imports
 
-import * as Icons from "@/app/icons/agnostic/__icons__";
+import { ArrowPathSolidIcon } from "@/app/icons/agnostic";
+import { Divider, PageTitle, Section } from "@/app/components/agnostic";
 import {
   Button,
-  Divider,
-  // FieldTitle,
   InputText,
-  PageTitle,
-  Section,
   Textarea,
-} from "@/app/components/client/components/__components__";
-// import { NoDateCard } from "../moments/_old-files_/main-first";
+} from "@/app/components/client/components";
 
 // Types imports
 
@@ -158,7 +154,7 @@ function ReadDestinationsView({
         >
           {/* real occupied space */}
           <span className="invisible static">
-            <Icons.ArrowPathSolid />
+            <ArrowPathSolidIcon />
           </span>
           {/* gradient text */}
           <span
@@ -167,7 +163,7 @@ function ReadDestinationsView({
               "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
             )}
           >
-            <Icons.ArrowPathSolid className="size-6 text-blue-950" />
+            <ArrowPathSolidIcon className="size-6 text-blue-950" />
           </span>
           {/* white background */}
           <div

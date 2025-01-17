@@ -12,42 +12,9 @@ import * as AllGlobalClientComponents from "../client/components/global";
 // Types imports
 
 import type { SetState } from "@/app/types/client/globals";
-import type {
-  FalseCreateOrUpdateMomentState,
-  CreateOrUpdateMomentState,
-} from "@/app/types/agnostic/moments";
+import type { CreateOrUpdateMomentState } from "@/app/types/agnostic/moments";
 
 /* LOGIC */
-
-export function FalseFormDescriptionOrError({
-  error,
-  description,
-  setCreateOrUpdateMomentState,
-  removeMessagesAndErrorsCallback,
-}: {
-  error?: string;
-  description: string;
-  setCreateOrUpdateMomentState?: SetState<FalseCreateOrUpdateMomentState>;
-  removeMessagesAndErrorsCallback?: (
-    s: FalseCreateOrUpdateMomentState,
-  ) => FalseCreateOrUpdateMomentState;
-}) {
-  return (
-    <>
-      {error &&
-      setCreateOrUpdateMomentState &&
-      removeMessagesAndErrorsCallback ? (
-        <AllGlobalClientComponents.FalseFormValidationError
-          error={error}
-          setCreateOrUpdateMomentState={setCreateOrUpdateMomentState}
-          removeMessagesAndErrorsCallback={removeMessagesAndErrorsCallback}
-        />
-      ) : (
-        <p className="max-w-prose text-sm text-neutral-500">{description}</p>
-      )}
-    </>
-  );
-}
 
 export function FormDescriptionOrError({
   error,
@@ -121,7 +88,6 @@ export function InputDescriptionOrError({
 }
 
 const validationErrorsAgnosticComponents = {
-  FalseFormDescriptionOrError,
   FormDescriptionOrError,
   InputValidationError,
   InputDescriptionOrError,

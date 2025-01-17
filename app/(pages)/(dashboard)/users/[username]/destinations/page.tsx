@@ -5,12 +5,15 @@
 
 // External imports
 
-import { revalidatePath } from "next/cache";
+// import { revalidatePath } from "next/cache";
 
 // Components imports
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import { HeaderSegment, PageSegment } from "../moments/agnostic";
+import {
+  HeaderSegment,
+  PageSegment,
+} from "../moments-agnostic/components/agnostic";
 
 // Internal imports
 
@@ -19,7 +22,7 @@ import { dateToInputDatetime } from "@/app/utilities/agnostic/moments";
 
 // Types imports
 
-import type { DestinationToCRUD } from "@/app/types/agnostic/destinations";
+// import type { DestinationToCRUD } from "@/app/types/agnostic/destinations";
 
 /* LOGIC */
 
@@ -49,202 +52,202 @@ export default async function DestinationsPage({
 
   // The take and skip, a.k.a. pagination stuff takes time to implement because I need enough seeds to test it all. That being said, with that logic here, it's already in place and just needs the proper data from the search params and the URLs made on pagination buttons.
 
-  const TAKE = 10;
-  const DEFAULT_PAGE = 1;
+  // const TAKE = 10;
+  // const DEFAULT_PAGE = 1;
 
-  const [
-    userDestinations,
-    userDestinationsAllMomentsCount,
-    userDestinationsPastMomentsCount,
-    userDestinationsCurrentMomentsCount,
-    userDestinationsFutureMomentsCount,
-  ] = await Promise.all([
-    prisma.destination.findMany({
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: TAKE,
-      skip: (DEFAULT_PAGE - 1) * TAKE,
-    }),
-    prisma.destination.findMany({
-      select: {
-        _count: {
-          select: {
-            moments: true,
-          },
-        },
-      },
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: TAKE,
-      skip: (DEFAULT_PAGE - 1) * TAKE,
-    }),
-    prisma.destination.findMany({
-      select: {
-        _count: {
-          select: {
-            moments: {
-              where: {
-                endDateAndTime: {
-                  lt: nowString,
-                },
-              },
-            },
-          },
-        },
-      },
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: TAKE,
-      skip: (DEFAULT_PAGE - 1) * TAKE,
-    }),
-    prisma.destination.findMany({
-      select: {
-        _count: {
-          select: {
-            moments: {
-              where: {
-                AND: [
-                  { startDateAndTime: { lte: nowString } },
-                  { endDateAndTime: { gte: nowString } },
-                ],
-              },
-            },
-          },
-        },
-      },
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: TAKE,
-      skip: (DEFAULT_PAGE - 1) * TAKE,
-    }),
-    prisma.destination.findMany({
-      select: {
-        _count: {
-          select: {
-            moments: {
-              where: {
-                startDateAndTime: {
-                  gt: nowString,
-                },
-              },
-            },
-          },
-        },
-      },
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        updatedAt: "desc",
-      },
-      take: TAKE,
-      skip: (DEFAULT_PAGE - 1) * TAKE,
-    }),
-  ]);
+  // const [
+  //   userDestinations,
+  //   userDestinationsAllMomentsCount,
+  //   userDestinationsPastMomentsCount,
+  //   userDestinationsCurrentMomentsCount,
+  //   userDestinationsFutureMomentsCount,
+  // ] = await Promise.all([
+  //   prisma.destination.findMany({
+  //     where: {
+  //       userId: user.id,
+  //     },
+  //     orderBy: {
+  //       updatedAt: "desc",
+  //     },
+  //     take: TAKE,
+  //     skip: (DEFAULT_PAGE - 1) * TAKE,
+  //   }),
+  //   prisma.destination.findMany({
+  //     select: {
+  //       _count: {
+  //         select: {
+  //           moments: true,
+  //         },
+  //       },
+  //     },
+  //     where: {
+  //       userId: user.id,
+  //     },
+  //     orderBy: {
+  //       updatedAt: "desc",
+  //     },
+  //     take: TAKE,
+  //     skip: (DEFAULT_PAGE - 1) * TAKE,
+  //   }),
+  //   prisma.destination.findMany({
+  //     select: {
+  //       _count: {
+  //         select: {
+  //           moments: {
+  //             where: {
+  //               endDateAndTime: {
+  //                 lt: nowString,
+  //               },
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //     where: {
+  //       userId: user.id,
+  //     },
+  //     orderBy: {
+  //       updatedAt: "desc",
+  //     },
+  //     take: TAKE,
+  //     skip: (DEFAULT_PAGE - 1) * TAKE,
+  //   }),
+  //   prisma.destination.findMany({
+  //     select: {
+  //       _count: {
+  //         select: {
+  //           moments: {
+  //             where: {
+  //               AND: [
+  //                 { startDateAndTime: { lte: nowString } },
+  //                 { endDateAndTime: { gte: nowString } },
+  //               ],
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //     where: {
+  //       userId: user.id,
+  //     },
+  //     orderBy: {
+  //       updatedAt: "desc",
+  //     },
+  //     take: TAKE,
+  //     skip: (DEFAULT_PAGE - 1) * TAKE,
+  //   }),
+  //   prisma.destination.findMany({
+  //     select: {
+  //       _count: {
+  //         select: {
+  //           moments: {
+  //             where: {
+  //               startDateAndTime: {
+  //                 gt: nowString,
+  //               },
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //     where: {
+  //       userId: user.id,
+  //     },
+  //     orderBy: {
+  //       updatedAt: "desc",
+  //     },
+  //     take: TAKE,
+  //     skip: (DEFAULT_PAGE - 1) * TAKE,
+  //   }),
+  // ]);
   // console.log(userDestinations);
   // console.log(userDestinationsAllMomentsCount);
   // console.log(userDestinationsPastMomentsCount);
   // console.log(userDestinationsCurrentMomentsCount);
   // console.log(userDestinationsFutureMomentsCount);
 
-  const destinationsToCRUD: DestinationToCRUD[] = userDestinations.map(
-    (e, i) => {
-      return {
-        id: e.id,
-        ideal: e.name,
-        aspiration: e.description,
-        allMomentsCount: userDestinationsAllMomentsCount[i]._count.moments,
-        pastMomentsCount: userDestinationsPastMomentsCount[i]._count.moments,
-        currentMomentsCount:
-          userDestinationsCurrentMomentsCount[i]._count.moments,
-        futureMomentsCount:
-          userDestinationsFutureMomentsCount[i]._count.moments,
-      };
-    },
-  );
+  // const destinationsToCRUD: DestinationToCRUD[] = userDestinations.map(
+  //   (e, i) => {
+  //     return {
+  //       id: e.id,
+  //       ideal: e.name,
+  //       aspiration: e.description,
+  //       allMomentsCount: userDestinationsAllMomentsCount[i]._count.moments,
+  //       pastMomentsCount: userDestinationsPastMomentsCount[i]._count.moments,
+  //       currentMomentsCount:
+  //         userDestinationsCurrentMomentsCount[i]._count.moments,
+  //       futureMomentsCount:
+  //         userDestinationsFutureMomentsCount[i]._count.moments,
+  //     };
+  //   },
+  // );
   // console.log(destinationsToCRUD);
 
-  async function createOrUpdateDestination(
-    variant: "creating" | "updating",
-    destinationToCRUD: DestinationToCRUD | undefined,
-    formData: FormData,
-  ) {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
-    // On top of modules, "use server functions" would enforce a Server Functions Module.
+  // async function createOrUpdateDestination(
+  //   variant: "creating" | "updating",
+  //   destinationToCRUD: DestinationToCRUD | undefined,
+  //   formData: FormData,
+  // ) {
+  //   "use server"; // "use server functions"
+  //   // Proposes "use server functions" to enforce a Server Fonction.
+  //   // On top of modules, "use server functions" would enforce a Server Functions Module.
 
-    let ideal = formData.get("ideal");
-    let aspiration = formData.get("aspiration");
+  //   let ideal = formData.get("ideal");
+  //   let aspiration = formData.get("aspiration");
 
-    if (typeof ideal !== "string" || typeof aspiration !== "string")
-      return console.error("The destination form was not correctly submitted.");
+  //   if (typeof ideal !== "string" || typeof aspiration !== "string")
+  //     return console.error("The destination form was not correctly submitted.");
 
-    if (!user) return console.error("Somehow a user was not found.");
+  //   if (!user) return console.error("Somehow a user was not found.");
 
-    if (variant === "creating") {
-      await prisma.destination.create({
-        data: {
-          name: ideal,
-          description: aspiration,
-          userId: user.id,
-        },
-      });
-    }
+  //   if (variant === "creating") {
+  //     await prisma.destination.create({
+  //       data: {
+  //         name: ideal,
+  //         description: aspiration,
+  //         userId: user.id,
+  //       },
+  //     });
+  //   }
 
-    if (variant === "updating") {
-      if (!destinationToCRUD)
-        return console.error("Somehow a destination was not passed.");
+  //   if (variant === "updating") {
+  //     if (!destinationToCRUD)
+  //       return console.error("Somehow a destination was not passed.");
 
-      await prisma.destination.update({
-        where: {
-          id: destinationToCRUD.id,
-        },
-        data: {
-          name: ideal,
-          description: aspiration,
-          userId: user.id,
-        },
-      });
-    }
+  //     await prisma.destination.update({
+  //       where: {
+  //         id: destinationToCRUD.id,
+  //       },
+  //       data: {
+  //         name: ideal,
+  //         description: aspiration,
+  //         userId: user.id,
+  //       },
+  //     });
+  //   }
 
-    revalidatePath(`/users/${username}/destinations`);
-  }
+  //   revalidatePath(`/users/${username}/destinations`);
+  // }
 
-  async function deleteDestination(destinationToCRUD: DestinationToCRUD) {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
+  // async function deleteDestination(destinationToCRUD: DestinationToCRUD) {
+  //   "use server"; // "use server functions"
+  //   // Proposes "use server functions" to enforce a Server Fonction.
 
-    await prisma.destination.delete({
-      where: {
-        id: destinationToCRUD.id,
-      },
-    });
+  //   await prisma.destination.delete({
+  //     where: {
+  //       id: destinationToCRUD.id,
+  //     },
+  //   });
 
-    revalidatePath(`/users/${username}/destinations`);
-  }
+  //   revalidatePath(`/users/${username}/destinations`);
+  // }
 
-  async function revalidateDestinations() {
-    "use server"; // "use server functions"
-    // Proposes "use server functions" to enforce a Server Fonction.
+  // async function revalidateDestinations() {
+  //   "use server"; // "use server functions"
+  //   // Proposes "use server functions" to enforce a Server Fonction.
 
-    revalidatePath(`/users/${username}/destinations`);
-  }
+  //   revalidatePath(`/users/${username}/destinations`);
+  // }
 
   return (
     // <CRUD
