@@ -15,7 +15,7 @@ import {
   selectMomentDefault,
   // selectMomentIdNameAndDates,
   whereMomentId,
-} from "@/app/readings/server/reads/subreads/moments";
+} from "@/app/reads/server/subreads/moments";
 
 /* LOGIC */
 

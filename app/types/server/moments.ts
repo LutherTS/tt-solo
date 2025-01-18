@@ -9,7 +9,7 @@ import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments-agno
 import {
   selectMomentDefault,
   selectMomentIdNameAndDates,
-} from "@/app/readings/server/reads/subreads/moments";
+} from "@/app/reads/server/subreads/moments";
 
 // Types imports
 

@@ -7,7 +7,7 @@
 
 // Internal imports
 
-import { findMomentByIdAndUserId } from "@/app/readings/server/reads/moments";
+import { findMomentByIdAndUserId } from "@/app/reads/server/moments";
 import { subViews, TAKE, views } from "@/app/constants/agnostic/moments";
 import {
   decodeHashidToUUID,

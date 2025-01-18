@@ -7,7 +7,7 @@
 
 import prisma from "@/prisma/db";
 import { dataCreateStep } from "./subwrites/steps";
-import { whereByMomentId } from "@/app/readings/server/reads/subreads/steps";
+import { whereByMomentId } from "@/app/reads/server/subreads/steps";
 
 /* LOGIC */
 

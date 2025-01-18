@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
 
 // Internal imports
 
-import { findUserIdByUsername } from "@/app/readings/server/reads/users";
+import { findUserIdByUsername } from "@/app/reads/server/users";
 
 // Types imports
 

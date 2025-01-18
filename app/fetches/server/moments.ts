@@ -5,7 +5,7 @@
 
 // Internal imports
 
-import { findDestinationsByUserId } from "@/app/readings/server/reads/destinations";
+import { findDestinationsByUserId } from "@/app/reads/server/destinations";
 import {
   adaptDestinationsForMoment,
   adaptedViewAndMomentCombined,

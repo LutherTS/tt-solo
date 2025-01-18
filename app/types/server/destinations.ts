@@ -5,7 +5,7 @@
 
 // Internal imports
 
-import { selectDestinationIdAndName } from "@/app/readings/server/reads/subreads/destinations";
+import { selectDestinationIdAndName } from "@/app/reads/server/subreads/destinations";
 
 // Types imports
 
