@@ -22,7 +22,7 @@ import {
   whereShownBeforeFutureMoments,
   whereShownBeforePastMoments,
   whereUserMoments,
-} from "../subreads/moments";
+} from "./subreads/moments";
 import { TAKE } from "@/app/constants/agnostic/moments";
 
 // Types imports

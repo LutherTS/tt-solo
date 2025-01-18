@@ -5,7 +5,7 @@
 
 // Internal imports
 
-import { selectUserIdAndUsername } from "@/app/readings/server/subreads/users";
+import { selectUserIdAndUsername } from "@/app/readings/server/reads/subreads/users";
 
 // Types imports
 

@@ -6,8 +6,8 @@
 // Internal imports
 
 import prisma from "@/prisma/db";
-import { dataCreateStep } from "../subwrites/steps";
-import { whereByMomentId } from "@/app/readings/server/subreads/steps";
+import { dataCreateStep } from "./subwrites/steps";
+import { whereByMomentId } from "@/app/readings/server/reads/subreads/steps";
 
 /* LOGIC */
 
