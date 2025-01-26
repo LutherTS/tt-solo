@@ -5,7 +5,7 @@
 
 // Internal imports
 
-import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments-agnostic/page";
+import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments-agnostic20/page";
 import {
   selectMomentDefault,
   selectMomentIdNameAndDates,
