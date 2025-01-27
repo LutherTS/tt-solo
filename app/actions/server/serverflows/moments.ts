@@ -23,19 +23,19 @@ import {
   countUserPastMomentsShownBeforeMoment,
   findMomentByIdAndUserId,
   findMomentByNameAndUserId,
-} from "@/app/readings/server/reads/moments";
-import { findDestinationIdByNameAndUserId } from "@/app/readings/server/reads/destinations";
+} from "@/app/reads/server/moments";
+import { findDestinationIdByNameAndUserId } from "@/app/reads/server/destinations";
 import {
   createMomentAndDestination,
   createMomentFromFormData,
   deleteMomentByMomentId,
   updateMomentAndDestination,
   updateMomentFromFormData,
-} from "@/app/writings/server/writes/moments";
+} from "@/app/writes/server/moments";
 import {
   createStepFromSteps,
   deleteMomentStepsByMomentId,
-} from "@/app/writings/server/writes/steps";
+} from "@/app/writes/server/steps";
 import { adaptMoment } from "@/app/adapts/server/moments";
 import {
   defaultMomentErrorMessages,

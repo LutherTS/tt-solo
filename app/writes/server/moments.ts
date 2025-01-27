@@ -10,12 +10,12 @@ import {
   dataConnectMomentDestination,
   dataCreateMomentDestination,
   dataCreateMomentWithoutDestination,
-} from "../subwrites/moments";
+} from "./subwrites/moments";
 import {
   selectMomentDefault,
   // selectMomentIdNameAndDates,
   whereMomentId,
-} from "@/app/readings/server/subreads/moments";
+} from "@/app/reads/server/subreads/moments";
 
 /* LOGIC */
 

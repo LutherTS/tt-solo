@@ -5,11 +5,11 @@
 
 // Internal imports
 
-import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments-agnostic/page";
+import MomentsPage from "@/app/(pages)/(dashboard)/users/[username]/moments-agnostic20/page";
 import {
   selectMomentDefault,
   selectMomentIdNameAndDates,
-} from "@/app/readings/server/subreads/moments";
+} from "@/app/reads/server/subreads/moments";
 
 // Types imports
 

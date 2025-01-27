@@ -12,7 +12,7 @@ import {
   selectDestinationIdAndName,
   whereByNameAndUserId,
   whereByUserId,
-} from "../subreads/destinations";
+} from "./subreads/destinations";
 
 /* LOGIC */
 

@@ -14,7 +14,7 @@ import {
   findUserPastMomentsWithContains,
   countUserAllMomentsWithContains,
   findUserAllMomentsWithContains,
-} from "@/app/readings/server/reads/moments";
+} from "@/app/reads/server/moments";
 import { subViews } from "../agnostic/moments";
 
 /* LOGIC */

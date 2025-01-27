@@ -6,7 +6,7 @@
 // Internal imports
 
 import prisma from "@/prisma/db";
-import { selectUserIdAndUsername, whereByUsername } from "../subreads/users";
+import { selectUserIdAndUsername, whereByUsername } from "./subreads/users";
 
 /* LOGIC */
 
