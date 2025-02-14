@@ -34,3 +34,4 @@ export default function RootLayout({
 // Next.js 15, here I am. // And readying for Next.js 16.
 // pnpm are I go.
 // Updated this bad boy to React 19. // And readying it for React 20.
+// About to update to Tailwind CSS v4.
