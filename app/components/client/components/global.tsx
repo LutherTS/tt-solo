@@ -51,14 +51,14 @@ export function Button({
   // add a disable that does not affect disable styles //
 
   const destroy =
-    "w-fit px-1 text-sm text-blue-500 hover:text-blue-600 focus-visible:rounded focus-visible:outline-blue-500 active:text-blue-400";
+    "w-fit px-1 text-sm text-blue-500 hover:text-blue-600 focus-visible:rounded-sm focus-visible:outline-blue-500 active:text-blue-400";
   const destroyStep = clsx(
-    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded focus-visible:outline-cyan-500 active:text-cyan-400",
+    "w-fit px-1 text-sm text-cyan-500 hover:text-cyan-600 focus-visible:rounded-sm focus-visible:outline-cyan-500 active:text-cyan-400",
     showDisabledStyles && "disabled:grayscale disabled:hover:text-cyan-500",
   );
-  const notDestroy = "w-full rounded border py-2";
+  const notDestroy = "w-full rounded-sm border py-2";
   const neutral =
-    "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:!bg-neutral-200 hover:!text-neutral-950 focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
+    "border-[#e5e7eb] bg-neutral-100 px-3 text-neutral-900 hover:bg-neutral-200! hover:text-neutral-950! focus-visible:outline-neutral-900 group-hover/field:bg-neutral-50 group-hover/field:text-neutral-800";
   // disabled:border-neutral-800 disabled:bg-neutral-800
   const confirm = clsx(
     "border-blue-500 bg-blue-500 px-6 text-white hover:border-blue-600 hover:bg-blue-600 focus-visible:outline-blue-500 active:border-blue-400 active:bg-blue-400",

@@ -39,7 +39,7 @@ export function DateCard({
   realMoments: MomentAdapted[];
 }) {
   return (
-    <div className="rounded-xl bg-white p-5 shadow-sm">
+    <div className="rounded-xl bg-white p-5 shadow-xs">
       <section className="grid items-baseline gap-8 md:grid-cols-[1fr_2fr]">
         <div>
           <h2 className="text-lg font-semibold text-blue-950">{title}</h2>
@@ -147,7 +147,7 @@ function StepInDateCard({ e4 }: { e4: StepAdapted }) {
 
 export function NoDateCard() {
   return (
-    <div className="rounded-xl bg-white p-5 shadow-sm">
+    <div className="rounded-xl bg-white p-5 shadow-xs">
       <AllGlobalAgnosticComponents.FieldTitle
         title={"Pas de moment... pour le moment. 😅"}
       />

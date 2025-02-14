@@ -26,7 +26,7 @@ export function SideNavLink({ navLink }: { navLink: NavLink }) {
   return (
     <Link
       href={path + navLink.href}
-      className={`flex flex-col items-center justify-between gap-2 rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-8 ${pathname === path + navLink.href ? "focus-visible:outline-cyan-950" : "focus-visible:outline-white"}`}
+      className={`flex flex-col items-center justify-between gap-2 rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-offset-8 ${pathname === path + navLink.href ? "focus-visible:outline-cyan-950" : "focus-visible:outline-white"}`}
     >
       <div className="flex size-10 items-center justify-center rounded-full">
         <Icon

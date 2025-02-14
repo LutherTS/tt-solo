@@ -1,12 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 .custom-scrollbar-hiding {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 .custom-scrollbar-hiding::-webkit-scrollbar {
   display: none;
 }
