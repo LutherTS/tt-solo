@@ -148,7 +148,7 @@ function ReadDestinationsView({
           }}
           className={clsx(
             "flex h-9 items-center justify-center px-4 py-2",
-            "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+            "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2",
             "focus-visible:outline-cyan-500",
           )}
         >
@@ -160,7 +160,7 @@ function ReadDestinationsView({
           <span
             className={clsx(
               "flex h-9 items-center justify-center px-4 py-2",
-              "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+              "absolute inset-0 z-20 rounded-full bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text",
             )}
           >
             <ArrowPathSolidIcon className="size-6 text-blue-950" />

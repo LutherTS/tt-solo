@@ -208,7 +208,7 @@ export function SetSubViewButton({
       onClick={handleSubView}
       className={clsx(
         className,
-        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        "group relative rounded-full text-sm font-semibold tracking-widest text-transparent uppercase outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2",
         subView === e && "focus-visible:outline-blue-500",
         subView !== e && "focus-visible:outline-cyan-500",
       )}
@@ -219,7 +219,7 @@ export function SetSubViewButton({
       <span
         className={clsx(
           className,
-          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+          "absolute inset-0 z-20 rounded-full bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text",
         )}
       >
         {subViewsTitles[e]}
@@ -228,13 +228,14 @@ export function SetSubViewButton({
       <div
         className={clsx(
           "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
+          subView !== e && "group-hover:bg-white/65",
         )}
       ></div>
       {/* gradient border */}
       <div
         className={clsx(
           "absolute inset-0 rounded-full",
-          subView === e && "bg-gradient-to-r from-blue-500 to-cyan-500",
+          subView === e && "bg-linear-to-r from-blue-500 to-cyan-500",
           subView !== e && "bg-transparent",
         )}
       ></div>
@@ -260,7 +261,7 @@ export function RevalidateMomentsButton({
       disabled={allButtonsDisabled || isRevalidateMomentsPending}
       className={clsx(
         "flex h-9 items-center justify-center px-4 py-2",
-        "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-none focus-visible:outline-2 focus-visible:outline-offset-2",
+        "relative rounded-full text-sm font-semibold tracking-widest text-transparent uppercase outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2",
         "focus-visible:outline-cyan-500",
       )}
     >
@@ -272,7 +273,7 @@ export function RevalidateMomentsButton({
       <span
         className={clsx(
           "flex h-9 items-center justify-center px-4 py-2",
-          "absolute inset-0 z-20 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text",
+          "absolute inset-0 z-20 rounded-full bg-linear-to-r from-blue-500 to-cyan-500 bg-clip-text",
         )}
       >
         <AllGlobalIcons.ArrowPathSolidIcon className="size-6 text-blue-950" />
@@ -346,9 +347,9 @@ export function PaginationButton({
     <button
       onClick={() => handlePagination(direction, subView)}
       disabled={allButtonsDisabled || disabled}
-      className="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
+      className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-teal-500 disabled:text-neutral-200"
     >
-      <div className="rounded-lg bg-white p-2 shadow">
+      <div className="rounded-lg bg-white p-2 shadow-sm">
         <Icon className={iconClassName} />
       </div>
     </button>

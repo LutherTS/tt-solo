@@ -101,23 +101,23 @@ export function InputText({
               if (event.key === "Enter") event.preventDefault();
             }}
             className={clsx(
-              "peer relative z-30 w-full rounded border-2 border-transparent bg-white bg-clip-padding",
+              "peer relative z-30 w-full rounded-sm border-2 border-transparent bg-white bg-clip-padding",
               notDatetimeLocalPadding,
-              "outline-none",
+              "outline-hidden",
             )}
           />
           {/* gradient border */}
           {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
-          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          <div className="absolute inset-0 z-20 rounded-sm bg-linear-to-b from-[#5882f2] to-[#0fb8cb]"></div>
           {/* background merging foundation */}
           {/* [calc(100%+4px)] adds the original outline-offset-2 */}
           {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
-          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          <div className="absolute inset-0 z-10 -mt-[2px] -ml-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
           {/* gradient focus-visible */}
           {/* [calc(100%+8px)] adds the original outline-2 */}
           {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
           {/* outline's rounded is more pronounced, lg is the exact fit */}
-          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
+          <div className="invisible absolute inset-0 z-0 -mt-[4px] -ml-[4px] size-[calc(100%+8px)] rounded-lg bg-linear-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
     </AllGlobalAgnosticComponents.FieldFlex>
@@ -197,23 +197,23 @@ export function InputTextControlled({
               if (event.key === "Enter") event.preventDefault();
             }}
             className={clsx(
-              "peer relative z-30 w-full rounded border-2 border-transparent bg-white bg-clip-padding",
+              "peer relative z-30 w-full rounded-sm border-2 border-transparent bg-white bg-clip-padding",
               notDatetimeLocalPadding,
-              "outline-none",
+              "outline-hidden",
             )}
           />
           {/* gradient border */}
           {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
-          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          <div className="absolute inset-0 z-20 rounded-sm bg-linear-to-b from-[#5882f2] to-[#0fb8cb]"></div>
           {/* background merging foundation */}
           {/* [calc(100%+4px)] adds the original outline-offset-2 */}
           {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
-          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          <div className="absolute inset-0 z-10 -mt-[2px] -ml-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
           {/* gradient focus-visible */}
           {/* [calc(100%+8px)] adds the original outline-2 */}
           {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
           {/* outline's rounded is more pronounced, lg is the exact fit */}
-          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
+          <div className="invisible absolute inset-0 z-0 -mt-[4px] -ml-[4px] size-[calc(100%+8px)] rounded-lg bg-linear-to-b from-[#5882f2] to-[#0fb8cb] peer-focus-visible:visible"></div>
         </div>
       )}
     </AllGlobalAgnosticComponents.FieldFlex>
@@ -301,7 +301,7 @@ export function SelectWithOptions({
                 // baseInputTexts,
                 notDatetimeLocalPadding,
                 // focusVisibleTexts,
-                "w-full rounded border-2 border-transparent bg-white bg-clip-padding outline-none",
+                "w-full rounded-sm border-2 border-transparent bg-white bg-clip-padding outline-hidden",
               )}
               id={id}
               name={name}
@@ -323,16 +323,16 @@ export function SelectWithOptions({
           </div>
           {/* gradient border */}
           {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
-          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          <div className="absolute inset-0 z-20 rounded-sm bg-linear-to-b from-[#5882f2] to-[#0fb8cb]"></div>
           {/* background merging foundation */}
           {/* [calc(100%+4px)] adds the original outline-offset-2 */}
           {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
-          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          <div className="absolute inset-0 z-10 -mt-[2px] -ml-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
           {/* gradient focus-visible */}
           {/* [calc(100%+8px)] adds the original outline-2 */}
           {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
           {/* outline's rounded is more pronounced, lg is the exact fit */}
-          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
+          <div className="invisible absolute inset-0 z-0 -mt-[4px] -ml-[4px] size-[calc(100%+8px)] rounded-lg bg-linear-to-b from-[#5882f2] to-[#0fb8cb] peer-has-focus-visible:visible"></div>
         </div>
       )}
     </AllGlobalAgnosticComponents.FieldFlex>
@@ -420,7 +420,7 @@ export function SelectWithOptionsControlled({
                 // baseInputTexts,
                 notDatetimeLocalPadding,
                 // focusVisibleTexts,
-                "w-full rounded border-2 border-transparent bg-white bg-clip-padding outline-none",
+                "w-full rounded-sm border-2 border-transparent bg-white bg-clip-padding outline-hidden",
               )}
               id={id}
               name={name}
@@ -445,16 +445,16 @@ export function SelectWithOptionsControlled({
           </div>
           {/* gradient border */}
           {/* from-blue-500 original #5882f2 to-cyan-500 original #0fb8cb */}
-          <div className="absolute inset-0 z-20 rounded bg-gradient-to-b from-[#5882f2] to-[#0fb8cb]"></div>
+          <div className="absolute inset-0 z-20 rounded-sm bg-linear-to-b from-[#5882f2] to-[#0fb8cb]"></div>
           {/* background merging foundation */}
           {/* [calc(100%+4px)] adds the original outline-offset-2 */}
           {/* -ml-[2px] -mt-[2px] make up for it in positioning */}
-          <div className="absolute inset-0 z-10 -ml-[2px] -mt-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
+          <div className="absolute inset-0 z-10 -mt-[2px] -ml-[2px] size-[calc(100%+4px)] rounded-md bg-teal-50"></div>
           {/* gradient focus-visible */}
           {/* [calc(100%+8px)] adds the original outline-2 */}
           {/* -ml-[4px] -mt-[4px] make up for it in positioning */}
           {/* outline's rounded is more pronounced, lg is the exact fit */}
-          <div className="invisible absolute inset-0 z-0 -ml-[4px] -mt-[4px] size-[calc(100%+8px)] rounded-lg bg-gradient-to-b from-[#5882f2] to-[#0fb8cb] peer-has-[:focus-visible]:visible"></div>
+          <div className="invisible absolute inset-0 z-0 -mt-[4px] -ml-[4px] size-[calc(100%+8px)] rounded-lg bg-linear-to-b from-[#5882f2] to-[#0fb8cb] peer-has-focus-visible:visible"></div>
         </div>
       )}
     </AllGlobalAgnosticComponents.FieldFlex>
@@ -479,7 +479,7 @@ export function InputSwitch({
 }) {
   return (
     <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <div className="flex select-none items-center gap-4">
+      <div className="flex items-center gap-4 select-none">
         <AllGlobalAgnosticComponents.FieldTitle title={label} />
         <Switch.Root
           name={name}
@@ -488,12 +488,12 @@ export function InputSwitch({
           defaultChecked={defaultChecked}
           required={required}
           className={clsx(
-            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
+            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition hover:bg-blue-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-300 data-[state=checked]:bg-cyan-500 data-[state=checked]:hover:bg-cyan-400 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-300",
           )}
         >
           <Switch.Thumb
             className={clsx(
-              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
+              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-xs transition duration-150 data-[state=checked]:bg-white",
               "data-[state=checked]:translate-x-5",
             )}
           />
@@ -525,19 +525,19 @@ export function InputSwitchControlled({
 }) {
   return (
     <AllGlobalAgnosticComponents.FieldFlex isLabel>
-      <div className="flex select-none items-center gap-4">
+      <div className="flex items-center gap-4 select-none">
         <AllGlobalAgnosticComponents.FieldTitle title={label} />
         <Switch.Root
           name={name}
           checked={definedValue}
           onCheckedChange={definedOnValueChange}
           className={clsx(
-            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-400",
+            "w-12 rounded-full bg-blue-500 p-[2px] shadow-inner shadow-black/50 transition hover:bg-blue-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400 active:bg-blue-300 data-[state=checked]:bg-cyan-500 data-[state=checked]:hover:bg-cyan-400 data-[state=checked]:focus-visible:outline-cyan-400 data-[state=checked]:active:bg-cyan-300",
           )}
         >
           <Switch.Thumb
             className={clsx(
-              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-sm transition duration-150 data-[state=checked]:bg-white",
+              "block size-6 rounded-[calc(1.5rem/2)] bg-gray-100 shadow-xs transition duration-150 data-[state=checked]:bg-white",
               "data-[state=checked]:translate-x-5",
             )}
           />
@@ -679,7 +679,7 @@ export function InputNumber({
         {children}
       </div>
       {description && (
-        <p className="select-none text-sm text-neutral-500">{description}</p>
+        <p className="text-sm text-neutral-500 select-none">{description}</p>
       )}
       <div className="grid grid-cols-2 gap-4">
         <input

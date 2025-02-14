@@ -61,8 +61,8 @@ export function SideNavContainer({
         isFixed && "fixed",
         isInvisible && "invisible",
         "z-50 shrink-0 from-[#5882f2] to-[#0fb8cb] p-4",
-        "inset-x-0 bottom-0 top-auto h-32 w-auto bg-gradient-to-r",
-        "md:inset-y-0 md:left-0 md:right-auto md:h-auto md:w-36 md:bg-gradient-to-b",
+        "inset-x-0 bottom-0 top-auto h-32 w-auto bg-linear-to-r",
+        "md:inset-y-0 md:left-0 md:right-auto md:h-auto md:w-36 md:bg-linear-to-b",
       )}
     >
       {children}
@@ -82,7 +82,7 @@ export function SideNavContents() {
       <div
         className={clsx(
           "custom-scrollbar-hiding",
-          "flex size-full items-center rounded outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
+          "flex size-full items-center rounded-sm outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
           "flex-row gap-4 overflow-x-auto overflow-y-clip px-2 py-2",
           "md:flex-col md:gap-8 md:overflow-y-auto md:overflow-x-clip md:px-0 md:py-2",
         )}
@@ -97,7 +97,7 @@ export function SideNavContents() {
       </div>
       {/* <div
         className={clsx(
-          "relative size-16 flex-shrink-0",
+          "relative size-16 shrink-0",
           "mb-0, mr-4",
           "md:mb-4 md:mr-0",
         )}
