@@ -228,15 +228,15 @@ export function SetSubViewButton({
       <div
         className={clsx(
           "absolute inset-0 z-10 rounded-full border-2 border-transparent bg-white bg-clip-content",
-          subView !== e && "group-hover:bg-white/65",
         )}
       ></div>
       {/* gradient border */}
       <div
         className={clsx(
-          "absolute inset-0 rounded-full",
+          "absolute inset-0 rounded-full transition-colors duration-150",
           subView === e && "bg-linear-to-r from-blue-500 to-cyan-500",
-          subView !== e && "bg-transparent",
+          subView !== e &&
+            "bg-transparent group-hover:bg-linear-to-r group-hover:from-blue-500/60 group-hover:to-cyan-500/60",
         )}
       ></div>
     </button>
