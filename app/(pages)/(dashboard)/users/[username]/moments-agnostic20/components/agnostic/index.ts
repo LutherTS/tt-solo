@@ -1,4 +1,4 @@
-// "use client";
+// no directive
 
 /* IMPORTS */
 
