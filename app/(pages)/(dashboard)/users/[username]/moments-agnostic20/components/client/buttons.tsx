@@ -1,4 +1,4 @@
-"use client";
+// (directive enforced via index.ts)
 
 /* IMPORTS */
 

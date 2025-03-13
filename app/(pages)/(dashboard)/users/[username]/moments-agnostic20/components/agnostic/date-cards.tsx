@@ -1,4 +1,4 @@
-// no directive
+// (directive enforced via index.ts)
 
 /* IMPORTS */
 

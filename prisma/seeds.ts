@@ -89,7 +89,7 @@ async function seed() {
   console.log(`Creating destinations data.`);
   const destinationsData = [
     {
-      name: "Présenter le projet au React Paris Meetup.",
+      name: "Présenter le projet au Meetup.",
     },
   ];
   console.log({ destinationsData });

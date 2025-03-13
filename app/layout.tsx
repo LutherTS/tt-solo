@@ -14,7 +14,7 @@ import type { Metadata } from "next";
 /* LOGIC */
 
 export const metadata: Metadata = {
-  title: "React Paris Meetup demo",
+  title: "Meetup demo",
   description: "Incrementally adopting React 19 (via Next.js 15)",
 };
 
