@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack -p 3001",
+    "dev": "next dev -p 3001",
+    "turbo": "next dev --turbopack -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -22,7 +23,7 @@
     "debounce": "^2.2.0",
     "hashids": "^2.3.0",
     "motion": "12.0.0-alpha.2",
-    "next": "^15.1.5",
+    "next": "^15.2.2",
     "pnpm": "^9.15.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
