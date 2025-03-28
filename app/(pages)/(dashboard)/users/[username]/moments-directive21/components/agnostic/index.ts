@@ -1,5 +1,5 @@
-// "use agnostic";
-// Proposes "use agnostic" to enforce an Agnostic Module.
+// "use agnostic components";
+// Proposes "use agnostic components" to enforce an Agnostic Components Module.
 
 /* IMPORTS */
 

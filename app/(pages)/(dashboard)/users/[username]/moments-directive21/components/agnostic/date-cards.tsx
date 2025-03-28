@@ -1,5 +1,5 @@
-// "use agnostic";
-// Proposes "use agnostic" to enforce an Agnostic Module.
+// "use agnostic components";
+// Proposes "use agnostic components" to enforce an Agnostic Components Module.
 
 /* IMPORTS */
 
@@ -69,10 +69,10 @@ function DestinationInDateCard({
 }) {
   return (
     <div className="flex flex-col gap-y-8">
-      <div className="flex select-none items-baseline justify-between">
+      <div className="flex items-baseline justify-between select-none">
         <p
           className={clsx(
-            "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
+            "text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase",
           )}
         >
           {e2.destinationIdeal}
@@ -136,7 +136,7 @@ function MomentInDateCard({
 
 function StepInDateCard({ e4 }: { e4: StepAdapted }) {
   return (
-    <li className="text-sm font-light leading-loose text-neutral-500">
+    <li className="text-sm leading-loose font-light text-neutral-500">
       <p>
         {e4.startDateAndTime.split("T")[1]} - {e4.endDateAndTime.split("T")[1]}{" "}
         : {e4.title}
