@@ -1,5 +1,4 @@
-// "use server components";
-// Proposes "use server components" to enforce a Server Components Module.
+// no directive
 
 /* IMPORTS */
 

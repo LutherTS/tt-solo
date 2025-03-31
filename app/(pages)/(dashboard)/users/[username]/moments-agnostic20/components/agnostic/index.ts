@@ -1,4 +1,4 @@
-// no directive
+"use agnostic";
 
 /* IMPORTS */
 

@@ -1,5 +1,4 @@
-// "use agnostic components";
-// Proposes "use agnostic components" to enforce an Agnostic Components Module.
+// (directive enforced via index.ts)
 
 /* IMPORTS */
 
@@ -358,7 +357,7 @@ export function StepsSummaries({
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase">
+        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Récapitulatifs
         </p>
       </div>
@@ -430,7 +429,7 @@ export function StepVisibleCreating({
   return (
     <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase">
+        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
           Ajouter une étape
         </p>{" "}
         <AllGlobalClientComponents.Button

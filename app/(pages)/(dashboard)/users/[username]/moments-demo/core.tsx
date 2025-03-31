@@ -1,5 +1,4 @@
-// "use agnostic components";
-// Proposes "use agnostic components" to enforce an Agnostic Components Module.
+// no directive
 
 /* IMPORTS */
 
@@ -62,8 +61,3 @@ export default function Core({
     </>
   );
 }
-
-/* Notes
-By default, core.tsx ought to be agnostic. However, it can be enforced as server or client as a choice at while by replacing "use agnostic" with "use server" or "use client components" respectively. 
-Or better yet, it can be replaced by "use agnostic adaptive" in order to make Core a Adaptive Component that would conditionally render as a Server Component or a Client Component manually, rather than the way it effectively does by default as an Agnostic Component.
-*/
