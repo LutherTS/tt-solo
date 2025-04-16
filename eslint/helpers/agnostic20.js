@@ -36,11 +36,11 @@ export const messageIds = {
 
 const messages = {
   [USE_SERVER]:
-    "Server Functions Modules cannot import Client Modules. Please remove the import. ",
+    "Server Functions Modules cannot import Client Modules. Please remove the import, or adapt it accordingly by making it a server-by-default module (via no directive), a fellow Server Functions Module (not recommended) or an Agnostic Module (via 'use agnostic' on top of the file). ",
   [USE_CLIENT]:
-    "The imported module lacks a directive. (Neither marked with 'use client', nor 'use server', nor 'use agnostic'.) There is a likelihood that the imported module is not meant to leave the server. If that is not the case, please mark it with 'use agnostic' to allow it for import on the client as well, thus differentiating it from an actual Server Module. ",
+    "The imported module lacks a directive. (Neither marked with 'use client', nor 'use server', nor 'use agnostic'.) There is a likelihood that the imported module is not meant to leave the server. If that is not the case, please mark it with 'use agnostic' on top of the file to allow it for import on the client as well, thus differentiating it from an actual Server Module. ",
   [USE_AGNOSTIC]:
-    "Agnostic Modules can only import other Agnostic Modules. Please remove the import. ",
+    "Agnostic Modules can only import other Agnostic Modules. Please remove the import, or adapt it accordingly by making it a fellow Agnostic Module (via 'use agnostic' on top of the file). ",
 };
 
 const conditions = {
@@ -73,13 +73,27 @@ export const makeDirectiveImportRule = (directive) => ({
 
     return {
       ImportDeclaration: (node) => {
+        // only operates on the rule's dedicated directive
         if (currentFileDirective !== directive) return;
+        // does not operate on `import type`
+        if (node.importKind === "type") return;
+
+        // finds the full path of the import
+        const resolvedImportPath = resolveImportPath(
+          path.dirname(context.filename),
+          node.source.value,
+          context.cwd,
+        );
+
+        // does not operates on paths it did not resolve
+        if (resolvedImportPath === null) return;
+        // does not operate on non-JS files
+        const isJS = EXTENSIONS.some((ext) => resolvedImportPath.endsWith(ext));
+        if (!isJS) return;
 
         /* GETTING THE DIRECTIVE (or lack thereof) OF THE IMPORTED FILE */
-        const importedFileDirective = getDirectiveFromImportedModule(
-          context,
-          node,
-        );
+        const importedFileDirective =
+          getDirectiveFromImportedModule(resolvedImportPath);
         console.log({ importedFileDirective });
 
         if (conditions[directive](importedFileDirective))
@@ -103,7 +117,7 @@ const directivesSet = new Set([USE_SERVER, USE_CLIENT, USE_AGNOSTIC]);
  * - `'use agnostic'` denotes an Agnostic Module (formerly Shared Module).
  * - `null` denotes a server-by-default module, or ideally a Server Module.
  * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<"importDirectiveIsNull", []>>} context
- * @returns {USE_CLIENT | USE_SERVER | USE_AGNOSTIC | NO_DIRECTIVE} The directive, or lack thereof via null. The lack of a directive is considered server-by-default.
+ * @returns {USE_CLIENT | USE_SERVER | USE_AGNOSTIC | NO_DIRECTIVE} The directive, or lack thereof via `null`. The lack of a directive is considered server-by-default.
  */
 const getDirectiveFromCurrentModule = (context) => {
   // the AST body to check for "use client"
@@ -126,60 +140,6 @@ const getDirectiveFromCurrentModule = (context) => {
   const currentFileDirective = directivesSet.has(value) ? value : null;
 
   return currentFileDirective;
-};
-
-/* getDirectiveFromImportedModule */
-
-const directivesArray = Array.from(directivesSet);
-
-/**
- * Gets the directive of the imported module.
- * - `'use client'` denotes a Client Module.
- * - `'use server'` denotes a Server Functions Module.
- * - `'use agnostic'` denotes an Agnostic Module (formerly Shared Module).
- * - `null` denotes a server-by-default module, or ideally a Server Module.
- * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<"importDirectiveIsNull", []>>} context
- * @param {import('@typescript-eslint/types').AST_NODE_TYPES.ImportDeclaration} node
- * @returns {USE_CLIENT | USE_SERVER | USE_AGNOSTIC | NO_DIRECTIVE} The directive, or lack thereof via null. The lack of a directive is considered server-by-default.
- */
-const getDirectiveFromImportedModule = (context, node) => {
-  // does not operate on `import type`
-  if (node.importKind === "type") return;
-
-  // finds the full path of the import
-  const resolvedImportPath = resolveImportPath(
-    path.dirname(context.filename),
-    node.source.value,
-    context.cwd,
-  );
-
-  // does not operates on path it did not resolve
-  if (resolvedImportPath === null) return;
-
-  // does not operate on non-JS files
-  const isJS = EXTENSIONS.some((ext) => resolvedImportPath.endsWith(ext));
-  if (!isJS) return;
-
-  // gets the code of the import
-  const importedFileContent = fs.readFileSync(resolvedImportPath, "utf8");
-  // get the first line of the code of the import
-  const importedFileFirstLine = importedFileContent.trim().split("\n")[0];
-
-  // verifies that this first line begins by a valid directive, thus excluding comments
-  const hasAcceptedDirective = directivesArray.some(
-    (directive) =>
-      importedFileFirstLine.startsWith(`'${directive}'`) ||
-      importedFileFirstLine.startsWith(`"${directive}"`),
-  );
-
-  // applies the correct directive or the lack thereof with null
-  const importedFileDirective = hasAcceptedDirective
-    ? (directivesArray.find((directive) =>
-        importedFileFirstLine.includes(directive),
-      ) ?? null)
-    : null;
-
-  return importedFileDirective;
 };
 
 /* resolveImportPath */
@@ -212,7 +172,7 @@ const resolveImportPath = (currentDir, importPath, cwd) => {
   // --- Step 2: Resolve relative/absolute paths ---
   const basePath = aliasedPath || path.resolve(currentDir, importPath);
 
-  // does not operate on node_modules
+  // does not resolve on node_modules
   if (basePath.includes("node_modules")) return null;
 
   // Case 1: File with extension exists
@@ -232,4 +192,40 @@ const resolveImportPath = (currentDir, importPath, cwd) => {
   }
 
   return null; // Not found
+};
+
+/* getDirectiveFromImportedModule */
+
+const directivesArray = Array.from(directivesSet);
+
+/**
+ * Gets the directive of the imported module.
+ * - `'use client'` denotes a Client Module.
+ * - `'use server'` denotes a Server Functions Module.
+ * - `'use agnostic'` denotes an Agnostic Module (formerly Shared Module).
+ * - `null` denotes a server-by-default module, or ideally a Server Module.
+ * @param {string} resolvedImportPath
+ * @returns {USE_CLIENT | USE_SERVER | USE_AGNOSTIC | NO_DIRECTIVE} The directive, or lack thereof via `null`. The lack of a directive is considered server-by-default.
+ */
+const getDirectiveFromImportedModule = (resolvedImportPath) => {
+  // gets the code of the import
+  const importedFileContent = fs.readFileSync(resolvedImportPath, "utf8");
+  // get the first line of the code of the import
+  const importedFileFirstLine = importedFileContent.trim().split("\n")[0];
+
+  // verifies that this first line begins by a valid directive, thus excluding comments
+  const hasAcceptedDirective = directivesArray.some(
+    (directive) =>
+      importedFileFirstLine.startsWith(`'${directive}'`) ||
+      importedFileFirstLine.startsWith(`"${directive}"`),
+  );
+
+  // applies the correct directive or the lack thereof with null
+  const importedFileDirective = hasAcceptedDirective
+    ? (directivesArray.find((directive) =>
+        importedFileFirstLine.includes(directive),
+      ) ?? null)
+    : null;
+
+  return importedFileDirective;
 };

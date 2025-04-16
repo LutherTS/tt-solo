@@ -9,7 +9,7 @@ import {
   forUseAgnosticRuleName,
 } from "../helpers/agnostic20.js";
 
-import useAgnostic from "../plugins/use-agnostic";
+import useAgnostic from "../plugins/use-agnostic.js";
 
 export default defineConfig([
   {
