@@ -1,4 +1,4 @@
-// "use agnostic";
+"use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
 /* IMPORTS */

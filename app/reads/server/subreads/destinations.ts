@@ -1,5 +1,5 @@
-// "use server";
-// Proposes "use server" to enforce a Server Module.
+// no directive
+// Proposes no directive to enforce a Server Module.
 
 /* IMPORTS */
 

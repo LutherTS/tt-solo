@@ -1,5 +1,5 @@
-"use client"; // "use client components"
-// Proposes "use client components" to enforce a Client Components Module.
+"use client";
+// Proposes "use client" to enforce a Client Module.
 
 /* IMPORTS */
 
