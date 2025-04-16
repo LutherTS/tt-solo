@@ -87,7 +87,7 @@ export function Button({
       type={type}
       disabled={disabled ? status.pending || disabled : status.pending}
       className={clsx(
-        "font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
+        "font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
         variant === "destroy" && clsx(destroy),
         variant === "destroy-step" && clsx(destroyStep),
         variant === "neutral" && clsx(notDestroy, neutral, "md:w-fit"),

@@ -1,4 +1,4 @@
-// "use agnostic";
+"use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
 /* IMPORTS */
@@ -59,7 +59,7 @@ export function Section({
   return (
     // pb-1 (or +1) making up for input padding inconsistencies
     <section
-      className="grid items-baseline gap-8 pb-9 pt-8 md:grid-cols-[1fr_2fr]"
+      className="grid items-baseline gap-8 pt-8 pb-9 md:grid-cols-[1fr_2fr]"
       id={id}
     >
       <div
@@ -195,7 +195,7 @@ export function FormSection({
 
 export function PageTitle({ title }: { title: string }) {
   return (
-    <h1 className="text-xl font-bold leading-none text-blue-950">{title}</h1>
+    <h1 className="text-xl leading-none font-bold text-blue-950">{title}</h1>
   );
 }
 

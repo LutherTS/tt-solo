@@ -1,4 +1,4 @@
-// "use agnostic";
+"use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
 // You can now import from a Client Components Module inside an Agnostic Module, but you can't import from a Server Module inside an Agnostic Module.
@@ -52,7 +52,7 @@ export function InputValidationError({ errors }: { errors: string[] }) {
       {errors.map((error, i) => {
         if (i === 0)
           return (
-            <p key={i} className="select-none text-sm text-pink-500">
+            <p key={i} className="text-sm text-pink-500 select-none">
               {error}
               {errors.length > 1 && (
                 <span className="text-pink-300"> (+{errors.length - 1})</span>
@@ -78,10 +78,10 @@ export function InputDescriptionOrError({
       {errors ? (
         <InputValidationError errors={errors} />
       ) : (
-        <p className="select-none text-sm text-neutral-500">{description}</p>
+        <p className="text-sm text-neutral-500 select-none">{description}</p>
       )}
       {addendum && (
-        <p className="select-none text-sm text-neutral-500">({addendum})</p>
+        <p className="text-sm text-neutral-500 select-none">({addendum})</p>
       )}
     </div>
   );

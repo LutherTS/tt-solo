@@ -1,5 +1,5 @@
-// "use server";
-// Proposes "use server" to enforce a Server Module.
+// no directive;
+// Proposes no directive to enforce a Server Module.
 
 // Adapts are not only clearly meant to be used exclusively on the server, it is dangerous for them to be used on the client as they adapt raw data.
 
