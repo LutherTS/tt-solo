@@ -10,7 +10,7 @@ import clsx from "clsx";
 // Components imports
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllGlobalClientComponents from "@/app/components/client";
 import * as AllLocalClientComponents from "../client";
 
 // Internal imports
@@ -357,7 +357,7 @@ export function StepsSummaries({
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+        <p className="text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase">
           Récapitulatifs
         </p>
       </div>
@@ -429,7 +429,7 @@ export function StepVisibleCreating({
   return (
     <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+        <p className="text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase">
           Ajouter une étape
         </p>{" "}
         <AllGlobalClientComponents.Button

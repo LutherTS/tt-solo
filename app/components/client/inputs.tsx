@@ -12,7 +12,7 @@ import * as Switch from "@radix-ui/react-switch";
 // Components imports
 
 import * as AllGlobalIcons from "@/app/icons/agnostic";
-import * as AllGlobalAgnosticComponents from "../../agnostic";
+import * as AllGlobalAgnosticComponents from "../agnostic";
 
 // Internal imports
 

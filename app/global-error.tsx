@@ -12,7 +12,7 @@ import { useEffect } from "react";
 // Internal imports
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client/components";
+import * as GlobalClientComponents from "@/app/components/client";
 
 /* LOGIC */
 

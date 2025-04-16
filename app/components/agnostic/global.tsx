@@ -11,7 +11,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
 // Components imports
 
-import * as AllGlobalClientComponents from "../client/components";
+import * as AllGlobalClientComponents from "../client";
 import * as ValidationErrors from "./validation-errors";
 
 // Internal imports

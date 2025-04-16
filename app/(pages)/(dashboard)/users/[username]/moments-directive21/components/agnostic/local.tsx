@@ -11,7 +11,7 @@ import clsx from "clsx";
 // Components imports
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllGlobalClientComponents from "@/app/components/client";
 import * as AllLocalClientComponents from "../client";
 
 // Internal imports

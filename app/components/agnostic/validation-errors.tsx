@@ -7,7 +7,7 @@
 
 // Components imports
 
-import * as AllGlobalClientComponents from "../client/components/global";
+import * as AllGlobalClientComponents from "../client/global";
 
 // Types imports
 
