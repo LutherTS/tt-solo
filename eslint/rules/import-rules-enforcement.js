@@ -13,7 +13,7 @@ import {
   findSpecificViolationMessage,
 } from "../helpers/agnostic20.js";
 
-/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<string, []>} */
+/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof effectiveDirectiveMessageId | typeof specificViolationMessageId, []>} */
 const rule = {
   meta: {
     type: "problem",

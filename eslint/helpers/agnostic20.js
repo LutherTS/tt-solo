@@ -51,8 +51,6 @@ export const effectiveDirectiveMessageId =
 export const specificViolationMessageId =
   "import-breaks-this-effective-directive-import-rule";
 
-// Note: There will be additional messageIds and messages for each effective directive's blocked import. (3, 2, 5, 3, 2, 5, 4.)
-
 /* getDirectiveFromCurrentModule */
 
 const directivesSet = new Set([USE_SERVER, USE_CLIENT, USE_AGNOSTIC]);
@@ -228,7 +226,6 @@ const makeIntroForSpecificViolationMessage = (
 ) =>
   `${effectiveDirectives_EffectiveModules[currentFileEffectiveDirective]}s ${ARE_NOT_ALLOWED_TO_IMPORT} ${effectiveDirectives_EffectiveModules[importedFileEffectiveDirective]}s.`;
 
-// NOW EVERYTHING IS DONE HERE.
 const effectiveDirectives_BlockedImports = {
   [USE_SERVER_LOGICS]: [
     {
@@ -342,6 +339,8 @@ const effectiveDirectives_BlockedImports = {
   ],
 };
 
+/* isImportBlocked */
+
 /**
  * Returns a boolean deciding if an imported file's effective directive is incompatible with the current file's effective directive.
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} currentFileEffectiveDirective The current file's effective directive.
@@ -356,6 +355,8 @@ export const isImportBlocked = (
   effectiveDirectives_BlockedImports[currentFileEffectiveDirective]
     .map((e) => e.blockedImport)
     .includes(importedFileEffectiveDirective);
+
+/* makeMessageFromEffectiveDirective */
 
 /**
  * Lists in an message the effective modules incompatible with an effective module based on its effective directive.
@@ -389,6 +390,8 @@ export const makeMessageFromEffectiveDirective = (effectiveDirective) => {
 
   return `${effectiveModulesString} ${ARE_NOT_ALLOWED_TO_IMPORT} ${blockedEffectiveModulesString}. `;
 };
+
+/* findSpecificViolationMessage */
 
 /**
  * Finds the `message` for the specific violation of effective directives import rules based on `effectiveDirectives_BlockedImports`.
