@@ -2,6 +2,7 @@ import path from "path";
 
 import {
   effectiveDirectiveMessageId,
+  specificViolationMessageId,
   getDirectiveFromCurrentModule,
   getEffectiveDirective,
   resolveImportPath,
@@ -9,9 +10,10 @@ import {
   getDirectiveFromImportedModule,
   isImportBlocked,
   makeMessageFromEffectiveDirective,
+  findSpecificViolationMessage,
 } from "../helpers/agnostic20.js";
 
-/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof effectiveDirectiveMessageId, []>} */
+/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<string, []>} */
 const rule = {
   meta: {
     type: "problem",
@@ -22,6 +24,7 @@ const rule = {
     schema: [],
     messages: {
       [effectiveDirectiveMessageId]: "{{ effectiveDirectiveMessage }}",
+      [specificViolationMessageId]: "{{ specificViolationMessage }}",
     },
   },
   create: (context) => {
@@ -83,7 +86,8 @@ const rule = {
             currentFileEffectiveDirective,
             importedFileEffectiveDirective,
           )
-        )
+        ) {
+          // for the imports rules
           context.report({
             node,
             messageId: effectiveDirectiveMessageId,
@@ -93,6 +97,18 @@ const rule = {
               ),
             },
           });
+          // for the specific violation at hand
+          context.report({
+            node,
+            messageId: specificViolationMessageId,
+            data: {
+              specificViolationMessage: findSpecificViolationMessage(
+                currentFileEffectiveDirective,
+                importedFileEffectiveDirective,
+              ),
+            },
+          });
+        }
       },
     };
   },

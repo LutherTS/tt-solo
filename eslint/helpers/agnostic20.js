@@ -46,7 +46,10 @@ const effectiveDirectives_EffectiveModules = {
 };
 
 export const effectiveDirectiveMessageId =
-  "importBreaksEffectiveDirectiveImportRules";
+  "import-breaks-effective-directive-import-rules";
+
+export const specificViolationMessageId =
+  "import-breaks-this-effective-directive-import-rule";
 
 // Note: There will be additional messageIds and messages for each effective directive's blocked import. (3, 2, 5, 3, 2, 5, 4.)
 
@@ -217,38 +220,125 @@ export const getDirectiveFromImportedModule = (resolvedImportPath) => {
 
 /* isImportBlocked */
 
+const ARE_NOT_ALLOWED_TO_IMPORT = "are not allowed to import";
+
+const makeIntroForSpecificViolationMessage = (
+  currentFileEffectiveDirective,
+  importedFileEffectiveDirective,
+) =>
+  `${effectiveDirectives_EffectiveModules[currentFileEffectiveDirective]}s ${ARE_NOT_ALLOWED_TO_IMPORT} ${effectiveDirectives_EffectiveModules[importedFileEffectiveDirective]}s.`;
+
+// NOW EVERYTHING IS DONE HERE.
 const effectiveDirectives_BlockedImports = {
   [USE_SERVER_LOGICS]: [
-    USE_SERVER_FUNCTIONS,
-    USE_CLIENT_LOGICS,
-    USE_CLIENT_COMPONENTS,
+    {
+      blockedImport: USE_SERVER_FUNCTIONS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_LOGICS, USE_SERVER_FUNCTIONS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_LOGICS, USE_CLIENT_LOGICS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_LOGICS, USE_CLIENT_COMPONENTS)} `,
+    },
   ],
-  [USE_SERVER_COMPONENTS]: [USE_SERVER_FUNCTIONS, USE_CLIENT_LOGICS],
+  [USE_SERVER_COMPONENTS]: [
+    {
+      blockedImport: USE_SERVER_FUNCTIONS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_COMPONENTS, USE_SERVER_FUNCTIONS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_COMPONENTS, USE_CLIENT_LOGICS)} `,
+    },
+  ],
   [USE_SERVER_FUNCTIONS]: [
-    USE_SERVER_COMPONENTS,
-    USE_SERVER_FUNCTIONS,
-    USE_CLIENT_LOGICS,
-    USE_CLIENT_COMPONENTS,
-    USE_AGNOSTIC_COMPONENTS,
+    {
+      blockedImport: USE_SERVER_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_SERVER_COMPONENTS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_FUNCTIONS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_SERVER_FUNCTIONS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_CLIENT_LOGICS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_CLIENT_COMPONENTS)} `,
+    },
+    {
+      blockedImport: USE_AGNOSTIC_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_AGNOSTIC_COMPONENTS)} `,
+    },
   ],
   [USE_CLIENT_LOGICS]: [
-    USE_SERVER_LOGICS,
-    USE_SERVER_COMPONENTS,
-    USE_SERVER_FUNCTIONS,
+    {
+      blockedImport: USE_SERVER_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_CLIENT_LOGICS, USE_SERVER_LOGICS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_CLIENT_LOGICS, USE_SERVER_COMPONENTS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_FUNCTIONS,
+      message: `${makeIntroForSpecificViolationMessage(USE_CLIENT_LOGICS, USE_SERVER_FUNCTIONS)} `,
+    },
   ],
-  [USE_CLIENT_COMPONENTS]: [USE_SERVER_LOGICS, USE_SERVER_COMPONENTS],
+  [USE_CLIENT_COMPONENTS]: [
+    {
+      blockedImport: USE_SERVER_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_CLIENT_COMPONENTS, USE_SERVER_LOGICS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_CLIENT_COMPONENTS, USE_SERVER_COMPONENTS)} `,
+    },
+  ],
   [USE_AGNOSTIC_LOGICS]: [
-    USE_SERVER_LOGICS,
-    USE_SERVER_COMPONENTS,
-    USE_SERVER_FUNCTIONS,
-    USE_CLIENT_LOGICS,
-    USE_CLIENT_COMPONENTS,
+    {
+      blockedImport: USE_SERVER_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_LOGICS, USE_SERVER_LOGICS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_LOGICS, USE_SERVER_COMPONENTS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_FUNCTIONS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_LOGICS, USE_SERVER_FUNCTIONS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_LOGICS, USE_CLIENT_LOGICS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_LOGICS, USE_CLIENT_COMPONENTS)} `,
+    },
   ],
   [USE_AGNOSTIC_COMPONENTS]: [
-    USE_SERVER_LOGICS,
-    USE_SERVER_COMPONENTS,
-    USE_SERVER_FUNCTIONS,
-    USE_CLIENT_LOGICS,
+    {
+      blockedImport: USE_SERVER_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_COMPONENTS, USE_SERVER_LOGICS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_COMPONENTS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_COMPONENTS, USE_SERVER_COMPONENTS)} `,
+    },
+    {
+      blockedImport: USE_SERVER_FUNCTIONS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_COMPONENTS, USE_SERVER_FUNCTIONS)} `,
+    },
+    {
+      blockedImport: USE_CLIENT_LOGICS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_COMPONENTS, USE_CLIENT_LOGICS)} `,
+    },
   ],
 };
 
@@ -263,9 +353,9 @@ export const isImportBlocked = (
   currentFileEffectiveDirective,
   importedFileEffectiveDirective,
 ) =>
-  effectiveDirectives_BlockedImports[currentFileEffectiveDirective].includes(
-    importedFileEffectiveDirective,
-  );
+  effectiveDirectives_BlockedImports[currentFileEffectiveDirective]
+    .map((e) => e.blockedImport)
+    .includes(importedFileEffectiveDirective);
 
 /**
  * Lists in an message the effective modules incompatible with an effective module based on its effective directive.
@@ -278,7 +368,9 @@ export const makeMessageFromEffectiveDirective = (effectiveDirective) => {
   const effectiveModulesString = effectiveModule + "s"; // plural
 
   const blockedImports =
-    effectiveDirectives_BlockedImports[effectiveDirective] || [];
+    effectiveDirectives_BlockedImports[effectiveDirective].map(
+      (e) => e.blockedImport,
+    ) || [];
 
   if (blockedImports.length === 0) {
     return `${effectiveModulesString} are not restricted from importing any modules. `;
@@ -295,5 +387,19 @@ export const makeMessageFromEffectiveDirective = (effectiveDirective) => {
         ", or " +
         blockedEffectiveModules.slice(-1);
 
-  return `${effectiveModulesString} are not allowed to import ${blockedEffectiveModulesString}. `;
+  return `${effectiveModulesString} ${ARE_NOT_ALLOWED_TO_IMPORT} ${blockedEffectiveModulesString}. `;
 };
+
+/**
+ * Finds the `message` for the specific violation of effective directives import rules based on `effectiveDirectives_BlockedImports`.
+ * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} currentFileEffectiveDirective The current file's effective directive.
+ * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} importedFileEffectiveDirective The imported file's effective directive.
+ * @returns {string} The corresponding `message`.
+ */
+export const findSpecificViolationMessage = (
+  currentFileEffectiveDirective,
+  importedFileEffectiveDirective,
+) =>
+  effectiveDirectives_BlockedImports[currentFileEffectiveDirective].find(
+    (e) => e.blockedImport === importedFileEffectiveDirective,
+  ).message;
