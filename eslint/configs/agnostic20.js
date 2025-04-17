@@ -4,9 +4,18 @@ import tseslint from "typescript-eslint";
 
 import {
   useAgnosticPluginName,
-  forUseServerRuleName,
-  forUseClientRuleName,
-  forUseAgnosticRuleName,
+  // previous
+  // forUseServerRuleName,
+  // forUseClientRuleName,
+  // forUseAgnosticRuleName,
+  // next
+  forUseServerLogicsRuleName,
+  forUseServerComponentsRuleName,
+  forUseServerFunctionsRuleName,
+  forUseClientLogicsRuleName,
+  forUseClientComponentsRuleName,
+  forUseAgnosticLogicsRuleName,
+  forUseAgnosticComponentsRuleName,
 } from "../helpers/agnostic20.js";
 
 import useAgnostic from "../plugins/use-agnostic.js";
@@ -21,9 +30,18 @@ export default defineConfig([
       parser: tseslint.parser,
     },
     rules: {
-      [`${useAgnosticPluginName}/${forUseServerRuleName}`]: "warn",
-      [`${useAgnosticPluginName}/${forUseClientRuleName}`]: "warn",
-      [`${useAgnosticPluginName}/${forUseAgnosticRuleName}`]: "warn",
+      // previous
+      // [`${useAgnosticPluginName}/${forUseServerRuleName}`]: "warn",
+      // [`${useAgnosticPluginName}/${forUseClientRuleName}`]: "warn",
+      // [`${useAgnosticPluginName}/${forUseAgnosticRuleName}`]: "warn",
+      // next
+      [`${useAgnosticPluginName}/${forUseServerLogicsRuleName}`]: "warn",
+      [`${useAgnosticPluginName}/${forUseServerComponentsRuleName}`]: "warn",
+      [`${useAgnosticPluginName}/${forUseServerFunctionsRuleName}`]: "warn",
+      [`${useAgnosticPluginName}/${forUseClientLogicsRuleName}`]: "warn",
+      [`${useAgnosticPluginName}/${forUseClientComponentsRuleName}`]: "warn",
+      [`${useAgnosticPluginName}/${forUseAgnosticLogicsRuleName}`]: "warn",
+      [`${useAgnosticPluginName}/${forUseAgnosticComponentsRuleName}`]: "warn",
     },
   },
 ]);
