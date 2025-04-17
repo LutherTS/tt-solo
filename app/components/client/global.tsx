@@ -5,8 +5,14 @@
 
 // External imports
 
+import { Suspense } from "react";
 import { useFormStatus } from "react-dom";
+import { ErrorBoundary } from "react-error-boundary";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
+
+// Components imports
+
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 
 // Types imports
 
@@ -136,9 +142,42 @@ export function FormValidationError({
   );
 }
 
+function DefaultErrorBoundaryFallback() {
+  return (
+    <AllGlobalAgnosticComponents.FallbackFlex>
+      <p>Une erreur est survenue.</p>
+    </AllGlobalAgnosticComponents.FallbackFlex>
+  );
+}
+
+function DefaultSuspenseFallback() {
+  return (
+    <AllGlobalAgnosticComponents.FallbackFlex>
+      <p>Loading...</p>
+    </AllGlobalAgnosticComponents.FallbackFlex>
+  );
+}
+
+export function ErrorBoundarySuspense({
+  ErrorBoundaryFallBack = <DefaultErrorBoundaryFallback />,
+  SuspenseFallback = <DefaultSuspenseFallback />,
+  children,
+}: {
+  ErrorBoundaryFallBack?: React.ReactNode;
+  SuspenseFallback?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <ErrorBoundary fallback={ErrorBoundaryFallBack}>
+      <Suspense fallback={SuspenseFallback}>{children}</Suspense>
+    </ErrorBoundary>
+  );
+}
+
 const globalClientComponents = {
   Button,
   FormValidationError,
+  ErrorBoundarySuspense,
 } as const;
 
 export type GlobalClientComponentsName = keyof typeof globalClientComponents;

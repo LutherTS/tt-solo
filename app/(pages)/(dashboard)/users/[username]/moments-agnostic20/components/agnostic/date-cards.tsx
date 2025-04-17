@@ -1,4 +1,5 @@
-// (directive enforced via index.ts)
+"use agnostic";
+// (directive enforced via index.ts) (not anymore)
 
 /* IMPORTS */
 

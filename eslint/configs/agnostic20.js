@@ -16,14 +16,9 @@ export default defineConfig([
     plugins: {
       [useAgnosticPluginName]: useAgnostic,
     },
-    // for compatibility with .ts and .tsx
     languageOptions: {
+      // for compatibility with .ts and .tsx
       parser: tseslint.parser,
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
     },
     rules: {
       [`${useAgnosticPluginName}/${forUseServerRuleName}`]: "warn",

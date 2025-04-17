@@ -241,40 +241,6 @@ export function FallbackFlex({ children }: { children: React.ReactNode }) {
   );
 }
 
-function DefaultErrorBoundaryFallback() {
-  return (
-    <FallbackFlex>
-      <p>Une erreur est survenue.</p>
-    </FallbackFlex>
-  );
-}
-
-function DefaultSuspenseFallback() {
-  return (
-    <FallbackFlex>
-      <p>Loading...</p>
-    </FallbackFlex>
-  );
-}
-
-export function ErrorBoundarySuspense({
-  ErrorBoundaryFallBack = <DefaultErrorBoundaryFallback />,
-  SuspenseFallback = <DefaultSuspenseFallback />,
-  children,
-}: {
-  ErrorBoundaryFallBack?: React.ReactNode;
-  SuspenseFallback?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <ErrorBoundary fallback={ErrorBoundaryFallBack}>
-        <Suspense fallback={SuspenseFallback}>{children}</Suspense>
-      </ErrorBoundary>
-    </>
-  );
-}
-
 const globalAgnosticComponents = {
   Section,
   FormSection,
@@ -283,7 +249,6 @@ const globalAgnosticComponents = {
   FieldFlex,
   FieldTitle,
   FallbackFlex,
-  ErrorBoundarySuspense,
 } as const;
 
 export type GlobalAgnosticComponentsName =

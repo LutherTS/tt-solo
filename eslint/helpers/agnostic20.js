@@ -36,11 +36,11 @@ export const messageIds = {
 
 const messages = {
   [USE_SERVER]:
-    "Server Functions Modules cannot import Client Modules. Please remove the import, or adapt it accordingly by making it a server-by-default module (via no directive), a fellow Server Functions Module (not recommended) or an Agnostic Module (via 'use agnostic' on top of the file). ",
+    "Server Functions Modules cannot import Client Modules. Please remove the import, or adapt it accordingly by making it a server-by-default module (via no directive), a fellow Server Functions Module (not recommended) or an Agnostic Module (via 'use agnostic' on top of the file). ...Or perhaps the current module shouldn't be marked with the 'use server' directive. ",
   [USE_CLIENT]:
-    "The imported module lacks a directive. (Neither marked with 'use client', nor 'use server', nor 'use agnostic'.) There is a likelihood that the imported module is not meant to leave the server. If that is not the case, please mark it with 'use agnostic' on top of the file to allow it for import on the client as well, thus differentiating it from an actual Server Module. ",
+    "The imported module lacks a directive. (Neither marked with 'use client', nor 'use server', nor 'use agnostic'.) There is a likelihood that the imported module is not meant to leave the server. If that is not the case, please mark it with 'use agnostic' on top of the file to allow it for import on the client as well, thus differentiating it from an actual Server Module. ...Or perhaps the current module shouldn't be marked with the 'use client' directive. ",
   [USE_AGNOSTIC]:
-    "Agnostic Modules can only import other Agnostic Modules. Please remove the import, or adapt it accordingly by making it a fellow Agnostic Module (via 'use agnostic' on top of the file). ",
+    "Agnostic Modules can only import other Agnostic Modules. Please remove the import, or adapt it accordingly by making it a fellow Agnostic Module (via 'use agnostic' on top of the file). ...Or perhaps the current module shouldn't be marked with the 'use agnostic' directive. ",
 };
 
 const conditions = {
@@ -53,7 +53,8 @@ const conditions = {
 
 /**
  * Makes a directive's import rule.
- * @param {USE_CLIENT | USE_SERVER | USE_AGNOSTIC} directive
+ * @param {USE_CLIENT | USE_SERVER | USE_AGNOSTIC} directive The directive the rule is to be made for.
+ * @returns {import('@typescript-eslint/utils').TSESLint.RuleModule<useServerMessageId | useClientMessageId | useAgnosticMessageId, []>} The directive's import rule.
  */
 export const makeDirectiveImportRule = (directive) => ({
   meta: {

@@ -6,7 +6,7 @@ export default defineConfig([
   globalIgnores(["./.next"]),
   {
     files: [
-      ".app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.ts",
+      "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.ts",
       "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.tsx",
     ],
     extends: [agnostic20],

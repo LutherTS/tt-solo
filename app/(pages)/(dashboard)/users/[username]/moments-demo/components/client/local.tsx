@@ -150,7 +150,7 @@ export function ViewsCarouselContainer({
         >
           {/* UpdateMomentView */}
           {/* SUSPENDED */}
-          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalClientComponents.ErrorBoundarySuspense>
             <MomentForms
               key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
               variant="updating"
@@ -162,7 +162,7 @@ export function ViewsCarouselContainer({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
               allButtonsDisabled={view !== views.UPDATE_MOMENT}
             />
-          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalClientComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
       <AllLocalAgnosticComponents.PageSegment
@@ -174,14 +174,14 @@ export function ViewsCarouselContainer({
           currentViewHeight={currentViewHeight}
         >
           {/* SUSPENDED */}
-          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalClientComponents.ErrorBoundarySuspense>
             <ReadMomentsView
               view={view}
               fetchReadMomentsViewData={fetchReadMomentsViewData}
               revalidateMoments={revalidateMoments}
               allButtonsDisabled={view !== views.READ_MOMENTS}
             />
-          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalClientComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
       <AllLocalAgnosticComponents.PageSegment
@@ -194,7 +194,7 @@ export function ViewsCarouselContainer({
         >
           {/* CreateMomentView */}
           {/* SUSPENDED */}
-          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalClientComponents.ErrorBoundarySuspense>
             <MomentForms
               variant="creating"
               fetchMomentFormsData={fetchMomentFormsData}
@@ -203,7 +203,7 @@ export function ViewsCarouselContainer({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
               allButtonsDisabled={view !== views.CREATE_MOMENT}
             />
-          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalClientComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
     </motion.div>
