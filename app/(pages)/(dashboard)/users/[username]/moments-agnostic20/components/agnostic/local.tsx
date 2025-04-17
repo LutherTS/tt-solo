@@ -1,4 +1,6 @@
-// (directive enforced via index.ts)
+"use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
+// (directive enforced via index.ts) (not anymore)
 
 /* IMPORTS */
 
@@ -10,22 +12,17 @@ import clsx from "clsx";
 // Components imports
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllGlobalClientComponents from "@/app/components/client";
 import * as AllLocalClientComponents from "../client";
 
 // Internal imports
 
-import {
-  ACTIVITY_OPTIONS,
-  momentFormIds,
-  viewsTitles,
-} from "@/app/constants/agnostic/moments";
+import { momentFormIds, viewsTitles } from "@/app/constants/agnostic/moments";
 import { numStringToTimeString } from "@/app/utilities/agnostic/moments";
-import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
+// import { EventStepDurationSchema } from "@/app/validations/agnostic/steps";
 
 // Types imports
 
-import type { Option } from "@/app/types/agnostic/globals";
 import type { SetState } from "@/app/types/client/globals";
 import type {
   MomentFormVariant,
@@ -181,170 +178,6 @@ export function MomentsPageDetails({
   );
 }
 
-export function MomentInputs({
-  variant,
-  moment,
-  destinationOptions,
-  createOrUpdateMomentState,
-  destinationSelect,
-  setDestinationSelect,
-  activitySelect,
-  setActivitySelect,
-  inputSwitchKey,
-  startMomentDate,
-  setStartMomentDate,
-}: {
-  variant: MomentFormVariant;
-  moment?: MomentAdapted;
-  destinationOptions: Option[];
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  destinationSelect: boolean;
-  setDestinationSelect: SetState<boolean>;
-  activitySelect: boolean;
-  setActivitySelect: SetState<boolean>;
-  inputSwitchKey: string;
-  startMomentDate: string;
-  setStartMomentDate: SetState<string>;
-}) {
-  const isVariantUpdatingMoment = variant === "updating" && moment;
-
-  const destinationValues = destinationOptions.map((e) => e.value);
-  const activityValues = ACTIVITY_OPTIONS.map((e) => e.value);
-
-  return (
-    <>
-      <AllGlobalClientComponents.InputText
-        label="Destination"
-        name="destination"
-        defaultValue={isVariantUpdatingMoment ? moment.destinationIdeal : ""}
-        description="Votre projet vise à atteindre quel idéal ?"
-        addendum={
-          destinationOptions.length > 0
-            ? "Ou choissisez parmi vos destinations précédemment instanciées."
-            : undefined
-        }
-        fieldFlexIsNotLabel
-        tekTime
-        required={false}
-        errors={createOrUpdateMomentState?.error?.momentErrors?.destinationName}
-        hidden={destinationSelect}
-      >
-        {destinationOptions.length > 0 && (
-          <AllLocalClientComponents.SetSelectButton
-            setSelect={setDestinationSelect}
-            text={"Choisir la destination"}
-          />
-        )}
-      </AllGlobalClientComponents.InputText>
-      <AllGlobalClientComponents.SelectWithOptions
-        label="Destination"
-        description="Choisissez la destination que cherche à atteindre ce moment."
-        addendum="Ou définissez-la vous-même via le bouton ci-dessus."
-        name="destination"
-        defaultValue={
-          isVariantUpdatingMoment &&
-          destinationValues.includes(moment.destinationIdeal)
-            ? moment.destinationIdeal
-            : ""
-        }
-        placeholder="Choisissez..."
-        options={destinationOptions}
-        fieldFlexIsNotLabel
-        tekTime
-        required={false}
-        errors={createOrUpdateMomentState?.error?.momentErrors?.destinationName}
-        hidden={!destinationSelect}
-      >
-        <AllLocalClientComponents.SetSelectButton
-          setSelect={setDestinationSelect}
-          text={"Définir la destination"}
-        />
-      </AllGlobalClientComponents.SelectWithOptions>
-      <AllGlobalClientComponents.InputText
-        label="Activité"
-        description="Définissez le type d'activité qui va correspondre à votre problématique."
-        addendum="Ou choissisez parmi une sélection prédéfinie via le bouton ci-dessus."
-        name="activite"
-        defaultValue={isVariantUpdatingMoment ? moment.activity : ""}
-        fieldFlexIsNotLabel
-        required={false}
-        errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
-        hidden={activitySelect}
-      >
-        <AllLocalClientComponents.SetSelectButton
-          setSelect={setActivitySelect}
-          text={"Choisir l'activité"}
-        />
-      </AllGlobalClientComponents.InputText>
-      <AllGlobalClientComponents.SelectWithOptions
-        label="Activité"
-        description="Choisissez le type d'activité qui va correspondre à votre problématique."
-        addendum="Ou définissez-le vous-même via le bouton ci-dessus."
-        name="activite"
-        defaultValue={
-          isVariantUpdatingMoment && activityValues.includes(moment.activity)
-            ? moment.activity
-            : ""
-        }
-        placeholder="Choisissez..."
-        options={ACTIVITY_OPTIONS}
-        fieldFlexIsNotLabel
-        required={false}
-        errors={createOrUpdateMomentState?.error?.momentErrors?.momentActivity}
-        hidden={!activitySelect}
-      >
-        <AllLocalClientComponents.SetSelectButton
-          setSelect={setActivitySelect}
-          text={"Définir l'activité"}
-        />
-      </AllGlobalClientComponents.SelectWithOptions>
-      <AllGlobalClientComponents.InputText
-        label="Objectif"
-        name="objectif"
-        defaultValue={isVariantUpdatingMoment ? moment.objective : ""}
-        description="Indiquez en une phrase le résultat que vous souhaiterez obtenir par ce moment."
-        required={false}
-        errors={createOrUpdateMomentState?.error?.momentErrors?.momentName}
-      />
-      <AllGlobalClientComponents.InputSwitch
-        key={inputSwitchKey}
-        label="Indispensable ?"
-        name="indispensable"
-        defaultChecked={
-          isVariantUpdatingMoment ? moment.isIndispensable : false
-        }
-        description="Activez l'interrupteur si ce moment est d'une importance incontournable."
-        required={false}
-        errors={
-          createOrUpdateMomentState?.error?.momentErrors?.momentIsIndispensable
-        }
-      />
-      <AllGlobalClientComponents.Textarea
-        label="Contexte"
-        name="contexte"
-        defaultValue={isVariantUpdatingMoment ? moment.context : ""}
-        description="Expliquez ce qui a motivé ce moment et pourquoi il est nécessaire."
-        rows={6}
-        required={false}
-        errors={
-          createOrUpdateMomentState?.error?.momentErrors?.momentDescription
-        }
-      />
-      <AllGlobalClientComponents.InputDatetimeLocalControlled
-        label="Date et heure"
-        name="dateetheure"
-        description="Déterminez la date et l'heure auxquelles ce moment doit débuter."
-        definedValue={startMomentDate}
-        definedOnValueChange={setStartMomentDate}
-        required={false}
-        errors={
-          createOrUpdateMomentState?.error?.momentErrors?.momentStartDateAndTime
-        }
-      />
-    </>
-  );
-}
-
 export function StepsSummaries({
   stepVisible,
   endMomentDate,
@@ -357,7 +190,7 @@ export function StepsSummaries({
   return (
     <div className="space-y-8">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+        <p className="text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase">
           Récapitulatifs
         </p>
       </div>
@@ -429,7 +262,7 @@ export function StepVisibleCreating({
   return (
     <div className="flex flex-col gap-y-8">
       <div className="flex items-baseline justify-between">
-        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500">
+        <p className="text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase">
           Ajouter une étape
         </p>{" "}
         <AllGlobalClientComponents.Button
@@ -444,7 +277,7 @@ export function StepVisibleCreating({
           Annuler l&apos;étape
         </AllGlobalClientComponents.Button>
       </div>
-      <StepInputs
+      <AllLocalClientComponents.StepInputs
         form={form}
         createOrUpdateMomentState={createOrUpdateMomentState}
         stepDuree={stepDureeCreate}
@@ -493,102 +326,6 @@ export function StepVisibleCreating({
         </StepFormControlsDesktopWrapper>
       </div>
     </div>
-  );
-}
-
-export function StepVisibleCreate({
-  addStepAction,
-  isAddStepPending,
-  allButtonsDisabled,
-}: {
-  addStepAction: () => void;
-  isAddStepPending: boolean;
-  allButtonsDisabled: boolean;
-}) {
-  return (
-    <div>
-      <AllGlobalClientComponents.Button
-        type="button"
-        variant="neutral"
-        onClick={addStepAction}
-        disabled={allButtonsDisabled || isAddStepPending}
-      >
-        Ajouter une étape
-      </AllGlobalClientComponents.Button>
-    </div>
-  );
-}
-
-export function StepInputs({
-  form,
-  createOrUpdateMomentState,
-  stepDuree,
-  setStepDuree,
-  step,
-  startMomentDate,
-  stepAddingTime,
-  stepsCompoundDurations,
-}: {
-  form: string;
-  createOrUpdateMomentState: CreateOrUpdateMomentState;
-  stepDuree: string;
-  setStepDuree: SetState<string>;
-  step?: StepFromClient;
-  startMomentDate: string;
-  stepAddingTime?: number;
-  stepsCompoundDurations: number[];
-}) {
-  return (
-    <>
-      <AllGlobalClientComponents.InputText
-        form={form}
-        label="Intitulé de l'étape"
-        name="intituledeleetape"
-        defaultValue={step?.intitule}
-        description="Définissez simplement le sujet de l'étape."
-        required={false}
-        errors={createOrUpdateMomentState?.error?.stepsErrors?.stepName}
-      />
-      <AllGlobalClientComponents.Textarea
-        form={form}
-        label="Détails de l'étape"
-        name="detailsdeleetape"
-        defaultValue={step?.details}
-        description="Expliquez en détails le déroulé de l'étape."
-        rows={4}
-        required={false}
-        errors={createOrUpdateMomentState?.error?.stepsErrors?.stepDescription}
-      />
-      <AllGlobalClientComponents.InputNumberControlled
-        form={form}
-        label="Durée de l'étape"
-        name="dureedeletape"
-        definedValue={stepDuree}
-        definedOnValueChange={setStepDuree}
-        description="Renseignez en minutes la longueur de l'étape."
-        min="5"
-        required={false}
-        errors={createOrUpdateMomentState?.error?.stepsErrors?.realStepDuration}
-        schema={EventStepDurationSchema}
-      >
-        <p className="text-sm font-medium text-blue-900">
-          commence à{" "}
-          {step // && stepAddingTime (can equal 0 which is falsy)
-            ? format(
-                add(startMomentDate, {
-                  minutes: stepAddingTime,
-                }),
-                "HH:mm",
-              )
-            : format(
-                add(startMomentDate, {
-                  minutes: stepsCompoundDurations.at(-1),
-                }),
-                "HH:mm",
-              )}
-        </p>
-      </AllGlobalClientComponents.InputNumberControlled>
-    </>
   );
 }
 
@@ -659,11 +396,8 @@ const localAgnosticComponents = {
   HeaderSegment,
   ViewsCarouselWrapper,
   MomentsPageDetails,
-  MomentInputs,
   StepsSummaries,
   StepVisibleCreating,
-  StepVisibleCreate,
-  StepInputs,
   StepFormControlsMobileWrapper,
   StepFormControlsDesktopWrapper,
   StepContents,

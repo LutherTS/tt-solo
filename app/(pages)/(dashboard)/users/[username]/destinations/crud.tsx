@@ -13,11 +13,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
 import { ArrowPathSolidIcon } from "@/app/icons/agnostic";
 import { Divider, PageTitle, Section } from "@/app/components/agnostic";
-import {
-  Button,
-  InputText,
-  Textarea,
-} from "@/app/components/client/components";
+import { Button, InputText, Textarea } from "@/app/components/client";
 
 // Types imports
 
@@ -148,7 +144,7 @@ function ReadDestinationsView({
           }}
           className={clsx(
             "flex h-9 items-center justify-center px-4 py-2",
-            "relative rounded-full text-sm font-semibold uppercase tracking-widest text-transparent outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2",
+            "relative rounded-full text-sm font-semibold tracking-widest text-transparent uppercase outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2",
             "focus-visible:outline-cyan-500",
           )}
         >

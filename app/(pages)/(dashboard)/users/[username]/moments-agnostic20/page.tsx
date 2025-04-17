@@ -1,11 +1,12 @@
 // no directive
+// Proposes no directive to enforce a Server Module.
 
 /* IMPORTS */
 
 // Components imports
 
 import Core from "./core";
-import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
+import * as AllGlobalClientComponents from "@/app/components/client";
 
 // Internal imports
 
@@ -118,7 +119,7 @@ export default async function MomentsPage({
   }
 
   return (
-    <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+    <AllGlobalClientComponents.ErrorBoundarySuspense>
       <Core
         // time (aligned across server and client for hydration cases)
         now={now}
@@ -133,6 +134,6 @@ export default async function MomentsPage({
         createOrUpdateMoment={createOrUpdateMoment}
         deleteMoment={deleteMoment}
       />
-    </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+    </AllGlobalClientComponents.ErrorBoundarySuspense>
   );
 }

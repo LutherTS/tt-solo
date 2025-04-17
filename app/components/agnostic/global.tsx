@@ -1,4 +1,4 @@
-// "use agnostic";
+"use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
 /* IMPORTS */
@@ -11,7 +11,7 @@ import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
 
 // Components imports
 
-import * as AllGlobalClientComponents from "../client/components";
+import * as AllGlobalClientComponents from "../client";
 import * as ValidationErrors from "./validation-errors";
 
 // Internal imports
@@ -59,7 +59,7 @@ export function Section({
   return (
     // pb-1 (or +1) making up for input padding inconsistencies
     <section
-      className="grid items-baseline gap-8 pb-9 pt-8 md:grid-cols-[1fr_2fr]"
+      className="grid items-baseline gap-8 pt-8 pb-9 md:grid-cols-[1fr_2fr]"
       id={id}
     >
       <div
@@ -195,7 +195,7 @@ export function FormSection({
 
 export function PageTitle({ title }: { title: string }) {
   return (
-    <h1 className="text-xl font-bold leading-none text-blue-950">{title}</h1>
+    <h1 className="text-xl leading-none font-bold text-blue-950">{title}</h1>
   );
 }
 
@@ -241,40 +241,6 @@ export function FallbackFlex({ children }: { children: React.ReactNode }) {
   );
 }
 
-function DefaultErrorBoundaryFallback() {
-  return (
-    <FallbackFlex>
-      <p>Une erreur est survenue.</p>
-    </FallbackFlex>
-  );
-}
-
-function DefaultSuspenseFallback() {
-  return (
-    <FallbackFlex>
-      <p>Loading...</p>
-    </FallbackFlex>
-  );
-}
-
-export function ErrorBoundarySuspense({
-  ErrorBoundaryFallBack = <DefaultErrorBoundaryFallback />,
-  SuspenseFallback = <DefaultSuspenseFallback />,
-  children,
-}: {
-  ErrorBoundaryFallBack?: React.ReactNode;
-  SuspenseFallback?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <>
-      <ErrorBoundary fallback={ErrorBoundaryFallBack}>
-        <Suspense fallback={SuspenseFallback}>{children}</Suspense>
-      </ErrorBoundary>
-    </>
-  );
-}
-
 const globalAgnosticComponents = {
   Section,
   FormSection,
@@ -283,7 +249,6 @@ const globalAgnosticComponents = {
   FieldFlex,
   FieldTitle,
   FallbackFlex,
-  ErrorBoundarySuspense,
 } as const;
 
 export type GlobalAgnosticComponentsName =

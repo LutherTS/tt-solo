@@ -1,5 +1,5 @@
-"use client"; // "use client components"
-// Proposes "use client components" to enforce a Client Components Module.
+"use client";
+// Proposes "use client" to enforce a Client Module.
 
 /* IMPORTS */
 
@@ -12,7 +12,7 @@ import * as Switch from "@radix-ui/react-switch";
 // Components imports
 
 import * as AllGlobalIcons from "@/app/icons/agnostic";
-import * as AllGlobalAgnosticComponents from "../../agnostic";
+import * as AllGlobalAgnosticComponents from "../agnostic";
 
 // Internal imports
 

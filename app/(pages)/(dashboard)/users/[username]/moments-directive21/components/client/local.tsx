@@ -27,7 +27,7 @@ import useKeypress from "react-use-keypress";
 // Components imports
 
 import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllGlobalClientComponents from "@/app/components/client";
 import * as AllLocalAgnosticComponents from "../agnostic"; // if prefixed by "All-", it means the import is from a folder
 import * as Buttons from "./buttons";
 
@@ -151,7 +151,7 @@ export function ViewsCarouselContainer({
         >
           {/* UpdateMomentView */}
           {/* SUSPENDED */}
-          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalClientComponents.ErrorBoundarySuspense>
             <MomentForms
               key={view} // to remount every time the view changes, because its when it's mounted that the default values are applied based on the currently set moment
               variant="updating"
@@ -163,7 +163,7 @@ export function ViewsCarouselContainer({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
               allButtonsDisabled={view !== views.UPDATE_MOMENT}
             />
-          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalClientComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
       <AllLocalAgnosticComponents.PageSegment
@@ -175,14 +175,14 @@ export function ViewsCarouselContainer({
           currentViewHeight={currentViewHeight}
         >
           {/* SUSPENDED */}
-          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalClientComponents.ErrorBoundarySuspense>
             <ReadMomentsView
               view={view}
               fetchReadMomentsViewData={fetchReadMomentsViewData}
               revalidateMoments={revalidateMoments}
               allButtonsDisabled={view !== views.READ_MOMENTS}
             />
-          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalClientComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
       <AllLocalAgnosticComponents.PageSegment
@@ -195,7 +195,7 @@ export function ViewsCarouselContainer({
         >
           {/* CreateMomentView */}
           {/* SUSPENDED */}
-          <AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          <AllGlobalClientComponents.ErrorBoundarySuspense>
             <MomentForms
               variant="creating"
               fetchMomentFormsData={fetchMomentFormsData}
@@ -204,7 +204,7 @@ export function ViewsCarouselContainer({
               setIsCRUDOpSuccessful={setIsCRUDOpSuccessful}
               allButtonsDisabled={view !== views.CREATE_MOMENT}
             />
-          </AllGlobalAgnosticComponents.ErrorBoundarySuspense>
+          </AllGlobalClientComponents.ErrorBoundarySuspense>
         </ViewSegment>
       </AllLocalAgnosticComponents.PageSegment>
     </motion.div>
@@ -1102,10 +1102,10 @@ export function ReorderItem({
         }}
       >
         <div className={clsx("flex flex-col gap-y-8", "pb-9")}>
-          <div className="flex select-none items-baseline justify-between">
+          <div className="flex items-baseline justify-between select-none">
             <p
               className={clsx(
-                "text-sm font-semibold uppercase tracking-[0.08em] text-neutral-500",
+                "text-sm font-semibold tracking-[0.08em] text-neutral-500 uppercase",
                 "transition-colors",
                 stepVisible !== "updating" &&
                   "hover:cursor-pointer hover:text-neutral-400",

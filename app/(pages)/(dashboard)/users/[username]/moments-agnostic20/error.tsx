@@ -1,4 +1,5 @@
 "use client";
+// Proposes "use client" to enforce a Client Module.
 
 /* IMPORTS */
 
@@ -9,7 +10,7 @@ import { useEffect } from "react";
 // Components imports
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client/components";
+import * as GlobalClientComponents from "@/app/components/client";
 
 /* LOGIC */
 

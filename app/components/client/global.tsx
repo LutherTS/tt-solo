@@ -1,12 +1,18 @@
-"use client"; // "use client components"
-// Proposes "use client components" to enforce a Client Components Module.
+"use client";
+// Proposes "use client" to enforce a Client Module.
 
 /* IMPORTS */
 
 // External imports
 
+import { Suspense } from "react";
 import { useFormStatus } from "react-dom";
+import { ErrorBoundary } from "react-error-boundary";
 import clsx from "clsx"; // .prettierc – "tailwindFunctions": ["clsx"]
+
+// Components imports
+
+import * as AllGlobalAgnosticComponents from "@/app/components/agnostic";
 
 // Types imports
 
@@ -87,7 +93,7 @@ export function Button({
       type={type}
       disabled={disabled ? status.pending || disabled : status.pending}
       className={clsx(
-        "font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
+        "font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:duration-0",
         variant === "destroy" && clsx(destroy),
         variant === "destroy-step" && clsx(destroyStep),
         variant === "neutral" && clsx(notDestroy, neutral, "md:w-fit"),
@@ -136,9 +142,42 @@ export function FormValidationError({
   );
 }
 
+function DefaultErrorBoundaryFallback() {
+  return (
+    <AllGlobalAgnosticComponents.FallbackFlex>
+      <p>Une erreur est survenue.</p>
+    </AllGlobalAgnosticComponents.FallbackFlex>
+  );
+}
+
+function DefaultSuspenseFallback() {
+  return (
+    <AllGlobalAgnosticComponents.FallbackFlex>
+      <p>Loading...</p>
+    </AllGlobalAgnosticComponents.FallbackFlex>
+  );
+}
+
+export function ErrorBoundarySuspense({
+  ErrorBoundaryFallBack = <DefaultErrorBoundaryFallback />,
+  SuspenseFallback = <DefaultSuspenseFallback />,
+  children,
+}: {
+  ErrorBoundaryFallBack?: React.ReactNode;
+  SuspenseFallback?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <ErrorBoundary fallback={ErrorBoundaryFallBack}>
+      <Suspense fallback={SuspenseFallback}>{children}</Suspense>
+    </ErrorBoundary>
+  );
+}
+
 const globalClientComponents = {
   Button,
   FormValidationError,
+  ErrorBoundarySuspense,
 } as const;
 
 export type GlobalClientComponentsName = keyof typeof globalClientComponents;

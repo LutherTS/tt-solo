@@ -1,5 +1,5 @@
-"use client"; // "use client components"
-// Proposes "use client components" to enforce a Client Components Module.
+"use client";
+// Proposes "use client" to enforce a Client Module.
 
 // Error boundaries must be Client Components
 
@@ -12,7 +12,7 @@ import { useEffect } from "react";
 // Internal imports
 
 import * as GlobalAgnosticComponents from "@/app/components/agnostic";
-import * as GlobalClientComponents from "@/app/components/client/components";
+import * as GlobalClientComponents from "@/app/components/client";
 
 /* LOGIC */
 

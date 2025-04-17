@@ -1,4 +1,4 @@
-// "use agnostic";
+"use agnostic";
 // Proposes "use agnostic" to enforce an Agnostic Module.
 
 /* IMPORTS */
@@ -40,7 +40,7 @@ export const navLinks: NavLink[] = [
   {
     id: "Moments",
     label: "Moments",
-    href: "/moments-demo",
+    href: "/moments-agnostic20",
     icon: "CalendarDaysOutlineIcon",
   },
   {

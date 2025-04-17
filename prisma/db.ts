@@ -1,3 +1,6 @@
+// no directive
+// Proposes no directive to enforce a Server Module.
+
 import { PrismaClient } from "@prisma/client";
 
 const prismaClientSingleton = () => {

@@ -1,4 +1,6 @@
-// (directive enforced via index.ts)
+"use client";
+// Proposes "use client" to enforce a Client Module.
+// (directive enforced via index.ts) (not anymore)
 
 /* IMPORTS */
 
@@ -10,7 +12,7 @@ import clsx from "clsx";
 // Components imports
 
 import * as AllGlobalIcons from "@/app/icons/agnostic";
-import * as AllGlobalClientComponents from "@/app/components/client/components";
+import * as AllGlobalClientComponents from "@/app/components/client";
 
 // Internal imports
 
