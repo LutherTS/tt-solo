@@ -258,7 +258,7 @@ export const makeEffectiveDirectiveImportRule = (effectiveDirective) => ({
     return {
       ImportDeclaration: (node) => {
         // only operates on the rule's dedicated directive
-        if (currentFileDirective !== effectiveDirective) return;
+        if (currentFileEffectiveDirective !== effectiveDirective) return;
         // does not operate on `import type`
         if (node.importKind === "type") return;
 
