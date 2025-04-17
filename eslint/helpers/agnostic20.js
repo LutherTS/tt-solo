@@ -3,25 +3,12 @@ import path from "path";
 
 import { loadConfig, createMatchPath } from "tsconfig-paths";
 
+// plugin name
 export const useAgnosticPluginName = "use-agnostic";
-// rule names for directives
 
-export const forUseServerRuleName = "server-functions-no-import-client";
-export const forUseClientRuleName = "client-no-import-server";
-export const forUseAgnosticRuleName = "agnostic-Componentsimport-agnostic-only";
-// rule names for effective directives (I could make a utility but since this is JavaScript and not TypeScript, I want to have the rule names visible at a glance.)
-export const forUseServerLogicsRuleName = "server-logics-modules-import-rules";
-export const forUseServerComponentsRuleName =
-  "server-components-modules-import-rules";
-export const forUseServerFunctionsRuleName =
-  "server-functions-modules-import-rules";
-export const forUseClientLogicsRuleName = "client-logics-modules-import-rules";
-export const forUseClientComponentsRuleName =
-  "client-components-modules-import-rules";
-export const forUseAgnosticLogicsRuleName =
-  "agnostic-logics-modules-import-rules";
-export const forUseAgnosticComponentsRuleName =
-  "agnostic-components-modules-import-rules";
+// rule names
+export const importRulesEnforcementRuleName =
+  "enforce-effective-directives-import-rules";
 
 /* makeDirectiveImportRule */
 
@@ -59,63 +46,8 @@ const effectiveDirectives_EffectiveModules = {
   [USE_AGNOSTIC_COMPONENTS]: AGNOSTIC_COMPONENTS_MODULE,
 };
 
-const makeDescriptionFromEffectiveDirective = (effectiveDirective) =>
-  `Enforces import rules for ${effectiveDirectives_EffectiveModules[effectiveDirective]}s.`;
-
-const descriptions = {
-  // previous
-  [USE_SERVER]:
-    "Enforces that a Server Functions Module does not import Client Modules. ",
-  [USE_CLIENT]:
-    "Enforces that a Client Module does not import modules that are server by default. ",
-  [USE_AGNOSTIC]:
-    "Enforces that an Agnostic Module only imports other Agnostic Modules. ",
-  // next
-  [USE_SERVER_LOGICS]: makeDescriptionFromEffectiveDirective(USE_SERVER_LOGICS),
-  [USE_SERVER_COMPONENTS]: makeDescriptionFromEffectiveDirective(
-    USE_SERVER_COMPONENTS,
-  ),
-  [USE_SERVER_FUNCTIONS]:
-    makeDescriptionFromEffectiveDirective(USE_SERVER_FUNCTIONS),
-  [USE_CLIENT_LOGICS]: makeDescriptionFromEffectiveDirective(USE_CLIENT_LOGICS),
-  [USE_CLIENT_COMPONENTS]: makeDescriptionFromEffectiveDirective(
-    USE_CLIENT_COMPONENTS,
-  ),
-  [USE_AGNOSTIC_LOGICS]:
-    makeDescriptionFromEffectiveDirective(USE_AGNOSTIC_LOGICS),
-  [USE_AGNOSTIC_COMPONENTS]: makeDescriptionFromEffectiveDirective(
-    USE_AGNOSTIC_COMPONENTS,
-  ),
-};
-
-export const useServerMessageId = "importDirectiveIsClient";
-export const useClientMessageId = "importDirectiveIsNull";
-export const useAgnosticMessageId = "importDirectiveIsNotAgnostic";
-
-const effectiveDirectiveMessageId = "importBreaksEffectiveDirectiveImportRules";
-
-export const useServerLogicsMessageId = effectiveDirectiveMessageId;
-export const useServerComponentsMessageId = effectiveDirectiveMessageId;
-export const useServerFunctionsMessageId = effectiveDirectiveMessageId;
-export const useClientLogicsMessageId = effectiveDirectiveMessageId;
-export const useClientComponentsMessageId = effectiveDirectiveMessageId;
-export const useAgnosticLogicsMessageId = effectiveDirectiveMessageId;
-export const useAgnosticComponentsMessageId = effectiveDirectiveMessageId;
-
-export const messageIds = {
-  // previous
-  [USE_SERVER]: useServerMessageId,
-  [USE_CLIENT]: useClientMessageId,
-  [USE_AGNOSTIC]: useAgnosticMessageId,
-  // next
-  [USE_SERVER_LOGICS]: useServerLogicsMessageId,
-  [USE_SERVER_COMPONENTS]: useServerComponentsMessageId,
-  [USE_SERVER_FUNCTIONS]: useServerFunctionsMessageId,
-  [USE_CLIENT_LOGICS]: useClientLogicsMessageId,
-  [USE_CLIENT_COMPONENTS]: useClientComponentsMessageId,
-  [USE_AGNOSTIC_LOGICS]: useAgnosticLogicsMessageId,
-  [USE_AGNOSTIC_COMPONENTS]: useAgnosticComponentsMessageId,
-};
+export const effectiveDirectiveMessageId =
+  "importBreaksEffectiveDirectiveImportRules";
 
 // Note: There will be additional messageIds and messages for each effective directive's blocked import. (3, 2, 5, 3, 2, 5, 4.)
 
@@ -163,7 +95,7 @@ const makeMessageFromEffectiveDirective = (effectiveDirective) => {
     effectiveDirectives_BlockedImports[effectiveDirective] || [];
 
   if (blockedImports.length === 0) {
-    return `${effectiveModulesString} are not restricted from importing any modules.`;
+    return `${effectiveModulesString} are not restricted from importing any modules. `;
   }
 
   const blockedEffectiveModules = blockedImports.map(
@@ -177,32 +109,7 @@ const makeMessageFromEffectiveDirective = (effectiveDirective) => {
         ", or " +
         blockedEffectiveModules.slice(-1);
 
-  return `${effectiveModulesString} are not allowed to import ${blockedEffectiveModulesString}.`;
-};
-
-const messages = {
-  // previous
-  [USE_SERVER]:
-    "Server Functions Modules cannot import Client Modules. Please remove the import, or adapt it accordingly by making it a server-by-default module (via no directive), a fellow Server Functions Module (not recommended) or an Agnostic Module (via 'use agnostic' on top of the file). ...Or perhaps the current module shouldn't be marked with the 'use server' directive. ",
-  [USE_CLIENT]:
-    "The imported module lacks a directive. (Neither marked with 'use client', nor 'use server', nor 'use agnostic'.) There is a likelihood that the imported module is not meant to leave the server. If that is not the case, please mark it with 'use agnostic' on top of the file to allow it for import on the client as well, thus differentiating it from an actual Server Module. ...Or perhaps the current module shouldn't be marked with the 'use client' directive. ",
-  [USE_AGNOSTIC]:
-    "Agnostic Modules can only import other Agnostic Modules. Please remove the import, or adapt it accordingly by making it a fellow Agnostic Module (via 'use agnostic' on top of the file). ...Or perhaps the current module shouldn't be marked with the 'use agnostic' directive. ",
-  // next
-  [USE_SERVER_LOGICS]: makeMessageFromEffectiveDirective(USE_SERVER_LOGICS),
-  [USE_SERVER_COMPONENTS]: makeMessageFromEffectiveDirective(
-    USE_SERVER_COMPONENTS,
-  ),
-  [USE_SERVER_FUNCTIONS]:
-    makeMessageFromEffectiveDirective(USE_SERVER_FUNCTIONS),
-  [USE_CLIENT_LOGICS]: makeMessageFromEffectiveDirective(USE_CLIENT_LOGICS),
-  [USE_CLIENT_COMPONENTS]: makeMessageFromEffectiveDirective(
-    USE_CLIENT_COMPONENTS,
-  ),
-  [USE_AGNOSTIC_LOGICS]: makeMessageFromEffectiveDirective(USE_AGNOSTIC_LOGICS),
-  [USE_AGNOSTIC_COMPONENTS]: makeMessageFromEffectiveDirective(
-    USE_AGNOSTIC_COMPONENTS,
-  ),
+  return `${effectiveModulesString} are not allowed to import ${blockedEffectiveModulesString}. `;
 };
 
 const isImportBlocked = (
@@ -213,29 +120,22 @@ const isImportBlocked = (
     importedFileEffectiveDirective,
   );
 
-// previous
-// const conditions = {
-//   [USE_SERVER]: (importedFileDirective) => importedFileDirective === USE_CLIENT,
-//   [USE_CLIENT]: (importedFileDirective) =>
-//     importedFileDirective === NO_DIRECTIVE,
-//   [USE_AGNOSTIC]: (importedFileDirective) =>
-//     importedFileDirective !== USE_AGNOSTIC,
-// };
-
 /**
  * Makes an effective directive's import rule.
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} effectiveDirective The effective directive the rule is to be made for.
  * @returns {import('@typescript-eslint/utils').TSESLint.RuleModule<useServerLogicsMessageId, []>} The effective directive's import rule.
  */
-export const makeEffectiveDirectiveImportRule = (effectiveDirective) => ({
+export const makeEffectiveDirectiveImportRule = () => ({
   meta: {
     type: "problem",
     docs: {
-      description: descriptions[effectiveDirective],
+      description:
+        "Enforces import rules based on the file's effective directive.",
     },
     schema: [],
     messages: {
-      [messageIds[effectiveDirective]]: messages[effectiveDirective],
+      // the message depends on the effective directive
+      [effectiveDirectiveMessageId]: "{{ effectiveDirectiveMessage }}",
     },
   },
   create: (context) => {
@@ -257,8 +157,6 @@ export const makeEffectiveDirectiveImportRule = (effectiveDirective) => ({
 
     return {
       ImportDeclaration: (node) => {
-        // only operates on the rule's dedicated directive
-        if (currentFileEffectiveDirective !== effectiveDirective) return;
         // does not operate on `import type`
         if (node.importKind === "type") return;
 
@@ -292,7 +190,6 @@ export const makeEffectiveDirectiveImportRule = (effectiveDirective) => ({
           importedFileEffectiveDirective,
         });
 
-        // if (conditions[directive](importedFileDirective))
         if (
           isImportBlocked(
             currentFileEffectiveDirective,
@@ -301,8 +198,13 @@ export const makeEffectiveDirectiveImportRule = (effectiveDirective) => ({
         )
           context.report({
             node,
-            // messageId: messageIds[directive],
-            messageId: messageIds[currentFileEffectiveDirective],
+            messageId: effectiveDirectiveMessageId,
+            data: {
+              // the message is made from the effective directive
+              effectiveDirectiveMessage: makeMessageFromEffectiveDirective(
+                currentFileEffectiveDirective,
+              ),
+            },
           });
       },
     };
