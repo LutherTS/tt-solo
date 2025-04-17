@@ -1,4 +1,5 @@
 "use client";
+// Proposes "use client" to enforce a Client Module.
 // (directive enforced via index.ts) (not anymore)
 
 /* IMPORTS */

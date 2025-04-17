@@ -1,4 +1,5 @@
 "use agnostic";
+// Proposes "use agnostic" to enforce an Agnostic Module.
 // (directive enforced via index.ts) (not anymore)
 
 /* IMPORTS */
