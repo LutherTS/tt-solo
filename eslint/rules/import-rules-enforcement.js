@@ -25,7 +25,7 @@ const rule = {
     },
   },
   create: (context) => {
-    console.log({ currentFilename: context.filename });
+    // console.log({ currentFilename: context.filename });
 
     /* GETTING THE DIRECTIVE (or lack thereof) OF THE CURRENT FILE */
     const currentFileDirective = getDirectiveFromCurrentModule(context);
