@@ -25,6 +25,8 @@ const rule = {
     },
   },
   create: (context) => {
+    console.log({ currentFilename: context.filename });
+
     /* GETTING THE DIRECTIVE (or lack thereof) OF THE CURRENT FILE */
     const currentFileDirective = getDirectiveFromCurrentModule(context);
     // GETTING THE EXTENSION OF THE CURRENT FILE
@@ -35,11 +37,11 @@ const rule = {
       currentFileExtension,
     );
 
-    console.log({
-      currentFileDirective,
-      currentFileExtension,
-      currentFileEffectiveDirective,
-    });
+    // console.log({
+    //   currentFileDirective,
+    //   currentFileExtension,
+    //   currentFileEffectiveDirective,
+    // });
 
     return {
       ImportDeclaration: (node) => {
@@ -70,11 +72,11 @@ const rule = {
           importedFileFileExtension,
         );
 
-        console.log({
-          importedFileDirective,
-          importedFileFileExtension,
-          importedFileEffectiveDirective,
-        });
+        // console.log({
+        //   importedFileDirective,
+        //   importedFileFileExtension,
+        //   importedFileEffectiveDirective,
+        // });
 
         if (
           isImportBlocked(
