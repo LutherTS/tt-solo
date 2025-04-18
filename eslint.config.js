@@ -32,6 +32,8 @@ export default defineConfig([
       "app/writes/**/*.tsx",
       "app/global-error.tsx",
       "app/layout.tsx",
+
+      // "app/actions/server/use-server.ts",
     ],
     extends: [agnostic20],
   },

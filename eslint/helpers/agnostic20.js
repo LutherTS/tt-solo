@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import { loadConfig, createMatchPath } from "tsconfig-paths";
+import { pascalCase } from "change-case";
 
 // plugin name
 export const useAgnosticPluginName = "use-agnostic";
@@ -101,7 +102,7 @@ export const getDirectiveFromCurrentModule = (context) => {
  * - `'use agnostic components'` denotes an Agnostic Components Module.
  * @param {USE_SERVER | USE_CLIENT | USE_AGNOSTIC | NO_DIRECTIVE} directive The directive as written on top of the file (`null` if no valid directive).
  * @param {TSX | TS | JSX | JS | MJS | CJS} extension The JavaScript (TypeScript) extension of the file.
- * @returns {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} The effective directive, from which imports rules are applied.
+ * @returns {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS | null} The effective directive, from which imports rules are applied.
  */
 export const getEffectiveDirective = (directive, extension) => {
   // I could use a map, but because this is in JS with JSDoc, a manual solution is peculiarly more typesafe.
@@ -119,7 +120,8 @@ export const getEffectiveDirective = (directive, extension) => {
     return USE_AGNOSTIC_LOGICS;
   if (directive === USE_AGNOSTIC && extension.endsWith("x"))
     return USE_AGNOSTIC_COMPONENTS;
-  else return null; // default error, should be unreachable
+
+  return null; // default error, should be unreachable
 };
 
 /* resolveImportPath */
@@ -407,3 +409,12 @@ export const findSpecificViolationMessage = (
   effectiveDirectives_BlockedImports[currentFileEffectiveDirective].find(
     (e) => e.blockedImport === importedFileEffectiveDirective,
   ).message;
+
+/* isPascalCase */
+
+/**
+ * Verifies whether a string is in PascalCase, as a conventional way to recognize a React Component by name in non-type imports and exports.
+ * @param {string} string The string to verify.
+ * @returns {boolean} Returns `true` if the string is in PascalCase.
+ */
+export const isPascalCase = (string) => string === pascalCase(string);
