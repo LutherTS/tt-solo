@@ -65,7 +65,7 @@ const directivesSet = new Set([USE_SERVER, USE_CLIENT, USE_AGNOSTIC]);
  * @returns {USE_SERVER | USE_CLIENT | USE_AGNOSTIC | NO_DIRECTIVE} The directive, or lack thereof via `null`. The lack of a directive is considered server-by-default.
  */
 export const getDirectiveFromCurrentModule = (context) => {
-  // the AST body to check for "use client"
+  // the AST body to check for the top-of-the-file directive
   const { body } = context.sourceCode.ast;
 
   // the first statement from the source code's Abstract Syntax Tree
@@ -78,7 +78,7 @@ export const getDirectiveFromCurrentModule = (context) => {
       ? firstStatement.expression.value
       : null;
 
-  // consider early a null value as the absence of a directive
+  // considers early a null value as the absence of a directive
   if (value === null) return value;
 
   // the value to be exactly 'use client', 'use server' or 'use agnostic' in order not to be considered null by default, or server-by-default
@@ -143,7 +143,7 @@ export const EXTENSIONS = [TSX, TS, JSX, JS, MJS, CJS]; // Priority order
  * @param {string} cwd Project root (from `context.cwd`). Caveat: only as an assumption currently.
  * @returns {string | null} Absolute resolved path or `null` if not found.
  */
-export const resolveImportPath = (currentDir, importPath, cwd) => {
+const resolveImportPath = (currentDir, importPath, cwd) => {
   // --- Step 1: Resolve aliases (if tsconfig.json `paths` exists) ---
   const config = loadConfig(cwd);
 
@@ -194,10 +194,10 @@ const directivesArray = Array.from(directivesSet);
  * @param {string} resolvedImportPath
  * @returns {USE_SERVER | USE_CLIENT | USE_AGNOSTIC | NO_DIRECTIVE} The directive, or lack thereof via `null`. The lack of a directive is considered server-by-default.
  */
-export const getDirectiveFromImportedModule = (resolvedImportPath) => {
+const getDirectiveFromImportedModule = (resolvedImportPath) => {
   // gets the code of the import
   const importedFileContent = fs.readFileSync(resolvedImportPath, "utf8");
-  // get the first line of the code of the import
+  // gets the first line of the code of the import
   const importedFileFirstLine = importedFileContent.trim().split("\n")[0];
 
   // verifies that this first line begins by a valid directive, thus excluding comments
@@ -340,16 +340,14 @@ const effectiveDirectives_BlockedImports = {
   ],
 };
 
-/* isImportBlocked */
-
 /**
  * Returns a boolean deciding if an imported file's effective directive is incompatible with the current file's effective directive.
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} currentFileEffectiveDirective The current file's effective directive.
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} importedFileEffectiveDirective The imported file's effective directive.
  * @returns {boolean} Returns `true` if the import is blocked, as established in `effectiveDirectives_BlockedImports`.
  */
-export const isImportBlocked = (
-  // Note : "Blocked" here is preferred over "not allowed" because a specific message will be made for each of the blocked situations, explaining their reasons and the solutions needed.
+const isImportBlocked = (
+  // Note: "Blocked" here is preferred over "not allowed" because a specific message will be shared for each of the blocked situations, explaining their reasons and the solutions needed.
   currentFileEffectiveDirective,
   importedFileEffectiveDirective,
 ) =>
@@ -364,7 +362,7 @@ export const isImportBlocked = (
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} effectiveDirective The effective directive of the effective module.
  * @returns {string} The message listing the incompatible effective modules.
  */
-export const makeMessageFromEffectiveDirective = (effectiveDirective) => {
+const makeMessageFromEffectiveDirective = (effectiveDirective) => {
   const effectiveModule =
     effectiveDirectives_EffectiveModules[effectiveDirective];
   const effectiveModulesString = effectiveModule + "s"; // plural
@@ -400,7 +398,7 @@ export const makeMessageFromEffectiveDirective = (effectiveDirective) => {
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} importedFileEffectiveDirective The imported file's effective directive.
  * @returns {string} The corresponding `message`.
  */
-export const findSpecificViolationMessage = (
+const findSpecificViolationMessage = (
   currentFileEffectiveDirective,
   importedFileEffectiveDirective,
 ) =>
@@ -417,7 +415,7 @@ export const findSpecificViolationMessage = (
  * @param {string} cwd Project root (from `context.cwd`). Caveat: only as an assumption currently.
  * @returns {{skip: true; importedFileEffectiveDirective: undefined;} | {importedFileEffectiveDirective: USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS; skip: undefined;}} Returns either an object with `skip: true` to disregard or one with the non-null `importedFileEffectiveDirective`.
  */
-export const coreFlow = (currentDir, importPath, cwd) => {
+const coreFlow = (currentDir, importPath, cwd) => {
   // finds the full path of the import
   const resolvedImportPath = resolveImportPath(currentDir, importPath, cwd);
 
