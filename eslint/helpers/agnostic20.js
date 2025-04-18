@@ -45,11 +45,12 @@ const effectiveDirectives_EffectiveModules = {
   [USE_AGNOSTIC_COMPONENTS]: AGNOSTIC_COMPONENTS_MODULE,
 };
 
+// messageIds
 export const effectiveDirectiveMessageId =
   "import-breaks-effective-directive-import-rules";
-
 export const specificViolationMessageId =
   "import-breaks-this-effective-directive-import-rule";
+export const useServerJSXMessageId = "use-server-has-jsx-extension";
 
 /* getDirectiveFromCurrentModule */
 

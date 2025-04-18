@@ -3,6 +3,7 @@ import path from "path";
 import {
   effectiveDirectiveMessageId,
   specificViolationMessageId,
+  useServerJSXMessageId,
   getDirectiveFromCurrentModule,
   getEffectiveDirective,
   resolveImportPath,
@@ -13,7 +14,7 @@ import {
   findSpecificViolationMessage,
 } from "../helpers/agnostic20.js";
 
-/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof effectiveDirectiveMessageId | typeof specificViolationMessageId, []>} */
+/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof effectiveDirectiveMessageId | typeof specificViolationMessageId | typeof useServerJSXMessageId, []>} */
 const rule = {
   meta: {
     type: "problem",
@@ -25,6 +26,8 @@ const rule = {
     messages: {
       [effectiveDirectiveMessageId]: "{{ effectiveDirectiveMessage }}",
       [specificViolationMessageId]: "{{ specificViolationMessage }}",
+      [useServerJSXMessageId]:
+        "A Server Functions Module is not allowed to have a JSX file extension. ",
     },
   },
   create: (context) => {
@@ -34,6 +37,22 @@ const rule = {
     const currentFileDirective = getDirectiveFromCurrentModule(context);
     // GETTING THE EXTENSION OF THE CURRENT FILE
     const currentFileExtension = path.extname(context.filename);
+
+    // report if a file marked "use server" has a JSX extension
+    if (
+      currentFileDirective === "use server" &&
+      currentFileExtension.endsWith("x")
+    ) {
+      context.report({
+        loc: {
+          start: { line: 1, column: 0 },
+          end: { line: 1, column: context.sourceCode.lines[0].length },
+        },
+        messageId: useServerJSXMessageId,
+      });
+      return {};
+    }
+
     // GETTING THE EFFECTIVE DIRECTIVE OF THE CURRENT FILE
     const currentFileEffectiveDirective = getEffectiveDirective(
       currentFileDirective,
