@@ -1,9 +1,14 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 
-import agnostic20 from "./eslint/configs/agnostic20.js";
+import {
+  useAgnosticPluginName,
+  agnostic20ConfigName,
+} from "./eslint/helpers/names/use-agnostic.js";
+
+import useAgnostic from "./eslint/plugins/use-agnostic.js";
 
 export default defineConfig([
-  globalIgnores(["./.next"]),
+  globalIgnores([".next"]),
   {
     files: [
       "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.ts",
@@ -32,9 +37,10 @@ export default defineConfig([
       "app/writes/**/*.tsx",
       "app/global-error.tsx",
       "app/layout.tsx",
-
-      // "app/actions/server/use-server.ts",
     ],
-    extends: [agnostic20],
+    plugins: {
+      [useAgnosticPluginName]: useAgnostic,
+    },
+    extends: [`${useAgnosticPluginName}/${agnostic20ConfigName}`],
   },
 ]);

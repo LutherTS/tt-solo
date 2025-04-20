@@ -9,7 +9,7 @@ import {
   EXTENSIONS,
   importFlow,
   exportFlow,
-} from "../helpers/agnostic20.js";
+} from "../helpers/configs/agnostic20.js";
 
 /** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>} */
 const rule = {

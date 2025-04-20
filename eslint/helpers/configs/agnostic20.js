@@ -1,14 +1,34 @@
 import fs from "fs";
 import path from "path";
-
+import { defineConfig } from "eslint/config";
+import tseslint from "typescript-eslint";
 import { loadConfig, createMatchPath } from "tsconfig-paths";
 
-// plugin name
-export const useAgnosticPluginName = "use-agnostic";
+import {
+  agnostic20ConfigName,
+  useAgnosticPluginName,
+  importRulesEnforcementRuleName,
+} from "../names/use-agnostic.js";
 
-// rule names
-export const importRulesEnforcementRuleName =
-  "enforce-effective-directives-import-rules";
+/**
+ * Makes the agnostic20 config for the use-agnostic ESLint plugin.
+ */
+export const makeAgnostic20Config = (plugin) => ({
+  [agnostic20ConfigName]: defineConfig([
+    {
+      plugins: {
+        [useAgnosticPluginName]: plugin,
+      },
+      languageOptions: {
+        // for compatibility with .ts and .tsx
+        parser: tseslint.parser,
+      },
+      rules: {
+        [`${useAgnosticPluginName}/${importRulesEnforcementRuleName}`]: "warn",
+      },
+    },
+  ]),
+});
 
 // directives
 const NO_DIRECTIVE = null;
