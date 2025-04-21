@@ -8,7 +8,7 @@ import {
   USE_AGNOSTIC_COMPONENTS,
 } from "./core/bases.js";
 
-import { makeIntroForSpecificViolationMessage } from "../../../utilities/agnostic20/crossed/make-intro.js";
+import { makeIntroForSpecificViolationMessage } from "../../utilities/agnostic20/make-intro.js";
 
 export const effectiveDirectives_BlockedImports = {
   [USE_SERVER_LOGICS]: [

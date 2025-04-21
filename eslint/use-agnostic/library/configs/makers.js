@@ -2,8 +2,8 @@ import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 import {
-  agnostic20ConfigName,
   useAgnosticPluginName,
+  agnostic20ConfigName,
   enforceEffectiveDirectivesRuleName,
 } from "../constants/names.js";
 
@@ -27,3 +27,5 @@ export const makeAgnostic20Config = (plugin) => ({
     },
   ]),
 });
+
+// makeDirective21Config below
