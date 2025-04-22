@@ -44,28 +44,6 @@ export const getDirectiveFromCurrentModule = (context) => {
   // the AST body to check for the top-of-the-file directive
   const { body } = context.sourceCode.ast;
 
-  // TEST START
-  // console.log({ comments: context.sourceCode.getAllComments() });
-  const firstComment = context.sourceCode.getAllComments()[0] || null;
-  // console.log({ firstComment: context.sourceCode.getAllComments()[0] || null });
-  if (
-    firstComment &&
-    firstComment.loc.start.column === 0 && // 0-based, first column
-    firstComment.loc.start.line === 1 // 1-based, first line
-  ) {
-    console.log({ firstCommentValue: firstComment.value.trim() });
-    // console.log({ firstCommentStartColumn: firstComment.loc.start.column }); // 0
-    // console.log({ firstCommentStartLine: firstComment.loc.start.line }); // 1
-  }
-  // // TEST END
-
-  const rawValue =
-    firstComment &&
-    firstComment.loc.start.column === 0 && // 0-based, first column
-    firstComment.loc.start.line === 1
-      ? firstComment.value.trim()
-      : null;
-
   // the first statement from the source code's Abstract Syntax Tree
   const firstStatement = body[0];
 
