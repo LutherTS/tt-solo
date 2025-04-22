@@ -1,3 +1,5 @@
+import path from "path";
+
 import {
   USE_SERVER_LOGICS,
   USE_SERVER_COMPONENTS,
@@ -7,6 +9,9 @@ import {
   USE_AGNOSTIC_LOGICS,
   USE_AGNOSTIC_COMPONENTS,
   EXTENSIONS,
+  useServerJSXMessageId,
+  importBreaksImportRulesMessageId,
+  reExportNotSameMessageId,
 } from "../../../constants/agnostic20/core/bases.js";
 
 import {

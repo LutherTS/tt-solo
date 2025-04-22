@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+
 import { loadConfig, createMatchPath } from "tsconfig-paths";
 
 import {
@@ -27,7 +28,7 @@ import {
   ARE_NOT_ALLOWED_TO_IMPORT,
 } from "../../../constants/agnostic20/core/bases.js";
 
-import { effectiveDirectives_BlockedImports } from "../../../constants/agnostic20/derived/blocked-imports.js";
+import { effectiveDirectives_BlockedImports } from "../../../constants/agnostic20/isolated/blocked-imports.js";
 
 /* getDirectiveFromCurrentModule */
 

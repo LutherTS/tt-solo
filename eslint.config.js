@@ -1,11 +1,12 @@
 import { defineConfig, globalIgnores } from "eslint/config";
+import tseslint from "typescript-eslint";
 
 import {
   useAgnosticPluginName,
   agnostic20ConfigName,
-} from "./eslint/helpers/names/use-agnostic.js";
+} from "./eslint/use-agnostic/library/constants/names.js";
 
-import useAgnostic from "./eslint/plugins/use-agnostic.js";
+import useAgnostic from "./eslint/use-agnostic/library/index.js";
 
 export default defineConfig([
   globalIgnores([".next"]),
@@ -42,5 +43,9 @@ export default defineConfig([
       [useAgnosticPluginName]: useAgnostic,
     },
     extends: [`${useAgnosticPluginName}/${agnostic20ConfigName}`],
+    languageOptions: {
+      // for compatibility with .ts and .tsx
+      parser: tseslint.parser,
+    },
   },
 ]);
