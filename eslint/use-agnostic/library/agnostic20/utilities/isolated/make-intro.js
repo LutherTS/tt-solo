@@ -1,7 +1,7 @@
 import {
   effectiveDirectives_EffectiveModules,
   ARE_NOT_ALLOWED_TO_IMPORT,
-} from "../../../constants/agnostic20/core/bases.js";
+} from "../../constants/core/bases.js";
 
 /**
  * Makes the intro for each specific import rule violation messages.

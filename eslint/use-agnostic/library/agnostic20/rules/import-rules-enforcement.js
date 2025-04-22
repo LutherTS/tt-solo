@@ -5,16 +5,13 @@ import {
   importBreaksImportRulesMessageId,
   reExportNotSameMessageId,
   EXTENSIONS,
-} from "../../constants/agnostic20/core/bases.js";
+} from "../constants/core/bases.js";
 
 import {
   getDirectiveFromCurrentModule,
   getEffectiveDirective,
-} from "../../utilities/agnostic20/core/helpers.js";
-import {
-  importFlow,
-  exportFlow,
-} from "../../utilities/agnostic20/core/flows.js";
+} from "../utilities/core/helpers.js";
+import { importFlow, exportFlow } from "../utilities/core/flows.js";
 
 /** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>} */
 const rule = {

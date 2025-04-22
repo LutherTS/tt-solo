@@ -4,7 +4,7 @@ import {
   useAgnosticPluginName,
   agnostic20ConfigName,
   enforceEffectiveDirectivesRuleName,
-} from "../constants/names.js";
+} from "../_commons/constants/names.js";
 
 /**
  * Makes the agnostic20 config for the use-agnostic ESLint plugin.

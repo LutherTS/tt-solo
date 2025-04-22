@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 import {
   useAgnosticPluginName,
   agnostic20ConfigName,
-} from "./eslint/use-agnostic/library/constants/names.js";
+} from "./eslint/use-agnostic/library/_commons/constants/names.js";
 
 import useAgnostic from "./eslint/use-agnostic/library/index.js";
 

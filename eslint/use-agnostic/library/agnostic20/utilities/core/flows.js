@@ -12,7 +12,7 @@ import {
   useServerJSXMessageId,
   importBreaksImportRulesMessageId,
   reExportNotSameMessageId,
-} from "../../../constants/agnostic20/core/bases.js";
+} from "../../constants/core/bases.js";
 
 import {
   resolveImportPath,

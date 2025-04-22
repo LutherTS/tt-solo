@@ -39,11 +39,11 @@ export const importBreaksImportRulesMessageId =
   "import-breaks-effective-directive-import-rule";
 export const reExportNotSameMessageId = "re-export-not-same-directive";
 
-/* from getDirectiveFromCurrentModule utility */
+/* from the getDirectiveFromCurrentModule utility */
 
 export const directivesSet = new Set([USE_SERVER, USE_CLIENT, USE_AGNOSTIC]);
 
-/* from resolveImportPath utility */
+/* from the resolveImportPath utility */
 
 export const TSX = ".tsx";
 export const TS = ".ts";
@@ -54,10 +54,10 @@ export const CJS = ".cjs";
 
 export const EXTENSIONS = [TSX, TS, JSX, JS, MJS, CJS]; // In priority order
 
-/* from getDirectiveFromImportedModule utility */
+/* from the getDirectiveFromImportedModule utility */
 
 export const directivesArray = Array.from(directivesSet);
 
-/* from isImportBlocked utility */
+/* from the isImportBlocked utility */
 
 export const ARE_NOT_ALLOWED_TO_IMPORT = "are not allowed to import";
