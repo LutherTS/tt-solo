@@ -7,7 +7,7 @@ import {
   USE_AGNOSTIC_LOGICS,
   USE_AGNOSTIC_COMPONENTS,
   EXTENSIONS,
-} from "../constants/agnostic20.js";
+} from "../../../constants/agnostic20/core/bases.js";
 
 import {
   resolveImportPath,

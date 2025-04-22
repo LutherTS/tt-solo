@@ -27,7 +27,7 @@ import {
   ARE_NOT_ALLOWED_TO_IMPORT,
 } from "../../../constants/agnostic20/core/bases.js";
 
-import { effectiveDirectives_BlockedImports } from "../../../constants/agnostic20/blocked-imports.js";
+import { effectiveDirectives_BlockedImports } from "../../../constants/agnostic20/derived/blocked-imports.js";
 
 /* getDirectiveFromCurrentModule */
 

@@ -28,4 +28,6 @@ export const makeAgnostic20Config = (plugin) => ({
   ]),
 });
 
-// makeDirective21Config below
+/* Notes
+Then makeDirective21Config below makeAgnostic20Config. 
+*/

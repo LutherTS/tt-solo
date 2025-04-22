@@ -6,9 +6,9 @@ import {
   USE_CLIENT_COMPONENTS,
   USE_AGNOSTIC_LOGICS,
   USE_AGNOSTIC_COMPONENTS,
-} from "./core/bases.js";
+} from "../core/bases.js";
 
-import { makeIntroForSpecificViolationMessage } from "../../utilities/agnostic20/make-intro.js";
+import { makeIntroForSpecificViolationMessage } from "../../../utilities/agnostic20/derived/make-intro.js";
 
 export const effectiveDirectives_BlockedImports = {
   [USE_SERVER_LOGICS]: [
