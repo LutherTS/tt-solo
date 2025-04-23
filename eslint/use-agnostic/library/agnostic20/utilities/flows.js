@@ -1,5 +1,6 @@
 import path from "path";
 
+import { EXTENSIONS } from "../../_commons/constants/bases.js";
 import {
   USE_SERVER_LOGICS,
   USE_SERVER_COMPONENTS,
@@ -8,14 +9,13 @@ import {
   USE_CLIENT_COMPONENTS,
   USE_AGNOSTIC_LOGICS,
   USE_AGNOSTIC_COMPONENTS,
-  EXTENSIONS,
   useServerJSXMessageId,
   importBreaksImportRulesMessageId,
   reExportNotSameMessageId,
-} from "../../constants/core/bases.js";
+} from "../constants/bases.js";
 
+import { resolveImportPath } from "../../_commons/utilities/helpers.js";
 import {
-  resolveImportPath,
   getDirectiveFromImportedModule,
   getEffectiveDirective,
   isImportBlocked,
@@ -23,16 +23,24 @@ import {
   findSpecificViolationMessage,
 } from "./helpers.js";
 
-/* flow */
+// TEST START
+import { USE_AGNOSTIC_STRATEGIES } from "../../directive21/constants/bases.js";
+import {
+  getCommentedDirectiveFromImportedModule,
+  getStrategizedDirective,
+} from "../../directive21/utilities/helpers.js";
+// TEST END
+
+/* coreflow */
 
 /**
  * The core flow that is shared between import and export traversals to obtain the import file's effective directive.
  * @param {string} currentDir Directory of the file containing the import (from `path.dirname(context.filename)`).
  * @param {string} importPath The import specifier (e.g., `@/components/Button` or `./utils`).
  * @param {string} cwd Project root (from `context.cwd`). Caveat: only as an assumption currently.
- * @returns {{skip: true; importedFileEffectiveDirective: undefined;} | {importedFileEffectiveDirective: USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS; skip: undefined;}} Returns either an object with `skip: true` to disregard or one with the non-null `importedFileEffectiveDirective`.
+ * @returns {{skip: true; importedFileEffectiveDirective: undefined; resolvedImportPath: undefined;} | {skip: undefined; importedFileEffectiveDirective: USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS; resolvedImportPath: string;}} Returns either an object with `skip: true` to disregard or one with the non-null `importedFileEffectiveDirective`.
  */
-const flow = (currentDir, importPath, cwd) => {
+const coreFlow = (currentDir, importPath, cwd) => {
   // finds the full path of the import
   const resolvedImportPath = resolveImportPath(currentDir, importPath, cwd);
 
@@ -71,6 +79,7 @@ const flow = (currentDir, importPath, cwd) => {
 
   return {
     importedFileEffectiveDirective,
+    resolvedImportPath,
   };
 };
 
@@ -86,14 +95,24 @@ export const importFlow = (context, node, currentFileEffectiveDirective) => {
   // does not operate on `import type`
   if (node.importKind === "type") return;
 
-  const result = flow(
+  const result = coreFlow(
     path.dirname(context.filename),
     node.source.value,
     context.cwd,
   );
 
   if (result.skip) return;
-  const { importedFileEffectiveDirective } = result;
+  const { importedFileEffectiveDirective, resolvedImportPath } = result;
+
+  // TEST START
+  let importedFileCommentedDirective =
+    getCommentedDirectiveFromImportedModule(resolvedImportPath);
+  console.log({ importedFileCommentedDirective });
+
+  if (importedFileCommentedDirective === USE_AGNOSTIC_STRATEGIES)
+    importedFileCommentedDirective = getStrategizedDirective(context, node);
+  console.log({ importedFileCommentedDirective });
+  // TEST END
 
   if (
     isImportBlocked(
@@ -132,7 +151,7 @@ export const exportFlow = (context, node, currentFileEffectiveDirective) => {
   // does not operate on internal exports
   if (node.source === null) return;
 
-  const result = flow(
+  const result = coreFlow(
     path.dirname(context.filename),
     node.source.value,
     context.cwd,

@@ -1,17 +1,24 @@
 import path from "path";
 
+import { EXTENSIONS } from "../../_commons/constants/bases.js";
 import {
   useServerJSXMessageId,
   importBreaksImportRulesMessageId,
   reExportNotSameMessageId,
-  EXTENSIONS,
-} from "../constants/core/bases.js";
+} from "../constants/bases.js";
 
 import {
   getDirectiveFromCurrentModule,
   getEffectiveDirective,
-} from "../utilities/core/helpers.js";
-import { importFlow, exportFlow } from "../utilities/core/flows.js";
+} from "../utilities/helpers.js";
+import { importFlow, exportFlow } from "../utilities/flows.js";
+
+// // TEST START
+// import {
+//   getCommentedDirectiveFromCurrentModule,
+//   getVerifiedCommentedDirective,
+// } from "../../directive21/utilities/core/helpers.js";
+// // TEST END
 
 /** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>} */
 const rule = {
@@ -47,6 +54,16 @@ Here, "{{ currentFileEffectiveDirective }}" and "{{ importedFileEffectiveDirecti
       );
       return {};
     }
+
+    // // TEST START
+    // const commentedDirective = getCommentedDirectiveFromCurrentModule(context);
+    // console.log({ commentedDirective });
+    // const verifiedCommentedDirective = getVerifiedCommentedDirective(
+    //   commentedDirective,
+    //   currentFileExtension,
+    // );
+    // console.log({ verifiedCommentedDirective });
+    // // TEST END
 
     /* GETTING THE DIRECTIVE (or lack thereof) OF THE CURRENT FILE */
     const currentFileDirective = getDirectiveFromCurrentModule(context);

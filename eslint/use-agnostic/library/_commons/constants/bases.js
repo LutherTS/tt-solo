@@ -14,3 +14,14 @@ export const enforceEffectiveDirectivesRuleName =
 // directive21
 export const enforceCommentedDirectivesRuleName =
   "enforce-commented-directives-import-rules";
+
+/* from the resolveImportPath utility */
+
+export const TSX = ".tsx";
+export const TS = ".ts";
+export const JSX = ".jsx";
+export const JS = ".js";
+export const MJS = ".mjs";
+export const CJS = ".cjs";
+
+export const EXTENSIONS = [TSX, TS, JSX, JS, MJS, CJS]; // In priority order

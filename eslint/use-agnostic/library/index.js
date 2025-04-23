@@ -1,6 +1,6 @@
 import fs from "fs";
 
-import { enforceEffectiveDirectivesRuleName } from "./_commons/constants/names.js";
+import { enforceEffectiveDirectivesRuleName } from "./_commons/constants/bases.js";
 
 import enforceEffectiveDirectivesImportRules from "./agnostic20/rules/import-rules-enforcement.js";
 
