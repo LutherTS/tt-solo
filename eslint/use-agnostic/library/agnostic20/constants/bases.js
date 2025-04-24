@@ -1,3 +1,22 @@
+import {
+  USE_SERVER_LOGICS as COMMONS_USE_SERVER_LOGICS,
+  USE_SERVER_COMPONENTS as COMMONS_USE_SERVER_COMPONENTS,
+  USE_SERVER_FUNCTIONS as COMMONS_USE_SERVER_FUNCTIONS,
+  USE_CLIENT_LOGICS as COMMONS_USE_CLIENT_LOGICS,
+  USE_CLIENT_COMPONENTS as COMMONS_USE_CLIENT_COMPONENTS,
+  USE_AGNOSTIC_LOGICS as COMMONS_USE_AGNOSTIC_LOGICS,
+  USE_AGNOSTIC_COMPONENTS as COMMONS_USE_AGNOSTIC_COMPONENTS,
+  SERVER_LOGICS_MODULE as COMMONS_SERVER_LOGICS_MODULE,
+  SERVER_COMPONENTS_MODULE as COMMONS_SERVER_COMPONENTS_MODULE,
+  SERVER_FUNCTIONS_MODULE as COMMONS_SERVER_FUNCTIONS_MODULE,
+  CLIENT_LOGICS_MODULE as COMMONS_CLIENT_LOGICS_MODULE,
+  CLIENT_COMPONENTS_MODULE as COMMONS_CLIENT_COMPONENTS_MODULE,
+  AGNOSTIC_LOGICS_MODULE as COMMONS_AGNOSTIC_LOGICS_MODULE,
+  AGNOSTIC_COMPONENTS_MODULE as COMMONS_AGNOSTIC_COMPONENTS_MODULE,
+} from "../../_commons/constants/bases.js";
+
+import { makeIntroForSpecificViolationMessage as commonsMakeIntroForSpecificViolationMessage } from "../../_commons/utilities/helpers.js";
+
 // directives
 export const NO_DIRECTIVE = null;
 export const USE_SERVER = "use server";
@@ -5,22 +24,22 @@ export const USE_CLIENT = "use client";
 export const USE_AGNOSTIC = "use agnostic";
 
 // effective directives
-export const USE_SERVER_LOGICS = "use server logics";
-export const USE_SERVER_COMPONENTS = "use server components";
-export const USE_SERVER_FUNCTIONS = "use server functions";
-export const USE_CLIENT_LOGICS = "use client logics";
-export const USE_CLIENT_COMPONENTS = "use client components";
-export const USE_AGNOSTIC_LOGICS = "use agnostic logics";
-export const USE_AGNOSTIC_COMPONENTS = "use agnostic components";
+export const USE_SERVER_LOGICS = COMMONS_USE_SERVER_LOGICS;
+export const USE_SERVER_COMPONENTS = COMMONS_USE_SERVER_COMPONENTS;
+export const USE_SERVER_FUNCTIONS = COMMONS_USE_SERVER_FUNCTIONS;
+export const USE_CLIENT_LOGICS = COMMONS_USE_CLIENT_LOGICS;
+export const USE_CLIENT_COMPONENTS = COMMONS_USE_CLIENT_COMPONENTS;
+export const USE_AGNOSTIC_LOGICS = COMMONS_USE_AGNOSTIC_LOGICS;
+export const USE_AGNOSTIC_COMPONENTS = COMMONS_USE_AGNOSTIC_COMPONENTS;
 
 // effective modules
-const SERVER_LOGICS_MODULE = "Server Logics Module";
-const SERVER_COMPONENTS_MODULE = "Server Components Module";
-const SERVER_FUNCTIONS_MODULE = "Server Functions Module";
-const CLIENT_LOGICS_MODULE = "Client Logics Module";
-const CLIENT_COMPONENTS_MODULE = "Client Components Module";
-const AGNOSTIC_LOGICS_MODULE = "Agnostic Logics Module";
-const AGNOSTIC_COMPONENTS_MODULE = "Agnostic Components Module";
+const SERVER_LOGICS_MODULE = COMMONS_SERVER_LOGICS_MODULE;
+const SERVER_COMPONENTS_MODULE = COMMONS_SERVER_COMPONENTS_MODULE;
+const SERVER_FUNCTIONS_MODULE = COMMONS_SERVER_FUNCTIONS_MODULE;
+const CLIENT_LOGICS_MODULE = COMMONS_CLIENT_LOGICS_MODULE;
+const CLIENT_COMPONENTS_MODULE = COMMONS_CLIENT_COMPONENTS_MODULE;
+const AGNOSTIC_LOGICS_MODULE = COMMONS_AGNOSTIC_LOGICS_MODULE;
+const AGNOSTIC_COMPONENTS_MODULE = COMMONS_AGNOSTIC_COMPONENTS_MODULE;
 
 // mapping effective directives with effective modules
 export const effectiveDirectives_EffectiveModules = Object.freeze({
@@ -49,7 +68,7 @@ export const directivesArray = Array.from(directivesSet);
 
 /* from the isImportBlocked utility */
 
-export const ARE_NOT_ALLOWED_TO_IMPORT = "are not allowed to import";
+/* effectiveDirectives_BlockedImports */
 
 /**
  * Makes the intro for each specific import rule violation messages.
@@ -61,11 +80,16 @@ const makeIntroForSpecificViolationMessage = (
   currentFileEffectiveDirective,
   importedFileEffectiveDirective,
 ) =>
-  `${effectiveDirectives_EffectiveModules[currentFileEffectiveDirective]}s ${ARE_NOT_ALLOWED_TO_IMPORT} ${effectiveDirectives_EffectiveModules[importedFileEffectiveDirective]}s.`;
+  commonsMakeIntroForSpecificViolationMessage(
+    effectiveDirectives_EffectiveModules,
+    currentFileEffectiveDirective,
+    importedFileEffectiveDirective,
+  );
 
 export const effectiveDirectives_BlockedImports = Object.freeze({
   [USE_SERVER_LOGICS]: [
     {
+      // problematic (because if server function can now import each other, than it's only logical that there would be server logic manipulate one with the other)
       blockedImport: USE_SERVER_FUNCTIONS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_LOGICS, USE_SERVER_FUNCTIONS)} Server Functions are only to be triggered by Client Components.`,
     },
@@ -79,6 +103,7 @@ export const effectiveDirectives_BlockedImports = Object.freeze({
     },
   ],
   [USE_SERVER_COMPONENTS]: [
+    // problematic
     {
       blockedImport: USE_SERVER_FUNCTIONS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_COMPONENTS, USE_SERVER_FUNCTIONS)} Server Components Modules can make their own Server Functions through inline 'use server' directives.`,
@@ -94,6 +119,7 @@ export const effectiveDirectives_BlockedImports = Object.freeze({
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_SERVER_COMPONENTS)} Server Functions have no business working with React Components.`,
     },
     {
+      // problematic
       blockedImport: USE_SERVER_FUNCTIONS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_SERVER_FUNCTIONS)} Server Functions don't need to import one another. Import their logic through Server Logics Modules instead. (Made with no directive and no JSX extension.)`,
     },
@@ -165,6 +191,7 @@ export const effectiveDirectives_BlockedImports = Object.freeze({
       blockedImport: USE_SERVER_COMPONENTS,
       message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_COMPONENTS, USE_SERVER_COMPONENTS)} Unlike Client Components, Server Components cannot make a silo of their own once on the client, and can therefore not be executed from the client.`,
     },
+    // problematic
     {
       blockedImport: USE_SERVER_FUNCTIONS,
       message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_COMPONENTS, USE_SERVER_FUNCTIONS)} Though Server Functions could be passed to Client Components in Agnostic Components Modules, prefer importing them directly in Client Components Modules instead.`,

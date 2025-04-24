@@ -1,4 +1,12 @@
-import { TSX, TS, JSX, JS, MJS, CJS } from "../../_commons/constants/bases.js";
+import {
+  TSX,
+  TS,
+  JSX,
+  JS,
+  MJS,
+  CJS,
+  ARE_NOT_ALLOWED_TO_IMPORT,
+} from "../../_commons/constants/bases.js";
 import {
   NO_DIRECTIVE,
   USE_SERVER,
@@ -14,11 +22,11 @@ import {
   effectiveDirectives_EffectiveModules,
   directivesSet,
   directivesArray,
-  ARE_NOT_ALLOWED_TO_IMPORT,
   effectiveDirectives_BlockedImports,
 } from "../constants/bases.js";
 
 import { getImportedFileFirstLine } from "../../_commons/utilities/helpers.js";
+import { isImportBlocked as commonsIsImportBlocked } from "../../_commons/utilities/helpers.js";
 
 /* getDirectiveFromCurrentModule */
 
@@ -130,13 +138,14 @@ export const getDirectiveFromImportedModule = (resolvedImportPath) => {
  * @returns {boolean} Returns `true` if the import is blocked, as established in `effectiveDirectives_BlockedImports`.
  */
 export const isImportBlocked = (
-  // Note: "Blocked" here is preferred over "not allowed" because a specific message will be shared for each of the blocked situations, explaining their reasons and the solutions needed.
   currentFileEffectiveDirective,
   importedFileEffectiveDirective,
 ) =>
-  effectiveDirectives_BlockedImports[currentFileEffectiveDirective]
-    .map((e) => e.blockedImport)
-    .includes(importedFileEffectiveDirective);
+  commonsIsImportBlocked(
+    effectiveDirectives_BlockedImports,
+    currentFileEffectiveDirective,
+    importedFileEffectiveDirective,
+  );
 
 /* makeMessageFromEffectiveDirective */
 
