@@ -1,38 +1,54 @@
 import { defineConfig, globalIgnores } from "eslint/config";
+import tseslint from "typescript-eslint";
 
-import agnostic20 from "./eslint/configs/agnostic20.js";
+import {
+  useAgnosticPluginName,
+  agnostic20ConfigName,
+} from "./eslint/use-agnostic/library/_commons/constants/bases.js";
+
+import useAgnostic from "./eslint/use-agnostic/library/index.js";
 
 export default defineConfig([
-  globalIgnores(["./.next"]),
+  globalIgnores([".next"]),
   {
     files: [
-      "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.ts",
-      "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.tsx",
-      "app/actions/**/*.ts",
-      "app/actions/**/*.tsx",
-      "app/adapts/**/*.ts",
-      "app/adapts/**/*.tsx",
-      "app/components/**/*.ts",
-      "app/components/**/*.tsx",
-      "app/constants/**/*.ts",
-      "app/constants/**/*.tsx",
-      "app/fetches/**/*.ts",
-      "app/fetches/**/*.tsx",
-      "app/icons/**/*.ts",
-      "app/icons/**/*.tsx",
-      "app/reads/**/*.ts",
-      "app/reads/**/*.tsx",
-      "app/types/**/*.ts",
-      "app/types/**/*.tsx",
-      "app/utilities/**/*.ts",
-      "app/utilities/**/*.tsx",
-      "app/validations/**/*.ts",
-      "app/validations/**/*.tsx",
-      "app/writes/**/*.ts",
-      "app/writes/**/*.tsx",
-      "app/global-error.tsx",
-      "app/layout.tsx",
+      // "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.ts",
+      // "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.tsx",
+      // "app/actions/**/*.ts",
+      // "app/actions/**/*.tsx",
+      // "app/adapts/**/*.ts",
+      // "app/adapts/**/*.tsx",
+      // "app/components/**/*.ts",
+      // "app/components/**/*.tsx",
+      // "app/constants/**/*.ts",
+      // "app/constants/**/*.tsx",
+      // "app/fetches/**/*.ts",
+      // "app/fetches/**/*.tsx",
+      // "app/icons/**/*.ts",
+      // "app/icons/**/*.tsx",
+      // "app/reads/**/*.ts",
+      // "app/reads/**/*.tsx",
+      // "app/types/**/*.ts",
+      // "app/types/**/*.tsx",
+      // "app/utilities/**/*.ts",
+      // "app/utilities/**/*.tsx",
+      // "app/validations/**/*.ts",
+      // "app/validations/**/*.tsx",
+      // "app/writes/**/*.ts",
+      // "app/writes/**/*.tsx",
+      // "app/global-error.tsx",
+      // "app/layout.tsx",
+
+      "app/actions/server/test-1.ts",
+      "app/actions/server/test-2.tsx",
     ],
-    extends: [agnostic20],
+    plugins: {
+      [useAgnosticPluginName]: useAgnostic,
+    },
+    extends: [`${useAgnosticPluginName}/${agnostic20ConfigName}`],
+    languageOptions: {
+      // for compatibility with .ts and .tsx
+      parser: tseslint.parser,
+    },
   },
 ]);
