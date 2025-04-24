@@ -110,7 +110,7 @@ export const effectiveDirectives_BlockedImports = Object.freeze({
       blockedImport: USE_CLIENT_LOGICS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_COMPONENTS, USE_CLIENT_LOGICS)} Client logic should never leak to the server.`,
     },
-    // USE_CLIENT_COMPONENTS allowed, because Client Components can be nested inside Server Components either to wrap some of the tree with client state accessible through child Client Components, or to create client boundaries when the root of the application is planted on the server.
+    // USE_CLIENT_COMPONENTS allowed, because Client Components can be nested inside Server Components either to wrap some of the tree with client state accessible through child Client Components and pass through Server Components, or to create client boundaries when the root of the application is planted on the server.
     // USE_AGNOSTIC_LOGICS allowed, because Agnostic Logic can run safely on the server just like it can on the client.
     // USE_AGNOSTIC_COMPONENTS allowed, because Agnostic Components can render safely on the server just like they can on the client.
   ],
@@ -129,7 +129,7 @@ export const effectiveDirectives_BlockedImports = Object.freeze({
       blockedImport: USE_CLIENT_COMPONENTS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_CLIENT_COMPONENTS)} Server Functions have no business working with React Components.`,
     },
-    // USE_AGNOSTIC_LOGICS allowed, because Agnostic Logic can run safely on the server just like it can on the client
+    // USE_AGNOSTIC_LOGICS allowed, because Agnostic Logic can run safely on the server just like it can on the client.
     {
       blockedImport: USE_AGNOSTIC_COMPONENTS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_AGNOSTIC_COMPONENTS)} Server Functions have no business working with React Components.`,
@@ -206,8 +206,8 @@ export const effectiveDirectives_BlockedImports = Object.freeze({
       blockedImport: USE_CLIENT_LOGICS,
       message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_COMPONENTS, USE_CLIENT_LOGICS)} Client Logic cannot run in both the server and the client.`,
     },
-    // USE_CLIENT_COMPONENTS allowed, because Client Components can be nested inside Agnostic Components either to wrap some of the tree with client state accessible through child Client Components, or to create client boundaries when the root of the application is planted on the server.
+    // USE_CLIENT_COMPONENTS allowed, because Client Components can be nested inside Agnostic Components either to wrap some of the tree with client state accessible through child Client Components and pass through Server Components (if still on the Server Tree), or to create client boundaries when the root of the application is planted on the server.
     // USE_AGNOSTIC_LOGICS allowed, because environment-agnostic logic can safely support Agnostic Components.
-    // USE_CLIENT_COMPONENTS allowed, because Client Components can composed with one another.
+    // USE_AGNOSTIC_COMPONENTS allowed, because Agnostic Components can composed with one another.
   ],
 });
