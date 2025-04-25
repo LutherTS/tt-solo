@@ -221,7 +221,7 @@ export const commentedDirectives_BlockedImports = Object.freeze({
       blockedImport: USE_CLIENT_CONTEXTS,
       message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_LOGICS, USE_CLIENT_CONTEXTS)} Client Components cannot be tinkered with on both the server and the client, including Client Contexts Components.`,
     },
-    // USE_AGNOSTIC_COMPONENTS allowed, because Agnostic Components can be composed with Logics agnostically as long as the Agnostic Logics Module, by convention, does not export React components, including Agnostic Conditions Components.
+    // USE_AGNOSTIC_CONDITIONS allowed, because Agnostic Components can be composed with Logics agnostically as long as the Agnostic Logics Module, by convention, does not export React components, including Agnostic Conditions Components.
   ],
   [USE_SERVER_COMPONENTS]: [
     // USE_SERVER_LOGICS allowed, because logic from the server can safely support Server Components.
