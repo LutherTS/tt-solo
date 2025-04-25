@@ -187,7 +187,7 @@ export const effectiveDirectives_BlockedImports = Object.freeze({
       message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_LOGICS, USE_CLIENT_COMPONENTS)} Client Components cannot be tinkered with on both the server and the client.`,
     },
     // USE_AGNOSTIC_LOGICS allowed, because Agnostic Logics can compose with one another.
-    // USE_AGNOSTIC_COMPONENTS allowed, because Agnostic Components can be composed with Logics agnostically as long as at the Agnositc Logics Module, by convention, does not export React components.
+    // USE_AGNOSTIC_COMPONENTS allowed, because Agnostic Components can be composed with Logics agnostically as long as the Agnostic Logics Module, by convention, does not export React components.
   ],
   [USE_AGNOSTIC_COMPONENTS]: [
     {
