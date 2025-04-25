@@ -276,11 +276,11 @@ export const commentedDirectives_BlockedImports = Object.freeze({
   ],
   [USE_SERVER_FUNCTIONS]: [
     // USE_SERVER_LOGICS allowed, because logic from the server can safely support Server Functions.
-    // USE_AGNOSTIC_LOGICS allowed, because Agnostic Logic can run safely on the server just like it can on the client.
     {
       blockedImport: USE_CLIENT_LOGICS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_CLIENT_LOGICS)} Client logic should never leak to the server.`,
     },
+    // USE_AGNOSTIC_LOGICS allowed, because Agnostic Logic can run safely on the server just like it can on the client.
     {
       blockedImport: USE_SERVER_COMPONENTS,
       message: `${makeIntroForSpecificViolationMessage(USE_SERVER_FUNCTIONS, USE_SERVER_COMPONENTS)} Server Functions have no business working with React Components.`,
@@ -329,11 +329,14 @@ export const commentedDirectives_BlockedImports = Object.freeze({
       blockedImport: USE_CLIENT_LOGICS,
       message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_CONDITIONS, USE_CLIENT_LOGICS)} Client Logic cannot run in both the server and the client.`,
     },
-    // USE_AGNOSTIC_LOGICS allowed, because environment-agnostic logic can safely support Agnostic Components, including Agnostic Conditions Components.
+    // USE_AGNOSTIC_LOGICS allowed, because environment-agnostic logic can safely support Agnostic Components, including Agnostic Conditions Components. (In this case this is necessary for the import of the conditionAgnosticComponent function needed to make Agnostic Conditions Components.)
     // USE_SERVER_COMPONENTS allowed, because they are to be paired with `componentForClient` components to form Agnostic Conditions Components.
     // USE_CLIENT_COMPONENTS allowed, because they are to be paired with `componentForServer` components to form Agnostic Conditions Components.
     // USE_AGNOSTIC_COMPONENTS allowed, because they can take the place of `componentForServer` and/or `componentForClient` components to form Agnostic Conditions Components.
-    // USE_SERVER_FUNCTIONS allowed, because as Agnostic Components Modules can import Client Components, they are able to pass them Server Functions as props as well, including Agnostic Conditions Components.
+    {
+      blockedImport: USE_SERVER_FUNCTIONS,
+      message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_CONDITIONS, USE_SERVER_FUNCTIONS)} Agnostic Conditions Components only take finite, imported components as arguments in their making. As such, assigning props to these components, including Server Functions, is not made within Agnostic Conditions Modules.`,
+    },
     {
       blockedImport: USE_CLIENT_CONTEXTS,
       message: `${makeIntroForSpecificViolationMessage(USE_AGNOSTIC_CONDITIONS, USE_CLIENT_CONTEXTS)} Agnostic Conditions Components only take Lineal Components as arguments in their making.`,
