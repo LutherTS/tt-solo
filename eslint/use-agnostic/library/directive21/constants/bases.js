@@ -155,7 +155,7 @@ const makeIntroForSpecificViolationMessage = (
   importedFileCommentedDirective,
 ) =>
   commonsMakeIntroForSpecificViolationMessage(
-    commentedStrategies_CommentedDirectives,
+    commentedDirectives_CommentedModules,
     currentFileCommentedDirective,
     importedFileCommentedDirective,
   );

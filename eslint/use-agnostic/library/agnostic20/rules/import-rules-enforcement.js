@@ -22,7 +22,10 @@ import {
 //   getCommentedDirectiveFromCurrentModule,
 //   getVerifiedCommentedDirective,
 // } from "../../directive21/utilities/core/helpers.js";
-import { currentFileFlow as testCurrentFileFlow } from "../../directive21/utilities/flows.js";
+import {
+  currentFileFlow as testCurrentFileFlow,
+  importFlow as testImportFlow,
+} from "../../directive21/utilities/flows.js";
 // TEST END
 
 /** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>} */
@@ -57,16 +60,17 @@ Here, "{{ currentFileEffectiveDirective }}" and "{{ importedFileEffectiveDirecti
     const { verifiedCommentedDirective } = result;
     console.log({ verifiedCommentedDirective });
 
-    return {};
+    // return {};
     // TEST END
 
     return {
       ImportDeclaration: (node) =>
-        importFlow(context, node, currentFileEffectiveDirective),
-      ExportNamedDeclaration: (node) =>
-        reExportFlow(context, node, currentFileEffectiveDirective),
-      ExportAllDeclaration: (node) =>
-        reExportFlow(context, node, currentFileEffectiveDirective),
+        testImportFlow(context, node, verifiedCommentedDirective),
+      // importFlow(context, node, currentFileEffectiveDirective),
+      // ExportNamedDeclaration: (node) =>
+      //   reExportFlow(context, node, currentFileEffectiveDirective),
+      // ExportAllDeclaration: (node) =>
+      //   reExportFlow(context, node, currentFileEffectiveDirective),
     };
   },
 };

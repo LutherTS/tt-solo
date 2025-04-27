@@ -35,9 +35,9 @@ import {
 /* currentFileFlow */
 
 /**
- *
+ * The flow that begins the import rules enforcement rule, retrieving the valid directive of the current file before comparing it to upcoming valid directives of the files it imports.
  * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
- * @returns {{skip: true; currentFileEffectiveDirective: undefined;} | {skip: undefined; currentFileEffectiveDirective: USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS;}}
+ * @returns {{skip: true; currentFileEffectiveDirective: undefined;} | {skip: undefined; currentFileEffectiveDirective: USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS;}} Returns either an object with `skip: true` to disregard or one with the non-null `currentFileEffectiveDirective`.
  */
 export const currentFileFlow = (context) => {
   // console.log({ currentFilename: context.filename });
@@ -55,16 +55,6 @@ export const currentFileFlow = (context) => {
     );
     return { skip: true };
   }
-
-  // // TEST START
-  // const commentedDirective = getCommentedDirectiveFromCurrentModule(context);
-  // console.log({ commentedDirective });
-  // const verifiedCommentedDirective = getVerifiedCommentedDirective(
-  //   commentedDirective,
-  //   currentFileExtension,
-  // );
-  // console.log({ verifiedCommentedDirective });
-  // // TEST END
 
   /* GETTING THE DIRECTIVE (or lack thereof) OF THE CURRENT FILE */
   const currentFileDirective = getDirectiveFromCurrentModule(context);
@@ -212,7 +202,7 @@ export const importFlow = (context, node, currentFileEffectiveDirective) => {
   }
 };
 
-/* exportFlow */
+/* reExportFlow */
 
 /** The full flow for export traversals, shared between `ExportNamedDeclaration`and `ExportAllDeclaration`, to ensure same effective directive re-exports.
  * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
