@@ -131,3 +131,61 @@ export const makeIntroForSpecificViolationMessage = (
   importedFileResolvedDirective,
 ) =>
   `${resolvedDirectives_ResolvedModules[currentFileResolvedDirective]}s ${ARE_NOT_ALLOWED_TO_IMPORT} ${resolvedDirectives_ResolvedModules[importedFileResolvedDirective]}s.`;
+
+/* makeMessageFromResolvedDirective */
+
+/**
+ * Lists in an message the "resolved" modules incompatible with a "resolved" module based on its "resolved" directive.
+ * @param {Readonly<{"use server logics": SERVER_LOGICS_MODULE; "use client logics": CLIENT_LOGICS_MODULE; "use agnostic logics": AGNOSTIC_LOGICS_MODULE; "use server components": SERVER_COMPONENTS_MODULE; "use client components": CLIENT_COMPONENTS_MODULE; "use agnostic components": AGNOSTIC_COMPONENTS_MODULE; "use server functions": SERVER_FUNCTIONS_MODULE; "use client contexts": CLIENT_CONTEXTS_MODULE; "use agnostic conditions": AGNOSTIC_CONDITIONS_MODULE; "use agnostic strategies": AGNOSTIC_STRATEGIES_MODULE;}>} resolvedDirectives_ResolvedModules The resolved modules object, either for agnostic20 or for directive21.
+ * @param {Readonly<{"use server logics": {blockedImport: string; message: string;}[]; "use client logics": {blockedImport: string; message: string;}[]; "use agnostic logics": {blockedImport: string; message: string;}[]; "use server components": {blockedImport: string; message: string;}[]; "use client components": {blockedImport: string; message: string;}[]; "use agnostic components": {blockedImport: string; message: string;}[]; "use server functions": {blockedImport: string; message: string;}[]; "use client contexts"?: {blockedImport: string; message: string;}[]; "use agnostic conditions"?: {blockedImport: string; message: string;}[]; "use agnostic strategies"?: {blockedImport: string; message: string;}[];}>} resolvedDirectives_blockedImports The blocked imports object, either for agnostic20 or for directive21.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES} resolvedDirective The "resolved" directive of the "resolved" module.
+ * @returns {string} The message listing the incompatible "resolved" modules.
+ */
+export const makeMessageFromResolvedDirective = (
+  resolvedDirectives_ResolvedModules,
+  resolvedDirectives_blockedImports,
+  resolvedDirective,
+) => {
+  const effectiveModule = resolvedDirectives_ResolvedModules[resolvedDirective];
+  const effectiveModulesString = effectiveModule + "s"; // plural
+
+  const blockedImports =
+    resolvedDirectives_blockedImports[resolvedDirective].map(
+      (e) => e.blockedImport,
+    ) || [];
+
+  if (blockedImports.length === 0) {
+    return `${effectiveModulesString} are not restricted from importing any modules.`;
+  }
+
+  const blockedEffectiveModules = blockedImports.map(
+    (e) => resolvedDirectives_ResolvedModules[e] + "s", // plural
+  );
+
+  const blockedEffectiveModulesString =
+    blockedEffectiveModules.length === 1
+      ? blockedEffectiveModules[0]
+      : blockedEffectiveModules.slice(0, -1).join(", ") +
+        ", or " +
+        blockedEffectiveModules.slice(-1);
+
+  return `${effectiveModulesString} ${ARE_NOT_ALLOWED_TO_IMPORT} ${blockedEffectiveModulesString}.`;
+};
+
+/* findSpecificViolationMessage */
+
+/**
+ * Finds the `message` for the specific violation of "resolved" directives import rules based on `resolvedDirectives_blockedImports`.
+ * @param {Readonly<{"use server logics": {blockedImport: string; message: string;}[]; "use client logics": {blockedImport: string; message: string;}[]; "use agnostic logics": {blockedImport: string; message: string;}[]; "use server components": {blockedImport: string; message: string;}[]; "use client components": {blockedImport: string; message: string;}[]; "use agnostic components": {blockedImport: string; message: string;}[]; "use server functions": {blockedImport: string; message: string;}[]; "use client contexts"?: {blockedImport: string; message: string;}[]; "use agnostic conditions"?: {blockedImport: string; message: string;}[]; "use agnostic strategies"?: {blockedImport: string; message: string;}[];}>} resolvedDirectives_blockedImports The blocked imports object, either for agnostic20 or for directive21.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES} currentFileResolvedDirective The current file's "resolved" directive.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS} importedFileResolvedDirective The imported file's "resolved" directive.
+ * @returns {string} The corresponding `message`.
+ */
+export const findSpecificViolationMessage = (
+  resolvedDirectives_blockedImports,
+  currentFileResolvedDirective,
+  importedFileResolvedDirective,
+) =>
+  resolvedDirectives_blockedImports[currentFileResolvedDirective].find(
+    (e) => e.blockedImport === importedFileResolvedDirective,
+  ).message;

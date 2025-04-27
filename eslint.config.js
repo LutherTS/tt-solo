@@ -40,6 +40,9 @@ export default defineConfig([
       // "app/layout.tsx",
 
       "app/actions/server/test-1.ts",
+      "app/actions/server/test-1.tsx",
+
+      "app/actions/server/test-2.ts",
       "app/actions/server/test-2.tsx",
     ],
     plugins: {

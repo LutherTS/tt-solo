@@ -1,12 +1,4 @@
-import {
-  TSX,
-  TS,
-  JSX,
-  JS,
-  MJS,
-  CJS,
-  ARE_NOT_ALLOWED_TO_IMPORT,
-} from "../../_commons/constants/bases.js";
+import { TSX, TS, JSX, JS, MJS, CJS } from "../../_commons/constants/bases.js";
 import {
   NO_DIRECTIVE,
   USE_SERVER,
@@ -25,8 +17,12 @@ import {
   effectiveDirectives_BlockedImports,
 } from "../constants/bases.js";
 
-import { getImportedFileFirstLine } from "../../_commons/utilities/helpers.js";
-import { isImportBlocked as commonsIsImportBlocked } from "../../_commons/utilities/helpers.js";
+import {
+  getImportedFileFirstLine,
+  isImportBlocked as commonsIsImportBlocked,
+  makeMessageFromResolvedDirective,
+  findSpecificViolationMessage as commonsFindSpecificViolationMessage,
+} from "../../_commons/utilities/helpers.js";
 
 /* getDirectiveFromCurrentModule */
 
@@ -154,33 +150,12 @@ export const isImportBlocked = (
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} effectiveDirective The effective directive of the effective module.
  * @returns {string} The message listing the incompatible effective modules.
  */
-export const makeMessageFromEffectiveDirective = (effectiveDirective) => {
-  const effectiveModule =
-    effectiveDirectives_EffectiveModules[effectiveDirective];
-  const effectiveModulesString = effectiveModule + "s"; // plural
-
-  const blockedImports =
-    effectiveDirectives_BlockedImports[effectiveDirective].map(
-      (e) => e.blockedImport,
-    ) || [];
-
-  if (blockedImports.length === 0) {
-    return `${effectiveModulesString} are not restricted from importing any modules.`;
-  }
-
-  const blockedEffectiveModules = blockedImports.map(
-    (e) => effectiveDirectives_EffectiveModules[e] + "s", // plural
+export const makeMessageFromEffectiveDirective = (effectiveDirective) =>
+  makeMessageFromResolvedDirective(
+    effectiveDirectives_EffectiveModules,
+    effectiveDirectives_BlockedImports,
+    effectiveDirective,
   );
-
-  const blockedEffectiveModulesString =
-    blockedEffectiveModules.length === 1
-      ? blockedEffectiveModules[0]
-      : blockedEffectiveModules.slice(0, -1).join(", ") +
-        ", or " +
-        blockedEffectiveModules.slice(-1);
-
-  return `${effectiveModulesString} ${ARE_NOT_ALLOWED_TO_IMPORT} ${blockedEffectiveModulesString}.`;
-};
 
 /* findSpecificViolationMessage */
 
@@ -194,6 +169,8 @@ export const findSpecificViolationMessage = (
   currentFileEffectiveDirective,
   importedFileEffectiveDirective,
 ) =>
-  effectiveDirectives_BlockedImports[currentFileEffectiveDirective].find(
-    (e) => e.blockedImport === importedFileEffectiveDirective,
-  ).message;
+  commonsFindSpecificViolationMessage(
+    effectiveDirectives_BlockedImports,
+    currentFileEffectiveDirective,
+    importedFileEffectiveDirective,
+  );
