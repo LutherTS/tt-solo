@@ -2,9 +2,8 @@
 // "use client";
 // "use client logics"
 
-// export {
-//   /* @serverLogics */ findDestinationsByUserId,
-// } from "@/app/reads/server/destinations";
+// @ts-ignore
+export { findDestinationsByUserId } from "./test-3.ts";
 
 export /* @serverLogics */ const x = 1;
 

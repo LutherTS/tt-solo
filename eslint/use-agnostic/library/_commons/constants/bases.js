@@ -24,8 +24,10 @@ export const useServerJSXMessageId = "use-server-has-jsx-extension";
 // directive21
 export const importBreaksCommentedImportRulesMessageId =
   "import-breaks-commented-directive-import-rule";
+export const importNotStrategized =
+  "import-from-use-agnostic-strategies-not-strategized";
 export const exportNotStrategized =
-  "use-agnostic-strategies-export-not-strategized";
+  "export-from-use-agnostic-strategies-not-strategized";
 
 // all "resolved" directives (from AIA/agnostic20 & DFA/directive21)
 export const USE_SERVER_LOGICS = "use server logics";
