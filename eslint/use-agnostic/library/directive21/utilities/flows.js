@@ -129,10 +129,6 @@ const importedFileFlow = (context, node) => {
         node,
         messageId: importNotStrategized,
       });
-      // // next it will be a report
-      // console.warn(
-      //   "All imports from Agnostic Strategies Modules must be strategized.",
-      // );
       return { skip: true };
     }
   }
@@ -186,9 +182,9 @@ export const importsFlow = (context, node, currentFileCommentedDirective) => {
   }
 };
 
-/* WHAT'S NEXT: allExportsFlow */
+/* allExportsFlow */
 
-/** The full flow for export traversals, shared between `ExportNamedDeclaration`, `ExportAllDeclaration`, and `ExportDefaultDeclaration`, to ensure same commented directive re-exports and strategized exports specifically in Agnostic Strategies Modules.
+/** The full flow for export traversals, shared between `ExportNamedDeclaration`, `ExportAllDeclaration`, and `ExportDefaultDeclaration`, to ensure same commented directive re-exports in modules that aren't Agnostic Strategies Modules, and enforce strategized exports specifically in Agnostic Strategies Modules.
  * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof importBreaksCommentedImportRulesMessageId | typeof reExportNotSameMessageId | typeof importNotStrategized | typeof exportNotStrategized, []>>} context The ESLint rule's `context` object.
  * @param {import('@typescript-eslint/types').TSESTree.ExportNamedDeclaration | import('@typescript-eslint/types').TSESTree.ExportAllDeclaration | import('@typescript-eslint/types').TSESTree.ExportDefaultDeclaration} node The ESLint `node` of the rule's current traversal.
  * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES} currentFileCommentedDirective The current file's commented directive.
@@ -217,7 +213,6 @@ export const allExportsFlow = (
       });
 
       if (exportStrategizedDirective === null) {
-        console.log("Hi.");
         context.report({
           node,
           messageId: exportNotStrategized,
