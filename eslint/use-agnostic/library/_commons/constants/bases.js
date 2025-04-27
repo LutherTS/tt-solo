@@ -15,6 +15,20 @@ export const enforceEffectiveDirectivesRuleName =
 export const enforceCommentedDirectivesRuleName =
   "enforce-commented-directives-import-rules";
 
+/* messageIds */
+export const reExportNotSameMessageId = "re-export-not-same-directive";
+// agnostic20
+export const importBreaksEffectiveImportRulesMessageId =
+  "import-breaks-effective-directive-import-rule";
+export const useServerJSXMessageId = "use-server-has-jsx-extension";
+// directive21
+export const importBreaksCommentedImportRulesMessageId =
+  "import-breaks-commented-directive-import-rule";
+export const importNotStrategized =
+  "import-from-use-agnostic-strategies-not-strategized";
+export const exportNotStrategized =
+  "export-from-use-agnostic-strategies-not-strategized";
+
 // all "resolved" directives (from AIA/agnostic20 & DFA/directive21)
 export const USE_SERVER_LOGICS = "use server logics";
 export const USE_CLIENT_LOGICS = "use client logics";

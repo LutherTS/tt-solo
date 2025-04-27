@@ -13,9 +13,16 @@ import {
   directivesArray,
   commentedDirectives_4RawImplementations,
   commentedStrategies_CommentedDirectives,
+  commentedDirectives_BlockedImports,
+  commentedDirectives_CommentedModules,
 } from "../constants/bases.js";
 
-import { getImportedFileFirstLine } from "../../_commons/utilities/helpers.js";
+import {
+  getImportedFileFirstLine,
+  isImportBlocked as commonsIsImportBlocked,
+  makeMessageFromResolvedDirective,
+  findSpecificViolationMessage as commonsFindSpecificViolationMessage,
+} from "../../_commons/utilities/helpers.js";
 
 /* getCommentedDirectiveFromCurrentModule */
 
@@ -217,10 +224,62 @@ export const getCommentedDirectiveFromImportedModule = (resolvedImportPath) => {
  * @returns {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | null} Returns the interpreted directive, a.k.a. strategized directive, or lack thereof via `null`.
  */
 export const getStrategizedDirective = (context, node) => {
-  const strategy =
-    context.sourceCode.getCommentsInside(node)[0].value.trim() || null;
+  const firstNestedComment = context.sourceCode.getCommentsInside(node)[0];
+
+  // returns null early if there is no nested comments
+  if (!firstNestedComment) return null;
+
+  const strategy = firstNestedComment.value.trim() || null;
 
   return commentedStrategies_CommentedDirectives[strategy] || null;
 };
 
-/* to be continued (isImportBlocked) */
+/* isImportBlocked */
+
+/**
+ * Returns a boolean deciding if an imported file's commented directive is incompatible with the current file's commented directive.
+ * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} currentFileCommentedDirective The current file's commented directive.
+ * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} importedFileCommentedDirective The imported file's commented directive.
+ * @returns {boolean} Returns `true` if the import is blocked, as established in `commentedDirectives_BlockedImports`.
+ */
+export const isImportBlocked = (
+  currentFileCommentedDirective,
+  importedFileCommentedDirective,
+) =>
+  commonsIsImportBlocked(
+    commentedDirectives_BlockedImports,
+    currentFileCommentedDirective,
+    importedFileCommentedDirective,
+  );
+
+/* makeMessageFromCommentedDirective */
+
+/**
+ * Lists in an message the commented modules incompatible with a commented module based on its commented directive.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES} commentedDirective The commented directive of the commented module.
+ * @returns {string} The message listing the incompatible commented modules.
+ */
+export const makeMessageFromCommentedDirective = (commentedDirective) =>
+  makeMessageFromResolvedDirective(
+    commentedDirectives_CommentedModules,
+    commentedDirectives_BlockedImports,
+    commentedDirective,
+  );
+
+/* findSpecificViolationMessage */
+
+/**
+ * Finds the `message` for the specific violation of commented directives import rules based on `commentedDirectives_BlockedImports`.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES} currentFileCommentedDirective The current file's commented directive.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS} importedFileCommentedDirective The imported file's commented directive.
+ * @returns {string} The corresponding `message`.
+ */
+export const findSpecificViolationMessage = (
+  currentFileCommentedDirective,
+  importedFileCommentedDirective,
+) =>
+  commonsFindSpecificViolationMessage(
+    commentedDirectives_BlockedImports,
+    currentFileCommentedDirective,
+    importedFileCommentedDirective,
+  );
