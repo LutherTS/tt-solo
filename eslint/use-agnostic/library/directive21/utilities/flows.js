@@ -12,7 +12,7 @@ import {
   USE_CLIENT_CONTEXTS,
   USE_AGNOSTIC_CONDITIONS,
   USE_AGNOSTIC_STRATEGIES,
-  // importBreaksImportRulesMessageId,
+  importBreaksImportRulesMessageId,
 } from "../constants/bases.js";
 
 import { resolveImportPath } from "../../_commons/utilities/helpers.js";
@@ -24,9 +24,6 @@ import {
   makeMessageFromCommentedDirective,
   findSpecificViolationMessage,
 } from "./helpers.js";
-
-// for now
-import { importBreaksImportRulesMessageId } from "../../agnostic20/constants/bases.js";
 
 /* currentFileFlow */
 
