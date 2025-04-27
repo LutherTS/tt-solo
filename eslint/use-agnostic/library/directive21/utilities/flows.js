@@ -1,6 +1,10 @@
 import path from "path";
 
-import { EXTENSIONS } from "../../_commons/constants/bases.js";
+import {
+  EXTENSIONS,
+  importBreaksCommentedImportRulesMessageId,
+  reExportNotSameMessageId,
+} from "../../_commons/constants/bases.js";
 import {
   USE_SERVER_LOGICS,
   USE_CLIENT_LOGICS,
@@ -12,7 +16,6 @@ import {
   USE_CLIENT_CONTEXTS,
   USE_AGNOSTIC_CONDITIONS,
   USE_AGNOSTIC_STRATEGIES,
-  importBreaksImportRulesMessageId,
 } from "../constants/bases.js";
 
 import { resolveImportPath } from "../../_commons/utilities/helpers.js";
@@ -23,14 +26,15 @@ import {
   isImportBlocked,
   makeMessageFromCommentedDirective,
   findSpecificViolationMessage,
+  getStrategizedDirective,
 } from "./helpers.js";
 
 /* currentFileFlow */
 
 /**
  * The flow that begins the import rules enforcement rule, retrieving the valid directive of the current file before comparing it to upcoming valid directives of the files it imports.
- * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<string, []>>} context The ESLint rule's `context` object.
- * @returns {{skip: true; verifiedCommentedDirective: undefined;} | {skip: undefined; verifiedCommentedDirective: USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS;}} Returns either an object with `skip: true` to disregard or one with the non-null `verifiedCommentedDirective`.
+ * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof importBreaksCommentedImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
+ * @returns {{skip: true; verifiedCommentedDirective: undefined;} | {skip: undefined; verifiedCommentedDirective: USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES;}} Returns either an object with `skip: true` to disregard or one with the non-null `verifiedCommentedDirective`.
  */
 export const currentFileFlow = (context) => {
   // console.log({ currentFilename: context.filename });
@@ -83,12 +87,13 @@ export const currentFileFlow = (context) => {
  * @param {string} currentDir Directory of the file containing the import (from `path.dirname(context.filename)`).
  * @param {string} importPath The import specifier (e.g., `@/components/Button` or `./utils`).
  * @param {string} cwd Project root (from `context.cwd`). Caveat: only as an assumption currently.
- * @returns {{skip: true; importedFileCommentedDirective: undefined; resolvedImportPath: undefined;} | {skip: undefined; importedFileCommentedDirective: USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS; resolvedImportPath: string;}} Returns either an object with `skip: true` to disregard or one with the non-null `importedFileCommentedDirective`.
+ * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof importBreaksCommentedImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
+ * @param {import('@typescript-eslint/types').TSESTree.ImportDeclaration} node The ESLint `node` of the rule's current traversal.
+ * @returns {{skip: true; importedFileCommentedDirective: undefined;} | {skip: undefined; importedFileCommentedDirective: USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS;}} Returns either an object with `skip: true` to disregard or one with the non-null `importedFileCommentedDirective`.
  */
-const importedFileFlow = (currentDir, importPath, cwd) => {
+const importedFileFlow = (currentDir, importPath, cwd, context, node) => {
   // finds the full path of the import
   const resolvedImportPath = resolveImportPath(currentDir, importPath, cwd);
-  console.log({ resolvedImportPath });
 
   // does not operate on paths it did not resolve
   if (resolvedImportPath === null) return { skip: true };
@@ -113,6 +118,13 @@ const importedFileFlow = (currentDir, importPath, cwd) => {
   if (importedFileCommentedDirective === USE_AGNOSTIC_STRATEGIES) {
     importedFileCommentedDirective = getStrategizedDirective(context, node);
     console.log({ getStrategizedDirective: importedFileCommentedDirective });
+
+    if (importedFileCommentedDirective === null) {
+      // next it will be a report
+      console.warn(
+        "All imports from Agnostic Strategies Modules must be strategized.",
+      );
+    }
   }
 
   // returns early again this time if there is no Strategy or no valid Strategy from an Agnostic Strategies Module import, since they can only be imported via Strategies
@@ -127,16 +139,15 @@ const importedFileFlow = (currentDir, importPath, cwd) => {
   };
 };
 
-/* importFlow */
+/* importsFlow */
 
 /** The full flow for import traversals to enforce effective directives import rules.
- * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<string, []>>} context The ESLint rule's `context` object.
+ * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof importBreaksCommentedImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
  * @param {import('@typescript-eslint/types').TSESTree.ImportDeclaration} node The ESLint `node` of the rule's current traversal.
- * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} currentFileCommentedDirective The current file's commented directive.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES} currentFileCommentedDirective The current file's commented directive.
  * @returns Returns early if the flow needs to be interrupted.
  */
-export const importFlow = (context, node, currentFileCommentedDirective) => {
-  // !! A common utility could include the "does not operate" for a superImportFlow shared accross agnostic20 and directive21.
+export const importsFlow = (context, node, currentFileCommentedDirective) => {
   // does not operate on `import type`
   if (node.importKind === "type") return;
 
@@ -144,13 +155,12 @@ export const importFlow = (context, node, currentFileCommentedDirective) => {
     path.dirname(context.filename),
     node.source.value,
     context.cwd,
+    context,
+    node,
   );
-
-  console.log("Is importing", result.skip);
 
   if (result.skip) return;
   const { importedFileCommentedDirective } = result;
-  console.log({ importedFileCommentedDirective });
 
   if (
     isImportBlocked(
@@ -160,10 +170,9 @@ export const importFlow = (context, node, currentFileCommentedDirective) => {
   ) {
     context.report({
       node,
-      messageId: importBreaksImportRulesMessageId,
+      messageId: importBreaksCommentedImportRulesMessageId,
       data: {
-        // effectiveDirectiveMessage for now
-        effectiveDirectiveMessage: makeMessageFromCommentedDirective(
+        commentedDirectiveMessage: makeMessageFromCommentedDirective(
           currentFileCommentedDirective,
         ),
         specificViolationMessage: findSpecificViolationMessage(
@@ -172,5 +181,94 @@ export const importFlow = (context, node, currentFileCommentedDirective) => {
         ),
       },
     });
+  }
+};
+
+/* WHAT'S NEXT: allExportsFlow */
+
+/** The full flow for export traversals, shared between `ExportNamedDeclaration`and `ExportAllDeclaration`, to ensure same commented directive re-exports and strategized exports specifically in Agnostic Strategies Modules.
+ * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof importBreaksCommentedImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
+ * @param {import('@typescript-eslint/types').TSESTree.ExportNamedDeclaration | import('@typescript-eslint/types').TSESTree.ExportAllDeclaration} node The ESLint `node` of the rule's current traversal.
+ * @param {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES} currentFileCommentedDirective The current file's effective directive.
+ * @returns Returns early if the flow needs to be interrupted.
+ */
+export const allExportsFlow = (
+  context,
+  node,
+  currentFileCommentedDirective,
+) => {
+  // does not operate on `export type`
+  if (node.exportKind === "type") return;
+
+  // operating on external exports except on Agnostic Strategies Modules
+  if (
+    node.source !== null &&
+    currentFileCommentedDirective !== USE_AGNOSTIC_STRATEGIES
+  ) {
+    const result = importedFileFlow(
+      path.dirname(context.filename),
+      node.source.value,
+      context.cwd,
+      context,
+      node,
+    );
+
+    if (result.skip) return;
+    const { importedFileCommentedDirective } = result;
+
+    // // TEST START (idem)
+    // // It's not showing up because I'm doing this on a internal export. This will need to be addressed.
+    // let importedFileCommentedDirective =
+    //   getCommentedDirectiveFromImportedModule(resolvedImportPath);
+    // console.log({ importedFileCommentedDirective });
+
+    // if (importedFileCommentedDirective === USE_AGNOSTIC_STRATEGIES)
+    //   importedFileCommentedDirective = getStrategizedDirective(context, node);
+    // console.log({ importedFileCommentedDirective });
+    // // TEST END (idem)
+
+    // // TEST START
+    // let currentExportCommentedDirective =
+    //   getCommentedDirectiveFromImportedModule(context.filename);
+    // console.log({ currentExportCommentedDirective });
+
+    // if (currentExportCommentedDirective === USE_AGNOSTIC_STRATEGIES)
+    //   currentExportCommentedDirective = getStrategizedDirective(context, node);
+    // console.log({ currentExportCommentedDirective });
+    // // TEST END
+
+    /* THIS IS WHERE THE NEXT TEST IS EXPECTED
+  reExportNotSame applies to all commented directives except for "use agnostic strategies", for which the re-export's Strategy needs to match the import. But then that means while the imported file's commented directive logic is made, that of the current file's commented directive will need be made. Something like `if (currentFileEffectiveDirective) === USE_AGNOSTIC_STRATEGIES` look up the inner comments, find the strategy, and update currentFileEffectiveDirective as the interpreted directive from the strategy.
+  Bear in mind: this is really the last step for both agnostic20 and directive21 to be one-to-one with one another. At this point the plugin will really be ready for version 0.1.0, with both agnostic20 and directive21 entirely paralleled before I start improving directive21 first with customized defaults when there is no directive, making my first rule object in the process, with even more to come. 
+  THE VERDICT IS.
+  I need to make my own directive21 now in order to test these tests live. All the helpers are made. Now only the flows remain. These will need to be tested live.
+  */
+
+    if (currentFileCommentedDirective !== importedFileCommentedDirective) {
+      context.report({
+        node,
+        messageId: reExportNotSameMessageId,
+        data: {
+          currentFileCommentedDirective,
+          importedFileCommentedDirective,
+        },
+      });
+    }
+  }
+
+  // now operating on internal exports for Agnostic Strategies Modules
+  if (
+    node.source === null &&
+    currentFileCommentedDirective === USE_AGNOSTIC_STRATEGIES
+  ) {
+    const exportStrategizedDirective = getStrategizedDirective(context, node);
+    console.log({ exportStrategizedDirective });
+
+    if (exportStrategizedDirective === null) {
+      // next it will be a report
+      console.warn(
+        "All exports from Agnostic Strategies Modules must be strategized.",
+      );
+    }
   }
 };

@@ -224,8 +224,11 @@ export const getCommentedDirectiveFromImportedModule = (resolvedImportPath) => {
  * @returns {USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | null} Returns the interpreted directive, a.k.a. strategized directive, or lack thereof via `null`.
  */
 export const getStrategizedDirective = (context, node) => {
-  const strategy =
-    context.sourceCode.getCommentsInside(node)[0].value.trim() || null;
+  const firstNestedComment = context.sourceCode.getCommentsInside(node)[0];
+
+  // returns null early if there is no nested comments
+  if (!firstNestedComment) return null;
+  const strategy = firstNestedComment.value.trim() || null;
 
   return commentedStrategies_CommentedDirectives[strategy] || null;
 };

@@ -1,6 +1,11 @@
 import path from "path";
 
-import { EXTENSIONS } from "../../_commons/constants/bases.js";
+import {
+  EXTENSIONS,
+  useServerJSXMessageId,
+  importBreaksEffectiveImportRulesMessageId,
+  reExportNotSameMessageId,
+} from "../../_commons/constants/bases.js";
 import {
   USE_SERVER_LOGICS,
   USE_SERVER_COMPONENTS,
@@ -9,9 +14,6 @@ import {
   USE_CLIENT_COMPONENTS,
   USE_AGNOSTIC_LOGICS,
   USE_AGNOSTIC_COMPONENTS,
-  useServerJSXMessageId,
-  importBreaksImportRulesMessageId,
-  reExportNotSameMessageId,
 } from "../constants/bases.js";
 
 import { resolveImportPath } from "../../_commons/utilities/helpers.js";
@@ -24,19 +26,19 @@ import {
   findSpecificViolationMessage,
 } from "./helpers.js";
 
-// TEST START
-import { USE_AGNOSTIC_STRATEGIES } from "../../directive21/constants/bases.js";
-import {
-  getCommentedDirectiveFromImportedModule,
-  getStrategizedDirective,
-} from "../../directive21/utilities/helpers.js";
-// TEST END
+// // TEST START
+// import { USE_AGNOSTIC_STRATEGIES } from "../../directive21/constants/bases.js";
+// import {
+//   getCommentedDirectiveFromImportedModule,
+//   getStrategizedDirective,
+// } from "../../directive21/utilities/helpers.js";
+// // TEST END
 
 /* currentFileFlow */
 
 /**
  * The flow that begins the import rules enforcement rule, retrieving the valid directive of the current file before comparing it to upcoming valid directives of the files it imports.
- * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
+ * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof useServerJSXMessageId | typeof importBreaksEffectiveImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
  * @returns {{skip: true; currentFileEffectiveDirective: undefined;} | {skip: undefined; currentFileEffectiveDirective: USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS;}} Returns either an object with `skip: true` to disregard or one with the non-null `currentFileEffectiveDirective`.
  */
 export const currentFileFlow = (context) => {
@@ -145,19 +147,18 @@ const importedFileFlow = (currentDir, importPath, cwd) => {
 
   return {
     importedFileEffectiveDirective,
-    resolvedImportPath, // bonus
   };
 };
 
-/* importFlow */
+/* importsFlow */
 
 /** The full flow for import traversals to enforce effective directives import rules.
- * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
+ * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof useServerJSXMessageId | typeof importBreaksEffectiveImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
  * @param {import('@typescript-eslint/types').TSESTree.ImportDeclaration} node The ESLint `node` of the rule's current traversal.
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} currentFileEffectiveDirective The current file's effective directive.
  * @returns Returns early if the flow needs to be interrupted.
  */
-export const importFlow = (context, node, currentFileEffectiveDirective) => {
+export const importsFlow = (context, node, currentFileEffectiveDirective) => {
   // does not operate on `import type`
   if (node.importKind === "type") return;
 
@@ -168,17 +169,7 @@ export const importFlow = (context, node, currentFileEffectiveDirective) => {
   );
 
   if (result.skip) return;
-  const { importedFileEffectiveDirective, resolvedImportPath } = result;
-
-  // TEST START
-  let importedFileCommentedDirective =
-    getCommentedDirectiveFromImportedModule(resolvedImportPath);
-  console.log({ importedFileCommentedDirective });
-
-  if (importedFileCommentedDirective === USE_AGNOSTIC_STRATEGIES)
-    importedFileCommentedDirective = getStrategizedDirective(context, node);
-  console.log({ importedFileCommentedDirective });
-  // TEST END
+  const { importedFileEffectiveDirective } = result;
 
   if (
     isImportBlocked(
@@ -188,7 +179,7 @@ export const importFlow = (context, node, currentFileEffectiveDirective) => {
   ) {
     context.report({
       node,
-      messageId: importBreaksImportRulesMessageId,
+      messageId: importBreaksEffectiveImportRulesMessageId,
       data: {
         effectiveDirectiveMessage: makeMessageFromEffectiveDirective(
           currentFileEffectiveDirective,
@@ -202,7 +193,7 @@ export const importFlow = (context, node, currentFileEffectiveDirective) => {
   }
 };
 
-/* reExportFlow */
+/* reExportsFlow */
 
 /** The full flow for export traversals, shared between `ExportNamedDeclaration`and `ExportAllDeclaration`, to ensure same effective directive re-exports.
  * @param {Readonly<import('@typescript-eslint/utils').TSESLint.RuleContext<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>>} context The ESLint rule's `context` object.
@@ -210,7 +201,7 @@ export const importFlow = (context, node, currentFileEffectiveDirective) => {
  * @param {USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS} currentFileEffectiveDirective The current file's effective directive.
  * @returns Returns early if the flow needs to be interrupted.
  */
-export const reExportFlow = (context, node, currentFileEffectiveDirective) => {
+export const reExportsFlow = (context, node, currentFileEffectiveDirective) => {
   // does not operate on `export type`
   if (node.exportKind === "type") return;
 
@@ -224,36 +215,36 @@ export const reExportFlow = (context, node, currentFileEffectiveDirective) => {
   );
 
   if (result.skip) return;
-  const { importedFileEffectiveDirective, resolvedImportPath } = result;
+  const { importedFileEffectiveDirective } = result;
 
-  // TEST START (idem)
-  // It's not showing up because I'm doing this on a internal export. This will need to be addressed.
-  let importedFileCommentedDirective =
-    getCommentedDirectiveFromImportedModule(resolvedImportPath);
-  console.log({ importedFileCommentedDirective });
+  // // TEST START (idem)
+  // // It's not showing up because I'm doing this on a internal export. This will need to be addressed.
+  // let importedFileCommentedDirective =
+  //   getCommentedDirectiveFromImportedModule(resolvedImportPath);
+  // console.log({ importedFileCommentedDirective });
 
-  if (importedFileCommentedDirective === USE_AGNOSTIC_STRATEGIES)
-    importedFileCommentedDirective = getStrategizedDirective(context, node);
-  console.log({ importedFileCommentedDirective });
-  // TEST END (idem)
+  // if (importedFileCommentedDirective === USE_AGNOSTIC_STRATEGIES)
+  //   importedFileCommentedDirective = getStrategizedDirective(context, node);
+  // console.log({ importedFileCommentedDirective });
+  // // TEST END (idem)
 
-  // TEST START
-  let currentExportCommentedDirective = getCommentedDirectiveFromImportedModule(
-    context.filename,
-  );
-  console.log({ currentExportCommentedDirective });
+  // // TEST START
+  // let currentExportCommentedDirective = getCommentedDirectiveFromImportedModule(
+  //   context.filename,
+  // );
+  // console.log({ currentExportCommentedDirective });
 
-  if (currentExportCommentedDirective === USE_AGNOSTIC_STRATEGIES)
-    currentExportCommentedDirective = getStrategizedDirective(context, node);
-  console.log({ currentExportCommentedDirective });
-  // TEST END
+  // if (currentExportCommentedDirective === USE_AGNOSTIC_STRATEGIES)
+  //   currentExportCommentedDirective = getStrategizedDirective(context, node);
+  // console.log({ currentExportCommentedDirective });
+  // // TEST END
 
-  /* THIS IS WHERE THE NEXT TEST IS EXPECTED
-  reExportNotSame applies to all commented directives except for "use agnostic strategies", for which the re-export's Strategy needs to match the import. But then that means while the imported file's commented directive logic is made, that of the current file's commented directive will need be made. Something like `if (currentFileEffectiveDirective) === USE_AGNOSTIC_STRATEGIES` look up the inner comments, find the strategy, and update currentFileEffectiveDirective as the interpreted directive from the strategy.
-  Bear in mind: this is really the last step for both agnostic20 and directive21 to be one-to-one with one another. At this point the plugin will really be ready for version 0.1.0, with both agnostic20 and directive21 entirely paralleled before I start improving directive21 first with customized defaults when there is no directive, making my first rule object in the process, with even more to come. 
-  THE VERDICT IS.
-  I need to make my own directive21 now in order to test these tests live. All the helpers are made. Now only the flows remain. These will need to be tested live.
-  */
+  // /* THIS IS WHERE THE NEXT TEST IS EXPECTED
+  // reExportNotSame applies to all commented directives except for "use agnostic strategies", for which the re-export's Strategy needs to match the import. But then that means while the imported file's commented directive logic is made, that of the current file's commented directive will need be made. Something like `if (currentFileEffectiveDirective) === USE_AGNOSTIC_STRATEGIES` look up the inner comments, find the strategy, and update currentFileEffectiveDirective as the interpreted directive from the strategy.
+  // Bear in mind: this is really the last step for both agnostic20 and directive21 to be one-to-one with one another. At this point the plugin will really be ready for version 0.1.0, with both agnostic20 and directive21 entirely paralleled before I start improving directive21 first with customized defaults when there is no directive, making my first rule object in the process, with even more to come.
+  // THE VERDICT IS.
+  // I need to make my own directive21 now in order to test these tests live. All the helpers are made. Now only the flows remain. These will need to be tested live.
+  // */
 
   if (currentFileEffectiveDirective !== importedFileEffectiveDirective) {
     context.report({

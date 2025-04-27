@@ -1,8 +1,15 @@
-import { importBreaksImportRulesMessageId } from "../constants/bases.js";
+import {
+  reExportNotSameMessageId,
+  importBreaksCommentedImportRulesMessageId,
+} from "../../_commons/constants/bases.js";
 
-import { currentFileFlow, importFlow } from "../utilities/flows.js";
+import {
+  currentFileFlow,
+  importsFlow,
+  allExportsFlow,
+} from "../utilities/flows.js";
 
-/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof useServerJSXMessageId | typeof importBreaksImportRulesMessageId | typeof reExportNotSameMessageId, []>} */
+/** @type {import('@typescript-eslint/utils').TSESLint.RuleModule<typeof importBreaksCommentedImportRulesMessageId | typeof reExportNotSameMessageId, []>} */
 const rule = {
   meta: {
     type: "problem",
@@ -12,7 +19,9 @@ const rule = {
     },
     schema: [],
     messages: {
-      [importBreaksImportRulesMessageId]: `{{ effectiveDirectiveMessage }} 
+      [reExportNotSameMessageId]: `The effective directives of this file and this re-export are dissimilar.
+    Here, "{{ currentFileCommentedDirective }}" and "{{ importedFileCommentedDirective }}" are not the same. Please re-export only from modules that have the same effective directive as the current module. `,
+      [importBreaksCommentedImportRulesMessageId]: `{{ commentedDirectiveMessage }} 
 In this case, {{ specificViolationMessage }} `,
     },
   },
@@ -21,16 +30,15 @@ In this case, {{ specificViolationMessage }} `,
 
     if (result.skip) return {};
     const { verifiedCommentedDirective } = result;
-    console.log({ verifiedCommentedDirective });
+    // console.log({ verifiedCommentedDirective });
 
     return {
       ImportDeclaration: (node) =>
-        importFlow(context, node, verifiedCommentedDirective),
-      // ExportNamedDeclaration: (node) =>
-      // !! TWO ROUTES (if (node.source === null); else;)
-      //   reExportFlow(context, node, verifiedCommentedDirective),
-      // ExportAllDeclaration: (node) =>
-      //   reExportFlow(context, node, verifiedCommentedDirective),
+        importsFlow(context, node, verifiedCommentedDirective),
+      ExportNamedDeclaration: (node) =>
+        allExportsFlow(context, node, verifiedCommentedDirective),
+      ExportAllDeclaration: (node) =>
+        allExportsFlow(context, node, verifiedCommentedDirective),
     };
   },
 };
