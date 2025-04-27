@@ -36,7 +36,7 @@ import {
  * - Missing extensions (appends .ts, .tsx, etc.)
  * - Directory imports (e.g., `./components` → `./components/index.ts`)
  * @param {string} currentDir Directory of the file containing the import (from `path.dirname(context.filename)`).
- * @param {string} importPath The import specifier (e.g., `@/components/Button` or `./utils`).
+ * @param {string} importPath The import specifier (e.g., `@/components/Button` or `./utils`), from the current node.
  * @param {string} cwd Project root (from `context.cwd`). Caveat: only as an assumption currently.
  * @returns {string | null} Absolute resolved path or `null` if not found.
  */

@@ -228,6 +228,7 @@ export const getStrategizedDirective = (context, node) => {
 
   // returns null early if there is no nested comments
   if (!firstNestedComment) return null;
+
   const strategy = firstNestedComment.value.trim() || null;
 
   return commentedStrategies_CommentedDirectives[strategy] || null;

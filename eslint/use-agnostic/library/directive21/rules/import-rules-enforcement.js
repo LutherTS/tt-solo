@@ -1,11 +1,14 @@
 import {
   reExportNotSameMessageId,
   importBreaksCommentedImportRulesMessageId,
+  exportNotStrategized,
 } from "../../_commons/constants/bases.js";
 
 import {
   currentFileFlow,
   importsFlow,
+  falseAllExportsFlow,
+  oldExportsFlow,
   allExportsFlow,
 } from "../utilities/flows.js";
 
@@ -23,6 +26,8 @@ const rule = {
     Here, "{{ currentFileCommentedDirective }}" and "{{ importedFileCommentedDirective }}" are not the same. Please re-export only from modules that have the same effective directive as the current module. `,
       [importBreaksCommentedImportRulesMessageId]: `{{ commentedDirectiveMessage }} 
 In this case, {{ specificViolationMessage }} `,
+      [exportNotStrategized]: `Exports from Agnostic Strategies Modules must be strategized (\`/* @serverLogics */\`, etc.).  
+Please include a Strategy that corresponds to the kind of module this export would be mapped to. `,
     },
   },
   create: (context) => {
@@ -38,6 +43,8 @@ In this case, {{ specificViolationMessage }} `,
       ExportNamedDeclaration: (node) =>
         allExportsFlow(context, node, verifiedCommentedDirective),
       ExportAllDeclaration: (node) =>
+        allExportsFlow(context, node, verifiedCommentedDirective),
+      ExportDefaultDeclaration: (node) =>
         allExportsFlow(context, node, verifiedCommentedDirective),
     };
   },
