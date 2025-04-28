@@ -13,6 +13,7 @@ export default defineConfig([
   globalIgnores([".next"]),
   {
     files: [
+      /* FOR AGNOSTIC20 */
       // "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.ts",
       // "app/\\(pages\\)/\\(dashboard\\)/users/\\[username\\]/moments-agnostic20/**/*.tsx",
       // "app/actions/**/*.ts",
@@ -40,9 +41,9 @@ export default defineConfig([
       // "app/global-error.tsx",
       // "app/layout.tsx",
 
+      /* FOR DIRECTIVE21 */
       "app/actions/server/test-1.ts",
       "app/actions/server/test-1.tsx",
-
       "app/actions/server/test-2.ts",
       "app/actions/server/test-2.tsx",
     ],

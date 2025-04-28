@@ -1,4 +1,5 @@
 // "use client logics"
+// "use client components"
 // no directive
 
 // @ts-ignore
@@ -9,3 +10,5 @@
 import { bravely } from "./test-2.ts";
 // @ts-ignore
 import { /* @serverLogics */ x } from "./test-2.ts";
+// @ts-ignore
+import /* @clientLogics */ secondary from "./test-2.ts";

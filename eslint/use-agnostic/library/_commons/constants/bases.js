@@ -24,6 +24,9 @@ export const useServerJSXMessageId = "use-server-has-jsx-extension";
 // directive21
 export const importBreaksCommentedImportRulesMessageId =
   "import-breaks-commented-directive-import-rule";
+export const noCommentedDirective = "no-commented-directive-detected";
+export const commentedDirectiveVerificationFailed =
+  "commented-directive-verification-failed";
 export const importNotStrategized =
   "import-from-use-agnostic-strategies-not-strategized";
 export const exportNotStrategized =

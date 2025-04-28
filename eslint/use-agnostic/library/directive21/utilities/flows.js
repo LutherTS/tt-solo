@@ -4,6 +4,8 @@ import {
   EXTENSIONS,
   importBreaksCommentedImportRulesMessageId,
   reExportNotSameMessageId,
+  noCommentedDirective,
+  commentedDirectiveVerificationFailed,
   importNotStrategized,
   exportNotStrategized,
 } from "../../_commons/constants/bases.js";
@@ -18,6 +20,7 @@ import {
   USE_CLIENT_CONTEXTS,
   USE_AGNOSTIC_CONDITIONS,
   USE_AGNOSTIC_STRATEGIES,
+  commentedDirectives_VerificationReports,
 } from "../constants/bases.js";
 
 import { resolveImportPath } from "../../_commons/utilities/helpers.js";
@@ -39,8 +42,6 @@ import {
  * @returns {{skip: true; verifiedCommentedDirective: undefined;} | {skip: undefined; verifiedCommentedDirective: USE_SERVER_LOGICS | USE_CLIENT_LOGICS | USE_AGNOSTIC_LOGICS | USE_SERVER_COMPONENTS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_CONTEXTS | USE_AGNOSTIC_CONDITIONS | USE_AGNOSTIC_STRATEGIES;}} Returns either an object with `skip: true` to disregard or one with the non-null `verifiedCommentedDirective`.
  */
 export const currentFileFlow = (context) => {
-  console.log({ currentFilename: context.filename });
-
   // GETTING THE EXTENSION OF THE CURRENT FILE
   const currentFileExtension = path.extname(context.filename);
 
@@ -57,11 +58,16 @@ export const currentFileFlow = (context) => {
 
   // gets the commented directive from the current file
   const commentedDirective = getCommentedDirectiveFromCurrentModule(context);
-  console.log({ commentedDirective });
 
-  // reports if there is no directive or no valid directive (same, but eventually no directive could have defaults) (report will be made later)
+  // reports if there is no directive or no valid directive (same, but eventually no directive could have defaults)
   if (!commentedDirective) {
-    console.log("No or no valid commented directive.");
+    context.report({
+      loc: {
+        start: { line: 1, column: 0 },
+        end: { line: 1, column: context.sourceCode.lines[0].length },
+      },
+      messageId: noCommentedDirective,
+    });
     return { skip: true };
   }
 
@@ -69,11 +75,20 @@ export const currentFileFlow = (context) => {
     commentedDirective,
     currentFileExtension,
   );
-  console.log({ verifiedCommentedDirective });
 
-  // reports if the verification failed (report will be made later)
+  // reports if the verification failed
   if (!verifiedCommentedDirective) {
-    console.log("Verification failed for the commented directive.");
+    context.report({
+      loc: {
+        start: { line: 1, column: 0 },
+        end: { line: 1, column: context.sourceCode.lines[0].length },
+      },
+      messageId: commentedDirectiveVerificationFailed,
+      data: {
+        specificFailure:
+          commentedDirectives_VerificationReports[commentedDirective],
+      },
+    });
     return { skip: true };
   }
 
@@ -109,20 +124,19 @@ const importedFileFlow = (context, node) => {
   /* GETTING THE DIRECTIVE (or lack thereof) OF THE IMPORTED FILE */
   let importedFileCommentedDirective =
     getCommentedDirectiveFromImportedModule(resolvedImportPath);
-  console.log({
-    getCommentedDirectiveFromImportedModule: importedFileCommentedDirective,
-  });
 
   // returns early if there is no directive or no valid directive (same, but eventually no directive could have defaults)
-  if (!importedFileCommentedDirective) return { skip: true };
+  if (!importedFileCommentedDirective) {
+    console.warn(
+      "The imported file, whose path has been resolved, has no directive. It is thus ignored since the report on that circumstance is available on the imported file itself.",
+    );
+    return { skip: true };
+  }
 
   /* GETTING THE CORRECT DIRECTIVE INTERPRETATION OF STRATEGY FOR AGNOSTIC STRATEGIES MODULES IMPORTS. 
   (The Directive-First Architecture does not check whether the export and import Strategies are the same at this time, meaning a @clientLogics strategy could be wrongly imported and interpreted as a @serverLogics strategy. However, Strategy exports are plan to be linting in the future within their own Agnostic Strategies Modules to ensure they respect import rules within their own scopes. It may also become possible to check whether the export and import Strategies are the same in the future when identifiers as defined and the same, especially for components module where a convention could be to for all non-type export to be named and PascalCase.) */
   if (importedFileCommentedDirective === USE_AGNOSTIC_STRATEGIES) {
     importedFileCommentedDirective = getStrategizedDirective(context, node);
-    console.log({
-      getImportedStrategizedDirective: importedFileCommentedDirective,
-    });
 
     if (importedFileCommentedDirective === null) {
       context.report({
@@ -133,14 +147,7 @@ const importedFileFlow = (context, node) => {
     }
   }
 
-  // returns early again this time if there is no Strategy or no valid Strategy from an Agnostic Strategies Module import, since they can only be imported via Strategies
-  if (!importedFileCommentedDirective) return { skip: true };
-
-  console.log({ importedFileCommentedDirective });
-
-  return {
-    importedFileCommentedDirective,
-  };
+  return { importedFileCommentedDirective };
 };
 
 /* importsFlow */
@@ -208,9 +215,6 @@ export const allExportsFlow = (
     // verifies current node export strategy if "use agnostic strategies"
     if (currentFileCommentedDirective === USE_AGNOSTIC_STRATEGIES) {
       const exportStrategizedDirective = getStrategizedDirective(context, node);
-      console.log({
-        getExportedStrategizedDirective: exportStrategizedDirective,
-      });
 
       if (exportStrategizedDirective === null) {
         context.report({
@@ -239,9 +243,6 @@ export const allExportsFlow = (
     // verifies current node export strategy if "use agnostic strategies"
     if (currentFileCommentedDirective === USE_AGNOSTIC_STRATEGIES) {
       const exportStrategizedDirective = getStrategizedDirective(context, node);
-      console.log({
-        getExportedStrategizedDirective: exportStrategizedDirective,
-      });
 
       if (exportStrategizedDirective === null) {
         context.report({

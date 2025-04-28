@@ -52,12 +52,6 @@ export const effectiveDirectives_EffectiveModules = Object.freeze({
   [USE_AGNOSTIC_COMPONENTS]: AGNOSTIC_COMPONENTS_MODULE,
 });
 
-// messageIds
-export const useServerJSXMessageId = "use-server-has-jsx-extension";
-export const importBreaksImportRulesMessageId =
-  "import-breaks-effective-directive-import-rule";
-export const reExportNotSameMessageId = "re-export-not-same-directive";
-
 /* from the getDirectiveFromCurrentModule utility */
 
 export const directivesSet = new Set([USE_SERVER, USE_CLIENT, USE_AGNOSTIC]);
