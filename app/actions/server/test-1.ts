@@ -1,4 +1,5 @@
 // "use client logics"
+// "use client components"
 // no directive
 
 // @ts-ignore
