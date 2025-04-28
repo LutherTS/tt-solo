@@ -34,8 +34,6 @@ import {
  * @returns {{skip: true; currentFileEffectiveDirective: undefined;} | {skip: undefined; currentFileEffectiveDirective: USE_SERVER_LOGICS | USE_SERVER_COMPONENTS | USE_SERVER_FUNCTIONS | USE_CLIENT_LOGICS | USE_CLIENT_COMPONENTS | USE_AGNOSTIC_LOGICS | USE_AGNOSTIC_COMPONENTS;}} Returns either an object with `skip: true` to disregard or one with the non-null `currentFileEffectiveDirective`.
  */
 export const currentFileFlow = (context) => {
-  // console.log({ currentFilename: context.filename });
-
   // GETTING THE EXTENSION OF THE CURRENT FILE
   const currentFileExtension = path.extname(context.filename);
 
@@ -79,12 +77,6 @@ export const currentFileFlow = (context) => {
     console.error("ERROR. Effective directive should never be null.");
     return { skip: true };
   }
-
-  console.log({
-    currentFileDirective,
-    currentFileExtension,
-    currentFileEffectiveDirective,
-  });
 
   return {
     currentFileEffectiveDirective,
@@ -134,12 +126,6 @@ const importedFileFlow = (context, node) => {
     console.error("ERROR. Effective directive should never be null.");
     return { skip: true };
   }
-
-  // console.log({
-  //   importedFileDirective,
-  //   importedFileFileExtension,
-  //   importedFileEffectiveDirective,
-  // });
 
   // For now skipping on both "does not operate" (which should ignore) and "fails" albeit with console.error (which should crash).
 

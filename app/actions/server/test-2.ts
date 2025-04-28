@@ -1,4 +1,5 @@
 // "use agnostic strategies"
+// no directive
 // "use client";
 // "use client logics"
 

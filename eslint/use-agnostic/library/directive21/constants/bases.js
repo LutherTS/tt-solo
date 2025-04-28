@@ -347,3 +347,19 @@ export const commentedDirectives_BlockedImports = Object.freeze({
     // Agnostic Strategies Modules can import all known modules, except themselves since they cannot be imported as they are, only as and via Strategies. (Since Agnostic Strategies Modules cannot be imported as they are, there is no such things as a 'use agnostic strategies' importFileCommentedDirective.)
   ],
 });
+
+/* from the currentFileFlow flow */
+
+export const commentedDirectives_VerificationReports = Object.freeze({
+  // somehow doing it by hand is better for type inference
+  [USE_SERVER_LOGICS]: `modules marked with the "${USE_SERVER_LOGICS}" directive must have a non-JSX file extension.`,
+  [USE_CLIENT_LOGICS]: `modules marked with the "${USE_CLIENT_LOGICS}" directive must have a non-JSX file extension.`,
+  [USE_AGNOSTIC_LOGICS]: `modules marked with the "${USE_AGNOSTIC_LOGICS}" directive must have a non-JSX file extension.`,
+  [USE_SERVER_COMPONENTS]: `modules marked with the "${USE_SERVER_COMPONENTS}" directive must have a JSX file extension.`,
+  [USE_CLIENT_COMPONENTS]: `modules marked with the "${USE_CLIENT_COMPONENTS}" directive must have a JSX file extension.`,
+  [USE_AGNOSTIC_COMPONENTS]: `modules marked with the "${USE_AGNOSTIC_COMPONENTS}" directive must have a JSX file extension.`,
+  [USE_SERVER_FUNCTIONS]: `modules marked with the "${USE_SERVER_FUNCTIONS}" directive must have a non-JSX file extension.`,
+  [USE_CLIENT_CONTEXTS]: `modules marked with the "${USE_CLIENT_CONTEXTS}" directive must have a JSX file extension.`,
+  [USE_AGNOSTIC_CONDITIONS]: `modules marked with the "${USE_AGNOSTIC_CONDITIONS}" directive must have a JSX file extension.`,
+  [USE_AGNOSTIC_STRATEGIES]: `modules marked with the "${USE_AGNOSTIC_STRATEGIES}" directive are free to have the file extension of their choosing. (This is not a problem and should never surface.)`,
+});

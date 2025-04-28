@@ -180,17 +180,14 @@ export const getVerifiedCommentedDirective = (directive, extension) => {
 export const getCommentedDirectiveFromImportedModule = (resolvedImportPath) => {
   // gets the first line of the code of the import
   const importedFileFirstLine = getImportedFileFirstLine(resolvedImportPath);
-  // console.log({ importedFileFirstLine });
 
   // sees if the first line includes any of the directives and finds the directive that it includes
   let includedDirective = "";
   const lengthOne = directivesArray.length;
   for (let i = 0; i < lengthOne; i++) {
     const directive = directivesArray[i];
-    // console.log({ directive });
     if (importedFileFirstLine.includes(directive)) {
       includedDirective = directive;
-      // console.log({ includedDirective });
       break;
     }
   }
@@ -204,10 +201,8 @@ export const getCommentedDirectiveFromImportedModule = (resolvedImportPath) => {
     commentedDirectives_4RawImplementations[includedDirective].length;
   for (let i = 0; i < lengthTwo; i++) {
     const raw = commentedDirectives_4RawImplementations[includedDirective][i];
-    // console.log({ raw });
     if (raw === importedFileFirstLine) {
       importFileDirective = includedDirective;
-      // console.log({ importFileDirective });
       break;
     }
   }

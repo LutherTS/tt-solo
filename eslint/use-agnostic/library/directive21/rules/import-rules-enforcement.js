@@ -1,6 +1,8 @@
 import {
   reExportNotSameMessageId,
   importBreaksCommentedImportRulesMessageId,
+  noCommentedDirective,
+  commentedDirectiveVerificationFailed,
   importNotStrategized,
   exportNotStrategized,
 } from "../../_commons/constants/bases.js";
@@ -25,6 +27,10 @@ const rule = {
 Here, "{{ currentFileCommentedDirective }}" and "{{ importedFileCommentedDirective }}" are not the same. Please re-export only from modules that have the same commented directive as the current module. `,
       [importBreaksCommentedImportRulesMessageId]: `{{ commentedDirectiveMessage }} 
 In this case, {{ specificViolationMessage }} `,
+      [noCommentedDirective]: `No commented directive detected.
+All targeted modules need to be marked with their respective directives (\`// "use server logics"\`, etc.) for the purpose of this linting rule. `,
+      [commentedDirectiveVerificationFailed]: `The commented directive could not pass verification due to an incompatible combination with its file extension.
+In this context, {{ specificFailure }} `,
       [importNotStrategized]: `Imports from Agnostic Strategies Modules must be strategized (\`/* @serverLogics */\`, etc.).  
 Please include a Strategy that corresponds to the kind of module this import would be mapped to. `,
       [exportNotStrategized]: `Exports from Agnostic Strategies Modules must be strategized (\`/* @serverLogics */\`, etc.).  
@@ -36,7 +42,6 @@ Please include a Strategy that corresponds to the kind of module this export wou
 
     if (result.skip) return {};
     const { verifiedCommentedDirective } = result;
-    // console.log({ verifiedCommentedDirective });
 
     return {
       ImportDeclaration: (node) =>
