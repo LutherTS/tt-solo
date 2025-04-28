@@ -21,8 +21,8 @@ const rule = {
     },
     schema: [],
     messages: {
-      [reExportNotSameMessageId]: `The effective directives of this file and this re-export are dissimilar.
-    Here, "{{ currentFileCommentedDirective }}" and "{{ importedFileCommentedDirective }}" are not the same. Please re-export only from modules that have the same effective directive as the current module. `,
+      [reExportNotSameMessageId]: `The commented directives of this file (or Strategy) and this re-export are dissimilar.
+Here, "{{ currentFileCommentedDirective }}" and "{{ importedFileCommentedDirective }}" are not the same. Please re-export only from modules that have the same commented directive as the current module. `,
       [importBreaksCommentedImportRulesMessageId]: `{{ commentedDirectiveMessage }} 
 In this case, {{ specificViolationMessage }} `,
       [importNotStrategized]: `Imports from Agnostic Strategies Modules must be strategized (\`/* @serverLogics */\`, etc.).  

@@ -61,10 +61,6 @@ export const commentedDirectives_CommentedModules = Object.freeze({
   [USE_AGNOSTIC_STRATEGIES]: AGNOSTIC_STRATEGIES_MODULE,
 });
 
-// messageIds
-export const importBreaksImportRulesMessageId =
-  "import-breaks-commented-directive-import-rule";
-
 /* from the getCommentedDirectiveFromCurrentModule utility */
 
 export const directivesSet = new Set([

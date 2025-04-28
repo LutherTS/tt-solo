@@ -61,7 +61,7 @@ export const getCommentedDirectiveFromCurrentModule = (context) => {
   // checks if the raw value is single- or double-quoted (or neither)
   const isSingleQuoted = detectQuoteType(rawValue);
 
-  // return null early if the raw value (trimmed prior) is neither single- nor double-quoted
+  // returns null early if the raw value (trimmed prior) is neither single- nor double-quoted
   if (isSingleQuoted === null) return null;
 
   // Obtains the value depending on whether the raw value is single- or double-quoted. (Note: The same string is returned if, for some impossible reason, the raw value does not correspond in terms of quote types. It does not matter because the check coming next will always fail to null if that's the case.)
@@ -76,6 +76,7 @@ export const getCommentedDirectiveFromCurrentModule = (context) => {
 };
 
 /**
+ * Detects whether a string is single- or double-quoted.
  * @param {string} string
  * @returns
  */
@@ -90,6 +91,7 @@ const detectQuoteType = (string) => {
 };
 
 /**
+ * Removes single quotes from a string known to be single-quoted.
  * @param {string} string
  * @returns
  */
@@ -101,6 +103,7 @@ const stripSingleQuotes = (string) => {
 };
 
 /**
+ * Removes double quotes from a string known to be double-quoted.
  * @param {string} string
  * @returns
  */
